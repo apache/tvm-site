@@ -17,27 +17,26 @@
 """Add one to each element on an NVIDIA GPU. Requires LLVM and CUDA support."""
 
 # begin program
-import numpy as np
+import torch
 
-from tvm_tirx import cuda, runtime, tirx
+from tvm_tirx import tirx
 from tvm_tirx.script import tirx as T
 
 n = T.dynamic("n")
 
 
 @T.function
-def add_one(A: T.Tensor((n,), "float32"), B: T.Tensor((n,), "float32")):
+def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
     T.device_entry(launch=T.cuda.LaunchConfig(grid=((n + 255) // 256,), block=(256,)))
     i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
     if i < n:
         B[i] = A[i] + 1
 
 
-compiled = tirx.compile(add_one, target="cuda")
-dev = cuda(0)
-a = runtime.tensor(np.arange(10, dtype="float32"), device=dev)
-b = runtime.empty(a.shape, a.dtype, device=dev)
-compiled(a, b)
-np.testing.assert_allclose(b.numpy(), a.numpy() + 1)
-print(b.numpy())
+add_one_compiled = tirx.compile(add_one, target="cuda")
+a = torch.arange(10, dtype=torch.float32, device="cuda:0")
+b = torch.empty(a.shape, dtype=a.dtype, device=a.device)
+add_one_compiled(a, b)
+torch.testing.assert_close(b, a + 1)
+print(b)
 # end program

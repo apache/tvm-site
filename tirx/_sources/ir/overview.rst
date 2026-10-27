@@ -18,10 +18,19 @@
 IR Overview
 ===========
 
-In :doc:`/get_started/example`, we wrote and ran our first TIRx program. To
-improve efficiency, we need to convert the program into a common intermediate
-representation (IR) and apply compiler passes to it. In this section, we'll
-explore the IR system in tvm-tirx in detail.
+An intermediate representation (IR) describes a program in a form that compiler
+components can inspect and transform. Throughout this walkthrough, we'll use
+the CPU and GPU examples from :doc:`/get_started/quick_start` to introduce
+the main IR objects and show how they fit together.
+
+TVMScript constructs IR objects to describe the computation in these examples.
+PyTorch tensors hold the input and output data, and the compiled functions
+perform the computation when called.
+
+TIRx shares its IR object system across C++, Python, and Rust through TVM FFI,
+so compiler components written in different languages can work together. The
+same infrastructure supports custom types and operators and can be reused to
+build analyses, transformation passes, and backends.
 
 The main components of TIRx IR are:
 
@@ -37,14 +46,18 @@ The main components of TIRx IR are:
      - ``ir.Expr``
      - Represent values and computations.
      - ``A[i] + 1``
-   * - Statements
-     - ``ir.Stmt``
-     - Describe execution order and control flow.
-     - ``B[i] = A[i] + 1``
    * - Types
      - ``ir.Type``
      - Describe value properties, such as dtypes and tensor shapes.
      - ``T.float32``
+   * - Statements
+     - ``ir.Stmt``
+     - Describe execution order and control flow.
+     - ``B[i] = A[i] + 1``
+   * - Source locations
+     - ``ir.Location``
+     - Record where IR nodes originate in the source.
+     - The filename and line number of ``A[i] + 1``.
    * - Functions
      - ``ir.BaseFunc``, ``tirx.Function``
      - Define parameters and a computation body.
@@ -53,22 +66,8 @@ The main components of TIRx IR are:
      - ``ir.IRModule``
      - Organize named functions into a program.
      - ``ir.IRModule({"add_one": add_one})``
-   * - Source locations
-     - ``ir.Location``
-     - Record where IR nodes originate in the source.
-     - The filename and line number of ``A[i] + 1``.
 
-The IR makes values, computations, control flow, and types explicit, allowing
-analyses and transformations to work with the program's structure independently
-of the syntax used to construct it.
-
-TIRx's C++, Python, and Rust interfaces share a common IR object system through
-TVM FFI, allowing compiler components written in different languages to work
-together. Built on shared C++ IR infrastructure, the IR can be extended with
-custom operators and types, and its existing interfaces can be used to build
-custom analyses, transformation passes, and backends.
-
-The following tree shows the detailed inheritance hierarchy of the core IR classes.
+The hierarchy below shows the inheritance relationships between these classes:
 
 .. code-block:: text
 
@@ -155,16 +154,20 @@ The following tree shows the detailed inheritance hierarchy of the core IR class
    │   └── ir.CallSiteLoc                              Callee and caller locations
    └── ir.IRModule                                     Global function definitions
 
+The hierarchy shows inheritance between classes. The smaller diagrams in
+the following chapters show selected fields of individual objects. Each
+branch names a field, list entry, or mapping entry; for example,
+``seq[0]`` can refer to an ``ir.Bind`` stored inside an ``ir.SeqStmt``.
+
 .. _choose-a-chapter:
 
 What to Read Next
 -----------------
 
-After the add-one example in :doc:`/get_started/example`, this walkthrough
-uses a bias + sigmoid program to introduce symbolic shapes and scalar computations.
-It computes ``Y[i, j] = 1 / (1 + exp(-(X[i, j] + bias[j])))``.
-Download :download:`tvmscript_sigmoid.py <examples/tvmscript_sigmoid.py>`
-and run ``python tvmscript_sigmoid.py`` with an LLVM-enabled TIRx build.
+The CPU example provides the tensor types, arithmetic, and loop; the GPU
+example adds a variable binding, a conditional, and calls for thread
+coordinates. Short additional examples introduce scalar and vector
+values through the IR API.
 
 * The :doc:`types_and_expressions` chapter explains how values, computations,
   and tensor shapes are represented.

@@ -20,13 +20,12 @@
 Statements
 ==========
 
-In this chapter, we will introduce the statements that organize a
-function's execution. Statements can be used to describe value bindings, tensor
-writes, and control flow. Statements take several forms, including sequences,
-branches, and loops. Sequences record execution order, while branches and
-loops determine which statements execute and how often. Compiler passes can
-use these structures to construct and transform programs, including bodies
-defined by custom operators.
+In this chapter, we will introduce statements, which describe the actions
+a function performs and their execution order. A statement can bind an
+intermediate value to a variable, write a result to a tensor, or control
+execution through a branch or loop. These statements form the function's
+body, which compiler passes can inspect and rewrite through the IR
+interfaces.
 
 .. _statements-and-sequences:
 
@@ -83,78 +82,183 @@ writes to sequences, branches, and loops:
 Statement Sequences
 -------------------
 
-One of the most common statement types is ``ir.SeqStmt``, which groups
-statements in execution order in its ``seq`` field.
-A sequence can serve as a function body or as the body of a branch or loop.
+A function body often contains several statements that run one after
+another. ``ir.SeqStmt`` stores these statements in execution order in
+its ``seq`` field. The statements inside a loop or branch are also
+stored in a ``SeqStmt``.
 
-In our sigmoid example, each iteration binds the biased input before storing
-the sigmoid result. Reusing the tensor variables and indices from
-:ref:`user-ir-var` and the helper from :ref:`user-ir-call`, we can build this
-sequence:
+The CPU example writes one output element in each loop iteration:
+
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
+   :language: python
+   :start-at:     for i in range(n):
+   :end-at:         B[i] = A[i] + 1
+   :dedent: 4
+
+The indented assignment ``B[i] = A[i] + 1`` becomes an
+``ir.TensorStore`` statement describing a write to a tensor element.
+The loop body is a ``SeqStmt`` containing this statement. We can also
+construct this body through the IR API, using the parameter variables
+from ``add_one``:
 
 .. code-block:: python
 
-   biased = ir.Var("biased", "float32")
-   biased_value = X[i, j] + bias[j]
-   result = sigmoid(biased)
+   from tvm_tirx import ir
 
-   body = ir.SeqStmt(
-       [
-           ir.Bind(biased, biased_value),
-           ir.TensorStore(Y, [i, j], result),
-       ]
-   )
+   A, B = add_one.params
+   i = ir.Var("i", "int32")
+   store = ir.TensorStore(B, [i], A[i] + 1)
+   body = ir.SeqStmt([store])
 
-``ir.Bind`` defines ``biased`` with the value of ``X[i, j] + bias[j]``.
-The following ``ir.TensorStore`` evaluates the sigmoid expression ``result``
-using that binding and writes the value to ``Y[i, j]``.
-The sequence forms the body of the channel loop, which we examine next.
+``ir.TensorStore`` takes the destination tensor ``B``, the index list
+``[i]``, and the value expression ``A[i] + 1``. These arguments populate
+its ``dest``, ``indices``, and ``value`` fields. ``ir.SeqStmt([store])``
+holds this store statement as its first entry:
 
-Control Flow and Scope
-----------------------
+.. code-block:: text
 
-Control-flow statements determine which parts of a program execute, how
-many times they execute, and when execution leaves a loop or function.
-TIRx provides ``ir.If`` for branching, ``ir.For`` and ``ir.While`` for loops,
-``ir.Break`` and ``ir.Continue`` for loop control, and ``ir.Return`` for
-returning from a function.
+   body: ir.SeqStmt
+   └── seq[0]: ir.TensorStore                B[i] = A[i] + 1
+       ├── dest: ir.Var                     B
+       ├── indices[0]: ir.Var               i
+       └── value: ir.prim.Add                A[i] + 1
 
-The statements inside a branch or loop form its body. Branch bodies are
-stored in ``If.then_case`` and ``If.else_case``, while loop bodies are stored
-in ``For.body`` and ``While.body``. Each body is a ``SeqStmt`` and can contain
-further branches and loops.
+When the compiled function runs, the store computes ``A[i] + 1`` and
+writes the result to element ``i`` of ``B``. We can retrieve this
+statement with ``body[0]``, which is shorthand for ``body.seq[0]``.
 
-An ``ir.For`` specifies a loop variable, begin and end bounds, a step, and an
-execution kind. The end bound is exclusive. ``ForKind.DEFAULT`` executes
-iterations in order; the :class:`~tvm_tirx.ir.ForKind` API reference describes
-the other execution kinds.
+A small extension of the CPU loop names the addition's result before
+writing it to the output:
 
-The program processes one channel at a time. The surrounding loops cover
-samples and channels, keeping each tensor access within its bounds:
+.. code-block:: python
 
-.. literalinclude:: examples/sigmoid.py
+   for i in range(n):
+       value = A[i] + 1
+       B[i] = value
+
+The assignment to ``value`` becomes an ``ir.Bind`` statement: its
+``var`` field holds the variable, and its ``value`` field holds the
+addition expression. The following ``TensorStore`` uses that variable
+as the value to write. We can construct these two statements and put
+them in a sequence:
+
+.. code-block:: python
+
+   value = ir.Var("value", "float32")
+   binding = ir.Bind(value, A[i] + 1)
+   store_from_value = ir.TensorStore(B, [i], value)
+   sequence = ir.SeqStmt([binding, store_from_value])
+
+.. code-block:: text
+
+   sequence: ir.SeqStmt
+   ├── seq[0]: ir.Bind                      value = A[i] + 1
+   │   ├── var: ir.Var                      value
+   │   └── value: ir.prim.Add               A[i] + 1
+   └── seq[1]: ir.TensorStore               B[i] = value
+       └── value → same ir.Var              value
+
+When the function runs, the binding computes the addition and defines
+``value``, then the store writes this value to ``B[i]``.
+The next section places the original single-store ``body`` inside the
+CPU loop.
+
+.. _control-flow-and-scope:
+
+Control Flow
+------------
+
+Control-flow statements determine which parts of a program execute and
+how often. A loop repeats a body of statements, while a branch selects
+which body runs.
+
+The CPU example visits every element with a loop:
+
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
-   :start-after: # begin loop
-   :end-before: # end loop
+   :start-at:     for i in range(n):
+   :end-at:         B[i] = A[i] + 1
    :dedent: 4
 
-``batch_loop`` advances ``i`` by one sample. ``channel_loop`` advances ``j``
-by one channel, executing ``body`` at each step. Both loops use int64
-variables, bounds, and steps. The channel loop stops before ``end``, the
-channel count, so ``j`` ranges from 0 to ``channels - 1``.
+The loop becomes an ``ir.For``. Its ``var`` field identifies the loop
+variable ``i``, and its ``body`` field holds the ``SeqStmt`` containing
+the tensor store. We can construct this loop using ``i`` and ``body``
+from the previous section:
 
-Scope determines where a definition can be used. ``ir.SeqStmt`` groups
-statements without introducing an additional scope. In the example, the
-sequence ensures that ``biased`` is bound before the ``TensorStore`` uses it,
-while the enclosing channel loop limits its visibility to that loop body.
-The loop variables ``i`` and ``j`` are likewise visible only within their
-loop bodies.
+.. code-block:: python
 
-Some operators introduce their own statement bodies.
-:class:`ir.RegionStmt <tvm_tirx.ir.RegionStmt>` represents these using a
-registered operator, whose definition specifies the body's parameters.
+   loop = ir.For(i, 0, n, 1, ir.ForKind.DEFAULT, body)
 
-These scope rules also apply to programs built through the IR API. After
-construction, :func:`tirx.analysis.check_well_formed <tvm_tirx.tirx.analysis.check_well_formed>`
-can check a function or module for invalid variable and tensor uses and
-misplaced loop-control statements.
+The arguments ``0``, ``n``, and ``1`` set the ``begin``, ``end``, and
+``step`` fields. ``ForKind.DEFAULT`` selects execution in iteration
+order. On each iteration, the loop executes the statements in ``body``:
+
+.. code-block:: text
+
+   loop: ir.For
+   ├── var: ir.Var                           i
+   ├── begin: ir.IntImm                      0
+   ├── end: ir.Var                           n
+   ├── step: ir.IntImm                       1
+   ├── kind: ir.ForKind.DEFAULT
+   └── body: ir.SeqStmt
+       └── seq[0]: ir.TensorStore            B[i] = A[i] + 1
+
+The end bound is exclusive, so ``i`` runs from 0 through ``n - 1``.
+Each iteration executes the store in ``body`` with that value of ``i``.
+The loop defines ``i`` for use inside ``For.body``, which is its scope.
+The ``For`` establishes this scope, and its ``SeqStmt`` body records
+the order of the statements within it. The
+:class:`~tvm_tirx.ir.ForKind` API reference describes the other execution
+kinds.
+
+The GPU example distributes this work across threads. ``T.device_entry``
+introduces the GPU computation. Each thread computes an index ``i`` and
+checks whether it has an element to process:
+
+.. literalinclude:: ../get_started/examples/add_one_cuda.py
+   :language: python
+   :start-at:     T.device_entry(
+   :end-at:         B[i] = A[i] + 1
+   :dedent: 4
+
+The ``if i < n`` becomes an ``ir.If``. Its ``condition`` field holds
+the comparison, an ``ir.prim.LT`` expression. Its ``then_case`` field
+holds a ``SeqStmt`` containing the tensor store:
+
+.. code-block:: text
+
+   ir.If
+   ├── condition: ir.prim.LT                 i < n
+   ├── then_case: ir.SeqStmt
+   │   └── seq[0]: ir.TensorStore            B[i] = A[i] + 1
+   └── else_case: None
+
+The condition produces a boolean. When it is true, the thread executes
+the store in ``then_case``. An else branch has its own ``SeqStmt`` in
+``else_case``. This example has no else branch, so ``else_case`` is
+``None`` and threads whose indices are outside the tensor perform no
+tensor access. These branch bodies can also contain further loops and
+branches.
+
+The standalone ``T.device_entry(...)`` groups the remaining statements
+in this function into a device region. An
+:class:`ir.RegionStmt <tvm_tirx.ir.RegionStmt>` represents this region in
+the IR. Its ``op`` identifies ``tirx.device_entry``, and its ``body`` is
+a ``SeqStmt`` containing the index definition followed by the branch:
+
+.. code-block:: text
+
+   ir.RegionStmt
+   ├── op → ir.Op                          tirx.device_entry
+   └── body: ir.SeqStmt
+       ├── seq[0]: ir.Bind                 i = ...
+       └── seq[1]: ir.If                   if i < n
+           └── then_case: ir.SeqStmt
+               └── seq[0]: ir.TensorStore  B[i] = A[i] + 1
+
+The ``Bind`` defines ``i`` before the ``If`` uses it. The variable is
+available to the condition and tensor store within the region. The
+:ref:`Printing and Parsing <tvmscript-region-syntax>` chapter explains
+the grouping rule for this standalone syntax and the equivalent
+``with`` form.

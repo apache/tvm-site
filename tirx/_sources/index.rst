@@ -26,7 +26,7 @@ Table of Contents
    :caption: Get Started
    :titlesonly:
 
-   get_started/example
+   get_started/quick_start
 
 .. toctree::
    :maxdepth: 1

@@ -20,11 +20,11 @@
 Types and Expressions
 =====================
 
-In this chapter, we will introduce types and expressions and explain how
-they work together in the IR. Types describe properties such as dtypes,
-tensor shapes, and function signatures, while expressions represent values
-and computations. Compiler passes can work with these objects directly to
-inspect or rewrite a program without executing it.
+In this chapter, we will introduce types and expressions. Expressions
+represent values and computations, and their types describe properties
+such as dtypes, tensor shapes, and function signatures. The add-one
+examples will show how to inspect these objects and construct expressions
+directly with the IR API.
 
 .. _user-ir-type:
 
@@ -65,88 +65,88 @@ Next, we will look at two common types in tensor programs in more detail:
 PrimType
 ~~~~~~~~
 
-``ir.PrimType`` is a widely used type in TIRx IR, which describes integer,
-floating-point, and boolean values, either as scalars or vectors. Its ``dtype``
-records the element kind, bit width, and number of lanes.
+:class:`ir.PrimType <tvm_tirx.ir.PrimType>` describes integer,
+floating-point, and boolean values, either as scalars or vectors. Its
+``dtype`` records the element kind, bit width, and number of lanes.
 
-In the sigmoid program, primitive types describe both shape symbols and
-computed values. The dynamic shape symbol ``n`` is declared as:
+In the program's tensor annotations, ``T.float32`` is an
+``ir.PrimType("float32")`` object.
 
-.. literalinclude:: examples/tvmscript_sigmoid.py
+The program declares its dynamic length as:
+
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
-   :start-at:     n = T.dynamic
-   :end-at:     n = T.dynamic
-   :dedent: 4
+   :start-at: from tvm_tirx.script import tirx as T
+   :end-at: n = T.dynamic
 
-where ``n`` is a 64-bit integer symbol with type ``ir.PrimType("int64")``.
+where ``n`` is a 32-bit integer symbol with type ``ir.PrimType("int32")``.
+The loop index ``i`` has the same primitive type.
 
-The sigmoid calculation uses floating-point values:
-
-.. literalinclude:: examples/tvmscript_sigmoid.py
-   :language: python
-   :start-at:                 biased =
-   :end-at:                 Y[i, j] =
-   :dedent: 16
-
-In this example, ``X`` and ``bias`` are declared as tensors with float32
-elements, so ``X[i, j]`` and ``bias[j]`` have that type. ``T.float32(1)`` supplies
-float32 constants for the formula. The arithmetic operations and ``T.exp``
-preserve this type, so ``biased`` and the sigmoid result are automatically
-inferred as float32 during expression construction. In the IR, this type is
-represented by ``ir.PrimType("float32")``.
-You can also pass an expression to a ``PrimType`` instance to cast it to that type.
-
-To create a variable of a specific type, you can call the corresponding
-``PrimType`` instance without arguments:
+We can express the addition ``A[i] + 1`` directly through the IR API,
+with a scalar variable standing for the input element:
 
 .. code-block:: python
 
-   f32 = ir.PrimType("float32")
-   x = f32()
+   from tvm_tirx import ir
+   scalar_value = ir.Var("scalar_value", "float32")
+   scalar_plus_one = scalar_value + 1
 
-``PrimType`` also provides methods to inspect a type, like ``is_scalar()``,
-``matches_code(...)``, and ``matches_element_type(...)``. See the
-:class:`~tvm_tirx.ir.PrimType` API reference for more details.
+``scalar_value`` has type ``ir.PrimType("float32")``, so it represents a single
+32-bit floating-point value. The result ``scalar_plus_one`` has the
+same type, just like ``A[i] + 1`` in the program.
+
+.. _user-ir-vector-expression:
+
+``PrimType`` also supports vector values. We can extend the same addition
+to four float32 values at once:
+
+.. code-block:: python
+
+   vector_value = ir.Var("vector_value", "float32x4")
+   vector_plus_one = vector_value + 1
+
+The type of ``vector_value`` is ``ir.PrimType("float32x4")``. The ``x4`` suffix
+specifies four float32 lanes within one vector value. The addition adds
+one to each lane, and ``vector_plus_one`` has the same vector type.
 
 .. _user-tensor-type:
 
 TensorType
 ~~~~~~~~~~
 
-Most computations in TIRx involve tensors. To define a tensor type, we need
-two important properties: its element type and shape.
-:class:`tirx.TensorType <tvm_tirx.tirx.TensorType>` stores these in its ``dtype``
-and ``shape`` fields, respectively. The element type is a ``PrimType``, and
-each dimension is an integer expression.
+:class:`tirx.TensorType <tvm_tirx.tirx.TensorType>` is an IR type object
+that describes a whole tensor. It records the tensor's dimensions and
+the type of each element.
 
-In the sigmoid program, the input ``X`` is declared as:
+The program declares its input and output as:
 
-.. literalinclude:: examples/tvmscript_sigmoid.py
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
-   :start-at:         X: T.Tensor
-   :end-at:         X: T.Tensor
-   :dedent: 8
+   :start-at: def add_one(
+   :end-at: def add_one(
 
-where ``X`` is the parameter name and the part after ``:`` is its *type
-annotation*, which tells TVMScript what kind of value the parameter accepts.
-This annotation becomes a ``tirx.TensorType`` in the IR: ``shape`` describes
-``2*n`` rows and ``channels`` columns, and ``dtype`` is
-``ir.PrimType("float32")``.
+``T.Tensor((n,), T.float32)`` is the TVMScript notation for a tensor type;
+the parser represents it as a ``tirx.TensorType`` object. Its ``shape``
+field contains one dimension, ``n``, and its ``dtype`` field is
+``ir.PrimType("float32")``:
 
-**Symbolic shapes.** A dimension such as ``2*n`` can vary between calls.
-In this example, ``channels`` is fixed at 130 when the program is constructed,
-while ``n`` is determined from the input's row count at runtime. An input
-with shape ``(16, 130)`` gives ``n=8``. A later call can use a different
-even row count without recompiling the function. Both fixed shapes such as
-``(16, 130)`` and symbolic shapes such as ``(2*n, 130)`` use the same
-``TensorType`` representation.
+.. code-block:: text
+
+   tirx.TensorType                  T.Tensor((n,), T.float32)
+   ├── shape[0]: ir.Var              n
+   └── dtype: ir.PrimType            float32
+
+The dimension ``n`` is symbolic: it is not fixed to a particular number
+when the function is compiled. Each call determines ``n`` from the length
+of ``A``. Since ``B`` uses the same symbol in its type, its length must
+match ``A``. The loop then uses ``n`` as its bound.
 
 Expressions
 -----------
 
-``ir.Expr`` is the base class for all expressions, which represent program
-values and the operations that produce them. Each expression's ``ty`` field
-records its result type:
+``ir.Expr`` is the base class for expressions, which represent program
+values and computations. All expression classes inherit its ``ty`` field,
+which records the type of value they represent:
 
 .. list-table::
    :header-rows: 1
@@ -159,8 +159,34 @@ records its result type:
      - ``ir.Type``
      - The type of value represented by the expression.
 
-Expressions include variables, constants, arithmetic, tensor reads, and calls.
-These classes store their values or operands in the following fields:
+We can inspect the types of ``scalar_value`` and ``scalar_plus_one``
+through ``ty``. Both are primitive types, so their ``dtype`` fields give
+the dtype names:
+
+.. code-block:: python
+
+   print(scalar_value.ty.dtype)
+   print(scalar_plus_one.ty.dtype)
+
+The output is:
+
+.. code-block:: text
+
+   float32
+   float32
+
+The variable's type was supplied by the ``"float32"`` argument in
+``ir.Var("scalar_value", "float32")``. The addition's constructor
+determines its result type from its operands; this process is called
+type inference.
+
+An expression under construction can also have an ``ir.MissingType``
+in ``ty`` while its type is undetermined. The
+:ref:`Call Types and Validation <types-and-validation>` section shows
+how a missing result type can be inferred later.
+
+Each expression class adds fields for its value or operands, alongside
+the shared ``ty`` field:
 
 .. list-table::
    :header-rows: 1
@@ -191,175 +217,265 @@ These classes store their values or operands in the following fields:
      - A tensor element read
      - ``source``, ``indices``
 
-In our sigmoid example, the input parameter ``X`` is represented by an
-``ir.Var`` expression. We can inspect its type through the ``program`` module
-(introduced later in :doc:`functions_and_modules`):
-
-.. literalinclude:: examples/tvmscript_sigmoid.py
-   :language: python
-   :start-at:     function = program["bias_sigmoid"]
-   :end-at:     location = row_extent.loc
-   :dedent: 4
-
-The ``ir.prim.Mul`` expression for ``2 * n`` is one example of a primitive operation.
-Next, we'll look at how primitive operations represent the arithmetic in the
-sigmoid formula.
-
-.. _user-ir-prim-operations:
-
-Primitive Operations
-~~~~~~~~~~~~~~~~~~~~
-
-Primitive operations give the compiler a common way to represent and reason
-about basic computations. The ``ir.prim`` namespace provides expressions such
-as ``Add`` for arithmetic and ``LE`` for comparisons. These expressions have
-defined semantics, explicit operands, and result types, allowing compiler
-passes to analyze computations and perform optimizations such as constant
-folding and algebraic simplification. See the
-:doc:`ir.prim </reference/python/ir.prim>` API reference for the available
-expression classes and construction helpers.
-
-TIRx overloads Python operators such as ``+`` and ``/`` to construct IR
-expressions. In our program, we use them as follows:
-
-.. literalinclude:: examples/tvmscript_sigmoid.py
-   :language: python
-   :start-at:                 biased =
-   :end-at:                 Y[i, j] =
-   :dedent: 16
-
-In this code, the ``+`` and ``/`` operations become
-``ir.prim.Add`` and ``ir.prim.Div`` expressions, respectively.
-Each binary expression has two operand fields: ``a`` for the expression on its
-left and ``b`` for the expression on its right.
-
-**Bias addition.** The ``+`` in the definition of ``biased`` becomes an
-``ir.prim.Add``. Its ``a`` field points to the ``X[i, j]`` tensor read, and
-its ``b`` field points to the ``bias[j]`` tensor read. The addition has this
-structure:
-
-.. code-block:: text
-
-   ir.prim.Add                 X[i, j] + bias[j]
-   ├── a: ir.TensorLoad         X[i, j]
-   └── b: ir.TensorLoad         bias[j]
-
-Each tensor read produces one float32 value, and the addition combines
-the input element with its channel's bias.
-
-**Sigmoid.** In the final line, the ``+`` in
-``T.float32(1) + T.exp(-biased)`` becomes an ``ir.prim.Add``. The ``/`` becomes
-an ``ir.prim.Div`` whose ``a`` operand supplies the numerator, ``1``, and
-whose ``b`` operand is the addition that computes the denominator.
-The exponential ``T.exp(-biased)`` is represented by an ``ir.Call``, which
-we will discuss in the :ref:`user-ir-call` section.
-
 .. _user-ir-const:
 
 Primitive Expressions
 ~~~~~~~~~~~~~~~~~~~~~
 
 A primitive expression is an expression whose ``ty`` is an ``ir.PrimType``.
-The expression may be a variable, a tensor element read, an arithmetic
-calculation, or a call. Its result type tells us whether it produces an
-integer, a floating-point value, a boolean, or a vector of these values.
-The float32 tensor reads and computations in our sigmoid example are primitive
-expressions.
+This term groups expressions by their result type. Variables, tensor
+reads, arithmetic nodes, and calls can all belong to this group when
+they produce primitive scalar or vector values.
 
-**Type inference.** Result types are usually determined when expressions are
-constructed and stored in their ``ty`` fields. Overloaded arithmetic operators
-such as ``+`` match operand types, promoting compatible types and inserting
-casts where needed. Comparisons produce boolean results:
+**Scalar expressions.** The CPU example uses the int32 expressions ``n``
+and ``i`` for the loop bound and index. The tensor read ``A[i]`` and the
+addition ``A[i] + 1`` both produce a single float32 value. In the GPU
+example, ``i < n`` produces a boolean that decides whether a thread
+writes its result. These scalar result types are stored as ``PrimType``
+objects in ``ty``.
 
-.. code-block:: python
+``A`` itself represents the whole tensor and has a ``TensorType``.
+The expression ``A[i]`` reads element ``i`` of this tensor. TVMScript
+represents the read as an ``ir.TensorLoad`` node. Its ``source`` field
+refers to ``A``, and ``indices`` contains ``i``, selecting the element
+to read:
 
-   from tvm_tirx import ir
+.. code-block:: text
 
-   x = ir.Var("x", "float32")
-   (x + 1).ty                   # ir.PrimType("float32")
-   (x > 0).ty                   # ir.PrimType("bool")
-   ir.Call("prim.exp", [x]).ty  # ir.PrimType("float32")
+   ir.TensorLoad                    A[i]
+   ├── ty: ir.PrimType               float32
+   ├── source: ir.Var                A
+   │   └── ty: tirx.TensorType       (n,) of float32
+   └── indices[0]: ir.Var            i
 
-For ``ir.Call``, omitting ``ty`` uses the operator's registered result-type
-rule or the callee's function signature. ``ir.reinfer_type(call)`` recomputes
-the result type without modifying ``call.ty`` or validating the call.
-See :ref:`types-and-validation` for inference rules and explicit validation.
+**Vector expressions.** A primitive expression can also produce a vector
+value. The earlier add-one result ``vector_plus_one`` has type
+``ir.PrimType("float32x4")``, representing four float32 lanes within
+one value.
 
-**Index expressions.** The loop ``for i in range(2 * n)`` uses ``2*n`` to
-determine how many rows to process. The multiplication's ``ty`` is
-``ir.PrimType("int64")``. The loop indices ``i`` and ``j`` also have this
-type and select one row and one channel, respectively.
+A call whose result type is a ``PrimType`` also belongs to this category.
+For example, the GPU expression ``T.cuda.thread_idx("x")`` is an
+``ir.Call`` with result type ``ir.PrimType("int32")``.
+
+.. _user-ir-prim-operations:
+
+Primitive Operations
+~~~~~~~~~~~~~~~~~~~~
+
+The previous section grouped expressions by result type. The operations
+below describe the computations that produce those values. The
+``ir.prim`` namespace provides node classes and Python helpers for
+arithmetic, comparisons, boolean logic, casts, and other primitive
+computations:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 55 45
+
+   * - Python expression
+     - IR node constructed
+   * - ``scalar_value + 1``
+     - ``ir.prim.Add``
+   * - ``ir.prim.sigmoid(scalar_value)``
+     - ``ir.Call`` to ``prim.sigmoid``
+
+Python operators such as ``+``, ``*``, and ``<`` construct arithmetic
+and comparison nodes. The Python helper ``ir.prim.sigmoid`` constructs
+a call to a registered operator; the returned IR node is an ``ir.Call``.
+The :ref:`Call <user-ir-call>` section below examines its fields.
+The :doc:`ir.prim </reference/python/ir.prim>` API reference lists the
+available classes and construction helpers.
+
+In the CPU example, ``A[i] + 1`` becomes an ``ir.prim.Add``. A binary node
+stores its left operand in ``a`` and its right operand in ``b``:
+
+.. code-block:: text
+
+   ir.prim.Add                  A[i] + 1
+   ├── a: ir.TensorLoad          A[i]
+   └── b: ir.FloatImm            1.0
+
+The arithmetic constructor derives the result type from its operands.
+Since ``A[i]`` is float32, it converts the source literal ``1`` to the
+float32 constant shown as ``ir.FloatImm``. The result is also float32.
+
+These constructors also support vector operands. In ``vector_value + 1``,
+the scalar constant is broadcast to all four lanes, producing the
+four-lane expression ``vector_plus_one``.
+
+The GPU example combines multiplication, addition, and comparison to
+compute and check each thread's element index:
+
+.. literalinclude:: ../get_started/examples/add_one_cuda.py
+   :language: python
+   :start-at:     i = T.cuda.block_idx
+   :end-at:         B[i] = A[i] + 1
+   :dedent: 4
+
+The GPU launch uses 256 threads per block. The multiplication by 256
+becomes an ``ir.prim.Mul``, and the sum becomes an ``ir.prim.Add``.
+The condition ``i < n`` is an ``ir.prim.LT`` whose ``a`` and ``b``
+operands are the index and tensor length:
+
+.. code-block:: text
+
+   ir.prim.LT                       i < n
+   ├── a: ir.Var                    i
+   └── b: ir.Var                    n
+
+The comparison checks whether the thread has a valid element to process.
 
 .. _user-ir-var:
 
 Var
 ~~~
 
-Variables can be function parameters, loop indices, or intermediate values
-defined by bindings. ``ir.Var`` can be used to represent these values together
-with their names and types.
+``ir.Var`` represents a named value with a type. Variables can be
+function parameters, loop indices, or intermediate values defined by
+bindings.
 
-We can declare the variables in our sigmoid example using the IR API:
+The tensor parameters ``A`` and ``B`` in the program are represented by
+``ir.Var`` objects. The PyTorch tensors ``a`` and ``b`` are passed to these
+parameters when the compiled function is called. In the CPU example, we
+can retrieve the parameter variables from ``add_one.params`` and inspect
+their types through ``ty``:
 
-.. literalinclude:: examples/sigmoid.py
-   :language: python
-   :start-after: # begin variables
-   :end-before: # end variables
-   :dedent: 4
+.. code-block:: python
 
-``X``, ``bias``, and ``Y`` have tensor types. ``i`` selects a sample, and ``j``
-selects a channel. These indices have int64 types. ``biased`` holds one
-float32 value after adding the channel's bias to the input element.
+   A, B = add_one.params
+   input_type = A.ty
+   output_type = B.ty
+
+Each parameter is a ``Var`` with its own ``name`` and ``ty`` fields.
+For ``A``, these are:
+
+.. code-block:: text
+
+   A: ir.Var
+   ├── name: "A"
+   └── ty: tirx.TensorType           (n,) of float32
+
+TVMScript creates these parameter variables when it parses the function.
+We can also create variables directly with ``ir.Var(name, ty)``. The
+scalar add-one example in PrimType uses this constructor:
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+   scalar_value = ir.Var("scalar_value", "float32")
+   scalar_plus_one = scalar_value + 1
+
+``ir.Var("scalar_value", "float32")`` creates a variable whose ``name``
+is ``"scalar_value"`` and whose ``ty`` is ``ir.PrimType("float32")``.
 
 .. _user-ir-call:
 
 Call
 ~~~~
 
-After defining a function (introduced later in :doc:`functions_and_modules`),
-we can call it with arguments. :doc:`ir.Call <operators_and_calls>` represents
-such a call in the IR. Its ``op`` field (an ``ir.Op`` for a registered operator)
-identifies the function or operator being called, and ``args`` holds the
-argument expressions. Using an unregistered operator name in ``ir.Op.get``
-or ``ir.Call`` raises ``AttributeError``.
+:class:`ir.Call <tvm_tirx.ir.Call>` represents a call to an operator or
+function. Its ``op`` field refers to the operator or function expression
+being called, and ``args`` holds the argument expressions. A registered
+operator is represented by ``ir.Op``.
 
-In sigmoid, ``1 / (1 + exp(-x))``, the exponential is a call inside a larger
-arithmetic expression:
-
-.. code-block:: python
-
-   from tvm_tirx import ir, tirx
-   from tvm_tirx.script import from_source
-   from tvm_tirx.script import tirx as T
-
-   exp_op = ir.Op.get("prim.exp")
-
-   def sigmoid(x):
-       one = ir.const(1, x.ty)
-       exp_neg_x = ir.Call(exp_op, [-x])
-       return one / (one + exp_neg_x)
-
-``exp_op`` is the registered ``ir.Op`` for the exponential operation.
-``ir.Call(exp_op, [-x])`` constructs a call with the negated input as its
-argument. The sum ``one + exp_neg_x`` forms the denominator; the division
-produces sigmoid's result.
-The helper preserves the input's primitive type, float32 in this example.
-
-We can construct IR by calling a Python helper directly. Here,
-``sigmoid(biased)`` runs the helper above, which builds an ``ir.Call`` for the
-exponential and returns the complete sigmoid expression:
+In the GPU example, the index expression contains calls to
+``T.cuda.block_idx("x")`` and ``T.cuda.thread_idx("x")``.
+These TVMScript helpers construct calls to registered CUDA operators.
+We can construct the thread-index call directly through the IR API:
 
 .. code-block:: python
 
-   biased_value = X[i, j] + bias[j]
-   result = sigmoid(biased)
+   from tvm_tirx import ir
 
-``biased_value`` is an ``ir.prim.Add`` containing two tensor reads. The program
-binds this value to ``biased`` before using it in the sigmoid calculation.
-``result`` is an ``ir.prim.Div`` whose denominator contains another addition
-and the exponential call. The program stores this result in ``Y[i, j]``.
+   op = ir.Op.get("tirx.cuda.thread_idx")
+   x_call = ir.Call(op, [ir.StringImm("x")])
 
-When the compiled program runs, each loop iteration reads the input and bias
-values, computes the activation, and writes it to ``Y``. The biased values stay
-local to that iteration, so bias addition and sigmoid share one traversal
-without an intermediate tensor.
+``op`` is the ``ir.Op`` object for ``tirx.cuda.thread_idx``. The call's
+``op`` field refers to this object, and its ``args`` array contains the
+string expression ``"x"``. Its ``ty`` is ``ir.PrimType("int32")``:
+
+.. code-block:: text
+
+   x_call: ir.Call
+   ├── op → ir.Op                   tirx.cuda.thread_idx
+   ├── args[0]: ir.StringImm         "x"
+   └── ty: ir.PrimType               int32
+
+The ``"x"`` argument selects the x axis. When the compiled GPU function
+runs, this call reads the current thread's x-axis coordinate within its
+block. The index arithmetic uses the coordinates returned by the
+thread-index and block-index calls to compute ``i``.
+
+A common extension of add-one is an activation applied to its result.
+We can pass the earlier addition expression ``scalar_plus_one`` to the
+built-in ``prim.sigmoid`` operator:
+
+.. code-block:: python
+
+   sigmoid_op = ir.Op.get("prim.sigmoid")
+   activated_plus_one = ir.Call(sigmoid_op, [scalar_plus_one])
+
+The call's argument is now the addition expression:
+
+.. code-block:: text
+
+   activated_plus_one: ir.Call
+   ├── op → ir.Op                   prim.sigmoid
+   ├── args[0]: ir.prim.Add          scalar_value + 1
+   └── ty: ir.PrimType               float32
+
+``activated_plus_one.args[0]`` refers to ``scalar_plus_one``, so sigmoid
+receives the addition's result. The expression computes
+``1 / (1 + exp(-(scalar_value + 1)))``. The operator's type rule gives
+the call the same type as its input, ``ir.PrimType("float32")``. This
+call is therefore also a primitive expression. The Python helper
+``ir.prim.sigmoid(scalar_plus_one)`` constructs the same call.
+
+The :doc:`operators_and_calls` chapter also covers calls to IR functions
+and explains how registered operators provide result-type inference
+and argument validation.
+
+.. _user-ir-source-locations:
+
+Source Locations
+----------------
+
+IR nodes can carry source locations to help diagnostics point back to
+the original code. The ``loc`` field stores this information, and
+:class:`ir.SourceLoc <tvm_tirx.ir.SourceLoc>` records the source file
+and range.
+
+The parameter ``A`` is declared on this line of the CPU program:
+
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
+   :language: python
+   :start-at: def add_one(
+   :end-at: def add_one(
+   :lineno-match:
+
+The parameter's ``loc`` points back to this declaration. We can read
+``start_line`` to report its line number:
+
+.. code-block:: python
+
+   parameter = add_one.params[0]
+   location = parameter.loc
+   line = location.start_line
+   print(f"Parameter {parameter.name} is declared on line {line} of the CPU program.")
+
+The output is:
+
+.. code-block:: text
+
+   Parameter A is declared on line 29 of the CPU program.
+
+``source_name.name`` also records the path to the CPU program's source
+file:
+
+.. code-block:: text
+
+   parameter: ir.Var                 A
+   └── loc: ir.SourceLoc
+       ├── source_name: ir.SourceName
+       │   └── name                  path to the CPU program's source file
+       └── start_line                line of A's declaration

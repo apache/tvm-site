@@ -17,24 +17,24 @@
 """Add one to each element on the CPU. Requires LLVM support."""
 
 # begin program
-import numpy as np
+import torch
 
-from tvm_tirx import runtime, tirx
+from tvm_tirx import tirx
 from tvm_tirx.script import tirx as T
 
 n = T.dynamic("n")
 
 
 @T.function
-def add_one(A: T.Tensor((n,), "float32"), B: T.Tensor((n,), "float32")):
+def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
     for i in range(n):
         B[i] = A[i] + 1
 
 
-compiled = tirx.compile(add_one, target="llvm")
-a = runtime.tensor(np.arange(10, dtype="float32"))
-b = runtime.empty(a.shape, a.dtype)
-compiled(a, b)
-np.testing.assert_allclose(b.numpy(), a.numpy() + 1)
-print(b.numpy())
+add_one_compiled = tirx.compile(add_one, target="llvm")
+a = torch.arange(10, dtype=torch.float32)
+b = torch.empty(a.shape, dtype=a.dtype)
+add_one_compiled(a, b)
+torch.testing.assert_close(b, a + 1)
+print(b)
 # end program

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Your First TIRx Program &#8212; tvm-tirx</title>
+    <title>Quick Start &#8212; tvm-tirx</title>
   
   
   
@@ -40,7 +40,7 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/example';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/quick_start';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="IR Overview" href="../ir/overview.html" />
@@ -150,7 +150,7 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Your First TIRx Program</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Quick Start</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
 <ul class="nav bd-sidenav">
@@ -241,7 +241,7 @@
       
       
       
-      <li><a href="../_sources/get_started/example.rst" target="_blank"
+      <li><a href="../_sources/get_started/quick_start.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -323,7 +323,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Your First TIRx Program</h1>
+    <h1>Quick Start</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -337,79 +337,92 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="your-first-tirx-program">
-<h1>Your First TIRx Program<a class="headerlink" href="#your-first-tirx-program" title="Link to this heading">#</a></h1>
+  <section id="quick-start">
+<h1>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h1>
 <p>In this chapter, we’ll write and run a small TIRx program using TVMScript,
-TIRx’s Python-based notation for IR, then look at the IR it builds. Our example
-adds one to each element of a tensor: <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">A</span></code> is the input tensor, and <code class="docutils literal notranslate"><span class="pre">B</span></code> stores the result. Both tensors have the
-same dynamic length <code class="docutils literal notranslate"><span class="pre">n</span></code>. We can call the compiled program with different
-lengths without recompiling.</p>
-<p>With an LLVM-enabled TIRx build, you can download
-<a class="reference download internal" download="" href="../_downloads/e2cbc391e2b1601b4a944f81fd92253f/add_one_cpu.py"><code class="xref download docutils literal notranslate"><span class="pre">add_one_cpu.py</span></code></a> and run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">add_one_cpu.py</span></code>.
-Here’s the complete program:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+which lets us describe tensor computations with Python syntax. We’ll also
+inspect the IR that TVMScript creates from the code. The examples use
+PyTorch tensors; the <a class="reference internal" href="../dev/source_build.html"><span class="doc">Build from Source</span></a> guide explains how to set up
+TIRx.</p>
+<p>Our example computes <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>, where <code class="docutils literal notranslate"><span class="pre">A</span></code> is the input tensor
+and <code class="docutils literal notranslate"><span class="pre">B</span></code> is the output. Both tensors have the same dynamic length <code class="docutils literal notranslate"><span class="pre">n</span></code>,
+so the compiled program can handle different input lengths without
+recompilation.</p>
+<p>We’ll show two versions of this program: one for the CPU and one for an
+NVIDIA GPU. We’ll first compile and run the CPU version using LLVM.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
 
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 
 
-<span class="n">compiled</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"llvm"</span><span class="p">)</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">))</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-<span class="n">compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">a</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+<span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"llvm"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">add_one_compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> turns the <code class="docutils literal notranslate"><span class="pre">add_one</span></code> definition into IR. The code
+<p><code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> turns the <code class="docutils literal notranslate"><span class="pre">add_one</span></code> definition into IR. The code
 in <code class="docutils literal notranslate"><span class="pre">add_one</span></code> loops over the input and writes each result to <code class="docutils literal notranslate"><span class="pre">B</span></code>.
-<code class="docutils literal notranslate"><span class="pre">tirx.compile</span></code> compiles it for the CPU, and the NumPy assertion checks
-its output. We’ll explore the IR objects behind these constructs in the
-<a class="reference internal" href="../ir/overview.html"><span class="doc">IR Walkthrough</span></a>.</p>
+<code class="docutils literal notranslate"><span class="pre">tirx.compile</span></code> compiles it for the CPU. The compiled function accepts
+PyTorch tensors directly, and <code class="docutils literal notranslate"><span class="pre">torch.testing.assert_close</span></code> checks its
+output.</p>
+<p>The same <code class="docutils literal notranslate"><span class="pre">add_one</span></code> object lets us inspect the program’s IR. We can get
+the type of parameter <code class="docutils literal notranslate"><span class="pre">A</span></code> through <code class="docutils literal notranslate"><span class="pre">params[0].ty</span></code>, then read its symbolic
+length from <code class="docutils literal notranslate"><span class="pre">shape[0]</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_type</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ty</span>
+<span class="n">length</span> <span class="o">=</span> <span class="n">input_type</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="../ir/overview.html"><span class="doc">IR Walkthrough</span></a> explains these IR objects and how
+to work with them.</p>
 <p>We can also run this computation on an NVIDIA GPU. In addition to LLVM,
-this example needs CUDA support, an NVIDIA driver, the CUDA toolkit, and
-<code class="docutils literal notranslate"><span class="pre">cuda-bindings</span></code>. You can download
-<a class="reference download internal" download="" href="../_downloads/bc0002c469e31b2eb962932bc4c4fa9d/add_one_cuda.py"><code class="xref download docutils literal notranslate"><span class="pre">add_one_cuda.py</span></code></a> and run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">add_one_cuda.py</span></code>.
-Here’s the complete GPU program:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+it still needs CUDA support, an NVIDIA driver, the CUDA toolkit, and
+<code class="docutils literal notranslate"><span class="pre">cuda-bindings</span></code> to run.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">cuda</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
 
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">((</span><span class="n">n</span> <span class="o">+</span> <span class="mi">255</span><span class="p">)</span> <span class="o">//</span> <span class="mi">256</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,)))</span>
     <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 
 
-<span class="n">compiled</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
-<span class="n">dev</span> <span class="o">=</span> <span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
-<span class="n">compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">a</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+<span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda:0"</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+<span class="n">add_one_compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code> marks the GPU computation. Each thread handles one
-element, and the launch uses enough blocks of 256 threads to cover <code class="docutils literal notranslate"><span class="pre">n</span></code>
-elements. The <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> check skips any extra threads. <code class="docutils literal notranslate"><span class="pre">tirx.compile</span></code>
-compiles it for CUDA, and <code class="docutils literal notranslate"><span class="pre">cuda(0)</span></code> selects the GPU for the input and output
-tensors. The NumPy assertion checks the result in the same way as the CPU example.</p>
+<p><code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code> marks the GPU computation and configures blocks of 256
+threads. Each thread handles one element, so the block count is rounded
+up to cover <code class="docutils literal notranslate"><span class="pre">n</span></code> elements. The <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> check keeps extra threads in
+the last block from accessing the tensors. We compile the function for
+CUDA with <code class="docutils literal notranslate"><span class="pre">tirx.compile</span></code> and run it with input and output tensors on
+<code class="docutils literal notranslate"><span class="pre">&quot;cuda:0&quot;</span></code>, then check the result with PyTorch as in the CPU example.</p>
+<p>The complete examples are available as
+<a class="reference download internal" download="" href="../_downloads/e2cbc391e2b1601b4a944f81fd92253f/add_one_cpu.py"><code class="xref download docutils literal notranslate"><span class="pre">add_one_cpu.py</span></code></a> and
+<a class="reference download internal" download="" href="../_downloads/bc0002c469e31b2eb962932bc4c4fa9d/add_one_cuda.py"><code class="xref download docutils literal notranslate"><span class="pre">add_one_cuda.py</span></code></a>. You can run them with
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">add_one_cpu.py</span></code> and <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">add_one_cuda.py</span></code>, respectively.</p>
 </section>
 
 

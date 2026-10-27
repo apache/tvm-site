@@ -150,7 +150,7 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../get_started/example.html">Your First TIRx Program</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/quick_start.html">Quick Start</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
 <ul class="current nav bd-sidenav">
@@ -312,7 +312,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -328,6 +330,26 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#printing-ir">Printing IR</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parsing-tvmscript">Parsing TVMScript</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-a-module">Saving and Loading a Module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-ir">Inspecting IR</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#highlighting-ir-objects">Highlighting IR Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-transformation">Inspecting a Transformation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-program-variants">Building Program Variants</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#source-locations">Source Locations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#region-syntax">Region Syntax</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -339,95 +361,266 @@ document.write(`
                   
   <section id="printing-and-parsing">
 <span id="ir-construction-and-printing"></span><h1>Printing and Parsing<a class="headerlink" href="#printing-and-parsing" title="Link to this heading">#</a></h1>
-<p>In this chapter, we will introduce TVMScript and the interfaces for printing
-and parsing IR. TVMScript provides a Python-based notation for program
-definitions, while the printer and parser convert between IR objects and
-source text. These interfaces allow generated programs to be inspected,
-saved, and reconstructed. Compiler extensions can reuse them with custom
-builder namespaces and printer hooks.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> decorator parses a Python function definition into a
-<code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code>. The parser reads the definition’s source from its Python
-file; the numerical computation runs when the compiled function is called.</p>
-<p>The example program defines <code class="docutils literal notranslate"><span class="pre">bias_sigmoid</span></code> inside a Python factory:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<p>In this chapter, we will introduce printing and parsing with TVMScript,
+the Python-based syntax used to describe tensor programs in Quick Start.
+The printer turns IR objects into readable TVMScript code, and the parser
+constructs IR objects from that code. We will use these interfaces to
+inspect the add-one function, save and load programs, and examine a
+compiler pass’s changes.</p>
+<section id="printing-ir">
+<h2>Printing IR<a class="headerlink" href="#printing-ir" title="Link to this heading">#</a></h2>
+<p>In the CPU example, the TVMScript decorator <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> parses the
+function definition into a <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> IR object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">make_bias_sigmoid</span><span class="p">(</span><span class="n">channels</span><span class="o">=</span><span class="mi">130</span><span class="p">):</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">,</span> <span class="s2">"int64"</span><span class="p">)</span>
-
-    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">bias_sigmoid</span><span class="p">(</span>
-        <span class="n">X</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="n">channels</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-        <span class="n">bias</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">channels</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-        <span class="n">Y</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="n">channels</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-    <span class="p">):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">channels</span><span class="p">)):</span>
-                <span class="n">biased</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-                <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">biased</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">bias_sigmoid</span>
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<p>The factory creates <code class="docutils literal notranslate"><span class="pre">n</span></code> with <code class="docutils literal notranslate"><span class="pre">T.dynamic</span></code> before the function definition
-and reuses it in the tensor shapes and loop bound. The decorated definition
-records the loops, arithmetic, and indexing as IR.</p>
-<p>For printing and parsing, we reuse <code class="docutils literal notranslate"><span class="pre">module</span></code> from
-<a class="reference internal" href="functions_and_modules.html"><span class="doc">Functions and Modules</span></a>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">script()</span></code> method returns TVMScript source for an IR object, so
-generated loops and expressions can be inspected before lowering. The
-130-channel specialization can be printed with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">function</span> <span class="o">=</span> <span class="n">module</span><span class="p">[</span><span class="s2">"bias_sigmoid_130"</span><span class="p">]</span>
-<span class="n">source</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">script</span><span class="p">()</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">script()</span></code> method returns the function’s TVMScript source:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">script</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The printed loop structure shows the iteration over samples and channels:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>for i in range(T.int64(0), T.int64(2) * n):
-    for j in range(T.int64(0), T.int64(130)):
-        ...
+<p>The output makes the symbolic dimension and constant’s type explicit:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># from tvm_tirx.script import tirx as T</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">[</span><span class="n">n</span><span class="p">](</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The full source includes the bias addition, sigmoid expression, and output
-store. It keeps <code class="docutils literal notranslate"><span class="pre">n</span></code> symbolic so the tensor shapes and outer loop share
-the same symbol when parsed again.</p>
-<p>Smaller objects can be inspected too. <code class="docutils literal notranslate"><span class="pre">function.params[0].ty.script()</span></code>
-prints the input tensor type. <code class="docutils literal notranslate"><span class="pre">function.show()</span></code> displays highlighted source.
-The <a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.Function.html#tvm_tirx.tirx.Function.show" title="tvm_tirx.tirx.Function.show"><code class="xref py py-meth docutils literal notranslate"><span class="pre">show()</span></code></a> reference describes line numbers and
-object annotations.
-These interfaces also work on functions produced by a compiler pass.</p>
-<p>The <a class="reference internal" href="../reference/python/script.parser.html"><span class="doc">TVMScript parser</span></a> converts source
-text back into IR through <code class="docutils literal notranslate"><span class="pre">from_source</span></code>. A printed specialization can
-therefore be reconstructed and checked before compilation:</p>
+<p>The original code declares <code class="docutils literal notranslate"><span class="pre">n</span></code> with <code class="docutils literal notranslate"><span class="pre">T.dynamic</span></code>. The printer places
+that declaration in <code class="docutils literal notranslate"><span class="pre">[n]</span></code> after the function name, so the printed
+definition includes the symbol needed by its tensor shapes and loop
+bound. <code class="docutils literal notranslate"><span class="pre">T.float32(1.0)</span></code> records the float32 constant used by the addition.
+The printed form represents the same IR as the original definition.</p>
+<p>The same method works on modules and smaller IR objects. For example,
+<code class="docutils literal notranslate"><span class="pre">add_one.params[0].ty.script()</span></code> returns <code class="docutils literal notranslate"><span class="pre">T.Tensor((n,),</span> <span class="pre">T.float32)</span></code>
+for the input tensor type.</p>
+</section>
+<section id="parsing-tvmscript">
+<span id="parsing-source"></span><h2>Parsing TVMScript<a class="headerlink" href="#parsing-tvmscript" title="Link to this heading">#</a></h2>
+<p>The <a class="reference internal" href="../reference/python/script.parser.html"><span class="doc">TVMScript parser</span></a> provides
+<code class="docutils literal notranslate"><span class="pre">from_source</span></code> to construct IR from a string containing TVMScript code.
+We can use it with the add-one definition:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_source</span>
 
+<span class="n">source_text</span> <span class="o">=</span> <span class="s2">"""</span>
+<span class="s2">from tvm_tirx.script import tirx as T</span>
+
+<span class="s2">@T.function</span>
+<span class="s2">def add_one[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):</span>
+<span class="s2">    for i in range(n):</span>
+<span class="s2">        B[i] = A[i] + T.float32(1.0)</span>
+<span class="s2">"""</span>
+<span class="n">parsed_function</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span><span class="n">source_text</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">parsed_function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">parsed_function</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Function
+from __future__ import annotations
+
+# from tvm_tirx.script import tirx as T
+
+@T.function
+def add_one[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+    for i in range(n):
+        B[i] = A[i] + T.float32(1.0)
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">parsed_function</span></code> is a <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> containing the parameter
+variables, loop, and tensor store. It can be inspected or compiled
+through the same interfaces as <code class="docutils literal notranslate"><span class="pre">add_one</span></code>.</p>
+<p>The import inside <code class="docutils literal notranslate"><span class="pre">source_text</span></code> tells the parser what <code class="docutils literal notranslate"><span class="pre">T</span></code> refers to.
+The earlier <code class="docutils literal notranslate"><span class="pre">source</span></code> returned by <code class="docutils literal notranslate"><span class="pre">add_one.script()</span></code> has this import
+commented out. In that case, <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code> supplies the existing <code class="docutils literal notranslate"><span class="pre">T</span></code>
+namespace:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
 <span class="n">restored_function</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">})</span>
-<span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">restored_function</span><span class="p">)</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">restored_function</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The default source comments out its imports, so <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code> supplies the
-<code class="docutils literal notranslate"><span class="pre">T</span></code> namespace from <code class="docutils literal notranslate"><span class="pre">tvm_tirx.script.tirx</span></code>. The result is a <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code>
-that can be inspected or passed to <code class="docutils literal notranslate"><span class="pre">tirx.compile</span></code>.</p>
-<p>A self-contained source file needs its imports. With
-<code class="docutils literal notranslate"><span class="pre">ir.comment_imports=False</span></code>, the <a class="reference internal" href="../reference/python/script.printer.html"><span class="doc">printer</span></a>
-includes them in the generated source. The helper below saves and reloads a
-whole module with those imports:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">save_program</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
-    <span class="n">source</span> <span class="o">=</span> <span class="n">program</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">extra_config</span><span class="o">=</span><span class="p">{</span><span class="s2">"ir.comment_imports"</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
-    <span class="n">output_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-    <span class="n">restored</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span><span class="n">output_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
-    <span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">restored</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">restored</span>
+<p>The printed <code class="docutils literal notranslate"><span class="pre">[n]</span></code> declares the symbolic dimension, so it needs no
+external binding.</p>
+</section>
+<section id="saving-and-loading-a-module">
+<h2>Saving and Loading a Module<a class="headerlink" href="#saving-and-loading-a-module" title="Link to this heading">#</a></h2>
+<p>An IR module can be saved as TVMScript for later inspection or reuse.
+We can store the CPU function in a module and write its source to a file.
+To let that file supply its own namespaces when parsed, we include the
+imports with <code class="docutils literal notranslate"><span class="pre">ir.comment_imports=False</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">module</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">"add_one"</span><span class="p">:</span> <span class="n">add_one</span><span class="p">})</span>
+<span class="n">module_source</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">extra_config</span><span class="o">=</span><span class="p">{</span><span class="s2">"ir.comment_imports"</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"add_one_module.py"</span><span class="p">)</span>
+<span class="n">output_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">module_source</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">output_path</span></code> is a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code>. The saved file contains the module’s
-TVMScript definition and its imports, so <code class="docutils literal notranslate"><span class="pre">from_source</span></code> can reconstruct the
-module from that file. The structural check verifies that the reconstructed
-module has the same IR structure as the original. The returned module can
-then be inspected, transformed, or compiled with <code class="docutils literal notranslate"><span class="pre">tirx.compile</span></code>.</p>
+<p>We can read the saved source and reconstruct the module:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">restored_module</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span><span class="n">output_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">restored_module</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The imports in the file supply the namespaces needed by the parser, so
+this call needs no <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>. <code class="docutils literal notranslate"><span class="pre">restored_module</span></code> is an <code class="docutils literal notranslate"><span class="pre">ir.IRModule</span></code>
+with the same function definitions as <code class="docutils literal notranslate"><span class="pre">module</span></code>.</p>
+</section>
+<section id="inspecting-ir">
+<h2>Inspecting IR<a class="headerlink" href="#inspecting-ir" title="Link to this heading">#</a></h2>
+<p>The printer can also help us locate a selected computation in the source
+or see how a compiler pass changes the program.</p>
+<section id="highlighting-ir-objects">
+<span id="highlighting-nodes"></span><h3>Highlighting IR Objects<a class="headerlink" href="#highlighting-ir-objects" title="Link to this heading">#</a></h3>
+<p>The function’s body lets us reach the addition in <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>.
+To find this expression in the printed program, we can ask the printer to
+underline it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">addition</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">value</span>
+<span class="n">marked_source</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">obj_to_underline</span><span class="o">=</span><span class="p">[</span><span class="n">addition</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">marked_source</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The marked lines include:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>B[i] = A[i] + T.float32(1.0)
+       ^^^^^^^^^^^^^^^^^^^^^
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">obj_to_underline</span></code> selects the IR objects to mark. For a diagnostic,
+<code class="docutils literal notranslate"><span class="pre">print_line_numbers=True</span></code> adds line numbers, <code class="docutils literal notranslate"><span class="pre">obj_to_annotate</span></code> can
+attach messages to selected objects, and <code class="docutils literal notranslate"><span class="pre">num_context_lines</span></code> limits the
+surrounding source.</p>
+<p>For interactive inspection,
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.Function.html#tvm_tirx.tirx.Function.show" title="tvm_tirx.tirx.Function.show"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_one.show()</span></code></a> displays highlighted
+source directly and accepts the same options.</p>
+</section>
+<section id="inspecting-a-transformation">
+<h3>Inspecting a Transformation<a class="headerlink" href="#inspecting-a-transformation" title="Link to this heading">#</a></h3>
+<p>The printer also helps us check what a compiler pass changes. We can
+extend the CPU example with a bounds check inside the loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">guarded_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The loop already guarantees <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>, so this extra branch is redundant.
+The <code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code> pass can remove it. We can print the module before
+and after applying that pass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
+
+<span class="n">before_simplify</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">"guarded_add_one"</span><span class="p">:</span> <span class="n">guarded_add_one</span><span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">before_simplify</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+<span class="n">after_simplify</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">StmtSimplify</span><span class="p">()(</span><span class="n">before_simplify</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">after_simplify</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The second output contains the simplified loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="building-program-variants">
+<h2>Building Program Variants<a class="headerlink" href="#building-program-variants" title="Link to this heading">#</a></h2>
+<p>For functions that differ only in a constant, <code class="docutils literal notranslate"><span class="pre">from_source</span></code> can parse
+the same template with different <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>. This template replaces
+the add-one constant with <code class="docutils literal notranslate"><span class="pre">increment</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variant_source</span> <span class="o">=</span> <span class="s2">"""</span>
+<span class="s2">@T.function</span>
+<span class="s2">def add_constant[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):</span>
+<span class="s2">    for i in range(n):</span>
+<span class="s2">        B[i] = A[i] + increment</span>
+<span class="s2">"""</span>
+</pre></div>
+</div>
+<p>The same text can produce versions that add one or two:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_variant</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span>
+    <span class="n">variant_source</span><span class="p">,</span> <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="s2">"increment"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="n">add_two_variant</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span>
+    <span class="n">variant_source</span><span class="p">,</span> <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="s2">"increment"</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">add_two_variant</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The parser turns the <code class="docutils literal notranslate"><span class="pre">increment</span></code> value supplied through <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>
+into a constant. The addition in <code class="docutils literal notranslate"><span class="pre">add_two_variant</span></code> is therefore
+<code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">T.float32(2.0)</span></code>; both functions still take only <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>
+as parameters.</p>
+<section id="source-locations">
+<h3>Source Locations<a class="headerlink" href="#source-locations" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">filename</span></code> argument labels generated source in parser diagnostics.
+The following example removes the required type annotation from <code class="docutils literal notranslate"><span class="pre">A</span></code>
+in the template:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">invalid_source</span> <span class="o">=</span> <span class="n">variant_source</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"A: T.Tensor((n,), T.float32)"</span><span class="p">,</span> <span class="s2">"A"</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">from_source</span><span class="p">(</span>
+        <span class="n">invalid_source</span><span class="p">,</span>
+        <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="s2">"increment"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+        <span class="n">filename</span><span class="o">=</span><span class="s2">"generated_add_constant.py"</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Parameter 'A' requires an annotation (generated_add_constant.py, line 3)
+</pre></div>
+</div>
+<p>The program comes from <code class="docutils literal notranslate"><span class="pre">invalid_source</span></code>; <code class="docutils literal notranslate"><span class="pre">filename</span></code> supplies the
+name shown in the message. Successfully parsed
+nodes also record their positions through the
+<a class="reference internal" href="types_and_expressions.html#user-ir-source-locations"><span class="std std-ref">source-location fields</span></a> introduced earlier.</p>
+</section>
+</section>
+<section id="region-syntax">
+<span id="tvmscript-region-syntax"></span><h2>Region Syntax<a class="headerlink" href="#region-syntax" title="Link to this heading">#</a></h2>
+<p>The parser also determines which statements belong to a region. In the
+GPU example, TVMScript recognizes <code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code> as a region
+construct. Its standalone form starts the device region:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">((</span><span class="n">n</span> <span class="o">+</span> <span class="mi">255</span><span class="p">)</span> <span class="o">//</span> <span class="mi">256</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,)))</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>For this form, TVMScript takes all following statements in the same
+enclosing block as the region’s body. The enclosing block here is the
+function body: the region extends from <code class="docutils literal notranslate"><span class="pre">T.device_entry(...)</span></code> to the
+end of the function. It contains the assignment to <code class="docutils literal notranslate"><span class="pre">i</span></code> and the entire
+<code class="docutils literal notranslate"><span class="pre">if</span></code> branch, even though those statements have the same indentation
+as <code class="docutils literal notranslate"><span class="pre">T.device_entry(...)</span></code>.</p>
+<p>An explicit <code class="docutils literal notranslate"><span class="pre">with</span></code> block shows the same region through indentation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">((</span><span class="n">n</span> <span class="o">+</span> <span class="mi">255</span><span class="p">)</span> <span class="o">//</span> <span class="mi">256</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,))):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Both forms produce the same <code class="docutils literal notranslate"><span class="pre">ir.RegionStmt</span></code>. The <a class="reference internal" href="statements.html"><span class="doc">Statements</span></a>
+chapter explains the IR structure inside that region.</p>
+</section>
 </section>
 
 
@@ -465,6 +658,33 @@ then be inspected, transformed, or compiled with <code class="docutils literal n
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#printing-ir">Printing IR</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parsing-tvmscript">Parsing TVMScript</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-a-module">Saving and Loading a Module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-ir">Inspecting IR</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#highlighting-ir-objects">Highlighting IR Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-transformation">Inspecting a Transformation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-program-variants">Building Program Variants</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#source-locations">Source Locations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#region-syntax">Region Syntax</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
