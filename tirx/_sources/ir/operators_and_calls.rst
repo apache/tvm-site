@@ -134,7 +134,7 @@ both calls produce an int32 coordinate:
 A call's result can be an operand in a larger expression. In the GPU
 example, two calls contribute to the element index ``i``:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
+.. literalinclude:: ../get_started/examples/add_one_cuda.py
    :language: python
    :start-at:     i = T.cuda.block_idx
    :end-at:     i = T.cuda.block_idx

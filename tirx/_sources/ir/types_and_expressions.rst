@@ -74,7 +74,7 @@ In the program's tensor annotations, ``T.float32`` is an
 
 The program declares its dynamic length as:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
    :start-at: from tvm_tirx.script import tirx as T
    :end-at: n = T.dynamic
@@ -120,7 +120,7 @@ the type of each element.
 
 The program declares its input and output as:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
    :start-at: def add_one(
    :end-at: def add_one(
@@ -306,7 +306,7 @@ four-lane expression ``vector_plus_one``.
 The GPU example combines multiplication, addition, and comparison to
 compute and check each thread's element index:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
+.. literalinclude:: ../get_started/examples/add_one_cuda.py
    :language: python
    :start-at:     i = T.cuda.block_idx
    :end-at:         B[i] = A[i] + 1
@@ -447,7 +447,7 @@ and range.
 
 The parameter ``A`` is declared on this line of the CPU program:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
    :start-at: def add_one(
    :end-at: def add_one(

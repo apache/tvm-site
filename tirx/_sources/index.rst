@@ -15,22 +15,8 @@
     specific language governing permissions and limitations
     under the License.
 
-Apache TVM TIRx Documentation
-=============================
-
-Welcome to the documentation for TVM TIRx. You can get started by reading the
-Get Started section, then reading through the other sections.
-
-Installation
-------------
-
-To try out TVM TIRx, install it via pip or uv:
-
-.. code-block:: bash
-
-   pip install --upgrade --force-reinstall apache-tvm-tirx
-   # add the cuda-bindings dependency:
-   # pip install --upgrade --force-reinstall "apache-tvm-tirx[cuda]"
+tvm-tirx
+========
 
 Table of Contents
 -----------------

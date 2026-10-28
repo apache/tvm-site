@@ -89,7 +89,7 @@ stored in a ``SeqStmt``.
 
 The CPU example writes one output element in each loop iteration:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
    :start-at:     for i in range(n):
    :end-at:         B[i] = A[i] + 1
@@ -174,7 +174,7 @@ which body runs.
 
 The CPU example visits every element with a loop:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+.. literalinclude:: ../get_started/examples/add_one_cpu.py
    :language: python
    :start-at:     for i in range(n):
    :end-at:         B[i] = A[i] + 1
@@ -216,7 +216,7 @@ The GPU example distributes this work across threads. ``T.device_entry``
 introduces the GPU computation. Each thread computes an index ``i`` and
 checks whether it has an element to process:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
+.. literalinclude:: ../get_started/examples/add_one_cuda.py
    :language: python
    :start-at:     T.device_entry(
    :end-at:         B[i] = A[i] + 1
