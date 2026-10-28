@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Run code when the program or library that holds it loads, as a C++ `TVM_FFI_STATIC_INIT_BLOCK` does. The body is the body of a function that returns `Result&#60;()&#62;`: it registers what the library defines, such as global functions, and stops at its first error, which `?` returns. A body whose statements all end in `;` returns `Ok(())`; one that ends in an expression returns it, a `Result&#60;()&#62;`."><title>static_init_block in tvm_ffi - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="tvm_ffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.1 (4eb161250 2025-03-15)" data-channel="1.85.1" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc macro"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../tvm_ffi/index.html">tvm_ffi</a><span class="version">0.1.0-alpha.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="index.html">tvm_ffi</a></span><h1>Macro <span class="macro">static_init_block</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/tvm_ffi/static_init.rs.html#78-107">Source</a> </span></div><pre class="rust item-decl"><code>macro_rules! static_init_block {
+    ($($body:tt)*) =&gt; { ... };
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Run code when the program or library that holds it loads, as a C++
+<code>TVM_FFI_STATIC_INIT_BLOCK</code> does. The body is the body of a function that returns
+<a href="error/type.Result.html" title="type tvm_ffi::error::Result"><code>Result&lt;()&gt;</code></a>: it registers what the library defines, such as global functions,
+and stops at its first error, which <code>?</code> returns. A body whose statements all end in <code>;</code> returns
+<code>Ok(())</code>; one that ends in an expression returns it, a <code>Result&lt;()&gt;</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>tvm_ffi::{Function, <span class="prelude-ty">Result</span>};
+
+<span class="kw">fn </span>add_one(x: i64) -&gt; <span class="prelude-ty">Result</span>&lt;i64&gt; {
+    <span class="prelude-val">Ok</span>(x + <span class="number">1</span>)
+}
+
+<span class="macro">tvm_ffi::static_init_block!</span> {
+    Function::register_global_typed(<span class="string">"my_ext.add_one"</span>, add_one, <span class="string">"Add one to an integer."</span>)<span class="question-mark">?</span>;
+}
+
+<span class="comment">// Registered when the program loaded.
+</span><span class="kw">let </span>add_one = Function::get_global(<span class="string">"my_ext.add_one"</span>)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(i64::try_from(add_one.call_tuple((<span class="number">1i64</span>,))<span class="question-mark">?</span>)<span class="question-mark">?</span>, <span class="number">2</span>);</code></pre></div>
+<p>A block runs when its program or library loads: it adds a constructor, which the loader runs,
+and the first constructor runs every block of the program or library, in the order of their
+modules and lines. Python sees what the blocks of a library registered once it loads the
+library, by any means, and the library stays loaded for the process, as the registrations keep
+its code. An error cannot reach a caller when the library loads: it is printed, and
+<a href="static_init/fn.run_static_init_blocks.html" title="fn tvm_ffi::static_init::run_static_init_blocks"><code>run_static_init_blocks</code></a> reports it again. Where the loader
+does not run the constructor, call <a href="static_init/fn.run_static_init_blocks.html" title="fn tvm_ffi::static_init::run_static_init_blocks"><code>run_static_init_blocks</code></a>
+first. A crate that a library depends on but never names is not linked into it, nor are its
+blocks: name it, as <code>use my_crate as _;</code> does.</p>
+<p>A block runs once per process. Every library built on the crate links its own copy of the
+crates it uses, so a block of a crate that several libraries link is in each of them; the first
+library that runs it registers what it defines, and the others skip it. A block of another
+version of the crate, or whose text differs, is another block, and registering what it defines
+again is an error. A change to the body of a function the block calls does not make another
+block: rebuild every library that links a crate after changing it.</p>
+</div></details></section></div></main></body></html>

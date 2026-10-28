@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CALL_EFFECT_KIND","FIXED_RETURN_TYPE"]};

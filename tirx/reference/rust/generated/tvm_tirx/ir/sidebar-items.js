@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["attrs","base","dtype","expr","function","global_info","location","module","op","op_def","prim","stmt","transform","type","type_def","unique_name_supply"]};

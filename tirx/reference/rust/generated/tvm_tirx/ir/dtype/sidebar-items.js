@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["bfloat","bool","float","int","uint","void","with_lanes"]};

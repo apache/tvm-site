@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["cpu_has_feature","get_cpu_archlist","get_cpu_features","get_default_target_triple","get_host_cpu_features","get_host_cpu_name","get_intrinsic_name","get_process_triple","get_system_cpu","get_system_triple","get_system_x86_vendor","get_targets","get_vector_width","is_valid_cpu","lookup_intrinsic_id","target_enabled","version_major"]};

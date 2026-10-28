@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["as_tensor_region","configure_tensor_instruction"],"struct":["ScopeAttrs","ScopeAttrsObj","TrnAttrs","TrnAttrsObj"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ATTRIBUTE_ERROR","INDEX_ERROR","INTERNAL_ERROR","KEY_ERROR","OVERFLOW_ERROR","RUNTIME_ERROR","TYPE_ERROR","VALUE_ERROR","ZERO_DIVISION_ERROR"],"struct":["Error","ErrorKind","ErrorObj"],"type":["Result"]};

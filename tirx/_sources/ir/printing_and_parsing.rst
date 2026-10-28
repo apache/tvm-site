@@ -33,7 +33,7 @@ Printing IR
 In the CPU example, the TVMScript decorator ``@T.function`` parses the
 function definition into a ``tirx.Function`` IR object:
 
-.. literalinclude:: ../get_started/examples/add_one_cpu.py
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
    :language: python
    :start-at: from tvm_tirx.script import tirx as T
    :end-at:         B[i] = A[i] + 1
@@ -300,7 +300,7 @@ The parser also determines which statements belong to a region. In the
 GPU example, TVMScript recognizes ``T.device_entry`` as a region
 construct. Its standalone form starts the device region:
 
-.. literalinclude:: ../get_started/examples/add_one_cuda.py
+.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
    :language: python
    :start-at: @T.function
    :end-at:         B[i] = A[i] + 1

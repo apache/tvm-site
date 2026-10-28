@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["array","list","map","shape","tensor"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SEqHashKind"],"fn":["get_type_attr"],"struct":["AccessPath","AccessPathObj","AccessStep","AccessStepObj","FieldFlags","FieldGetter","ObjectDef","TypeAttrColumn"],"trait":["ShallowCopy"]};

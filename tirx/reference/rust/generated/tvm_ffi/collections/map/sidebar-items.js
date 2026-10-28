@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Map","MapIter","MapObj"],"type":["MapItems","MapKeys","MapValues"]};

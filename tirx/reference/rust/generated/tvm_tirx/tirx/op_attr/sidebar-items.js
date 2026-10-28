@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["GLOBAL_SYMBOL","VECTORIZABLE"]};

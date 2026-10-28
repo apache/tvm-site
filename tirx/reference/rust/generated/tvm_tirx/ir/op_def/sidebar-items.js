@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CallEffectKind"],"mod":["op_attr","sig"],"struct":["AttrKey","OpDef","OpHandle"]};

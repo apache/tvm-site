@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["create_view","empty","enabled","get_cuda_device_count","get_cuda_free_memory","get_device_attr","num_threads"],"struct":["MemoryScope","MemoryScopeObj"]};

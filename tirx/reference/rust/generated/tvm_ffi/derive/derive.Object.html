@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="namespace to re-export derive macros Derive `ObjectCore` for an object struct whose first field is its parent."><title>Object in tvm_ffi::derive - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="tvm_ffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.1 (4eb161250 2025-03-15)" data-channel="1.85.1" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc derive"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../tvm_ffi/index.html">tvm_ffi</a><span class="version">0.1.0-alpha.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In tvm_<wbr>ffi::<wbr>derive</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">tvm_ffi</a>::<wbr><a href="index.html">derive</a></span><h1>Derive Macro <span class="derive">Object</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"></span></div><pre class="rust item-decl"><code>#[derive(Object)]
+{
+    <span class="comment">// Attributes available to this derive:</span>
+    #[type_key]
+    #[type_index]
+    #[type_final]
+    #[type_register]
+    #[type_child_slots]
+    #[type_child_slots_can_overflow]
+    #[type_s_eq_hash_kind]
+    #[type_reflection]
+    #[reflect]
+}
+</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>namespace to re-export derive macros
+Derive <code>ObjectCore</code> for an object struct whose first field is its parent.</p>
+<p><code>#[type_key = "..."]</code> names the type, and <code>#[type_index(...)]</code> gives it a
+static index. Otherwise a type defined in Rust declares <code>#[type_register]</code>:
+it is registered under its parent on first use of <code>type_index()</code>, or takes
+the index its key already has, as C++ <code>TVM_FFI_DECLARE_OBJECT_INFO</code> does.
+Without <code>#[type_register]</code>, the type binds a key its defining library,
+usually C++, has registered, and <code>type_index()</code> panics if that library is
+not loaded yet, so a binding never registers a key with the wrong child
+slots.</p>
+<p><code>#[type_final]</code>, and with <code>#[type_register]</code> <code>#[type_child_slots = N]</code> and
+<code>#[type_child_slots_can_overflow = bool]</code>, mirror C++ <code>_type_final</code>,
+<code>_type_child_slots</code> (default 0) and <code>_type_child_slots_can_overflow</code>
+(default true).</p>
+<p>With <code>#[type_register]</code>, fields marked <code>#[reflect]</code> are registered with the
+type table when the type is, as C++ <code>refl::ObjectDef&lt;T&gt;().def_ro(...)</code>
+does: a getter, a setter, the doc string and the type schema per field,
+the metadata, and the <code>__ffi_shallow_copy__</code> and <code>__ffi_type_final__</code>
+type attributes. C++ structural equality and hashing, <code>repr</code>, deep copy
+and Python then see the fields. <code>#[reflect(writable, seq_hash_ignore,  ...)]</code> adds the <a href="../tvm_ffi/reflection/struct.FieldFlags.html"><code>FieldFlags</code></a> of those names, <code>name = "..."</code> registers
+the field under another name, and <code>doc = "..."</code> sets its doc string,
+otherwise the field’s <code>///</code> doc comment. <code>#[type_s_eq_hash_kind =  "TreeNode"]</code> names the <a href="../tvm_ffi/reflection/enum.SEqHashKind.html"><code>SEqHashKind</code></a>; without it the type keeps its
+nearest reflected ancestor’s, as a C++ subclass inherits
+<code>_type_s_eq_hash_kind</code>. <code>#[type_reflection(path)]</code> names a function
+<code>fn(&amp;mut ObjectDef&lt;Self&gt;)</code> that registers the type’s methods, as C++
+<code>refl::ObjectDef&lt;T&gt;().def(...)</code> does. A type with any of these attributes
+also gets <code>ShallowCopy</code>, which shallow-copies the parent and clones every
+other field, so the parent must implement <code>ShallowCopy</code> (<code>Object</code> and
+reflected Rust types do) and the fields must be <code>Clone</code>; a reflected
+field’s type must implement <code>AnyCompatible</code>.</p>
+<p>Registrations from Rust hold one lock, so they do not race each other. The
+runtime’s type table is not locked otherwise: as for C++, a type must not
+be registered while another thread loads a library that registers types.
+Calling <code>type_index()</code> before starting such threads registers a type
+eagerly.</p>
+</div></details></section></div></main></body></html>

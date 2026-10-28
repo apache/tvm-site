@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["deduce_bound","estimate_region_lower_bound","estimate_region_strict_bound","estimate_region_upper_bound","neg_inf","pos_inf","union_lower_bound"],"struct":["IntSet","IntSetObj","IntervalSet","IntervalSetObj"]};

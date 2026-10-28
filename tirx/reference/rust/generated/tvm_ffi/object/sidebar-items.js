@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TypeIndex"],"struct":["Object","ObjectArc","ObjectIdentity","ObjectRef"],"trait":["ObjectCore","ObjectCoreWithExtraItems","ObjectRefCast","ObjectRefCore"]};

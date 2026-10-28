@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["renew_def"],"struct":["Function","FunctionObj"]};

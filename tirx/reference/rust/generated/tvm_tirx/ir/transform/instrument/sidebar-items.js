@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["pass_timing_instrument","render_pass_timing"],"struct":["BasePassInstrument","BasePassInstrumentObj","PassInstrumentHooks"],"type":["PassContextHook","PassHook"]};
