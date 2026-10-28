@@ -42,3 +42,42 @@ Functions
    validate_official_environment
    profile
    run
+
+Device annotations
+------------------
+
+``IketProfiler`` provides checkpoints and two range forms inside TVMScript:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Method
+     - Meaning
+   * - ``mark(name)``
+     - Record a named checkpoint.
+   * - ``range_push(name)`` / ``range_pop()``
+     - Bracket nested ranges in stack order.
+   * - ``range_start(name)`` / ``range_end(token)``
+     - Connect a start and end through the returned uint32 token.
+
+Capture and artifacts
+---------------------
+
+``run(workload, ...)`` replays the active Python script or module under
+the official IKET tracker and capture processes. Put GPU initialization,
+compilation, and launches inside the callable, and invoke ``run`` from
+the script's ``__main__`` block. For a separate driver, ``profile`` takes
+a replayable command such as ``[sys.executable, "profile_workload.py"]``;
+that command compiles and runs its instrumented kernels without starting
+another capture.
+
+``output_dir`` selects the published artifact directory. The ``postprocess``
+option accepts ``"json"``, ``"perfetto"``, ``"html"``, ``"all"``, or
+``"none"``. Use ``clobber=True`` to replace an existing output directory.
+The function signatures list timeout and capture-limit options.
+
+``IketProfileResult.trace_json``, ``perfetto``, and ``html`` return the
+single artifact of each requested format. For captures producing multiple
+artifacts, use ``json_traces``, ``perfetto_traces``, and ``html_reports``
+instead. The :doc:`IKET Profiling guide </cuda/iket_profiling>` contains a
+complete annotation and capture example.

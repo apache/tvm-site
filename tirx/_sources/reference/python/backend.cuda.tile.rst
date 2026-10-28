@@ -23,6 +23,20 @@ tvm_tirx.backend.cuda.tile
 
 .. currentmodule:: tvm_tirx.backend.cuda.tile
 
+The CUDA tile backend lowers explicit instructions over tensor regions.
+See :doc:`/cuda/tile_patterns` for an introduction and the
+:doc:`instruction reference <backend.cuda.tile.instructions>` for
+parameters, operand coordinates, and storage requirements. The public
+constructors are :doc:`apply and ewise <backend.cuda.script.tile>`.
+
+Instruction reference
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   backend.cuda.tile.instructions
+
 Namespaces
 ----------
 
