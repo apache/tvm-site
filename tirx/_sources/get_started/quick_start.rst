@@ -250,8 +250,8 @@ Load from C++
 
 The following C++ program loads the CPU build, ``add_one_cpu.so``, and calls
 ``add_one`` through the TVM-FFI C++ API. TIRx kernels require 64-byte aligned
-tensor data for performance, so the program allocates its tensors with
-``std::aligned_alloc``:
+tensor data for performance, so the program uses the runtime tensor allocator
+to provide the required alignment on each platform:
 
 .. literalinclude:: ../../examples/quick_start/load_cpp.cc
    :language: cpp
