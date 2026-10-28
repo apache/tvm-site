@@ -30,6 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -40,11 +41,12 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/tabs.js?v=3030b3cb"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/quick_start';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="IR Overview" href="../ir/overview.html" />
-    <link rel="prev" title="tvm-tirx" href="../index.html" />
+    <link rel="prev" title="Apache TVM TIRx Documentation" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -326,7 +328,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -342,6 +346,23 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-a-simple-add-one">Write a Simple <code class="docutils literal notranslate"><span class="pre">add_one</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compile-and-run">Compile and Run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-and-transform-the-program">Inspect and Transform the Program</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export-and-load-the-compiled-program">Export and Load the Compiled Program</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-in-python">Load in Python</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-from-c">Load from C++</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -353,18 +374,49 @@ document.write(`
                   
   <section id="quick-start">
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h1>
-<p>In this chapter, we’ll write and run a small TIRx program using TVMScript,
-which lets us describe tensor computations with Python syntax. We’ll also
-inspect the IR that TVMScript creates from the code. The examples use
-PyTorch tensors; the <a class="reference internal" href="../dev/source_build.html"><span class="doc">Build from Source</span></a> guide explains how to set up
-TIRx.</p>
-<p>Our example computes <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>, where <code class="docutils literal notranslate"><span class="pre">A</span></code> is the input tensor
-and <code class="docutils literal notranslate"><span class="pre">B</span></code> is the output. Both tensors have the same dynamic length <code class="docutils literal notranslate"><span class="pre">n</span></code>,
-so the compiled program can handle different input lengths without
-recompilation.</p>
-<p>We’ll show two versions of this program: one for the CPU and one for an
-NVIDIA GPU. We’ll first compile and run the CPU version using LLVM.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All the code in this guide is under
+<a class="reference external" href="https://github.com/apache/tvm-tirx/tree/main/examples/quick_start">examples/quick_start</a>
+in the repository.</p>
+</div>
+<p>This guide walks through a small <code class="docutils literal notranslate"><span class="pre">add_one</span></code> program that computes
+<code class="docutils literal notranslate"><span class="pre">B</span> <span class="pre">=</span> <span class="pre">A</span> <span class="pre">+</span> <span class="pre">1</span></code> on CPU and CUDA with TIRx, a minimal, open ML compiler
+foundation:</p>
+<ul class="simple">
+<li><p><strong>Programs in Python</strong>: tensor programs are written as Python functions and
+compiled directly.</p></li>
+<li><p><strong>Transparent program structure</strong>: every element of a program, from
+functions to statements and types, is accessible from Python and other
+languages, so developers and agents can inspect and transform it.</p></li>
+<li><p><strong>Built for extension</strong>: all compiler APIs are open, so developers and
+agents can quickly iterate on extensions in separate packages that link to
+TIRx dynamically, without rebuilding one monolithic bundle.</p></li>
+</ul>
+<p>This guide shows the first two in action and gives a first taste of the third.</p>
+<div class="hint admonition">
+<p class="admonition-title">Prerequisite</p>
+<ul>
+<li><p>Python 3.10 or newer</p></li>
+<li><p>PyTorch, to create and check tensors</p></li>
+<li><p>CUDA 13 or newer environment, for the CUDA example</p></li>
+<li><p>TIRx, installed with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>--force-reinstall<span class="w"> </span>apache-tvm-tirx
+<span class="c1"># add the cuda-bindings dependency:</span>
+<span class="c1"># pip install --upgrade --force-reinstall "apache-tvm-tirx[cuda]"</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<section id="write-a-simple-add-one">
+<h2>Write a Simple <code class="docutils literal notranslate"><span class="pre">add_one</span></code><a class="headerlink" href="#write-a-simple-add-one" title="Link to this heading">#</a></h2>
+<p>A TIRx program is an ordinary Python function marked with <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code>.
+Here <code class="docutils literal notranslate"><span class="pre">add_one</span></code> takes an input tensor <code class="docutils literal notranslate"><span class="pre">A</span></code> and an output tensor <code class="docutils literal notranslate"><span class="pre">B</span></code>, each
+holding <code class="docutils literal notranslate"><span class="pre">n</span></code> float32 values. We create <code class="docutils literal notranslate"><span class="pre">n</span></code> with <code class="docutils literal notranslate"><span class="pre">T.dynamic</span></code> instead of
+picking a fixed number, so the same program works for tensors of any length.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-Q1BV" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-Q1BV" name="Q1BV" role="tab" tabindex="0">CPU</button><button aria-controls="panel-0-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-0-Q1BV" class="sphinx-tabs-panel group-tab" id="panel-0-Q1BV" name="Q1BV" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
@@ -376,34 +428,9 @@ NVIDIA GPU. We’ll first compile and run the CPU version using LLVM.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-
-
-<span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"llvm"</span><span class="p">)</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-<span class="n">add_one_compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> turns the <code class="docutils literal notranslate"><span class="pre">add_one</span></code> definition into IR. The code
-in <code class="docutils literal notranslate"><span class="pre">add_one</span></code> loops over the input and writes each result to <code class="docutils literal notranslate"><span class="pre">B</span></code>.
-<code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code> compiles it for the CPU. The compiled function accepts
-PyTorch tensors directly, and <code class="docutils literal notranslate"><span class="pre">torch.testing.assert_close</span></code> checks its
-output.</p>
-<p>The same <code class="docutils literal notranslate"><span class="pre">add_one</span></code> object lets us inspect the program’s IR. We can get
-the type of parameter <code class="docutils literal notranslate"><span class="pre">A</span></code> through <code class="docutils literal notranslate"><span class="pre">params[0].ty</span></code>, then read its symbolic
-length from <code class="docutils literal notranslate"><span class="pre">shape[0]</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_type</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ty</span>
-<span class="n">length</span> <span class="o">=</span> <span class="n">input_type</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>The <a class="reference internal" href="../ir/overview.html"><span class="doc">IR Walkthrough</span></a> explains these IR objects and how
-to work with them.</p>
-<p>We can also run this computation on an NVIDIA GPU. In addition to LLVM,
-it still needs CUDA support, an NVIDIA driver, the CUDA toolkit, and
-<code class="docutils literal notranslate"><span class="pre">cuda-bindings</span></code> to run.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</div><div aria-labelledby="tab-0-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-0-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
@@ -413,30 +440,258 @@ it still needs CUDA support, an NVIDIA driver, the CUDA toolkit, and
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">((</span><span class="n">n</span> <span class="o">+</span> <span class="mi">255</span><span class="p">)</span> <span class="o">//</span> <span class="mi">256</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,)))</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
     <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-
-
-<span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda:0"</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>The CPU version is a loop that walks over all <code class="docutils literal notranslate"><span class="pre">n</span></code> elements. The CUDA
+version spreads the work across many GPU threads instead: <code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code>
+starts the GPU code and launches it in blocks of 256 threads, with enough
+blocks to cover all <code class="docutils literal notranslate"><span class="pre">n</span></code> elements. Each thread works out the element <code class="docutils literal notranslate"><span class="pre">i</span></code> it
+owns and updates only that one. The last block may have more threads than
+elements left, so the <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> check keeps those extra threads from going
+past the end of the tensors.</p>
+</section>
+<section id="compile-and-run">
+<h2>Compile and Run<a class="headerlink" href="#compile-and-run" title="Link to this heading">#</a></h2>
+<p>With the program written, we compile it for a target, <code class="docutils literal notranslate"><span class="pre">&quot;llvm&quot;</span></code> for the CPU
+or <code class="docutils literal notranslate"><span class="pre">&quot;cuda&quot;</span></code> for an NVIDIA GPU, using <code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code>. The result is a
+compiled program that we call like a function, passing PyTorch tensors
+directly, so we create the inputs with <code class="docutils literal notranslate"><span class="pre">torch</span></code> and check the output with
+<code class="docutils literal notranslate"><span class="pre">torch.testing.assert_close</span></code>:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-Q1BV" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-Q1BV" name="Q1BV" role="tab" tabindex="0">CPU</button><button aria-controls="panel-1-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-1-Q1BV" class="sphinx-tabs-panel group-tab" id="panel-1-Q1BV" name="Q1BV" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"llvm"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="n">add_one_compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code> marks the GPU computation and configures blocks of 256
-threads. Each thread handles one element, so the block count is rounded
-up to cover <code class="docutils literal notranslate"><span class="pre">n</span></code> elements. The <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> check keeps extra threads in
-the last block from accessing the tensors. We compile the function for
-CUDA with <code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code> and run it with input and output tensors on
-<code class="docutils literal notranslate"><span class="pre">&quot;cuda:0&quot;</span></code>, then check the result with PyTorch as in the CPU example.</p>
-<p>The complete examples are available as
-<a class="reference download internal" download="" href="../_downloads/e2cbc391e2b1601b4a944f81fd92253f/add_one_cpu.py"><code class="xref download docutils literal notranslate"><span class="pre">add_one_cpu.py</span></code></a> and
-<a class="reference download internal" download="" href="../_downloads/bc0002c469e31b2eb962932bc4c4fa9d/add_one_cuda.py"><code class="xref download docutils literal notranslate"><span class="pre">add_one_cuda.py</span></code></a>. You can run them with
-<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">add_one_cpu.py</span></code> and <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">add_one_cuda.py</span></code>, respectively.</p>
+</div><div aria-labelledby="tab-1-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">add_one_compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>The script prints the result, each input value plus one (the CUDA version also
+shows <code class="docutils literal notranslate"><span class="pre">device='cuda:0'</span></code>):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tensor([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])
+</pre></div>
+</div>
+</section>
+<section id="inspect-and-transform-the-program">
+<h2>Inspect and Transform the Program<a class="headerlink" href="#inspect-and-transform-the-program" title="Link to this heading">#</a></h2>
+<p>Besides compiling and running <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, we can also look inside it. The
+<code class="docutils literal notranslate"><span class="pre">add_one</span></code> returned by <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> is a tree of program elements,
+commonly called an intermediate representation (IR). Roughly, the tree for
+the CPU version looks like this:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Function
+├── params
+│   ├── Var(name="A", ty=TensorType(shape=[n], dtype=float32))
+│   └── Var(name="B", ty=TensorType(shape=[n], dtype=float32))
+└── body
+    └── For(var=i, begin=0, end=n)
+        └── body
+            └── TensorStore(dest=B, indices=[i])
+                └── value
+                    └── Add
+                        ├── a: TensorLoad(source=A, indices=[i])
+                        └── b: FloatImm(value=1.0)
+</pre></div>
+</div>
+<p>Every element is accessible from Python and other languages, so we can walk
+this tree directly in Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">params</span>       <span class="c1"># parameters are Vars</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">ty</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>           <span class="c1"># the symbolic length n, also a Var</span>
+<span class="n">loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>      <span class="c1"># for i in range(n)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>   <span class="c1"># A[i] + T.float32(1.0)</span>
+</pre></div>
+</div>
+<p>Named values in the program, such as the parameters <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>, the length
+<code class="docutils literal notranslate"><span class="pre">n</span></code>, and the loop index <code class="docutils literal notranslate"><span class="pre">i</span></code>, are variables represented by
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Var_class.html#tvm_tirx.ir.Var" title="tvm_tirx.ir.Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">Var</span></code></a> objects. Note that the constant <code class="docutils literal notranslate"><span class="pre">1</span></code> was
+converted to <code class="docutils literal notranslate"><span class="pre">T.float32(1.0)</span></code> to match the element type.</p>
+<p>These elements are minimal <a class="reference external" href="https://tvm.apache.org/ffi/">TVM-FFI</a> objects,
+which share one representation across languages. On top of them, TIRx provides
+reusable APIs to build analyses and transformations. For example, we can
+specialize <code class="docutils literal notranslate"><span class="pre">add_one</span></code> for tensors of exactly 128 elements by replacing every
+use of <code class="docutils literal notranslate"><span class="pre">n</span></code> with <code class="docutils literal notranslate"><span class="pre">128</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_specialized</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+    <span class="n">add_one</span><span class="p">,</span>
+    <span class="p">(</span><span class="n">tvm_tirx</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">add_one_specialized</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">128</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_map</span></code> walks every element of the program and calls our
+function on each <code class="docutils literal notranslate"><span class="pre">Var</span></code>, replacing it with whatever we return.
+The result, <code class="docutils literal notranslate"><span class="pre">add_one_specialized</span></code>, is a new program specialized to tensors of
+128 elements. We can compile it with <code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code> like any other
+program, while the original <code class="docutils literal notranslate"><span class="pre">add_one</span></code> stays unchanged.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../ir/overview.html"><span class="doc">IR Walkthrough</span></a> for a more in-depth introduction to the
+main IR objects and their roles in the overall program structure.</p>
+</div>
+</section>
+<section id="export-and-load-the-compiled-program">
+<h2>Export and Load the Compiled Program<a class="headerlink" href="#export-and-load-the-compiled-program" title="Link to this heading">#</a></h2>
+<p>So far, we have compiled and run <code class="docutils literal notranslate"><span class="pre">add_one</span></code> in the same Python process. In
+practice, we often want to compile a program once and run it somewhere else:
+in another process, on another machine, or inside an application that is not
+written in Python.</p>
+<p>We support this by exporting the compiled program as a shared library. Under
+the hood, <code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code> returns an <code class="docutils literal notranslate"><span class="pre">Executable</span></code>. It holds the compiled
+module, which contains the function <code class="docutils literal notranslate"><span class="pre">add_one</span></code>; calling the executable, as we
+did earlier, calls that function. The executable’s <code class="docutils literal notranslate"><span class="pre">export_library</span></code> method
+writes this module to a shared library:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Q1BV" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Q1BV" name="Q1BV" role="tab" tabindex="0">CPU</button><button aria-controls="panel-2-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-2-Q1BV" class="sphinx-tabs-panel group-tab" id="panel-2-Q1BV" name="Q1BV" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_compiled</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="s2">"./add_one_cpu.so"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-2-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_compiled</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="s2">"./add_one_cuda.so"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>The exported library is a regular TVM-FFI module, so any language or framework
+that TVM-FFI supports, such as C++, Rust, and JAX, can load and call it.
+Running it does not need the compiler, only the minimal TVM runtime libraries,
+<code class="docutils literal notranslate"><span class="pre">libtvm_runtime.so</span></code> and <code class="docutils literal notranslate"><span class="pre">libtvm_runtime_cuda.so</span></code> (for CUDA), each under
+1 MB.</p>
+<section id="load-in-python">
+<h3>Load in Python<a class="headerlink" href="#load-in-python" title="Link to this heading">#</a></h3>
+<p>Later, for example in a new Python process, <code class="docutils literal notranslate"><span class="pre">tvm_ffi.load_module</span></code> loads the
+module back. Importing <code class="docutils literal notranslate"><span class="pre">tvm_tirx</span></code> loads the runtime libraries the module
+needs. The loaded module exposes its functions by name, so we call <code class="docutils literal notranslate"><span class="pre">add_one</span></code>
+as an attribute of the module:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-3-Q1BV" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-3-Q1BV" name="Q1BV" role="tab" tabindex="0">CPU</button><button aria-controls="panel-3-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-3-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-3-Q1BV" class="sphinx-tabs-panel group-tab" id="panel-3-Q1BV" name="Q1BV" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+
+<span class="c1"># Load the runtime libraries.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span>  <span class="c1"># noqa: F401</span>
+
+<span class="n">loaded</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">"./add_one_cpu.so"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">loaded</span><span class="o">.</span><span class="n">add_one</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-3-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-3-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+
+<span class="c1"># Load the runtime libraries.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span>  <span class="c1"># noqa: F401</span>
+
+<span class="n">loaded</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">"./add_one_cuda.so"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">loaded</span><span class="o">.</span><span class="n">add_one</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+</section>
+<section id="load-from-c">
+<h3>Load from C++<a class="headerlink" href="#load-from-c" title="Link to this heading">#</a></h3>
+<p>The following C++ program loads the CPU build, <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code>, and calls
+<code class="docutils literal notranslate"><span class="pre">add_one</span></code> through the TVM-FFI C++ API. TIRx kernels require 64-byte aligned
+tensor data for performance, so the program allocates its tensors with
+<code class="docutils literal notranslate"><span class="pre">std::aligned_alloc</span></code>:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/extra/module.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/tvm_ffi.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdlib&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="p">;</span>
+
+<span class="c1">// TIRx kernels require 64-byte aligned tensor data for performance.</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">CPUAllocator</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">AllocData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">63</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">64</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">64</span><span class="p">;</span>
+<span class="w">    </span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">aligned_alloc</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span><span class="w"> </span><span class="n">bytes</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">FreeData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">free</span><span class="p">(</span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">DLDataType</span><span class="w"> </span><span class="n">f32</span><span class="p">{</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">};</span>
+<span class="w">  </span><span class="n">DLDevice</span><span class="w"> </span><span class="n">cpu</span><span class="p">{</span><span class="n">kDLCPU</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">};</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="o">::</span><span class="n">FromNDAlloc</span><span class="p">(</span><span class="n">CPUAllocator</span><span class="p">(),</span><span class="w"> </span><span class="p">{</span><span class="mi">10</span><span class="p">},</span><span class="w"> </span><span class="n">f32</span><span class="p">,</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="o">::</span><span class="n">FromNDAlloc</span><span class="p">(</span><span class="n">CPUAllocator</span><span class="p">(),</span><span class="w"> </span><span class="p">{</span><span class="mi">10</span><span class="p">},</span><span class="w"> </span><span class="n">f32</span><span class="p">,</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
+<span class="w">  </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">a_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">());</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">a_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="o">::</span><span class="n">LoadFromFile</span><span class="p">(</span><span class="s">"./add_one_cpu.so"</span><span class="p">);</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Function</span><span class="w"> </span><span class="n">add_one</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">GetFunction</span><span class="p">(</span><span class="s">"add_one"</span><span class="p">).</span><span class="n">value</span><span class="p">();</span>
+<span class="w">  </span><span class="n">add_one</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">b_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">());</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="p">;</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To build it, we link against only the runtime libraries, which
+<code class="docutils literal notranslate"><span class="pre">tvm-tirx-config</span></code> finds for us, so the program runs without the compiler.
+Run it from the directory that contains <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>g++<span class="w"> </span>-O2<span class="w"> </span>load_cpp.cc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="k">$(</span>tvm-tirx-config<span class="w"> </span>--cxxflags<span class="w"> </span>--ldflags<span class="w"> </span>--libs<span class="w"> </span>runtime<span class="k">)</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-Wl,-rpath,<span class="k">$(</span>tvm-tirx-config<span class="w"> </span>--libdir<span class="k">)</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-Wl,-rpath,<span class="k">$(</span>tvm-ffi-config<span class="w"> </span>--libdir<span class="k">)</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>load_cpp
+./load_cpp
+</pre></div>
+</div>
+<p>The same program can also be built with CMake. The <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> in
+<code class="docutils literal notranslate"><span class="pre">examples/quick_start</span></code> finds the TIRx and TVM-FFI CMake packages with
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">tvm_tirx.config</span> <span class="pre">--cmakedir</span></code> and <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">tvm_ffi.config</span>
+<span class="pre">--cmakedir</span></code>, then links <code class="docutils literal notranslate"><span class="pre">load_cpp</span></code> against <code class="docutils literal notranslate"><span class="pre">tvm_runtime::shared</span></code> and
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi::shared</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cmake<span class="w"> </span>.<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>RelWithDebInfo
+cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>--config<span class="w"> </span>RelWithDebInfo
+build/load_cpp
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<p>If compiling for CUDA fails with <code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">CUDA</span> <span class="pre">compilation</span> <span class="pre">requires</span> <span class="pre">an</span>
+<span class="pre">explicit</span> <span class="pre">backend_config</span> <span class="pre">arch</span> <span class="pre">or</span> <span class="pre">Target</span> <span class="pre">arch</span> <span class="pre">when</span> <span class="pre">no</span> <span class="pre">CUDA</span> <span class="pre">device</span> <span class="pre">is</span> <span class="pre">available</span></code>
+even though the machine has a GPU, TIRx could not find the CUDA runtime library
+<code class="docutils literal notranslate"><span class="pre">libcudart.so.13</span></code>. Install and import a CUDA 13 build of PyTorch, which ships
+this library, or install the CUDA 13 toolkit and add its <code class="docutils literal notranslate"><span class="pre">lib64</span></code> directory to
+<code class="docutils literal notranslate"><span class="pre">LD_LIBRARY_PATH</span></code>.</p>
+</section>
+<section id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../ir/overview.html"><span class="doc">IR Overview</span></a>: the IR objects in depth and how they fit together.</p></li>
+<li><p><a class="reference internal" href="../cuda/language_basics.html"><span class="doc">TIRx CUDA Programming Guide</span></a>: writing CUDA
+kernels with TIRx.</p></li>
+<li><p><a class="reference internal" href="../reference/python/index.html"><span class="doc">Python API</span></a>: the full Python API reference.</p></li>
+<li><p><a class="reference internal" href="../dev/source_build.html"><span class="doc">Build from Source</span></a>: building TIRx from source.</p></li>
+<li><p><a class="reference external" href="https://tvm.apache.org/ffi/">TVM-FFI documentation</a>: the FFI and ABI
+foundation TIRx is built upon.</p></li>
+</ul>
+</section>
 </section>
 
 
@@ -456,7 +711,7 @@ CUDA with <code class="docutils literal notranslate"><span class="pre">tvm_tirx.
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">tvm-tirx</p>
+        <p class="prev-next-title">Apache TVM TIRx Documentation</p>
       </div>
     </a>
     <a class="right-next"
@@ -474,6 +729,30 @@ CUDA with <code class="docutils literal notranslate"><span class="pre">tvm_tirx.
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-a-simple-add-one">Write a Simple <code class="docutils literal notranslate"><span class="pre">add_one</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compile-and-run">Compile and Run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-and-transform-the-program">Inspect and Transform the Program</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export-and-load-the-compiled-program">Export and Load the Compiled Program</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-in-python">Load in Python</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-from-c">Load from C++</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

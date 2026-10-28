@@ -58,7 +58,7 @@ The main fields of ``tirx.Function`` are:
 In TVMScript, ``@T.function`` produces this IR object from a function
 definition. The CPU example is defined as:
 
-.. literalinclude:: ../get_started/examples/add_one_cpu.py
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
    :language: python
    :start-at: from tvm_tirx.script import tirx as T
    :end-at:         B[i] = A[i] + 1
