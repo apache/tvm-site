@@ -877,11 +877,11 @@ finishes.
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
     a = torch.arange(64, dtype=torch.float32, device="cuda")
     b = torch.empty_like(a)
-    tirx.compile(cluster_copy, target="cuda")(a, b)
+    tvm_tirx.compile(cluster_copy, target="cuda")(a, b)
     torch.testing.assert_close(b, a)
 
 .. _cuda-tile-contract-cp-async-bulk-tensor:

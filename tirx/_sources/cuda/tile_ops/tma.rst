@@ -123,11 +123,11 @@ kernel can be compiled and checked as follows:
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
     a = torch.arange(256, dtype=torch.float32, device="cuda").reshape(8, 32)
     b = torch.empty_like(a)
-    tirx.compile(tma_add_one, target="cuda")(a, b)
+    tvm_tirx.compile(tma_add_one, target="cuda")(a, b)
     torch.testing.assert_close(b, a + 1)
 
 The :ref:`TMA instruction reference <cuda-tile-contract-cp-async-bulk-tensor>`

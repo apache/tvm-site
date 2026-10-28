@@ -166,9 +166,9 @@ On a supported GPU, we can check the product as follows:
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
-    compiled = tirx.compile(blackwell_matmul, target={"kind": "cuda", "arch": "sm_100a"})
+    compiled = tvm_tirx.compile(blackwell_matmul, target={"kind": "cuda", "arch": "sm_100a"})
     a = torch.randn((128, 64), dtype=torch.float16, device="cuda")
     b = torch.randn((64, 64), dtype=torch.float16, device="cuda")
     out = torch.empty((128, 64), dtype=torch.float32, device="cuda")

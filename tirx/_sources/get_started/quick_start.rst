@@ -39,7 +39,7 @@ NVIDIA GPU. We'll first compile and run the CPU version using LLVM.
 
 ``@T.function`` turns the ``add_one`` definition into IR. The code
 in ``add_one`` loops over the input and writes each result to ``B``.
-``tirx.compile`` compiles it for the CPU. The compiled function accepts
+``tvm_tirx.compile`` compiles it for the CPU. The compiled function accepts
 PyTorch tensors directly, and ``torch.testing.assert_close`` checks its
 output.
 
@@ -68,7 +68,7 @@ it still needs CUDA support, an NVIDIA driver, the CUDA toolkit, and
 threads. Each thread handles one element, so the block count is rounded
 up to cover ``n`` elements. The ``if i < n`` check keeps extra threads in
 the last block from accessing the tensors. We compile the function for
-CUDA with ``tirx.compile`` and run it with input and output tensors on
+CUDA with ``tvm_tirx.compile`` and run it with input and output tensors on
 ``"cuda:0"``, then check the result with PyTorch as in the CPU example.
 
 The complete examples are available as

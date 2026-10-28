@@ -88,9 +88,9 @@ We can compile the kernel and compare its result with a row shift:
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
-    compiled = tirx.compile(read_next_row, target="cuda")
+    compiled = tvm_tirx.compile(read_next_row, target="cuda")
     a = torch.arange(256, dtype=torch.float32, device="cuda").reshape(64, 4)
     b = torch.empty_like(a)
     compiled(a, b)

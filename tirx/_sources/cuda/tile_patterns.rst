@@ -98,9 +98,9 @@ We can compile and check the result:
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
-    compiled = tirx.compile(add_one_tile, target="cuda")
+    compiled = tvm_tirx.compile(add_one_tile, target="cuda")
     a = torch.arange(768, dtype=torch.float32, device="cuda").reshape(2, 32, 3, 4)
     b = torch.empty_like(a)
     compiled(a, b)

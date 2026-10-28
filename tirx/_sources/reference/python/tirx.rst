@@ -143,6 +143,9 @@ Additional Structural Visit and Mutate APIs
 Functions
 ---------
 
+Use :func:`tvm_tirx.compile` as the public entry point for building programs.
+``tvm_tirx.tirx.compile`` remains available as its implementation entry point.
+
 .. autosummary::
    :toctree: generated/
 

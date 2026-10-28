@@ -19,7 +19,7 @@
 # begin program
 import torch
 
-from tvm_tirx import tirx
+import tvm_tirx
 from tvm_tirx.script import tirx as T
 
 n = T.dynamic("n")
@@ -33,7 +33,7 @@ def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
         B[i] = A[i] + 1
 
 
-add_one_compiled = tirx.compile(add_one, target="cuda")
+add_one_compiled = tvm_tirx.compile(add_one, target="cuda")
 a = torch.arange(10, dtype=torch.float32, device="cuda:0")
 b = torch.empty(a.shape, dtype=a.dtype, device=a.device)
 add_one_compiled(a, b)

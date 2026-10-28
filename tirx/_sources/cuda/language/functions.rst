@@ -37,7 +37,7 @@ symbolic length ``n``:
 
 .. code-block:: python
 
-    from tvm_tirx import tirx
+    import tvm_tirx
     from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n")
@@ -101,7 +101,7 @@ We can compile this version and choose the increment when we call it:
 
     a = torch.arange(4, dtype=torch.float32, device="cuda")
     b = torch.empty_like(a)
-    add_scalar_compiled = tirx.compile(add_scalar, target="cuda")
+    add_scalar_compiled = tvm_tirx.compile(add_scalar, target="cuda")
     add_scalar_compiled(a, b, 0.5)
     torch.testing.assert_close(b, a + 0.5)
 
@@ -129,7 +129,7 @@ with inputs of length 100 and 200:
 
 .. code-block:: python
 
-    add_one_compiled = tirx.compile(add_one, target="cuda")
+    add_one_compiled = tvm_tirx.compile(add_one, target="cuda")
     for length in (100, 200):
         a = torch.arange(length, dtype=torch.float32, device="cuda")
         b = torch.empty_like(a)
@@ -250,7 +250,7 @@ Python file so the annotation can refer to ``N`` before specialization:
     kernel = add_one_fixed.specialize(N=256)
 
 ``kernel`` has length 256 fixed in its parameter types and body. It can be
-compiled with ``tirx.compile`` and called with its two tensor arguments;
+compiled with ``tvm_tirx.compile`` and called with its two tensor arguments;
 ``N`` was fixed during specialization. In contrast, ``@T.function`` parses
 immediately, and the symbolic ``n`` in ``add_one`` remains a runtime dimension. The
 :doc:`JIT API </reference/python/tirx.script.jit>` covers optional

@@ -76,11 +76,11 @@ We can check the result with finite float32 inputs:
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
     a = torch.linspace(-4, 4, 256, device="cuda").reshape(2, 32, 4)
     b = torch.empty_like(a)
-    compiled = tirx.compile(affine_relu, target="cuda")
+    compiled = tvm_tirx.compile(affine_relu, target="cuda")
     compiled(a, b)
     torch.testing.assert_close(b, torch.clamp_min(a * 2 + 1, 0))
 
@@ -153,7 +153,7 @@ values:
 .. code-block:: python
 
     half_result = torch.empty_like(a, dtype=torch.float16)
-    tirx.compile(to_float16, target="cuda")(a, half_result)
+    tvm_tirx.compile(to_float16, target="cuda")(a, half_result)
     torch.testing.assert_close(half_result, a.to(torch.float16))
 
 Packed conversions such as ``cvt.rn.f16x2.f32`` place two converted values

@@ -170,6 +170,13 @@ Classes
 Functions
 ---------
 
+Use :func:`compile` to build a TIRx function or module into an executable.
+
+.. autosummary::
+   :toctree: generated/
+
+   compile
+
 .. list-table::
    :header-rows: 1
    :widths: 35 65

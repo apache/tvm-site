@@ -149,9 +149,9 @@ product:
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
-    compiled = tirx.compile(warp_matmul, target="cuda")
+    compiled = tvm_tirx.compile(warp_matmul, target="cuda")
     a = torch.randn((16, 16), dtype=torch.float16, device="cuda")
     b = torch.randn((8, 16), dtype=torch.float16, device="cuda")
     out = torch.empty((16, 8), dtype=torch.float32, device="cuda")

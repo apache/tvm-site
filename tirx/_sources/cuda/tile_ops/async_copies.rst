@@ -75,11 +75,11 @@ version:
 .. code-block:: python
 
     import torch
-    from tvm_tirx import tirx
+    import tvm_tirx
 
     a = torch.arange(256, dtype=torch.float32, device="cuda").reshape(64, 4)
     b = torch.empty_like(a)
-    tirx.compile(async_read_next_row, target="cuda")(a, b)
+    tvm_tirx.compile(async_read_next_row, target="cuda")(a, b)
     torch.testing.assert_close(b, torch.roll(a, shifts=-1, dims=0))
 
 A false ``pred`` skips the copy and leaves the destination unchanged.

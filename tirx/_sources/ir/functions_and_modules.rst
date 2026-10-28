@@ -194,7 +194,7 @@ the module. The function's ``attrs["global_symbol"]`` specifies its
 exported name for code generation. Both names are ``"add_one"`` in this
 example, but they serve these separate purposes.
 
-``tirx.compile`` accepts a module as well as a standalone function. We
+``tvm_tirx.compile`` accepts a module as well as a standalone function. We
 can compile ``module`` with the same LLVM target used in Quick Start,
 then create CPU tensors and call its exported ``add_one`` function:
 
@@ -202,7 +202,9 @@ then create CPU tensors and call its exported ``add_one`` function:
 
    import torch
 
-   compiled = tirx.compile(module, target="llvm")
+   import tvm_tirx
+
+   compiled = tvm_tirx.compile(module, target="llvm")
    a = torch.arange(10, dtype=torch.float32)
    b = torch.empty(a.shape, dtype=a.dtype)
    compiled["add_one"](a, b)

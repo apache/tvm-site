@@ -32,7 +32,7 @@ For example, we can compile ``add_one`` with fast math enabled:
 
 .. code-block:: python
 
-    from tvm_tirx import tirx
+    import tvm_tirx
     from tvm_tirx.script import tirx as T
     from tvm_tirx.target import Target
 
@@ -41,7 +41,7 @@ For example, we can compile ``add_one`` with fast math enabled:
         "arch": "sm_75",
         "backend_config": {"cuda": {"nvrtc": ["--use_fast_math"]}},
     })
-    add_one_compiled = tirx.compile(add_one, target=target)
+    add_one_compiled = tvm_tirx.compile(add_one, target=target)
 
 ``arch`` selects the GPU architecture; ``sm_75`` denotes compute capability
 7.5. Set it to the architecture of the GPU that will run the program. On a
@@ -75,7 +75,7 @@ After redefining ``add_one`` with this entry, compile it again:
 
 .. code-block:: python
 
-    add_one_compiled = tirx.compile(add_one, target=target)
+    add_one_compiled = tvm_tirx.compile(add_one, target=target)
 
 Device-entry settings take precedence over target settings. Compiler argument
 lists replace the inherited list in full, so this example includes
