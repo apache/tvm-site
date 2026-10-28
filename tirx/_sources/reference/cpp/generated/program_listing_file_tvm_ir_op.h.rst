@@ -141,6 +141,9 @@ Program Listing for File op.h
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Op, Expr, OpObj);
    
     private:
+     friend class OpDef;
+     TVM_TIRX_DLL static void Expose(const ffi::String& op_name);
+   
      TVM_TIRX_DLL static void ThrowInvalidCall(const OpObj* op);
      TVM_TIRX_DLL static ffi::List<ffi::Any> GetAttrColumn(const ffi::String& attr_name);
    };
@@ -364,6 +367,7 @@ Program Listing for File op.h
      OpDef(OpDef&&) = delete;
      OpDef& operator=(OpDef&&) = delete;
      Op op() const { return op_; }
+     inline void expose() const { Op::Expose(op_->name); }
      TVM_TIRX_DLL OpDef& add_arg(const ffi::String& name, const ffi::String& doc);
      template <typename AttrsType>
      OpDef& attrs_type() {

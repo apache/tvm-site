@@ -62,9 +62,17 @@ Program Listing for File type.h
    
    class Type : public ffi::ObjectRef {
     public:
+     template <typename TypeObj>
+     static inline void Expose() {
+       Expose(TypeObj::_type_key);
+     }
+   
      TVM_TIRX_DLL static Type Missing();
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Type, ffi::ObjectRef, TypeObj);
+   
+    private:
+     TVM_TIRX_DLL static void Expose(const ffi::String& type_key);
    };
    
    class MissingTypeObj final : public TypeObj {
