@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['objecttype_0',['ObjectType',['../namespacetvm_1_1relax.html#a3911871893d8a3010512410c2dd4614a',1,'tvm::relax']]],
-  ['objecttypenode_1',['ObjectTypeNode',['../namespacetvm_1_1relax.html#a682f740dca349ae6ea46800253c23ad5',1,'tvm::relax']]]
+  ['nested_0',['nested',['../classtvm_1_1Pattern.html#a48f3a8058d8e3bb7c4a690b2421639a7',1,'tvm::Pattern::Nested'],['../classtvm_1_1PVar.html#a73a3ff821529b02029f9b4bfa0b68126',1,'tvm::PVar::Nested'],['../classtvm_1_1PVarWithCheck.html#a7340843cb4eaf3916861041928ff5862',1,'tvm::PVarWithCheck::Nested']]]
 ];

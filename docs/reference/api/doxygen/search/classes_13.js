@@ -1,9 +1,19 @@
 var searchData=
 [
-  ['uniquenamesupply_0',['UniqueNameSupply',['../classtvm_1_1UniqueNameSupply.html',1,'tvm']]],
-  ['uniquenamesupplyobj_1',['UniqueNameSupplyObj',['../classtvm_1_1UniqueNameSupplyObj.html',1,'tvm']]],
-  ['unknownloc_2',['UnknownLoc',['../classtvm_1_1UnknownLoc.html',1,'tvm']]],
-  ['unknownlocnode_3',['UnknownLocNode',['../classtvm_1_1UnknownLocNode.html',1,'tvm']]],
-  ['unorderedtuplepattern_4',['UnorderedTuplePattern',['../classtvm_1_1relax_1_1UnorderedTuplePattern.html',1,'tvm::relax']]],
-  ['unorderedtuplepatternnode_5',['UnorderedTuplePatternNode',['../classtvm_1_1relax_1_1UnorderedTuplePatternNode.html',1,'tvm::relax']]]
+  ['var_0',['Var',['../classtvm_1_1Var.html',1,'tvm']]],
+  ['varbinding_1',['VarBinding',['../classtvm_1_1relax_1_1VarBinding.html',1,'tvm::relax']]],
+  ['varbindingobj_2',['VarBindingObj',['../classtvm_1_1relax_1_1VarBindingObj.html',1,'tvm::relax']]],
+  ['varobj_3',['VarObj',['../classtvm_1_1VarObj.html',1,'tvm']]],
+  ['varpattern_4',['VarPattern',['../classtvm_1_1relax_1_1VarPattern.html',1,'tvm::relax']]],
+  ['varpatternobj_5',['VarPatternObj',['../classtvm_1_1relax_1_1VarPatternObj.html',1,'tvm::relax']]],
+  ['varusageinfo_6',['VarUsageInfo',['../structtvm_1_1relax_1_1VarUsageInfo.html',1,'tvm::relax']]],
+  ['vdevice_7',['VDevice',['../classtvm_1_1relax_1_1VDevice.html',1,'tvm::relax']]],
+  ['vdeviceobj_8',['VDeviceObj',['../classtvm_1_1relax_1_1VDeviceObj.html',1,'tvm::relax']]],
+  ['virtualmachine_9',['VirtualMachine',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html',1,'tvm::runtime::vm']]],
+  ['vmclosure_10',['VMClosure',['../classtvm_1_1runtime_1_1vm_1_1VMClosure.html',1,'tvm::runtime::vm']]],
+  ['vmclosureobj_11',['VMClosureObj',['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html',1,'tvm::runtime::vm']]],
+  ['vmexecutable_12',['VMExecutable',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html',1,'tvm::runtime::vm']]],
+  ['vmextension_13',['VMExtension',['../classtvm_1_1runtime_1_1vm_1_1VMExtension.html',1,'tvm::runtime::vm']]],
+  ['vmextensionobj_14',['VMExtensionObj',['../classtvm_1_1runtime_1_1vm_1_1VMExtensionObj.html',1,'tvm::runtime::vm']]],
+  ['vmfuncinfo_15',['VMFuncInfo',['../structtvm_1_1runtime_1_1vm_1_1VMFuncInfo.html',1,'tvm::runtime::vm']]]
 ];
