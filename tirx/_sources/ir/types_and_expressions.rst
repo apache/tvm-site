@@ -138,11 +138,18 @@ the parser represents it as a ``tirx.TensorType`` object. Its ``shape``
 field contains one dimension, ``n``, and its ``dtype`` field is
 ``ir.PrimType("float32")``:
 
+.. code-block:: python
+
+   input_type = add_one.params[0].ty
+   print(ir.format_tree(input_type))
+
+The output is:
+
 .. code-block:: text
 
-   tirx.TensorType                  T.Tensor((n,), T.float32)
-   ├── shape[0]: ir.Var              n
-   └── dtype: ir.PrimType            float32
+   TensorType
+   ├── shape[0]: n = Var(ty=int32)
+   └── dtype: PrimType(dtype=float32)
 
 The dimension ``n`` is symbolic: it is not fixed to a particular number
 when the function is compiled. Each call determines ``n`` from the length
@@ -261,13 +268,26 @@ represents the read as an ``ir.TensorLoad`` node. Its ``source`` field
 refers to ``A``, and ``indices`` contains ``i``, selecting the element
 to read:
 
+.. code-block:: python
+
+   loop = add_one.body.seq[0]            # The for loop.
+   addition = loop.body.seq[0].value     # The value written by its store.
+   element_read = addition.a
+   print(ir.format_tree(
+       element_read,
+       expand=[(ir.Expr, "ty"), "source"],
+   ))
+
+The output is:
+
 .. code-block:: text
 
-   ir.TensorLoad                    A[i]
-   ├── ty: ir.PrimType               float32
-   ├── source: ir.Var                A
-   │   └── ty: tirx.TensorType       (n,) of float32
-   └── indices[0]: ir.Var            i
+   TensorLoad(indices=[i])
+   ├── ty: PrimType(dtype=float32)
+   └── source: A = Var(ty=TensorType(shape=[n], dtype=float32))
+
+``expand`` shows the read's result type and the parameter referenced by
+``source``. The parameter's tensor type remains folded on one line.
 
 **Vector expressions.** A primitive expression can also produce a vector
 value. The earlier add-one result ``vector_plus_one`` has type
@@ -306,11 +326,17 @@ a call to a registered operator; the returned IR node is an ``ir.Call``.
 In the CPU example, ``A[i] + 1`` becomes an ``ir.prim.Add``. A binary node
 stores its left operand in ``a`` and its right operand in ``b``:
 
+.. code-block:: python
+
+   print(ir.format_tree(addition))
+
+The output is:
+
 .. code-block:: text
 
-   ir.prim.Add                  A[i] + 1
-   ├── a: ir.TensorLoad          A[i]
-   └── b: ir.FloatImm            1.0
+   Add
+   ├── a: TensorLoad(source=A, indices=[i])
+   └── b: FloatImm(value=1.0)
 
 The arithmetic constructor derives the result type from its operands.
 Since ``A[i]`` is float32, it converts the source literal ``1`` to the
@@ -320,26 +346,37 @@ These constructors also support vector operands. In ``vector_value + 1``,
 the scalar constant is broadcast to all four lanes, producing the
 four-lane expression ``vector_plus_one``.
 
-A GPU version assigns one element to each thread. The following part of
-its body combines multiplication, addition, and comparison to compute
-and check that element's index:
+A GPU version assigns one element to each thread. Its index calculation
+combines multiplication and addition, and its bounds check uses a
+comparison:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
-   :language: python
-   :start-at:     i = T.cuda.block_idx
-   :end-at:         B[i] = A[i] + 1
-   :dedent: 4
+.. code-block:: python
+
+   @T.function
+   def gpu_add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       T.device_entry(launch=T.cuda.LaunchConfig(grid=T.ceildiv(n, 256), block=256))
+       i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
+       if i < n:
+           B[i] = A[i] + 1
 
 The GPU launch uses 256 threads per block. The multiplication by 256
 becomes an ``ir.prim.Mul``, and the sum becomes an ``ir.prim.Add``.
 The condition ``i < n`` is an ``ir.prim.LT`` whose ``a`` and ``b``
 operands are the index and tensor length:
 
+.. code-block:: python
+
+   device_region = gpu_add_one.body.seq[0]
+   branch = device_region.body.seq[1]     # The if statement.
+   print(ir.format_tree(branch.condition))
+
+The output is:
+
 .. code-block:: text
 
-   ir.prim.LT                       i < n
-   ├── a: ir.Var                    i
-   └── b: ir.Var                    n
+   LT
+   ├── a: i
+   └── b: n
 
 The comparison checks whether the thread has a valid element to process.
 
@@ -388,14 +425,24 @@ inspect their types through ``ty``:
    output_type = B.ty
 
 Each parameter is a ``Var`` with its own ``name`` and ``ty`` fields.
-For ``A``, these are:
+We can expand its type to inspect the shape and element type:
+
+.. code-block:: python
+
+   print(ir.format_tree(A, expand=[(ir.Var, "ty")]))
+
+The output is:
 
 .. code-block:: text
 
-   A: ir.Var
-   ├── name: "A"
-   └── ty: tirx.TensorType           (n,) of float32
+   A = Var
+   └── ty: TensorType
+       ├── shape[0]: n = Var
+       │   └── ty: PrimType(dtype=int32)
+       └── dtype: PrimType(dtype=float32)
 
+The variable's name appears before ``= Var``. The ``ty`` edge leads to
+its tensor type, whose shape contains the integer symbol ``n``.
 TVMScript creates these parameter variables when it parses the function.
 We can also create variables directly with ``ir.Var(name, ty)``. The
 scalar add-one example in PrimType uses this constructor:
@@ -454,12 +501,21 @@ We can construct the thread-index call directly through the IR API:
 ``op`` field refers to this object, and its ``args`` array contains the
 string expression ``"x"``. Its ``ty`` is ``ir.PrimType("int32")``:
 
+.. code-block:: python
+
+   print(ir.format_tree(
+       x_call,
+       expand=[(ir.Call, "ty")],
+       hide=["attrs", "ty_args"],
+   ))
+
+The output is:
+
 .. code-block:: text
 
-   x_call: ir.Call
-   ├── op → ir.Op                   tirx.cuda.thread_idx
-   ├── args[0]: ir.StringImm         "x"
-   └── ty: ir.PrimType               int32
+   Call(op=tirx.cuda.thread_idx)
+   ├── ty: PrimType(dtype=int32)
+   └── args[0]: StringImm(value='x')
 
 The ``"x"`` argument selects the x axis. When the compiled GPU function
 runs, this call reads the current thread's x-axis coordinate within its
@@ -475,14 +531,24 @@ built-in ``prim.sigmoid`` operator:
    sigmoid_op = ir.Op.get("prim.sigmoid")
    activated_plus_one = ir.Call(sigmoid_op, [scalar_plus_one])
 
-The call's argument is now the addition expression:
+The call's argument is now the addition expression. We fold ``args`` to
+keep the arithmetic on one line and expand the call's result type:
+
+.. code-block:: python
+
+   print(ir.format_tree(
+       activated_plus_one,
+       fold=["args"],
+       expand=[(ir.Call, "ty")],
+       hide=["attrs", "ty_args"],
+   ))
+
+The output is:
 
 .. code-block:: text
 
-   activated_plus_one: ir.Call
-   ├── op → ir.Op                   prim.sigmoid
-   ├── args[0]: ir.prim.Add          scalar_value + 1
-   └── ty: ir.PrimType               float32
+   Call(op=prim.sigmoid, args=[Add(a=scalar_value, b=FloatImm(value=1.0))])
+   └── ty: PrimType(dtype=float32)
 
 ``activated_plus_one.args[0]`` refers to ``scalar_plus_one``, so sigmoid
 receives the addition's result. The expression computes

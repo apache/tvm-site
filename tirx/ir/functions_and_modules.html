@@ -398,11 +398,7 @@ and its <code class="docutils literal notranslate"><span class="pre">body</span>
 <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.BaseFunc.html#tvm_tirx.ir.BaseFunc" title="tvm_tirx.ir.BaseFunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code></a>, the common base class for
 IR function definitions. The base class provides <code class="docutils literal notranslate"><span class="pre">attrs</span></code> for named
 function properties. <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> adds the tensor program’s
-parameters, return type, and statement body:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.BaseFunc                     attrs
-└── tirx.Function               params, ret_type, body
-</pre></div>
-</div>
+parameters, return type, and statement body.</p>
 <p>The main fields of <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> are:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
@@ -430,16 +426,27 @@ parameters, return type, and statement body:</p>
 </tbody>
 </table>
 </div>
-<p>The loop has its own body containing the tensor store. These nested
-bodies give <code class="docutils literal notranslate"><span class="pre">add_one</span></code> the following structure:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>add_one: tirx.Function
-├── params[0]: ir.Var                     A
-├── params[1]: ir.Var                     B
-├── ret_type: ir.TupleType                no return value
-└── body: ir.SeqStmt
-    └── seq[0]: ir.For                    for i in range(n)
-        └── body: ir.SeqStmt
-            └── seq[0]: ir.TensorStore    B[i] = A[i] + 1
+<p>The loop has its own body containing the tensor store. We can print
+these nested bodies and expand the function’s return type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">BaseFunc</span><span class="p">,</span> <span class="s2">"ret_type"</span><span class="p">)]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Function
+├── params[0]: A = Var(ty=TensorType(shape=[n], dtype=float32))
+├── params[1]: B = Var(ty=TensorType(shape=[n], dtype=float32))
+├── ret_type: TupleType
+│   └── fields: []
+└── body: SeqStmt
+    └── seq[0]: For(begin=IntImm(value=0), end=n)
+        ├── var: i = Var(ty=int32)
+        └── body: SeqStmt
+            └── seq[0]: TensorStore(dest=B, indices=[i])
+                └── value: Add
+                    ├── a: TensorLoad(source=A, indices=[i])
+                    └── b: FloatImm(value=1.0)
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">add_one.ty</span></code> stores an <code class="docutils literal notranslate"><span class="pre">ir.FuncType</span></code> describing the function’s
@@ -514,12 +521,21 @@ and each value is a function definition whose class inherits
 <code class="docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code>. Here, that value is our <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> object,
 <code class="docutils literal notranslate"><span class="pre">ir_function</span></code>. The constructor creates a <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> named
 <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> from the string key and associates it with this function:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>module: ir.IRModule
-└── functions
-    └── key: ir.GlobalVar ("add_one") → value: tirx.Function (ir_function)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">functions</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> serves as a reference; the function body belongs to
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Map
+├── [0][0]: GlobalVar(name_hint='add_one')
+└── [0][1]: Function
+    ├── params: Array(...)
+    └── body: SeqStmt(...)
+</pre></div>
+</div>
+<p>The map displays each entry as a key/value pair: <code class="docutils literal notranslate"><span class="pre">[0][0]</span></code> is the
+global reference and <code class="docutils literal notranslate"><span class="pre">[0][1]</span></code> is its function definition. <code class="docutils literal notranslate"><span class="pre">max_depth</span></code>
+limits the display, so <code class="docutils literal notranslate"><span class="pre">...</span></code> marks fields left unexpanded. The
+<code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> serves as a reference; the function body belongs to
 the associated <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code>. We can retrieve the reference by name,
 then use it to look up the definition:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_ref</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">get_global_var</span><span class="p">(</span><span class="s2">"add_one"</span><span class="p">)</span>

@@ -489,9 +489,14 @@ the type of each element.</p>
 the parser represents it as a <code class="docutils literal notranslate"><span class="pre">tirx.TensorType</span></code> object. Its <code class="docutils literal notranslate"><span class="pre">shape</span></code>
 field contains one dimension, <code class="docutils literal notranslate"><span class="pre">n</span></code>, and its <code class="docutils literal notranslate"><span class="pre">dtype</span></code> field is
 <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tirx.TensorType                  T.Tensor((n,), T.float32)
-├── shape[0]: ir.Var              n
-└── dtype: ir.PrimType            float32
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_type</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ty</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">input_type</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TensorType
+├── shape[0]: n = Var(ty=int32)
+└── dtype: PrimType(dtype=float32)
 </pre></div>
 </div>
 <p>The dimension <code class="docutils literal notranslate"><span class="pre">n</span></code> is symbolic: it is not fixed to a particular number
@@ -618,13 +623,23 @@ The expression <code class="docutils literal notranslate"><span class="pre">A[i]
 represents the read as an <code class="docutils literal notranslate"><span class="pre">ir.TensorLoad</span></code> node. Its <code class="docutils literal notranslate"><span class="pre">source</span></code> field
 refers to <code class="docutils literal notranslate"><span class="pre">A</span></code>, and <code class="docutils literal notranslate"><span class="pre">indices</span></code> contains <code class="docutils literal notranslate"><span class="pre">i</span></code>, selecting the element
 to read:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.TensorLoad                    A[i]
-├── ty: ir.PrimType               float32
-├── source: ir.Var                A
-│   └── ty: tirx.TensorType       (n,) of float32
-└── indices[0]: ir.Var            i
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>            <span class="c1"># The for loop.</span>
+<span class="n">addition</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>     <span class="c1"># The value written by its store.</span>
+<span class="n">element_read</span> <span class="o">=</span> <span class="n">addition</span><span class="o">.</span><span class="n">a</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
+    <span class="n">element_read</span><span class="p">,</span>
+    <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">),</span> <span class="s2">"source"</span><span class="p">],</span>
+<span class="p">))</span>
 </pre></div>
 </div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TensorLoad(indices=[i])
+├── ty: PrimType(dtype=float32)
+└── source: A = Var(ty=TensorType(shape=[n], dtype=float32))
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">expand</span></code> shows the read’s result type and the parameter referenced by
+<code class="docutils literal notranslate"><span class="pre">source</span></code>. The parameter’s tensor type remains folded on one line.</p>
 <p><strong>Vector expressions.</strong> A primitive expression can also produce a vector
 value. The earlier add-one result <code class="docutils literal notranslate"><span class="pre">vector_plus_one</span></code> has type
 <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32x4&quot;)</span></code>, representing four float32 lanes within
@@ -664,9 +679,13 @@ and comparison nodes. The Python helper <code class="docutils literal notranslat
 a call to a registered operator; the returned IR node is an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code>.</p>
 <p>In the CPU example, <code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code> becomes an <code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code>. A binary node
 stores its left operand in <code class="docutils literal notranslate"><span class="pre">a</span></code> and its right operand in <code class="docutils literal notranslate"><span class="pre">b</span></code>:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.prim.Add                  A[i] + 1
-├── a: ir.TensorLoad          A[i]
-└── b: ir.FloatImm            1.0
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">addition</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add
+├── a: TensorLoad(source=A, indices=[i])
+└── b: FloatImm(value=1.0)
 </pre></div>
 </div>
 <p>The arithmetic constructor derives the result type from its operands.
@@ -675,21 +694,30 @@ float32 constant shown as <code class="docutils literal notranslate"><span class
 <p>These constructors also support vector operands. In <code class="docutils literal notranslate"><span class="pre">vector_value</span> <span class="pre">+</span> <span class="pre">1</span></code>,
 the scalar constant is broadcast to all four lanes, producing the
 four-lane expression <code class="docutils literal notranslate"><span class="pre">vector_plus_one</span></code>.</p>
-<p>A GPU version assigns one element to each thread. The following part of
-its body combines multiplication, addition, and comparison to compute
-and check that element’s index:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-    <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<p>A GPU version assigns one element to each thread. Its index calculation
+combines multiplication and addition, and its bounds check uses a
+comparison:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gpu_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>The GPU launch uses 256 threads per block. The multiplication by 256
 becomes an <code class="docutils literal notranslate"><span class="pre">ir.prim.Mul</span></code>, and the sum becomes an <code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code>.
 The condition <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> is an <code class="docutils literal notranslate"><span class="pre">ir.prim.LT</span></code> whose <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>
 operands are the index and tensor length:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.prim.LT                       i &lt; n
-├── a: ir.Var                    i
-└── b: ir.Var                    n
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device_region</span> <span class="o">=</span> <span class="n">gpu_add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">branch</span> <span class="o">=</span> <span class="n">device_region</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>     <span class="c1"># The if statement.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">branch</span><span class="o">.</span><span class="n">condition</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>LT
+├── a: i
+└── b: n
 </pre></div>
 </div>
 <p>The comparison checks whether the thread has a valid element to process.</p>
@@ -726,13 +754,21 @@ inspect their types through <code class="docutils literal notranslate"><span cla
 </pre></div>
 </div>
 <p>Each parameter is a <code class="docutils literal notranslate"><span class="pre">Var</span></code> with its own <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">ty</span></code> fields.
-For <code class="docutils literal notranslate"><span class="pre">A</span></code>, these are:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>A: ir.Var
-├── name: "A"
-└── ty: tirx.TensorType           (n,) of float32
+We can expand its type to inspect the shape and element type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">)]))</span>
 </pre></div>
 </div>
-<p>TVMScript creates these parameter variables when it parses the function.
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>A = Var
+└── ty: TensorType
+    ├── shape[0]: n = Var
+    │   └── ty: PrimType(dtype=int32)
+    └── dtype: PrimType(dtype=float32)
+</pre></div>
+</div>
+<p>The variable’s name appears before <code class="docutils literal notranslate"><span class="pre">=</span> <span class="pre">Var</span></code>. The <code class="docutils literal notranslate"><span class="pre">ty</span></code> edge leads to
+its tensor type, whose shape contains the integer symbol <code class="docutils literal notranslate"><span class="pre">n</span></code>.
+TVMScript creates these parameter variables when it parses the function.
 We can also create variables directly with <code class="docutils literal notranslate"><span class="pre">ir.Var(name,</span> <span class="pre">ty)</span></code>. The
 scalar add-one example in PrimType uses this constructor:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
@@ -778,10 +814,17 @@ We can construct the thread-index call directly through the IR API:</p>
 <p><code class="docutils literal notranslate"><span class="pre">op</span></code> is the <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> object for <code class="docutils literal notranslate"><span class="pre">tirx.cuda.thread_idx</span></code>. The call’s
 <code class="docutils literal notranslate"><span class="pre">op</span></code> field refers to this object, and its <code class="docutils literal notranslate"><span class="pre">args</span></code> array contains the
 string expression <code class="docutils literal notranslate"><span class="pre">&quot;x&quot;</span></code>. Its <code class="docutils literal notranslate"><span class="pre">ty</span></code> is <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;int32&quot;)</span></code>:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x_call: ir.Call
-├── op → ir.Op                   tirx.cuda.thread_idx
-├── args[0]: ir.StringImm         "x"
-└── ty: ir.PrimType               int32
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
+    <span class="n">x_call</span><span class="p">,</span>
+    <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">)],</span>
+    <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">],</span>
+<span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Call(op=tirx.cuda.thread_idx)
+├── ty: PrimType(dtype=int32)
+└── args[0]: StringImm(value='x')
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">&quot;x&quot;</span></code> argument selects the x axis. When the compiled GPU function
@@ -795,11 +838,19 @@ built-in <code class="docutils literal notranslate"><span class="pre">prim.sigmo
 <span class="n">activated_plus_one</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">sigmoid_op</span><span class="p">,</span> <span class="p">[</span><span class="n">scalar_plus_one</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>The call’s argument is now the addition expression:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>activated_plus_one: ir.Call
-├── op → ir.Op                   prim.sigmoid
-├── args[0]: ir.prim.Add          scalar_value + 1
-└── ty: ir.PrimType               float32
+<p>The call’s argument is now the addition expression. We fold <code class="docutils literal notranslate"><span class="pre">args</span></code> to
+keep the arithmetic on one line and expand the call’s result type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
+    <span class="n">activated_plus_one</span><span class="p">,</span>
+    <span class="n">fold</span><span class="o">=</span><span class="p">[</span><span class="s2">"args"</span><span class="p">],</span>
+    <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">)],</span>
+    <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">],</span>
+<span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Call(op=prim.sigmoid, args=[Add(a=scalar_value, b=FloatImm(value=1.0))])
+└── ty: PrimType(dtype=float32)
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">activated_plus_one.args[0]</span></code> refers to <code class="docutils literal notranslate"><span class="pre">scalar_plus_one</span></code>, so sigmoid

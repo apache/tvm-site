@@ -98,12 +98,21 @@ operator. We can construct it directly through the IR API:
 creates an expression whose ``op`` refers to that definition and whose
 ``args`` contains the axis argument. Its ``ty`` records the int32 result:
 
+.. code-block:: python
+
+   print(ir.format_tree(
+       x_call,
+       expand=[(ir.Call, "ty")],
+       hide=["attrs", "ty_args"],
+   ))
+
+The output is:
+
 .. code-block:: text
 
-   x_call: ir.Call
-   ├── op → shared ir.Op                tirx.cuda.thread_idx
-   ├── args[0]: ir.StringImm             "x"
-   └── ty: ir.PrimType                   int32
+   Call(op=tirx.cuda.thread_idx)
+   ├── ty: PrimType(dtype=int32)
+   └── args[0]: StringImm(value='x')
 
 ``op.args_info[0].name`` is the parameter name ``"axis"``;
 ``x_call.args[0]`` holds its argument value ``"x"``. The call describes
@@ -126,36 +135,56 @@ y axis with the same operator:
 
 Both ``x_call.op`` and ``y_call.op`` reference the shared ``op``. Each
 call has its own ``args`` array, containing ``"x"`` or ``"y"``, and
-both calls produce an int32 coordinate:
+both calls produce an int32 coordinate. We can check that their operator
+references identify the same object:
+
+.. code-block:: python
+
+   print(x_call.op.same_as(y_call.op))
+
+The output is:
 
 .. code-block:: text
 
-   x_call.op ──┐
-               ├──> op: ir.Op  tirx.cuda.thread_idx
-   y_call.op ──┘
+   True
 
 A call's result can be an operand in a larger expression. A kernel with
 256 threads per block can combine the block and thread coordinates to
 find the tensor element assigned to a thread:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
-   :language: python
-   :start-at:     i = T.cuda.block_idx
-   :end-at:     i = T.cuda.block_idx
-   :dedent: 4
+.. code-block:: python
+
+   n = T.dynamic("n")
+
+   @T.function
+   def gpu_add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       T.device_entry(launch=T.cuda.LaunchConfig(grid=T.ceildiv(n, 256), block=256))
+       i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
+       if i < n:
+           B[i] = A[i] + 1
 
 The block-index call produces the block coordinate, and the thread-index
 call produces the coordinate within that block. Each helper constructs
 an ``ir.Call``. The multiplication and addition use the calls' results
 as operands:
 
+.. code-block:: python
+
+   device_region = gpu_add_one.body.seq[0]
+   index_binding = device_region.body.seq[0]  # The definition of i.
+   print(ir.format_tree(index_binding.value, hide=["attrs", "ty_args"]))
+
+The output is:
+
 .. code-block:: text
 
-   ir.prim.Add
-   ├── a: ir.prim.Mul
-   │   ├── a: ir.Call                   T.cuda.block_idx("x")
-   │   └── b: ir.IntImm                 256
-   └── b: ir.Call                       T.cuda.thread_idx("x")
+   Add
+   ├── a: Mul
+   │   ├── a: Call(op=tirx.cuda.block_idx)
+   │   │   └── args[0]: StringImm(value='x')
+   │   └── b: IntImm(value=256)
+   └── b: Call(op=tirx.cuda.thread_idx)
+       └── args[0]: StringImm(value='x')
 
 Expression Arguments
 ~~~~~~~~~~~~~~~~~~~~
@@ -182,14 +211,23 @@ explicitly:
 In both forms, the call's ``op`` refers to the registered ``prim.sigmoid``
 operator, and ``args[0]`` refers to the addition expression ``scalar_plus_one``:
 
+.. code-block:: python
+
+   print(ir.format_tree(
+       activated_plus_one,
+       expand=[(ir.Call, "ty")],
+       hide=["attrs", "ty_args"],
+   ))
+
+The output is:
+
 .. code-block:: text
 
-   activated_plus_one: ir.Call
-   ├── op → shared ir.Op                prim.sigmoid
-   ├── args[0]: ir.prim.Add              scalar_value + 1
-   │   ├── a: ir.Var                    scalar_value
-   │   └── b: ir.FloatImm               1.0
-   └── ty: ir.PrimType                   float32
+   Call(op=prim.sigmoid)
+   ├── ty: PrimType(dtype=float32)
+   └── args[0]: Add
+       ├── a: scalar_value
+       └── b: FloatImm(value=1.0)
 
 When the compiled program runs, sigmoid receives the result of the
 addition. This expression therefore computes
@@ -253,15 +291,19 @@ The tensor store uses that call as its ``value`` expression:
 
 .. code-block:: python
 
-   activation_store = add_one_sigmoid.body[0].body[0]
+   activation_store = add_one_sigmoid.body.seq[0].body.seq[0]
    activation_call = activation_store.value
+   print(ir.format_tree(activation_store, hide=["attrs", "ty_args"]))
+
+The output is:
 
 .. code-block:: text
 
-   activation_store: ir.TensorStore
-   ├── dest: ir.Var                     B
-   └── value: ir.Call                   prim.sigmoid
-       └── args[0]: ir.prim.Add         A[i] + 1
+   TensorStore(dest=B, indices=[i])
+   └── value: Call(op=prim.sigmoid)
+       └── args[0]: Add
+           ├── a: TensorLoad(source=A, indices=[i])
+           └── b: FloatImm(value=1.0)
 
 When the function runs, the addition produces the sigmoid input and the
 store writes its result to ``B[i]``.
@@ -296,19 +338,24 @@ an ``ir.Evaluate`` statement inside the loop body:
 
 .. code-block:: python
 
-   memory_loop = masked_add_one.body[0]
-   write_statement = memory_loop.body[2]
+   memory_loop = masked_add_one.body.seq[0]
+   write_statement = memory_loop.body.seq[2]
    write_call = write_statement.value
+   print(ir.format_tree(
+       write_statement,
+       hide=["args", "attrs", "ty_args"],
+   ))
+
+The output is:
 
 .. code-block:: text
 
-   memory_loop.body: ir.SeqStmt
-   ├── seq[0]: ir.Bind                  indices
-   ├── seq[1]: ir.Bind                  values
-   └── seq[2]: ir.Evaluate
-       └── value: ir.Call               tirx.masked_store
-           └── ty: ir.PrimType          void
+   Evaluate
+   └── value: Call(op=tirx.masked_store)
 
+The loop body first binds ``indices`` and ``values``. Its third
+statement, ``write_statement``, evaluates the masked-store call.
+This view hides the call's arguments to focus on the ``Evaluate`` wrapper.
 Through the IR API, ``ir.Evaluate(write_call)`` constructs the
 corresponding statement. Even with a ``void`` result type, the call is
 an expression; ``Evaluate`` gives it a place in the statement sequence.

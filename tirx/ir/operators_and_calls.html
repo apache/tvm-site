@@ -459,10 +459,17 @@ operator. We can construct it directly through the IR API:</p>
 <p><code class="docutils literal notranslate"><span class="pre">ir.Op.get</span></code> retrieves the shared operator definition. <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code>
 creates an expression whose <code class="docutils literal notranslate"><span class="pre">op</span></code> refers to that definition and whose
 <code class="docutils literal notranslate"><span class="pre">args</span></code> contains the axis argument. Its <code class="docutils literal notranslate"><span class="pre">ty</span></code> records the int32 result:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x_call: ir.Call
-├── op → shared ir.Op                tirx.cuda.thread_idx
-├── args[0]: ir.StringImm             "x"
-└── ty: ir.PrimType                   int32
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
+    <span class="n">x_call</span><span class="p">,</span>
+    <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">)],</span>
+    <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">],</span>
+<span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Call(op=tirx.cuda.thread_idx)
+├── ty: PrimType(dtype=int32)
+└── args[0]: StringImm(value='x')
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">op.args_info[0].name</span></code> is the parameter name <code class="docutils literal notranslate"><span class="pre">&quot;axis&quot;</span></code>;
@@ -481,27 +488,45 @@ y axis with the same operator:</p>
 </div>
 <p>Both <code class="docutils literal notranslate"><span class="pre">x_call.op</span></code> and <code class="docutils literal notranslate"><span class="pre">y_call.op</span></code> reference the shared <code class="docutils literal notranslate"><span class="pre">op</span></code>. Each
 call has its own <code class="docutils literal notranslate"><span class="pre">args</span></code> array, containing <code class="docutils literal notranslate"><span class="pre">&quot;x&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;y&quot;</span></code>, and
-both calls produce an int32 coordinate:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x_call.op ──┐
-            ├──&gt; op: ir.Op  tirx.cuda.thread_idx
-y_call.op ──┘
+both calls produce an int32 coordinate. We can check that their operator
+references identify the same object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x_call</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">y_call</span><span class="o">.</span><span class="n">op</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>True
 </pre></div>
 </div>
 <p>A call’s result can be an operand in a larger expression. A kernel with
 256 threads per block can combine the block and thread coordinates to
 find the tensor element assigned to a thread:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gpu_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>The block-index call produces the block coordinate, and the thread-index
 call produces the coordinate within that block. Each helper constructs
 an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code>. The multiplication and addition use the calls’ results
 as operands:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.prim.Add
-├── a: ir.prim.Mul
-│   ├── a: ir.Call                   T.cuda.block_idx("x")
-│   └── b: ir.IntImm                 256
-└── b: ir.Call                       T.cuda.thread_idx("x")
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device_region</span> <span class="o">=</span> <span class="n">gpu_add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">index_binding</span> <span class="o">=</span> <span class="n">device_region</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># The definition of i.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">index_binding</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add
+├── a: Mul
+│   ├── a: Call(op=tirx.cuda.block_idx)
+│   │   └── args[0]: StringImm(value='x')
+│   └── b: IntImm(value=256)
+└── b: Call(op=tirx.cuda.thread_idx)
+    └── args[0]: StringImm(value='x')
 </pre></div>
 </div>
 <section id="expression-arguments">
@@ -523,12 +548,19 @@ explicitly:</p>
 </div>
 <p>In both forms, the call’s <code class="docutils literal notranslate"><span class="pre">op</span></code> refers to the registered <code class="docutils literal notranslate"><span class="pre">prim.sigmoid</span></code>
 operator, and <code class="docutils literal notranslate"><span class="pre">args[0]</span></code> refers to the addition expression <code class="docutils literal notranslate"><span class="pre">scalar_plus_one</span></code>:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>activated_plus_one: ir.Call
-├── op → shared ir.Op                prim.sigmoid
-├── args[0]: ir.prim.Add              scalar_value + 1
-│   ├── a: ir.Var                    scalar_value
-│   └── b: ir.FloatImm               1.0
-└── ty: ir.PrimType                   float32
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
+    <span class="n">activated_plus_one</span><span class="p">,</span>
+    <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">)],</span>
+    <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">],</span>
+<span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Call(op=prim.sigmoid)
+├── ty: PrimType(dtype=float32)
+└── args[0]: Add
+    ├── a: scalar_value
+    └── b: FloatImm(value=1.0)
 </pre></div>
 </div>
 <p>When the compiled program runs, sigmoid receives the result of the
@@ -582,14 +614,17 @@ input element after adding one:</p>
 </div>
 <p>The TVMScript helper <code class="docutils literal notranslate"><span class="pre">T.sigmoid</span></code> builds a call to <code class="docutils literal notranslate"><span class="pre">prim.sigmoid</span></code>.
 The tensor store uses that call as its <code class="docutils literal notranslate"><span class="pre">value</span></code> expression:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">activation_store</span> <span class="o">=</span> <span class="n">add_one_sigmoid</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">activation_store</span> <span class="o">=</span> <span class="n">add_one_sigmoid</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">activation_call</span> <span class="o">=</span> <span class="n">activation_store</span><span class="o">.</span><span class="n">value</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">activation_store</span><span class="p">,</span> <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>activation_store: ir.TensorStore
-├── dest: ir.Var                     B
-└── value: ir.Call                   prim.sigmoid
-    └── args[0]: ir.prim.Add         A[i] + 1
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TensorStore(dest=B, indices=[i])
+└── value: Call(op=prim.sigmoid)
+    └── args[0]: Add
+        ├── a: TensorLoad(source=A, indices=[i])
+        └── b: FloatImm(value=1.0)
 </pre></div>
 </div>
 <p>When the function runs, the addition produces the sigmoid input and the
@@ -617,20 +652,24 @@ the mask enables only the first two lanes.</p>
 <p><code class="docutils literal notranslate"><span class="pre">T.masked_store</span></code> builds a call to <code class="docutils literal notranslate"><span class="pre">tirx.masked_store</span></code>, which performs
 the write and returns <code class="docutils literal notranslate"><span class="pre">void</span></code>. The TVMScript helper places this call in
 an <code class="docutils literal notranslate"><span class="pre">ir.Evaluate</span></code> statement inside the loop body:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">memory_loop</span> <span class="o">=</span> <span class="n">masked_add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">write_statement</span> <span class="o">=</span> <span class="n">memory_loop</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">memory_loop</span> <span class="o">=</span> <span class="n">masked_add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">write_statement</span> <span class="o">=</span> <span class="n">memory_loop</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 <span class="n">write_call</span> <span class="o">=</span> <span class="n">write_statement</span><span class="o">.</span><span class="n">value</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
+    <span class="n">write_statement</span><span class="p">,</span>
+    <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"args"</span><span class="p">,</span> <span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">],</span>
+<span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>memory_loop.body: ir.SeqStmt
-├── seq[0]: ir.Bind                  indices
-├── seq[1]: ir.Bind                  values
-└── seq[2]: ir.Evaluate
-    └── value: ir.Call               tirx.masked_store
-        └── ty: ir.PrimType          void
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Evaluate
+└── value: Call(op=tirx.masked_store)
 </pre></div>
 </div>
-<p>Through the IR API, <code class="docutils literal notranslate"><span class="pre">ir.Evaluate(write_call)</span></code> constructs the
+<p>The loop body first binds <code class="docutils literal notranslate"><span class="pre">indices</span></code> and <code class="docutils literal notranslate"><span class="pre">values</span></code>. Its third
+statement, <code class="docutils literal notranslate"><span class="pre">write_statement</span></code>, evaluates the masked-store call.
+This view hides the call’s arguments to focus on the <code class="docutils literal notranslate"><span class="pre">Evaluate</span></code> wrapper.
+Through the IR API, <code class="docutils literal notranslate"><span class="pre">ir.Evaluate(write_call)</span></code> constructs the
 corresponding statement. Even with a <code class="docutils literal notranslate"><span class="pre">void</span></code> result type, the call is
 an expression; <code class="docutils literal notranslate"><span class="pre">Evaluate</span></code> gives it a place in the statement sequence.</p>
 <p>The operators’ effect attributes explain why these two calls need

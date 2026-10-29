@@ -164,6 +164,77 @@ IR nodes can also carry source locations
 ``loc`` field records where it came from in the source, so a diagnostic
 can point back to the original code.
 
+Inspecting the IR
+-----------------
+
+:py:func:`ir.format_tree <tvm_tirx.ir.format_tree>` displays an IR object's
+fields as a text tree. We can follow the GPU function's body to the
+addition in ``B[i] = A[i] + 1`` and print that expression:
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+
+   region = add_one.body.seq[0]          # The device region.
+   branch = region.body.seq[1]          # The if statement after the index binding.
+   store = branch.then_case.seq[0]      # The write to B[i].
+   addition = store.value
+   print(ir.format_tree(addition))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── a: TensorLoad(source=A, indices=[i])
+   └── b: FloatImm(value=1.0)
+
+The root is the addition. Its ``a`` field holds the tensor read, and
+its ``b`` field holds the constant. Names such as ``A`` and ``i`` refer
+to variables already defined in the function. The display uses short
+class names: ``Add``, for example, is ``ir.prim.Add``.
+
+The default view keeps common details compact and hides expression
+types. To show the type of each expression, we can expand ``ty`` for
+``ir.Expr`` objects:
+
+.. code-block:: python
+
+   print(ir.format_tree(addition, expand=[(ir.Expr, "ty")]))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── ty: PrimType(dtype=float32)
+   ├── a: TensorLoad(source=A, indices=[i])
+   │   └── ty: PrimType(dtype=float32)
+   └── b: FloatImm(value=1.0)
+       └── ty: PrimType(dtype=float32)
+
+Each ``PrimType(dtype=float32)`` describes the value produced by the
+expression above it. Field selectors can be names, such as ``"a"``, or
+``(class, field)`` pairs that target a particular class. We use a class
+selector here to override the default rule that hides ``Expr.ty``.
+
+The ``fold`` option instead puts selected fields on the same line as
+their parent:
+
+.. code-block:: python
+
+   print(ir.format_tree(addition, fold=["a", "b"]))
+
+The output is:
+
+.. code-block:: text
+
+   Add(a=TensorLoad(source=A, indices=[i]), b=FloatImm(value=1.0))
+
+We will use ``format_tree`` throughout the walkthrough to inspect the
+objects in each example. Its API reference describes the remaining
+options for expanding, folding, and hiding fields.
+
 .. _choose-a-chapter:
 
 What to Read Next

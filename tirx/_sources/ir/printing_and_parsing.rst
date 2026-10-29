@@ -297,22 +297,26 @@ The parameter's ``loc`` points back to this declaration. We can read
    line = location.start_line
    print(f"Parameter {parameter.name} is declared on line {line}.")
 
-The output is:
+For the CPU source file shown above, the output is:
 
 .. code-block:: text
 
    Parameter A is declared on line 29.
 
-``source_name.name`` also records the path to the CPU program's source
-file:
+The number follows the definition's position in its source file; it can
+change if you save the definition elsewhere.
 
-.. code-block:: text
+We can also retrieve the source filename through
+``location.source_name.name``. To inspect which fields a source location
+records without displaying its file path, we can print the location
+with ``source_name`` hidden:
 
-   parameter: ir.Var             A
-   └── loc: ir.SourceLoc
-       ├── source_name: ir.SourceName
-       │   └── name              path to the source file
-       └── start_line            line of A's declaration
+.. code-block:: python
+
+   print(ir.format_tree(location, hide=["source_name"]))
+
+The fields include ``start_line``, ``end_line``, ``start_column``, and
+``end_column``, which identify the declaration's range in the source.
 
 Source locations are also useful when parsing fails. The following
 source is missing the type annotation for parameter ``A``. We give the

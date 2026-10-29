@@ -45,12 +45,7 @@ and its ``body`` holds the loop.
 :class:`ir.BaseFunc <tvm_tirx.ir.BaseFunc>`, the common base class for
 IR function definitions. The base class provides ``attrs`` for named
 function properties. ``tirx.Function`` adds the tensor program's
-parameters, return type, and statement body:
-
-.. code-block:: text
-
-   ir.BaseFunc                     attrs
-   └── tirx.Function               params, ret_type, body
+parameters, return type, and statement body.
 
 The main fields of ``tirx.Function`` are:
 
@@ -69,19 +64,32 @@ The main fields of ``tirx.Function`` are:
    * - ``attrs``
      - An ``ir.DictAttrs`` containing named function properties.
 
-The loop has its own body containing the tensor store. These nested
-bodies give ``add_one`` the following structure:
+The loop has its own body containing the tensor store. We can print
+these nested bodies and expand the function's return type:
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+
+   print(ir.format_tree(add_one, expand=[(ir.BaseFunc, "ret_type")]))
+
+The output is:
 
 .. code-block:: text
 
-   add_one: tirx.Function
-   ├── params[0]: ir.Var                     A
-   ├── params[1]: ir.Var                     B
-   ├── ret_type: ir.TupleType                no return value
-   └── body: ir.SeqStmt
-       └── seq[0]: ir.For                    for i in range(n)
-           └── body: ir.SeqStmt
-               └── seq[0]: ir.TensorStore    B[i] = A[i] + 1
+   Function
+   ├── params[0]: A = Var(ty=TensorType(shape=[n], dtype=float32))
+   ├── params[1]: B = Var(ty=TensorType(shape=[n], dtype=float32))
+   ├── ret_type: TupleType
+   │   └── fields: []
+   └── body: SeqStmt
+       └── seq[0]: For(begin=IntImm(value=0), end=n)
+           ├── var: i = Var(ty=int32)
+           └── body: SeqStmt
+               └── seq[0]: TensorStore(dest=B, indices=[i])
+                   └── value: Add
+                       ├── a: TensorLoad(source=A, indices=[i])
+                       └── b: FloatImm(value=1.0)
 
 ``add_one.ty`` stores an ``ir.FuncType`` describing the function's
 signature: its parameter types and return type. We can inspect these
@@ -172,13 +180,24 @@ and each value is a function definition whose class inherits
 ``ir_function``. The constructor creates a ``GlobalVar`` named
 ``"add_one"`` from the string key and associates it with this function:
 
+.. code-block:: python
+
+   print(ir.format_tree(module.functions, max_depth=3))
+
+The output is:
+
 .. code-block:: text
 
-   module: ir.IRModule
-   └── functions
-       └── key: ir.GlobalVar ("add_one") → value: tirx.Function (ir_function)
+   Map
+   ├── [0][0]: GlobalVar(name_hint='add_one')
+   └── [0][1]: Function
+       ├── params: Array(...)
+       └── body: SeqStmt(...)
 
-The ``GlobalVar`` serves as a reference; the function body belongs to
+The map displays each entry as a key/value pair: ``[0][0]`` is the
+global reference and ``[0][1]`` is its function definition. ``max_depth``
+limits the display, so ``...`` marks fields left unexpanded. The
+``GlobalVar`` serves as a reference; the function body belongs to
 the associated ``tirx.Function``. We can retrieve the reference by name,
 then use it to look up the definition:
 

@@ -105,13 +105,34 @@ The loop in ``add_one`` writes one output element in each iteration:
 
 The indented assignment ``B[i] = A[i] + 1`` becomes an
 ``ir.TensorStore`` statement describing a write to a tensor element.
-The loop body is a ``SeqStmt`` containing this statement. We can also
-construct this body through the IR API, using the parameter variables
-from ``add_one``:
+The loop body is a ``SeqStmt`` containing this statement. We can retrieve
+it from the parsed function and print its structure:
 
 .. code-block:: python
 
    from tvm_tirx import ir
+
+   parsed_loop = add_one.body.seq[0]  # The for statement.
+   body = parsed_loop.body
+   print(ir.format_tree(body))
+
+The output is:
+
+.. code-block:: text
+
+   SeqStmt
+   └── seq[0]: TensorStore(dest=B, indices=[i])
+       └── value: Add
+           ├── a: TensorLoad(source=A, indices=[i])
+           └── b: FloatImm(value=1.0)
+
+When the compiled function runs, the store computes ``A[i] + 1`` and
+writes the result to element ``i`` of ``B``. We can retrieve this
+statement with ``body[0]``, which is shorthand for ``body.seq[0]``.
+
+We can also construct this body directly through the IR API:
+
+.. code-block:: python
 
    A, B = add_one.params
    n = A.ty.shape[0]
@@ -122,34 +143,50 @@ from ``add_one``:
 ``ir.TensorStore`` takes the destination tensor ``B``, the index list
 ``[i]``, and the value expression ``A[i] + 1``. These arguments populate
 its ``dest``, ``indices``, and ``value`` fields. ``ir.SeqStmt([store])``
-holds this store statement as its first entry:
-
-.. code-block:: text
-
-   body: ir.SeqStmt
-   └── seq[0]: ir.TensorStore                B[i] = A[i] + 1
-       ├── dest: ir.Var                     B
-       ├── indices[0]: ir.Var               i
-       └── value: ir.prim.Add                A[i] + 1
-
-When the compiled function runs, the store computes ``A[i] + 1`` and
-writes the result to element ``i`` of ``B``. We can retrieve this
-statement with ``body[0]``, which is shorthand for ``body.seq[0]``.
+puts the store in a sequence with the structure shown above.
 
 A small extension of the CPU loop names the addition's result before
 writing it to the output:
 
 .. code-block:: python
 
-   for i in range(n):
-       value = A[i] + 1
-       B[i] = value
+   @T.function
+   def add_one_bound(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       for i in range(n):
+           value = A[i] + 1
+           B[i] = value
 
 The assignment to ``value`` becomes an ``ir.Bind`` statement: its
 ``var`` field holds the variable, and its ``value`` field holds the
 addition expression. The following ``TensorStore`` uses that variable
-as the value to write. We can construct these two statements and put
-them in a sequence:
+as the value to write. We can inspect the sequence in the loop body:
+
+.. code-block:: python
+
+   bound_loop = add_one_bound.body.seq[0]
+   bound_body = bound_loop.body
+   print(ir.format_tree(bound_body))
+
+The output is:
+
+.. code-block:: text
+
+   SeqStmt
+   ├── seq[0]: Bind
+   │   ├── var: value = Var(ty=float32)
+   │   └── value: Add
+   │       ├── a: TensorLoad(source=A, indices=[i])
+   │       └── b: FloatImm(value=1.0)
+   └── seq[1]: TensorStore(dest=B, indices=[i])
+       └── value: value
+
+This prints the body parsed from ``add_one_bound``. The first statement
+binds the addition to ``value``, and the second uses that same variable
+as the value to store. When the function runs, the binding computes the
+addition before the store writes it to ``B[i]``.
+
+The IR API can also construct a sequence with a binding followed by a
+store:
 
 .. code-block:: python
 
@@ -158,17 +195,6 @@ them in a sequence:
    store_from_value = ir.TensorStore(B, [i], value)
    sequence = ir.SeqStmt([binding, store_from_value])
 
-.. code-block:: text
-
-   sequence: ir.SeqStmt
-   ├── seq[0]: ir.Bind                      value = A[i] + 1
-   │   ├── var: ir.Var                      value
-   │   └── value: ir.prim.Add               A[i] + 1
-   └── seq[1]: ir.TensorStore               B[i] = value
-       └── value → same ir.Var              value
-
-When the function runs, the binding computes the addition and defines
-``value``, then the store writes this value to ``B[i]``.
 The next section places the original single-store ``body`` inside the
 CPU loop.
 
@@ -205,18 +231,26 @@ The arguments ``0``, ``n``, and ``1`` set the ``begin``, ``end``, and
 ``step`` fields. ``ForKind.DEFAULT`` selects execution in iteration
 order. On each iteration, the loop executes the statements in ``body``:
 
+.. code-block:: python
+
+   parsed_loop = add_one.body.seq[0]     # The for statement in the CPU function.
+   print(ir.format_tree(parsed_loop))
+
+The output is:
+
 .. code-block:: text
 
-   loop: ir.For
-   ├── var: ir.Var                           i
-   ├── begin: ir.IntImm                      0
-   ├── end: ir.Var                           n
-   ├── step: ir.IntImm                       1
-   ├── kind: ir.ForKind.DEFAULT
-   └── body: ir.SeqStmt
-       └── seq[0]: ir.TensorStore            B[i] = A[i] + 1
+   For(begin=IntImm(value=0), end=n)
+   ├── var: i = Var(ty=int32)
+   └── body: SeqStmt
+       └── seq[0]: TensorStore(dest=B, indices=[i])
+           └── value: Add
+               ├── a: TensorLoad(source=A, indices=[i])
+               └── b: FloatImm(value=1.0)
 
-The end bound is exclusive, so ``i`` runs from 0 through ``n - 1``.
+The default view puts ``begin`` and ``end`` on the loop's first line;
+its unit step and sequential kind are omitted because they match the
+defaults. The end bound is exclusive, so ``i`` runs from 0 through ``n - 1``.
 Each iteration executes the store in ``body`` with that value of ``i``.
 The loop defines ``i`` for use inside ``For.body``, which is its scope.
 The ``For`` establishes this scope, and its ``SeqStmt`` body records
@@ -244,30 +278,66 @@ zero:
 TVMScript represents the branch as an ``ir.If``. Its ``condition`` is
 the boolean comparison ``A[i] > 0``. Its ``then_case`` and ``else_case``
 each hold a ``SeqStmt`` containing one store. Only the sequence selected
-by the condition runs for each element.
+by the condition runs for each element. We can retrieve the branch
+from the loop body:
+
+.. code-block:: python
+
+   relu_loop = relu.body.seq[0]
+   relu_branch = relu_loop.body.seq[0]    # The if/else statement.
+   print(ir.format_tree(relu_branch))
+
+The output is:
+
+.. code-block:: text
+
+   If
+   ├── condition: GT
+   │   ├── a: TensorLoad(source=A, indices=[i])
+   │   └── b: FloatImm(value=0.0)
+   ├── then_case: SeqStmt
+   │   └── seq[0]: TensorStore(dest=B, indices=[i])
+   │       └── value: TensorLoad(source=A, indices=[i])
+   └── else_case: SeqStmt
+       └── seq[0]: TensorStore(dest=B, indices=[i])
+           └── value: FloatImm(value=0.0)
 
 A bounds check uses the same kind of statement. A GPU version of add-one
 distributes the elements across threads, and each thread checks whether
-it has a valid element to process. These statements belong inside its
-function body:
+it has a valid element to process:
 
-.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
-   :language: python
-   :start-at:     T.device_entry(
-   :end-at:         B[i] = A[i] + 1
-   :dedent: 4
+.. code-block:: python
+
+   @T.function
+   def gpu_add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       T.device_entry(launch=T.cuda.LaunchConfig(grid=T.ceildiv(n, 256), block=256))
+       i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
+       if i < n:
+           B[i] = A[i] + 1
 
 The ``if i < n`` becomes an ``ir.If``. Its ``condition`` field holds
 the comparison, an ``ir.prim.LT`` expression. Its ``then_case`` field
 holds a ``SeqStmt`` containing the tensor store:
 
+.. code-block:: python
+
+   device_region = gpu_add_one.body.seq[0]
+   branch = device_region.body.seq[1]    # The if after the index definition.
+   print(ir.format_tree(branch))
+
+The output is:
+
 .. code-block:: text
 
-   ir.If
-   ├── condition: ir.prim.LT                 i < n
-   ├── then_case: ir.SeqStmt
-   │   └── seq[0]: ir.TensorStore            B[i] = A[i] + 1
-   └── else_case: None
+   If(else_case=None)
+   ├── condition: LT
+   │   ├── a: i
+   │   └── b: n
+   └── then_case: SeqStmt
+       └── seq[0]: TensorStore(dest=B, indices=[i])
+           └── value: Add
+               ├── a: TensorLoad(source=A, indices=[i])
+               └── b: FloatImm(value=1.0)
 
 The condition produces a boolean. When it is true, the thread executes
 the store in ``then_case``. An else branch has its own ``SeqStmt`` in
@@ -282,19 +352,33 @@ the same function body into a device region. An
 the IR. Its ``op`` identifies ``tirx.device_entry``, and its ``body`` is
 a ``SeqStmt`` containing the index definition followed by the branch:
 
+.. code-block:: python
+
+   print(ir.format_tree(
+       device_region,
+       hide=["attrs", "args", "body_params", "result_vars", "value"],
+   ))
+
+The output is:
+
 .. code-block:: text
 
-   ir.RegionStmt
-   ├── op → ir.Op                          tirx.device_entry
-   └── body: ir.SeqStmt
-       ├── seq[0]: ir.Bind                 i = ...
-       └── seq[1]: ir.If                   if i < n
-           └── then_case: ir.SeqStmt
-               └── seq[0]: ir.TensorStore  B[i] = A[i] + 1
+   RegionStmt(op=tirx.device_entry)
+   └── body: SeqStmt
+       ├── seq[0]: Bind
+       │   └── var: i = Var(ty=int32)
+       └── seq[1]: If(else_case=None)
+           ├── condition: LT
+           │   ├── a: i
+           │   └── b: n
+           └── then_case: SeqStmt
+               └── seq[0]: TensorStore(dest=B, indices=[i])
 
-The ``Bind`` defines ``i`` before the ``If`` uses it. The variable is
-available to the condition and tensor store within the region. The
-:ref:`Printing and Parsing <tvmscript-region-syntax>` chapter explains
+This view hides launch settings and value expressions to focus on the
+statements inside ``body``. The ``Bind`` defines ``i`` before the ``If``
+uses it. The variable is available to the condition and tensor store
+within the region. The :ref:`Printing and Parsing <tvmscript-region-syntax>`
+chapter explains
 the grouping rule for this syntax and the equivalent ``with`` form.
 
 While loops
@@ -321,17 +405,34 @@ TVMScript represents the loop as an ``ir.While``. Its ``condition``
 holds the comparison, and its ``body`` contains both the output store
 and the index update:
 
+.. code-block:: python
+
+   while_loop = add_one_while.body.seq[2]  # After i's allocation and initialization.
+   print(ir.format_tree(while_loop, hide=["indices"]))
+
+The output is:
+
 .. code-block:: text
 
-   ir.While
-   ├── condition: ir.prim.LT                 i < n
-   └── body: ir.SeqStmt
-       ├── seq[0]: ir.TensorStore            B[i] = A[i] + 1
-       └── seq[1]: ir.TensorStore            i += 1
+   While
+   ├── condition: LT
+   │   ├── a: TensorLoad(source=i)
+   │   └── b: n
+   └── body: SeqStmt
+       ├── seq[0]: TensorStore(dest=B)
+       │   └── value: Add
+       │       ├── a: TensorLoad(source=A)
+       │       └── b: FloatImm(value=1.0)
+       └── seq[1]: TensorStore(dest=i)
+           └── value: Add
+               ├── a: TensorLoad(source=i)
+               └── b: IntImm(value=1)
 
-The mutable scalar uses a one-element local tensor in IR. The second
-store writes its next value, which the condition reads before the next
-iteration.
+This view hides index lists to focus on the condition and the two stores.
+The mutable scalar uses a one-element local tensor in IR, so reads of
+``i`` appear as ``TensorLoad(source=i)``.
+The first store in the loop writes to ``B``; the second writes the new
+index to ``i``. The condition reads that index before the next iteration.
 
 Loop exits
 ~~~~~~~~~~
@@ -355,7 +456,28 @@ if no such element exists:
 the element is positive, the store records its index and ``break`` ends
 the loop. These statements become
 ``ir.Continue`` and ``ir.Break`` inside their enclosing loop; neither
-has operands or a nested body.
+has operands or a nested body. We can inspect the loop after the initial
+store to ``B[0]``:
+
+.. code-block:: python
+
+   search_loop = first_positive.body.seq[1]  # The for loop after B[0] = -1.
+   print(ir.format_tree(search_loop.body))
+
+The output is:
+
+.. code-block:: text
+
+   SeqStmt
+   ├── seq[0]: If(else_case=None)
+   │   ├── condition: LE
+   │   │   ├── a: TensorLoad(source=A, indices=[i])
+   │   │   └── b: IntImm(value=0)
+   │   └── then_case: SeqStmt
+   │       └── seq[0]: Continue()
+   ├── seq[1]: TensorStore(dest=B, indices=[IntImm(value=0)])
+   │   └── value: i
+   └── seq[2]: Break()
 
 Assertions and returns
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -377,12 +499,25 @@ The ``assert`` becomes an ``ir.AssertStmt``. Its ``condition`` holds
 error before the tensor read. Otherwise, execution reaches the
 ``ir.Return``, whose ``value`` is the addition expression:
 
+.. code-block:: python
+
+   print(ir.format_tree(first_plus_one.body))
+
+The output is:
+
 .. code-block:: text
 
-   first_plus_one.body: ir.SeqStmt
-   ├── seq[0]: ir.AssertStmt                 assert n > 0, ...
-   └── seq[1]: ir.Return
-       └── value: ir.prim.Add                A[0] + 1
+   SeqStmt
+   ├── seq[0]: AssertStmt
+   │   ├── condition: GT
+   │   │   ├── a: n
+   │   │   └── b: IntImm(value=0)
+   │   ├── error_kind: StringImm(value='RuntimeError')
+   │   └── message_parts[0]: StringImm(value='the input must contain at least one element')
+   └── seq[1]: Return
+       └── value: Add
+           ├── a: TensorLoad(source=A, indices=[IntImm(value=0)])
+           └── b: FloatImm(value=1.0)
 
 The return annotation ``-> T.float32`` declares the result type. For an
 input starting with ``3.5``, the function returns ``4.5`` directly to its
