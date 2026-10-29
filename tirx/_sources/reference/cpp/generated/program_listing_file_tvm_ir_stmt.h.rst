@@ -353,10 +353,12 @@ Program Listing for File stmt.h
            .def_ro("var", &ForObj::var, refl::AttachFieldFlag::SEqHashDefSimple())
            .def_ro("begin", &ForObj::begin)
            .def_ro("end", &ForObj::end)
-           .def_ro("step", &ForObj::step)
-           .def_ro("kind", &ForObj::kind)
+           // Reflection stores one typed default. Wider unit steps remain distinct.
+           .def_ro("step", &ForObj::step, refl::DefaultValue(IntImm::Int32(1)))
+           .def_ro("kind", &ForObj::kind, refl::DefaultValue(ForKind::kDefault))
            .def_ro("body", &ForObj::body)
-           .def_ro("annotations", &ForObj::annotations);
+           .def_ro("annotations", &ForObj::annotations,
+                   refl::DefaultValue(ffi::Map<ffi::String, ffi::Any>()));
      }
    
      TVM_TIRX_DLL bool HasTrivialStep() const;

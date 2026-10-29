@@ -219,6 +219,7 @@ IR helpers
    :toctree: generated/
 
    const
+   format_tree
    make_node
    assert_structural_equal
    load_json
@@ -237,3 +238,24 @@ Supporting functions
 
    ~base.register_script_printer
    ~base.register_dialect_script_method
+
+Tree Formatting Defaults
+------------------------
+
+.. data:: DEFAULT_FOLD
+
+   Tuple of field selectors to inline with their parent by default.
+
+.. data:: DEFAULT_EXPAND
+
+   Tuple of field selectors to expand explicitly by default. This is empty
+   because objects already expand unless a rule folds or hides them.
+
+.. data:: DEFAULT_HIDE
+
+   Tuple of field selectors to omit by default.
+
+.. data:: DEFAULT_FOLD_FORMATTERS
+
+   Standard folded representations, keyed by class. Callbacks take an object
+   and return single-line text.

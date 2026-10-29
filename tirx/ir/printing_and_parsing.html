@@ -357,10 +357,8 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-transformation">Inspecting a Transformation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-program-variants">Building Program Variants</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#source-locations">Source Locations</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-program-variants">Building Program Variants</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-locations">Source Locations</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#region-syntax">Region Syntax</a></li>
 </ul>
             </nav>
@@ -578,8 +576,38 @@ the add-one constant with <code class="docutils literal notranslate"><span class
 into a constant. The addition in <code class="docutils literal notranslate"><span class="pre">add_two_variant</span></code> is therefore
 <code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">T.float32(2.0)</span></code>; both functions still take only <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>
 as parameters.</p>
+</section>
 <section id="source-locations">
-<h3>Source Locations<a class="headerlink" href="#source-locations" title="Link to this heading">#</a></h3>
+<span id="user-ir-source-locations"></span><h2>Source Locations<a class="headerlink" href="#source-locations" title="Link to this heading">#</a></h2>
+<p>IR nodes can carry source locations to help diagnostics point back to
+the original code. The <code class="docutils literal notranslate"><span class="pre">loc</span></code> field stores this information, and
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.SourceLoc.html#tvm_tirx.ir.SourceLoc" title="tvm_tirx.ir.SourceLoc"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.SourceLoc</span></code></a> records the source file
+and range.</p>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">A</span></code> is declared on this line of the CPU program:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">29</span><span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+</pre></div>
+</div>
+<p>The parameter’s <code class="docutils literal notranslate"><span class="pre">loc</span></code> points back to this declaration. We can read
+<code class="docutils literal notranslate"><span class="pre">start_line</span></code> to report its line number:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parameter</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">location</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">loc</span>
+<span class="n">line</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">start_line</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Parameter </span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is declared on line </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Parameter A is declared on line 29.
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">source_name.name</span></code> also records the path to the CPU program’s source
+file:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>parameter: ir.Var             A
+└── loc: ir.SourceLoc
+    ├── source_name: ir.SourceName
+    │   └── name              path to the source file
+    └── start_line            line of A's declaration
+</pre></div>
+</div>
 <p>The <code class="docutils literal notranslate"><span class="pre">filename</span></code> argument labels generated source in parser diagnostics.
 The following example removes the required type annotation from <code class="docutils literal notranslate"><span class="pre">A</span></code>
 in the template:</p>
@@ -599,10 +627,8 @@ in the template:</p>
 </pre></div>
 </div>
 <p>The program comes from <code class="docutils literal notranslate"><span class="pre">invalid_source</span></code>; <code class="docutils literal notranslate"><span class="pre">filename</span></code> supplies the
-name shown in the message. Successfully parsed
-nodes also record their positions through the
-<a class="reference internal" href="types_and_expressions.html#user-ir-source-locations"><span class="std std-ref">source-location fields</span></a> introduced earlier.</p>
-</section>
+name shown in the message, and successfully parsed nodes record it in
+their <code class="docutils literal notranslate"><span class="pre">loc</span></code> fields.</p>
 </section>
 <section id="region-syntax">
 <span id="tvmscript-region-syntax"></span><h2>Region Syntax<a class="headerlink" href="#region-syntax" title="Link to this heading">#</a></h2>
@@ -690,10 +716,8 @@ chapter explains the IR structure inside that region.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-transformation">Inspecting a Transformation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-program-variants">Building Program Variants</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#source-locations">Source Locations</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-program-variants">Building Program Variants</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-locations">Source Locations</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#region-syntax">Region Syntax</a></li>
 </ul>
   </nav></div>

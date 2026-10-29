@@ -124,23 +124,28 @@ Inspect and Transform the Program
 
 Besides compiling and running ``add_one``, we can also look inside it. The
 ``add_one`` returned by ``@T.function`` is a tree of program elements,
-commonly called an intermediate representation (IR). Roughly, the tree for
-the CPU version looks like this:
+commonly called an intermediate representation (IR). To see how the program
+is structured, we can use ``format_tree`` to display its IR as a tree:
+
+.. code-block:: python
+
+   import tvm_tirx
+
+   print(tvm_tirx.ir.format_tree(add_one))
 
 .. code-block:: text
 
    Function
-   ├── params
-   │   ├── Var(name="A", ty=TensorType(shape=[n], dtype=float32))
-   │   └── Var(name="B", ty=TensorType(shape=[n], dtype=float32))
-   └── body
-       └── For(var=i, begin=0, end=n)
-           └── body
-               └── TensorStore(dest=B, indices=[i])
-                   └── value
-                       └── Add
-                           ├── a: TensorLoad(source=A, indices=[i])
-                           └── b: FloatImm(value=1.0)
+   ├── params[0]: A = Var(ty=TensorType(shape=[n], dtype=float32))
+   ├── params[1]: B = Var(ty=TensorType(shape=[n], dtype=float32))
+   └── body: SeqStmt
+       └── seq[0]: For(begin=IntImm(value=0), end=n)
+           ├── var: i = Var(ty=int32)
+           └── body: SeqStmt
+               └── seq[0]: TensorStore(dest=B, indices=[i])
+                   └── value: Add
+                       ├── a: TensorLoad(source=A, indices=[i])
+                       └── b: FloatImm(value=1.0)
 
 Every element is accessible from Python and other languages, so we can walk
 this tree directly in Python:
@@ -181,7 +186,7 @@ program, while the original ``add_one`` stays unchanged.
 
 .. seealso::
 
-   :doc:`IR Walkthrough </ir/overview>` for a more in-depth introduction to the
+   :doc:`IR Overview </ir/overview>` for a more in-depth introduction to the
    main IR objects and their roles in the overall program structure.
 
 

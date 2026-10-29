@@ -261,8 +261,50 @@ into a constant. The addition in ``add_two_variant`` is therefore
 ``A[i] + T.float32(2.0)``; both functions still take only ``A`` and ``B``
 as parameters.
 
+.. _user-ir-source-locations:
+
 Source Locations
-~~~~~~~~~~~~~~~~
+----------------
+
+IR nodes can carry source locations to help diagnostics point back to
+the original code. The ``loc`` field stores this information, and
+:class:`ir.SourceLoc <tvm_tirx.ir.SourceLoc>` records the source file
+and range.
+
+The parameter ``A`` is declared on this line of the CPU program:
+
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+   :language: python
+   :start-at: def add_one(
+   :end-at: def add_one(
+   :lineno-match:
+
+The parameter's ``loc`` points back to this declaration. We can read
+``start_line`` to report its line number:
+
+.. code-block:: python
+
+   parameter = add_one.params[0]
+   location = parameter.loc
+   line = location.start_line
+   print(f"Parameter {parameter.name} is declared on line {line}.")
+
+The output is:
+
+.. code-block:: text
+
+   Parameter A is declared on line 29.
+
+``source_name.name`` also records the path to the CPU program's source
+file:
+
+.. code-block:: text
+
+   parameter: ir.Var             A
+   └── loc: ir.SourceLoc
+       ├── source_name: ir.SourceName
+       │   └── name              path to the source file
+       └── start_line            line of A's declaration
 
 The ``filename`` argument labels generated source in parser diagnostics.
 The following example removes the required type annotation from ``A``
@@ -287,9 +329,8 @@ The output is:
    Parameter 'A' requires an annotation (generated_add_constant.py, line 3)
 
 The program comes from ``invalid_source``; ``filename`` supplies the
-name shown in the message. Successfully parsed
-nodes also record their positions through the
-:ref:`source-location fields <user-ir-source-locations>` introduced earlier.
+name shown in the message, and successfully parsed nodes record it in
+their ``loc`` fields.
 
 .. _tvmscript-region-syntax:
 
