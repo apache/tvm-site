@@ -572,7 +572,43 @@
 <a href="#571" id="571">571</a>
 <a href="#572" id="572">572</a>
 <a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -616,6 +652,30 @@
     </span><span class="kw">fn </span>match_any_exact_type_index() -&gt; i32 {
         <span class="macro">unreachable!</span>(<span class="string">"MATCH_ANY_EXACT is false"</span>)
     }
+
+    <span class="doccomment">/// Whether `field`, which holds a value of this type or all-zero bytes,
+    /// holds all-zero bytes that are no value of this type, as a null object
+    /// reference, a string of type index None or a zero device type: a field
+    /// that a creator left undefined for reflection to set, as C++ `UnsafeInit`
+    /// leaves a reference undefined (null). Unlike a C++ undefined reference,
+    /// it is no value; a nullable reference is `Option&lt;T&gt;`, whose `None` is a
+    /// defined value.
+    ///
+    /// The field setter writes an undefined field without dropping it, the
+    /// field getter reads it as None, and the object's deleter skips it. The default,
+    /// false, fits a type whose all-zero bytes are a value whose drop does
+    /// nothing, as a scalar's, `Any`'s or `Optional`'s.
+    ///
+    /// # Safety
+    ///
+    /// `field` points to a value of this type or to all-zero bytes. An
+    /// implementation reads only bytes that each value initializes and, when
+    /// `Option&lt;Self&gt;` is niche-optimized, that its `None` initializes too.
+    </span><span class="attr">#[inline]
+    </span><span class="kw">unsafe fn </span>is_undefined(field: <span class="kw-2">*const </span><span class="self">Self</span>) -&gt; bool {
+        <span class="kw">let _ </span>= field;
+        <span class="bool-val">false
+    </span>}
 
     <span class="doccomment">/// the value to copy to TVMFFIAny
     </span><span class="kw">unsafe fn </span>copy_to_any_view(src: <span class="kw-2">&amp;</span><span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny);
@@ -962,6 +1022,18 @@
 
     <span class="kw">fn </span>type_schema() -&gt; String {
         type_schema(<span class="string">"Optional"</span>, <span class="kw-2">&amp;</span>[&lt;T <span class="kw">as </span>AnyCompatible&gt;::type_schema()])
+    }
+
+    <span class="kw">unsafe fn </span>is_undefined(field: <span class="kw-2">*const </span><span class="self">Self</span>) -&gt; bool {
+        <span class="comment">// With a tag, all-zero bytes are `None`. A niche-optimized `Option&lt;T&gt;`
+        // keeps `T`'s bytes, where all-zero bytes are `None` if `None` looks
+        // undefined to `T` (a reference's null pointer, a device's zero type),
+        // and undefined if `None` sits elsewhere in the niche.
+        </span><span class="kw">if </span>std::mem::size_of::&lt;<span class="self">Self</span>&gt;() != std::mem::size_of::&lt;T&gt;() {
+            <span class="kw">return </span><span class="bool-val">false</span>;
+        }
+        <span class="kw">let </span>none = std::mem::MaybeUninit::new(<span class="prelude-val">None</span>::&lt;T&gt;);
+        T::is_undefined(field.cast::&lt;T&gt;()) &amp;&amp; !T::is_undefined(none.as_ptr().cast::&lt;T&gt;())
     }
 
     <span class="kw">unsafe fn </span>copy_to_any_view(src: <span class="kw-2">&amp;</span><span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {

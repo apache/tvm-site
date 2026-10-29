@@ -539,7 +539,62 @@
 <a href="#538" id="538">538</a>
 <a href="#539" id="539">539</a>
 <a href="#540" id="540">540</a>
-<a href="#541" id="541">541</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
+<a href="#573" id="573">573</a>
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -563,10 +618,11 @@
 //! [`ObjectDef`] fills the same type table entries as C++ `refl::ObjectDef&lt;T&gt;`
 //! and Python `_register_py_class`: the type metadata, one record per field
 //! with C ABI getter and setter, one record per method, and the
-//! `__ffi_shallow_copy__` and `__ffi_type_final__` type attributes. Through
-//! them the C++ structural equality, hashing and mutation, `repr`, deep copy
-//! and Python's generated classes reach the fields and methods of a Rust
-//! type.
+//! `__ffi_shallow_copy__` and `__ffi_type_final__` type attributes; for an
+//! `#[rs_class]` type also the creator, and from it the `__ffi_new__` and
+//! `__ffi_init__` type attributes. Through them the C++ structural equality,
+//! hashing and mutation, `repr`, deep copy, JSON graphs and Python's generated
+//! classes reach the fields and methods of a Rust type, and construct it.
 //!
 //! Only `#[derive(Object)]` creates an [`ObjectDef`], for a `#[type_register]`
 //! type with `#[reflect]` fields or a `#[type_reflection]` function; the
@@ -584,9 +640,9 @@
 <span class="kw">use </span><span class="kw">crate</span>::object::{Object, ObjectArc, ObjectCore, ObjectRef, ObjectRefCore};
 <span class="kw">use </span><span class="kw">crate</span>::tvm_ffi_sys::{
     TVMFFIAny, TVMFFIByteArray, TVMFFIFieldFlagBitMask, TVMFFIFieldInfo, TVMFFIFieldSetter,
-    TVMFFIGetTypeInfo, TVMFFIMethodInfo, TVMFFIObject, TVMFFISEqHashKind, TVMFFITypeIndex,
-    TVMFFITypeMetadata, TVMFFITypeRegisterAttr, TVMFFITypeRegisterField,
-    TVMFFITypeRegisterMetadata, TVMFFITypeRegisterMethod,
+    TVMFFIGetTypeInfo, TVMFFIMethodInfo, TVMFFIObject, TVMFFIObjectCreator, TVMFFIObjectHandle,
+    TVMFFISEqHashKind, TVMFFITypeIndex, TVMFFITypeMetadata, TVMFFITypeRegisterAttr,
+    TVMFFITypeRegisterField, TVMFFITypeRegisterMetadata, TVMFFITypeRegisterMethod,
 };
 <span class="kw">use </span><span class="kw">crate</span>::type_traits::{type_schema_metadata, AnyCompatible};
 <span class="kw">use crate</span>::{Any, Error, Function, <span class="prelude-ty">Result</span>, INTERNAL_ERROR, TYPE_ERROR, VALUE_ERROR};
@@ -712,6 +768,9 @@
 </span><span class="kw">pub struct </span>ObjectDef&lt;N: ObjectCore&gt; {
     type_index: i32,
     fresh: bool,
+    <span class="doccomment">/// The creator registered in the metadata, from which `finish` registers
+    /// `__ffi_new__` and `__ffi_init__`.
+    </span>creator: <span class="prelude-ty">Option</span>&lt;TVMFFIObjectCreator&gt;,
     <span class="doccomment">/// The first failed method registration, which `finish` reports.
     </span>error: <span class="prelude-ty">Option</span>&lt;Error&gt;,
     method_names: Vec&lt;String&gt;,
@@ -723,14 +782,21 @@
     /// derive registers `N`'s type index, before `N::type_index()` returns.
     ///
     /// `kind` of `None` takes the nearest ancestor's kind, as a C++ subclass
-    /// inherits `_type_s_eq_hash_kind`.
+    /// inherits `_type_s_eq_hash_kind`. `creator`, as C++ `ObjectDef` takes
+    /// the default or `UnsafeInit` constructor, makes an object of `N` for
+    /// reflection to fill (`unsafe_init_creator::&lt;N&gt;` for an `#[rs_class]`).
     ///
     /// # Safety
     ///
     /// The caller holds `TYPE_REGISTRATION` for the builder's lifetime, and
-    /// `type_index` is `N`'s.
+    /// `type_index` is `N`'s. `creator` returns an owned handle of an object of
+    /// `N` that the field setters can fill.
     </span><span class="attr">#[doc(hidden)]
-    </span><span class="kw">pub unsafe fn </span>registering(type_index: i32, kind: <span class="prelude-ty">Option</span>&lt;SEqHashKind&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+    </span><span class="kw">pub unsafe fn </span>registering(
+        type_index: i32,
+        kind: <span class="prelude-ty">Option</span>&lt;SEqHashKind&gt;,
+        creator: <span class="prelude-ty">Option</span>&lt;TVMFFIObjectCreator&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>info = TVMFFIGetTypeInfo(type_index);
         <span class="macro">crate::ensure!</span>(
             !info.is_null(),
@@ -746,7 +812,7 @@
             };
             <span class="kw">let </span>metadata = TVMFFITypeMetadata {
                 doc: TVMFFIByteArray::from_str(<span class="string">""</span>),
-                creator: <span class="prelude-val">None</span>,
+                creator,
                 total_size: size_of::&lt;N&gt;() <span class="kw">as </span>i32,
                 structural_eq_hash_kind: kind,
             };
@@ -755,6 +821,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             type_index,
             fresh,
+            creator,
             error: <span class="prelude-val">None</span>,
             method_names: Vec::new(),
             _object: PhantomData,
@@ -779,6 +846,18 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">if </span>!<span class="self">self</span>.fresh {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="self">self</span>);
+        }
+        <span class="comment">// `__ffi_init__` leaves an `init_off` field as the creator made it, all-zero.
+        </span><span class="kw">if </span><span class="self">self</span>.creator.is_some() &amp;&amp; flags.bits() &amp; FieldFlags::INIT_OFF.bits() != <span class="number">0 </span>{
+            <span class="kw">let </span>zero = std::mem::MaybeUninit::&lt;F&gt;::zeroed();
+            <span class="macro">crate::ensure!</span>(
+                !<span class="kw">unsafe </span>{ F::is_undefined(zero.as_ptr()) },
+                VALUE_ERROR,
+                <span class="string">"`init_off` field `{name}` of `{}` stays all-zero after `__ffi_init__`, which \
+                 is no value of `{}`"</span>,
+                N::TYPE_KEY,
+                F::type_str()
+            );
         }
         <span class="kw">let </span>metadata = type_schema_metadata(<span class="kw-2">&amp;</span>F::type_schema());
         <span class="kw">let </span>info = TVMFFIFieldInfo {
@@ -887,8 +966,10 @@
         <span class="self">self
     </span>}
 
-    <span class="doccomment">/// Registers `__ffi_type_final__`, which no other registered metadata
-    /// exposes, and reports the first failed method registration.
+    <span class="doccomment">/// Registers, as C++ `ObjectDef` does, `__ffi_new__` from the creator and
+    /// `__ffi_init__` from the fields unless the type defines its own, then
+    /// `__ffi_type_final__`, which no other registered metadata exposes; and
+    /// reports the first failed method registration.
     </span><span class="attr">#[doc(hidden)]
     </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(error) = <span class="self">self</span>.error {
@@ -896,6 +977,23 @@
         }
         <span class="kw">if </span>!<span class="self">self</span>.fresh {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+        }
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(creator) = <span class="self">self</span>.creator {
+            <span class="kw">let </span>new = Function::from_typed(<span class="kw">move </span>|| -&gt; <span class="prelude-ty">Result</span>&lt;ObjectRef&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>handle: TVMFFIObjectHandle = std::ptr::null_mut();
+                <span class="macro">crate::check_safe_call!</span>(<span class="kw">unsafe </span>{ creator(<span class="kw-2">&amp;mut </span>handle) })<span class="question-mark">?</span>;
+                <span class="comment">// SAFETY: the creator returns an owned handle, which `ObjectRef` views.
+                </span><span class="prelude-val">Ok</span>(<span class="kw">unsafe </span>{ ObjectRef::from_data(ObjectArc::from_raw(handle.cast::&lt;Object&gt;())) })
+            });
+            register_type_attr(<span class="self">self</span>.type_index, <span class="string">"__ffi_new__"</span>, Any::from(new))<span class="question-mark">?</span>;
+            <span class="comment">// C++ `ObjectDef` looks `ffi._RegisterFFIInit` up the same way, in case
+            // it is not registered yet.
+            </span><span class="kw">let </span>explicit_init = <span class="self">self</span>.method_names.iter().any(|name| name == <span class="string">"__ffi_init__"</span>);
+            <span class="kw">if </span>!explicit_init {
+                <span class="kw">if let </span><span class="prelude-val">Ok</span>(register_init) = Function::get_global(<span class="string">"ffi._RegisterFFIInit"</span>) {
+                    register_init.call_tuple((<span class="self">self</span>.type_index,))<span class="question-mark">?</span>;
+                }
+            }
         }
         register_type_attr(
             <span class="self">self</span>.type_index,
@@ -960,7 +1058,13 @@
     result: <span class="kw-2">*mut </span>TVMFFIAny,
 ) -&gt; i32 {
     <span class="kw">let </span>read = catch_unwind(AssertUnwindSafe(|| {
-        <span class="kw">let </span>value: Any = (<span class="kw-2">*</span>field.cast::&lt;F&gt;()).to_any();
+        <span class="kw">let </span>field = field.cast::&lt;F&gt;();
+        <span class="comment">// An undefined field reads as None, as a null `ObjectRef` does in C++.
+        </span><span class="kw">let </span>value = <span class="kw">if </span>F::is_undefined(field) {
+            Any::new()
+        } <span class="kw">else </span>{
+            (<span class="kw-2">*</span>field).to_any()
+        };
         std::ptr::write(result, Any::into_raw_ffi_any(value));
     }));
     <span class="kw">match </span>read {
@@ -982,7 +1086,13 @@
     <span class="kw">let </span>written = catch_unwind(AssertUnwindSafe(|| {
         <span class="kw">match </span>F::try_cast_from_any_view(<span class="kw-2">&amp;*</span>value) {
             <span class="prelude-val">Ok</span>(converted) =&gt; {
-                <span class="kw-2">*</span>field.cast::&lt;F&gt;() = converted;
+                <span class="kw">let </span>field = field.cast::&lt;F&gt;();
+                <span class="comment">// An undefined field holds no value to drop.
+                </span><span class="kw">if </span>F::is_undefined(field) {
+                    field.write(converted);
+                } <span class="kw">else </span>{
+                    <span class="kw-2">*</span>field = converted;
+                }
                 <span class="prelude-val">None
             </span>}
             <span class="prelude-val">Err</span>(()) =&gt; <span class="prelude-val">Some</span>(Error::new(

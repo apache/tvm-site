@@ -374,15 +374,16 @@ document.write(`
   <section id="printing-and-parsing">
 <span id="ir-construction-and-printing"></span><h1>Printing and Parsing<a class="headerlink" href="#printing-and-parsing" title="Link to this heading">#</a></h1>
 <p>In this chapter, we will introduce printing and parsing with TVMScript,
-the Python-based syntax used to describe tensor programs in Quick Start.
+TIRx’s Python-based syntax for tensor programs.
 The printer turns IR objects into readable TVMScript code, and the parser
 constructs IR objects from that code. We will use these interfaces to
 inspect the add-one function, save and load programs, and examine a
 compiler pass’s changes.</p>
 <section id="printing-ir">
 <h2>Printing IR<a class="headerlink" href="#printing-ir" title="Link to this heading">#</a></h2>
-<p>In the CPU example, the TVMScript decorator <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> parses the
-function definition into a <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> IR object:</p>
+<p>We will use a CPU function that adds one to each tensor element. The
+TVMScript decorator <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> parses its definition into a
+<code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> IR object:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
@@ -455,9 +456,9 @@ def add_one[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
 variables, loop, and tensor store. It can be inspected or compiled
 through the same interfaces as <code class="docutils literal notranslate"><span class="pre">add_one</span></code>.</p>
 <p>The import inside <code class="docutils literal notranslate"><span class="pre">source_text</span></code> tells the parser what <code class="docutils literal notranslate"><span class="pre">T</span></code> refers to.
-The earlier <code class="docutils literal notranslate"><span class="pre">source</span></code> returned by <code class="docutils literal notranslate"><span class="pre">add_one.script()</span></code> has this import
-commented out. In that case, <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code> supplies the existing <code class="docutils literal notranslate"><span class="pre">T</span></code>
-namespace:</p>
+Our first call to <code class="docutils literal notranslate"><span class="pre">add_one.script()</span></code> returned <code class="docutils literal notranslate"><span class="pre">source</span></code> with that
+import commented out. To parse this string, we can bind the name <code class="docutils literal notranslate"><span class="pre">T</span></code>
+to the existing namespace through <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
@@ -472,8 +473,8 @@ external binding.</p>
 <h2>Saving and Loading a Module<a class="headerlink" href="#saving-and-loading-a-module" title="Link to this heading">#</a></h2>
 <p>An IR module can be saved as TVMScript for later inspection or reuse.
 We can store the CPU function in a module and write its source to a file.
-To let that file supply its own namespaces when parsed, we include the
-imports with <code class="docutils literal notranslate"><span class="pre">ir.comment_imports=False</span></code>:</p>
+The file can include its own imports, so a parser can read it in another
+process. <code class="docutils literal notranslate"><span class="pre">ir.comment_imports=False</span></code> enables those imports:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="n">module</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">"add_one"</span><span class="p">:</span> <span class="n">add_one</span><span class="p">})</span>
@@ -487,8 +488,8 @@ imports with <code class="docutils literal notranslate"><span class="pre">ir.com
 <span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">restored_module</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The imports in the file supply the namespaces needed by the parser, so
-this call needs no <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>. <code class="docutils literal notranslate"><span class="pre">restored_module</span></code> is an <code class="docutils literal notranslate"><span class="pre">ir.IRModule</span></code>
+<p>The parser resolves the namespace names from the imports, so this call
+needs no <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>. <code class="docutils literal notranslate"><span class="pre">restored_module</span></code> is an <code class="docutils literal notranslate"><span class="pre">ir.IRModule</span></code>
 with the same function definitions as <code class="docutils literal notranslate"><span class="pre">module</span></code>.</p>
 </section>
 <section id="inspecting-ir">
@@ -497,33 +498,39 @@ with the same function definitions as <code class="docutils literal notranslate"
 or see how a compiler pass changes the program.</p>
 <section id="highlighting-ir-objects">
 <span id="highlighting-nodes"></span><h3>Highlighting IR Objects<a class="headerlink" href="#highlighting-ir-objects" title="Link to this heading">#</a></h3>
-<p>The function’s body lets us reach the addition in <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>.
-To find this expression in the printed program, we can ask the printer to
-underline it:</p>
+<p>An analysis may need to identify an expression in a diagnostic. We can
+reach the addition in <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code> through the function’s body,
+then ask the printer to underline it and attach a message about its type:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">store</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">addition</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">value</span>
-<span class="n">marked_source</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">obj_to_underline</span><span class="o">=</span><span class="p">[</span><span class="n">addition</span><span class="p">])</span>
+<span class="n">marked_source</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">script</span><span class="p">(</span>
+    <span class="n">obj_to_underline</span><span class="o">=</span><span class="p">[</span><span class="n">addition</span><span class="p">],</span>
+    <span class="n">obj_to_annotate</span><span class="o">=</span><span class="p">{</span><span class="n">addition</span><span class="p">:</span> <span class="s2">"result dtype: float32"</span><span class="p">},</span>
+    <span class="n">print_line_numbers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_context_lines</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">marked_source</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The marked lines include:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>B[i] = A[i] + T.float32(1.0)
-       ^^^^^^^^^^^^^^^^^^^^^
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>7     for i in range(n):
+8         B[i] = A[i] + T.float32(1.0)  # result dtype: float32
+                 ^^^^^^^^^^^^^^^^^^^^^
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">obj_to_underline</span></code> selects the IR objects to mark. For a diagnostic,
-<code class="docutils literal notranslate"><span class="pre">print_line_numbers=True</span></code> adds line numbers, <code class="docutils literal notranslate"><span class="pre">obj_to_annotate</span></code> can
-attach messages to selected objects, and <code class="docutils literal notranslate"><span class="pre">num_context_lines</span></code> limits the
-surrounding source.</p>
+<p><code class="docutils literal notranslate"><span class="pre">obj_to_underline</span></code> selects the expression to mark, and <code class="docutils literal notranslate"><span class="pre">obj_to_annotate</span></code>
+attaches the message. The line numbers refer to this printed source.
+<code class="docutils literal notranslate"><span class="pre">num_context_lines=1</span></code> keeps one surrounding line, so the diagnostic
+shows the loop containing the addition.</p>
 <p>For interactive inspection,
 <a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.Function.html#tvm_tirx.tirx.Function.show" title="tvm_tirx.tirx.Function.show"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_one.show()</span></code></a> displays highlighted
 source directly and accepts the same options.</p>
 </section>
 <section id="inspecting-a-transformation">
 <h3>Inspecting a Transformation<a class="headerlink" href="#inspecting-a-transformation" title="Link to this heading">#</a></h3>
-<p>The printer also helps us check what a compiler pass changes. We can
-extend the CPU example with a bounds check inside the loop:</p>
+<p>The printer also helps us check what a compiler pass changes. Consider
+this version of add-one with a bounds check inside the loop:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">guarded_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -551,8 +558,9 @@ and after applying that pass:</p>
 </section>
 <section id="building-program-variants">
 <h2>Building Program Variants<a class="headerlink" href="#building-program-variants" title="Link to this heading">#</a></h2>
-<p>For functions that differ only in a constant, <code class="docutils literal notranslate"><span class="pre">from_source</span></code> can parse
-the same template with different <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>. This template replaces
+<p>A source generator may produce functions with the same structure but
+different constants. <code class="docutils literal notranslate"><span class="pre">from_source</span></code> can parse the same template with
+different <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code> to build these variants. This template replaces
 the add-one constant with <code class="docutils literal notranslate"><span class="pre">increment</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variant_source</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">@T.function</span>
@@ -572,7 +580,7 @@ the add-one constant with <code class="docutils literal notranslate"><span class
 <span class="nb">print</span><span class="p">(</span><span class="n">add_two_variant</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
 </pre></div>
 </div>
-<p>The parser turns the <code class="docutils literal notranslate"><span class="pre">increment</span></code> value supplied through <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>
+<p>The parser turns the <code class="docutils literal notranslate"><span class="pre">increment</span></code> value passed through <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>
 into a constant. The addition in <code class="docutils literal notranslate"><span class="pre">add_two_variant</span></code> is therefore
 <code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">T.float32(2.0)</span></code>; both functions still take only <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>
 as parameters.</p>
@@ -608,33 +616,36 @@ file:</p>
     └── start_line            line of A's declaration
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">filename</span></code> argument labels generated source in parser diagnostics.
-The following example removes the required type annotation from <code class="docutils literal notranslate"><span class="pre">A</span></code>
-in the template:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">invalid_source</span> <span class="o">=</span> <span class="n">variant_source</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"A: T.Tensor((n,), T.float32)"</span><span class="p">,</span> <span class="s2">"A"</span><span class="p">)</span>
+<p>Source locations are also useful when parsing fails. The following
+source is missing the type annotation for parameter <code class="docutils literal notranslate"><span class="pre">A</span></code>. We give the
+text a filename so the diagnostic can identify it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">invalid_source</span> <span class="o">=</span> <span class="s2">"""@T.function</span>
+<span class="s2">def invalid_add_one(A):</span>
+<span class="s2">    T.evaluate(0)</span>
+<span class="s2">"""</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">from_source</span><span class="p">(</span>
         <span class="n">invalid_source</span><span class="p">,</span>
-        <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="s2">"increment"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
-        <span class="n">filename</span><span class="o">=</span><span class="s2">"generated_add_constant.py"</span><span class="p">,</span>
+        <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">},</span>
+        <span class="n">filename</span><span class="o">=</span><span class="s2">"generated_add_one.py"</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Parameter 'A' requires an annotation (generated_add_constant.py, line 3)
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Parameter 'A' requires an annotation (generated_add_one.py, line 2)
 </pre></div>
 </div>
-<p>The program comes from <code class="docutils literal notranslate"><span class="pre">invalid_source</span></code>; <code class="docutils literal notranslate"><span class="pre">filename</span></code> supplies the
-name shown in the message, and successfully parsed nodes record it in
-their <code class="docutils literal notranslate"><span class="pre">loc</span></code> fields.</p>
+<p>The message identifies the supplied source text and the line with the
+invalid parameter. Successfully parsed nodes record the filename and
+their positions in <code class="docutils literal notranslate"><span class="pre">loc</span></code>.</p>
 </section>
 <section id="region-syntax">
 <span id="tvmscript-region-syntax"></span><h2>Region Syntax<a class="headerlink" href="#region-syntax" title="Link to this heading">#</a></h2>
-<p>The parser also determines which statements belong to a region. In the
-GPU example, TVMScript recognizes <code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code> as a region
-construct. Its standalone form starts the device region:</p>
+<p>The parser also determines which statements belong to a region. A CUDA
+function uses <code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code> to mark the statements that execute on
+the GPU. In the following function, the region starts at that line:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>

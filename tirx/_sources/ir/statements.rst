@@ -27,6 +27,14 @@ execution through a branch or loop. These statements form the function's
 body, which compiler passes can inspect and rewrite through the IR
 interfaces.
 
+We will start with this CPU function, which adds one to every element
+of ``A`` and writes the results to ``B``:
+
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+   :language: python
+   :start-at: from tvm_tirx.script import tirx as T
+   :end-at:         B[i] = A[i] + 1
+
 .. _statements-and-sequences:
 
 Statement Classes
@@ -87,7 +95,7 @@ another. ``ir.SeqStmt`` stores these statements in execution order in
 its ``seq`` field. The statements inside a loop or branch are also
 stored in a ``SeqStmt``.
 
-The CPU example writes one output element in each loop iteration:
+The loop in ``add_one`` writes one output element in each iteration:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cpu.py
    :language: python
@@ -106,6 +114,7 @@ from ``add_one``:
    from tvm_tirx import ir
 
    A, B = add_one.params
+   n = A.ty.shape[0]
    i = ir.Var("i", "int32")
    store = ir.TensorStore(B, [i], A[i] + 1)
    body = ir.SeqStmt([store])
@@ -172,7 +181,10 @@ Control-flow statements determine which parts of a program execute and
 how often. A loop repeats a body of statements, while a branch selects
 which body runs.
 
-The CPU example visits every element with a loop:
+For loops
+~~~~~~~~~
+
+``add_one`` visits every element with a loop:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cpu.py
    :language: python
@@ -212,9 +224,32 @@ the order of the statements within it. The
 :class:`~tvm_tirx.ir.ForKind` API reference describes the other execution
 kinds.
 
-The GPU example distributes this work across threads. ``T.device_entry``
-introduces the GPU computation. Each thread computes an index ``i`` and
-checks whether it has an element to process:
+Branches
+~~~~~~~~
+
+A branch can choose between two results. This CPU function applies
+ReLU: positive input values pass through, and all other values become
+zero:
+
+.. code-block:: python
+
+   @T.function
+   def relu(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       for i in range(n):
+           if A[i] > 0:
+               B[i] = A[i]
+           else:
+               B[i] = 0.0
+
+TVMScript represents the branch as an ``ir.If``. Its ``condition`` is
+the boolean comparison ``A[i] > 0``. Its ``then_case`` and ``else_case``
+each hold a ``SeqStmt`` containing one store. Only the sequence selected
+by the condition runs for each element.
+
+A bounds check uses the same kind of statement. A GPU version of add-one
+distributes the elements across threads, and each thread checks whether
+it has a valid element to process. These statements belong inside its
+function body:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cuda.py
    :language: python
@@ -241,8 +276,8 @@ the store in ``then_case``. An else branch has its own ``SeqStmt`` in
 tensor access. These branch bodies can also contain further loops and
 branches.
 
-The standalone ``T.device_entry(...)`` groups the remaining statements
-in this function into a device region. An
+The ``T.device_entry(...)`` line groups the statements that follow it in
+the same function body into a device region. An
 :class:`ir.RegionStmt <tvm_tirx.ir.RegionStmt>` represents this region in
 the IR. Its ``op`` identifies ``tirx.device_entry``, and its ``body`` is
 a ``SeqStmt`` containing the index definition followed by the branch:
@@ -260,5 +295,95 @@ a ``SeqStmt`` containing the index definition followed by the branch:
 The ``Bind`` defines ``i`` before the ``If`` uses it. The variable is
 available to the condition and tensor store within the region. The
 :ref:`Printing and Parsing <tvmscript-region-syntax>` chapter explains
-the grouping rule for this standalone syntax and the equivalent
-``with`` form.
+the grouping rule for this syntax and the equivalent ``with`` form.
+
+While loops
+~~~~~~~~~~~
+
+A ``while`` loop tests a condition before each iteration. We can express
+the same add-one computation with an index that advances until it reaches
+the tensor length:
+
+.. code-block:: python
+
+   @T.function
+   def add_one_while(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       i: T.int32 = 0
+       while i < n:
+           B[i] = A[i] + 1
+           i += 1
+
+``i: T.int32 = 0`` creates a mutable scalar, so ``i += 1`` updates the
+index for the next test. The loop stops when ``i < n`` becomes false.
+Without that update, the loop would keep processing the same element.
+
+TVMScript represents the loop as an ``ir.While``. Its ``condition``
+holds the comparison, and its ``body`` contains both the output store
+and the index update:
+
+.. code-block:: text
+
+   ir.While
+   ├── condition: ir.prim.LT                 i < n
+   └── body: ir.SeqStmt
+       ├── seq[0]: ir.TensorStore            B[i] = A[i] + 1
+       └── seq[1]: ir.TensorStore            i += 1
+
+The mutable scalar uses a one-element local tensor in IR. The second
+store writes its next value, which the condition reads before the next
+iteration.
+
+Loop exits
+~~~~~~~~~~
+
+Some loops can finish before reaching their bound. This function finds
+the index of the first positive integer. It leaves ``B[0]`` at ``-1``
+if no such element exists:
+
+.. code-block:: python
+
+   @T.function
+   def first_positive(A: T.Tensor((n,), T.int32), B: T.Tensor((1,), T.int32)):
+       B[0] = -1
+       for i in range(n):
+           if A[i] <= 0:
+               continue
+           B[0] = i
+           break
+
+``continue`` starts the next iteration when ``A[i]`` is nonpositive. If
+the element is positive, the store records its index and ``break`` ends
+the loop. These statements become
+``ir.Continue`` and ``ir.Break`` inside their enclosing loop; neither
+has operands or a nested body.
+
+Assertions and returns
+~~~~~~~~~~~~~~~~~~~~~~
+
+A function can check a precondition before computing its result. This
+function adds one to the first input element and returns the value.
+The assertion ensures that the tensor has an element to read:
+
+.. code-block:: python
+
+   @T.function
+   def first_plus_one(A: T.Tensor((n,), T.float32)) -> T.float32:
+       assert n > 0, "the input must contain at least one element"
+       return A[0] + 1
+
+The ``assert`` becomes an ``ir.AssertStmt``. Its ``condition`` holds
+``n > 0``, its ``error_kind`` names ``RuntimeError``, and its
+``message_parts`` contains the error message. An empty input raises that
+error before the tensor read. Otherwise, execution reaches the
+``ir.Return``, whose ``value`` is the addition expression:
+
+.. code-block:: text
+
+   first_plus_one.body: ir.SeqStmt
+   ├── seq[0]: ir.AssertStmt                 assert n > 0, ...
+   └── seq[1]: ir.Return
+       └── value: ir.prim.Add                A[0] + 1
+
+The return annotation ``-> T.float32`` declares the result type. For an
+input starting with ``3.5``, the function returns ``4.5`` directly to its
+caller. It needs no output tensor parameter.

@@ -1779,7 +1779,53 @@
 <a href="#1778" id="1778">1778</a>
 <a href="#1779" id="1779">1779</a>
 <a href="#1780" id="1780">1780</a>
-<a href="#1781" id="1781">1781</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#1781" id="1781">1781</a>
+<a href="#1782" id="1782">1782</a>
+<a href="#1783" id="1783">1783</a>
+<a href="#1784" id="1784">1784</a>
+<a href="#1785" id="1785">1785</a>
+<a href="#1786" id="1786">1786</a>
+<a href="#1787" id="1787">1787</a>
+<a href="#1788" id="1788">1788</a>
+<a href="#1789" id="1789">1789</a>
+<a href="#1790" id="1790">1790</a>
+<a href="#1791" id="1791">1791</a>
+<a href="#1792" id="1792">1792</a>
+<a href="#1793" id="1793">1793</a>
+<a href="#1794" id="1794">1794</a>
+<a href="#1795" id="1795">1795</a>
+<a href="#1796" id="1796">1796</a>
+<a href="#1797" id="1797">1797</a>
+<a href="#1798" id="1798">1798</a>
+<a href="#1799" id="1799">1799</a>
+<a href="#1800" id="1800">1800</a>
+<a href="#1801" id="1801">1801</a>
+<a href="#1802" id="1802">1802</a>
+<a href="#1803" id="1803">1803</a>
+<a href="#1804" id="1804">1804</a>
+<a href="#1805" id="1805">1805</a>
+<a href="#1806" id="1806">1806</a>
+<a href="#1807" id="1807">1807</a>
+<a href="#1808" id="1808">1808</a>
+<a href="#1809" id="1809">1809</a>
+<a href="#1810" id="1810">1810</a>
+<a href="#1811" id="1811">1811</a>
+<a href="#1812" id="1812">1812</a>
+<a href="#1813" id="1813">1813</a>
+<a href="#1814" id="1814">1814</a>
+<a href="#1815" id="1815">1815</a>
+<a href="#1816" id="1816">1816</a>
+<a href="#1817" id="1817">1817</a>
+<a href="#1818" id="1818">1818</a>
+<a href="#1819" id="1819">1819</a>
+<a href="#1820" id="1820">1820</a>
+<a href="#1821" id="1821">1821</a>
+<a href="#1822" id="1822">1822</a>
+<a href="#1823" id="1823">1823</a>
+<a href="#1824" id="1824">1824</a>
+<a href="#1825" id="1825">1825</a>
+<a href="#1826" id="1826">1826</a>
+<a href="#1827" id="1827">1827</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1859,6 +1905,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ir::r#type::Type;
 <span class="kw">use </span><span class="kw">crate</span>::ir::support;
 <span class="kw">use </span>std::ops::Deref;
+<span class="kw">use </span>std::ptr::addr_of_mut;
 <span class="kw">use </span>tvm_ffi::Any;
 <span class="kw">use </span>tvm_ffi::AnyView;
 <span class="kw">use </span>tvm_ffi::Array;
@@ -1870,6 +1917,8 @@
 <span class="kw">use </span>tvm_ffi::Result;
 <span class="kw">use </span>tvm_ffi::ShallowCopy;
 <span class="kw">use </span>tvm_ffi::String;
+<span class="kw">use </span>tvm_ffi::UnsafeInit;
+<span class="kw">use </span>tvm_ffi::reflection::drop_if_defined;
 <span class="kw">use </span>tvm_ffi::tvm_ffi_sys::TVMFFITypeIndex;
 <span class="comment">// tvm-ffi-stubgen(end)
 
@@ -1923,6 +1972,16 @@
             base: ShallowCopy::shallow_copy(<span class="kw-2">&amp;</span><span class="self">self</span>.base),
             loc: Clone::clone(<span class="kw-2">&amp;</span><span class="self">self</span>.loc),
             ty: Clone::clone(<span class="kw-2">&amp;</span><span class="self">self</span>.ty),
+        }
+    }
+}
+
+<span class="kw">unsafe impl </span>UnsafeInit <span class="kw">for </span>ExprObj {
+    <span class="kw">unsafe fn </span>drop_defined_fields(this: <span class="kw-2">*mut </span><span class="self">Self</span>) {
+        <span class="kw">unsafe </span>{
+            UnsafeInit::drop_defined_fields(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).base));
+            drop_if_defined(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).loc));
+            drop_if_defined(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).ty));
         }
     }
 }
@@ -2021,6 +2080,14 @@
     }
 }
 
+<span class="kw">unsafe impl </span>UnsafeInit <span class="kw">for </span>StagingExprObj {
+    <span class="kw">unsafe fn </span>drop_defined_fields(this: <span class="kw-2">*mut </span><span class="self">Self</span>) {
+        <span class="kw">unsafe </span>{
+            UnsafeInit::drop_defined_fields(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).base));
+        }
+    }
+}
+
 <span class="macro">tvm_ffi::impl_object_upcast!</span>(StagingExpr =&gt; Expr);
 <span class="comment">// tvm-ffi-stubgen(end)
 
@@ -2076,6 +2143,14 @@
 <span class="kw">impl </span>ShallowCopy <span class="kw">for </span>OpaqueExprObj {
     <span class="kw">fn </span>shallow_copy(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ base: ShallowCopy::shallow_copy(<span class="kw-2">&amp;</span><span class="self">self</span>.base) }
+    }
+}
+
+<span class="kw">unsafe impl </span>UnsafeInit <span class="kw">for </span>OpaqueExprObj {
+    <span class="kw">unsafe fn </span>drop_defined_fields(this: <span class="kw-2">*mut </span><span class="self">Self</span>) {
+        <span class="kw">unsafe </span>{
+            UnsafeInit::drop_defined_fields(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).base));
+        }
     }
 }
 
@@ -2475,6 +2550,14 @@
 <span class="kw">impl </span>ShallowCopy <span class="kw">for </span>ConstantObj {
     <span class="kw">fn </span>shallow_copy(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ base: ShallowCopy::shallow_copy(<span class="kw-2">&amp;</span><span class="self">self</span>.base) }
+    }
+}
+
+<span class="kw">unsafe impl </span>UnsafeInit <span class="kw">for </span>ConstantObj {
+    <span class="kw">unsafe fn </span>drop_defined_fields(this: <span class="kw-2">*mut </span><span class="self">Self</span>) {
+        <span class="kw">unsafe </span>{
+            UnsafeInit::drop_defined_fields(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).base));
+        }
     }
 }
 
@@ -3367,6 +3450,15 @@
 <span class="kw">impl </span>ShallowCopy <span class="kw">for </span>VarObj {
     <span class="kw">fn </span>shallow_copy(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ base: ShallowCopy::shallow_copy(<span class="kw-2">&amp;</span><span class="self">self</span>.base), name: Clone::clone(<span class="kw-2">&amp;</span><span class="self">self</span>.name) }
+    }
+}
+
+<span class="kw">unsafe impl </span>UnsafeInit <span class="kw">for </span>VarObj {
+    <span class="kw">unsafe fn </span>drop_defined_fields(this: <span class="kw-2">*mut </span><span class="self">Self</span>) {
+        <span class="kw">unsafe </span>{
+            UnsafeInit::drop_defined_fields(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).base));
+            drop_if_defined(<span class="macro">addr_of_mut!</span>((<span class="kw-2">*</span>this).name));
+        }
     }
 }
 

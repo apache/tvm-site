@@ -371,11 +371,29 @@ passes use these structures to inspect a function’s interface and
 implementation and locate definitions through global references.</p>
 <section id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
-<p><a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.BaseFunc.html#tvm_tirx.ir.BaseFunc" title="tvm_tirx.ir.BaseFunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code></a> is the common base class for
-IR function definitions. It provides the <code class="docutils literal notranslate"><span class="pre">attrs</span></code> field for named
-function properties. <a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.Function.html#tvm_tirx.tirx.Function" title="tvm_tirx.tirx.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">tirx.Function</span></code></a> is
-its subclass for tensor programs, adding parameters, a return type, and
-a statement body:</p>
+<p>We can inspect a small CPU function to see how its parameters and body
+fit together. It accepts two tensors of length <code class="docutils literal notranslate"><span class="pre">n</span></code> and writes each
+input value plus one to the output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> parses the definition into a
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.Function.html#tvm_tirx.tirx.Function" title="tvm_tirx.tirx.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">tirx.Function</span></code></a> object, which the name
+<code class="docutils literal notranslate"><span class="pre">add_one</span></code> now refers to. Its <code class="docutils literal notranslate"><span class="pre">params</span></code> field holds <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>,
+and its <code class="docutils literal notranslate"><span class="pre">body</span></code> holds the loop.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> inherits from
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.BaseFunc.html#tvm_tirx.ir.BaseFunc" title="tvm_tirx.ir.BaseFunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code></a>, the common base class for
+IR function definitions. The base class provides <code class="docutils literal notranslate"><span class="pre">attrs</span></code> for named
+function properties. <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> adds the tensor program’s
+parameters, return type, and statement body:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.BaseFunc                     attrs
 └── tirx.Function               params, ret_type, body
 </pre></div>
@@ -407,22 +425,8 @@ a statement body:</p>
 </tbody>
 </table>
 </div>
-<p>In TVMScript, <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> produces this IR object from a function
-definition. The CPU example is defined as:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
-
-<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
-
-
-<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>The name <code class="docutils literal notranslate"><span class="pre">add_one</span></code> refers to the resulting <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code>. Its
-parameters are the variables <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>, and its body contains the
-loop. The loop has its own body containing the tensor store:</p>
+<p>The loop has its own body containing the tensor store. These nested
+bodies give <code class="docutils literal notranslate"><span class="pre">add_one</span></code> the following structure:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>add_one: tirx.Function
 ├── params[0]: ir.Var                     A
 ├── params[1]: ir.Var                     B
@@ -446,8 +450,8 @@ calling order. The entries in <code class="docutils literal notranslate"><span c
 themselves. <code class="docutils literal notranslate"><span class="pre">return_type</span></code> is the same type stored in
 <code class="docutils literal notranslate"><span class="pre">add_one.ret_type</span></code>: an empty tuple type, <code class="docutils literal notranslate"><span class="pre">ir.TupleType([])</span></code>, indicating
 no return value. This function writes its results into <code class="docutils literal notranslate"><span class="pre">B</span></code>.</p>
-<p>A function can also return a value explicitly. The <code class="docutils literal notranslate"><span class="pre">add_one_scalar</span></code>
-helper from <a class="reference internal" href="operators_and_calls.html"><span class="doc">Operators and Calls</span></a> returns a single float32 value:</p>
+<p>A function can also return a value explicitly. This helper adds one
+to a scalar and returns the result:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_one_scalar</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">value</span> <span class="o">+</span> <span class="mi">1</span>
@@ -477,7 +481,7 @@ constructor to create another function with the same computation:</p>
 as its body. The constructor wraps this single statement in a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code>.
 <code class="docutils literal notranslate"><span class="pre">ret_type=ir.TupleType([])</span></code> specifies that the function returns no value;
 its loop writes the result to <code class="docutils literal notranslate"><span class="pre">B</span></code>. A function that returns a value needs
-its return type supplied through <code class="docutils literal notranslate"><span class="pre">ret_type</span></code>; the constructor does not
+its return type set through <code class="docutils literal notranslate"><span class="pre">ret_type</span></code>; the constructor does not
 infer it from the body.</p>
 <p>We will put <code class="docutils literal notranslate"><span class="pre">ir_function</span></code> in a module and compile it below. To make the
 compiled function available under the name <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code>, we set its
@@ -486,9 +490,8 @@ compiled function available under the name <code class="docutils literal notrans
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">with_attr</span></code>, inherited from <code class="docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code>, returns a new function with
-this entry in <code class="docutils literal notranslate"><span class="pre">attrs</span></code>. For public functions written in TVMScript,
-<code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> sets
-<code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> to the Python function name automatically.</p>
+this entry in <code class="docutils literal notranslate"><span class="pre">attrs</span></code>. For public TVMScript functions, <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code>
+sets <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> to the Python function name automatically.</p>
 </section>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">#</a></h2>
@@ -521,15 +524,16 @@ then use it to look up the definition:</p>
 <p>The first line returns the <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> key, and the second returns
 the <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> stored under it. <code class="docutils literal notranslate"><span class="pre">module[&quot;add_one&quot;]</span></code> retrieves
 the same definition directly by name. A call can use <code class="docutils literal notranslate"><span class="pre">add_one_ref</span></code> as
-its <code class="docutils literal notranslate"><span class="pre">op</span></code> to identify this function, as in the function-call example in
-<a class="reference internal" href="operators_and_calls.html"><span class="doc">Operators and Calls</span></a>.</p>
+its <code class="docutils literal notranslate"><span class="pre">op</span></code> to identify this function. The call records the reference and
+its arguments; the module stores the definition that the reference
+identifies.</p>
 <p>The name <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> used in this lookup is the function’s name within
 the module. The function’s <code class="docutils literal notranslate"><span class="pre">attrs[&quot;global_symbol&quot;]</span></code> specifies its
 exported name for code generation. Both names are <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> in this
 example, but they serve these separate purposes.</p>
-<p><code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code> accepts a module as well as a standalone function. We
-can compile <code class="docutils literal notranslate"><span class="pre">module</span></code> with the same LLVM target used in Quick Start,
-then create CPU tensors and call its exported <code class="docutils literal notranslate"><span class="pre">add_one</span></code> function:</p>
+<p><code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code> accepts a module as well as a standalone function.
+We can compile <code class="docutils literal notranslate"><span class="pre">module</span></code> for the CPU with LLVM, then call its exported
+<code class="docutils literal notranslate"><span class="pre">add_one</span></code> function with input and output tensors:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span>
@@ -541,7 +545,7 @@ then create CPU tensors and call its exported <code class="docutils literal notr
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">compiled[&quot;add_one&quot;]</span></code> retrieves the exported function. The call reads
-<code class="docutils literal notranslate"><span class="pre">a</span></code> and writes <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">+</span> <span class="pre">1</span></code> into <code class="docutils literal notranslate"><span class="pre">b</span></code>, just as in Quick Start.</p>
+<code class="docutils literal notranslate"><span class="pre">a</span></code> and writes <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">+</span> <span class="pre">1</span></code> into <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
 </section>
 </section>
 

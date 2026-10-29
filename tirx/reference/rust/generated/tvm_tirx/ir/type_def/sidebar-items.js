@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["register_type"],"trait":["Placeholder"]};
+window.SIDEBAR_ITEMS = {"fn":["register_type"]};

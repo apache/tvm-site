@@ -21,7 +21,7 @@ Printing and Parsing
 ====================
 
 In this chapter, we will introduce printing and parsing with TVMScript,
-the Python-based syntax used to describe tensor programs in Quick Start.
+TIRx's Python-based syntax for tensor programs.
 The printer turns IR objects into readable TVMScript code, and the parser
 constructs IR objects from that code. We will use these interfaces to
 inspect the add-one function, save and load programs, and examine a
@@ -30,8 +30,9 @@ compiler pass's changes.
 Printing IR
 -----------
 
-In the CPU example, the TVMScript decorator ``@T.function`` parses the
-function definition into a ``tirx.Function`` IR object:
+We will use a CPU function that adds one to each tensor element. The
+TVMScript decorator ``@T.function`` parses its definition into a
+``tirx.Function`` IR object:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cpu.py
    :language: python
@@ -112,9 +113,9 @@ variables, loop, and tensor store. It can be inspected or compiled
 through the same interfaces as ``add_one``.
 
 The import inside ``source_text`` tells the parser what ``T`` refers to.
-The earlier ``source`` returned by ``add_one.script()`` has this import
-commented out. In that case, ``extra_vars`` supplies the existing ``T``
-namespace:
+Our first call to ``add_one.script()`` returned ``source`` with that
+import commented out. To parse this string, we can bind the name ``T``
+to the existing namespace through ``extra_vars``:
 
 .. code-block:: python
 
@@ -132,8 +133,8 @@ Saving and Loading a Module
 
 An IR module can be saved as TVMScript for later inspection or reuse.
 We can store the CPU function in a module and write its source to a file.
-To let that file supply its own namespaces when parsed, we include the
-imports with ``ir.comment_imports=False``:
+The file can include its own imports, so a parser can read it in another
+process. ``ir.comment_imports=False`` enables those imports:
 
 .. code-block:: python
 
@@ -151,8 +152,8 @@ We can read the saved source and reconstruct the module:
    restored_module = from_source(output_path.read_text())
    ir.assert_structural_equal(module, restored_module)
 
-The imports in the file supply the namespaces needed by the parser, so
-this call needs no ``extra_vars``. ``restored_module`` is an ``ir.IRModule``
+The parser resolves the namespace names from the imports, so this call
+needs no ``extra_vars``. ``restored_module`` is an ``ir.IRModule``
 with the same function definitions as ``module``.
 
 Inspecting IR
@@ -166,29 +167,35 @@ or see how a compiler pass changes the program.
 Highlighting IR Objects
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The function's body lets us reach the addition in ``B[i] = A[i] + 1``.
-To find this expression in the printed program, we can ask the printer to
-underline it:
+An analysis may need to identify an expression in a diagnostic. We can
+reach the addition in ``B[i] = A[i] + 1`` through the function's body,
+then ask the printer to underline it and attach a message about its type:
 
 .. code-block:: python
 
    loop = add_one.body[0]
    store = loop.body[0]
    addition = store.value
-   marked_source = add_one.script(obj_to_underline=[addition])
+   marked_source = add_one.script(
+       obj_to_underline=[addition],
+       obj_to_annotate={addition: "result dtype: float32"},
+       print_line_numbers=True,
+       num_context_lines=1,
+   )
    print(marked_source)
 
 The marked lines include:
 
 .. code-block:: text
 
-   B[i] = A[i] + T.float32(1.0)
-          ^^^^^^^^^^^^^^^^^^^^^
+   7     for i in range(n):
+   8         B[i] = A[i] + T.float32(1.0)  # result dtype: float32
+                    ^^^^^^^^^^^^^^^^^^^^^
 
-``obj_to_underline`` selects the IR objects to mark. For a diagnostic,
-``print_line_numbers=True`` adds line numbers, ``obj_to_annotate`` can
-attach messages to selected objects, and ``num_context_lines`` limits the
-surrounding source.
+``obj_to_underline`` selects the expression to mark, and ``obj_to_annotate``
+attaches the message. The line numbers refer to this printed source.
+``num_context_lines=1`` keeps one surrounding line, so the diagnostic
+shows the loop containing the addition.
 
 For interactive inspection,
 :meth:`add_one.show() <tvm_tirx.tirx.Function.show>` displays highlighted
@@ -197,8 +204,8 @@ source directly and accepts the same options.
 Inspecting a Transformation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The printer also helps us check what a compiler pass changes. We can
-extend the CPU example with a bounds check inside the loop:
+The printer also helps us check what a compiler pass changes. Consider
+this version of add-one with a bounds check inside the loop:
 
 .. code-block:: python
 
@@ -231,8 +238,9 @@ The second output contains the simplified loop:
 Building Program Variants
 -------------------------
 
-For functions that differ only in a constant, ``from_source`` can parse
-the same template with different ``extra_vars``. This template replaces
+A source generator may produce functions with the same structure but
+different constants. ``from_source`` can parse the same template with
+different ``extra_vars`` to build these variants. This template replaces
 the add-one constant with ``increment``:
 
 .. code-block:: python
@@ -256,7 +264,7 @@ The same text can produce versions that add one or two:
    )
    print(add_two_variant.script())
 
-The parser turns the ``increment`` value supplied through ``extra_vars``
+The parser turns the ``increment`` value passed through ``extra_vars``
 into a constant. The addition in ``add_two_variant`` is therefore
 ``A[i] + T.float32(2.0)``; both functions still take only ``A`` and ``B``
 as parameters.
@@ -306,18 +314,21 @@ file:
        │   └── name              path to the source file
        └── start_line            line of A's declaration
 
-The ``filename`` argument labels generated source in parser diagnostics.
-The following example removes the required type annotation from ``A``
-in the template:
+Source locations are also useful when parsing fails. The following
+source is missing the type annotation for parameter ``A``. We give the
+text a filename so the diagnostic can identify it:
 
 .. code-block:: python
 
-   invalid_source = variant_source.replace("A: T.Tensor((n,), T.float32)", "A")
+   invalid_source = """@T.function
+   def invalid_add_one(A):
+       T.evaluate(0)
+   """
    try:
        from_source(
            invalid_source,
-           extra_vars={"T": T, "increment": 1.0},
-           filename="generated_add_constant.py",
+           extra_vars={"T": T},
+           filename="generated_add_one.py",
        )
    except SyntaxError as error:
        print(error)
@@ -326,20 +337,20 @@ The output is:
 
 .. code-block:: text
 
-   Parameter 'A' requires an annotation (generated_add_constant.py, line 3)
+   Parameter 'A' requires an annotation (generated_add_one.py, line 2)
 
-The program comes from ``invalid_source``; ``filename`` supplies the
-name shown in the message, and successfully parsed nodes record it in
-their ``loc`` fields.
+The message identifies the supplied source text and the line with the
+invalid parameter. Successfully parsed nodes record the filename and
+their positions in ``loc``.
 
 .. _tvmscript-region-syntax:
 
 Region Syntax
 -------------
 
-The parser also determines which statements belong to a region. In the
-GPU example, TVMScript recognizes ``T.device_entry`` as a region
-construct. Its standalone form starts the device region:
+The parser also determines which statements belong to a region. A CUDA
+function uses ``T.device_entry`` to mark the statements that execute on
+the GPU. In the following function, the region starts at that line:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cuda.py
    :language: python
