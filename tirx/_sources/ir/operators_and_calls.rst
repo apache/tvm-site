@@ -21,7 +21,7 @@ Operators and Calls
 In this chapter, we will introduce operators and calls. A registered
 operator provides the shared argument requirements, type rules, and effect
 information for a computation. A call refers to an operator or function
-and records the argument expressions for one use. We will examine how
+and supplies argument expressions for that use. We will examine how
 the IR records these definitions and calls, infers result types, and
 checks arguments.
 
@@ -34,16 +34,13 @@ registered operator and records its name, argument descriptions, and
 attributes. The operator's registration also provides rules for
 result-type inference and argument validation.
 
-A CUDA kernel can read a thread's x-axis coordinate with
-``T.cuda.thread_idx("x")``. The registered operator behind this helper is
-``tirx.cuda.thread_idx``. We can retrieve its ``ir.Op`` object and inspect
-the names of the parameters it accepts:
+The GPU example uses the registered operator ``tirx.cuda.thread_idx`` to
+obtain a thread coordinate. ``ir.Op.get`` retrieves its ``ir.Op`` object,
+and ``op.args_info`` describes its parameters. We can extract their names:
 
 .. code-block:: python
 
    from tvm_tirx import ir
-   from tvm_tirx.script import tirx as T
-
    op = ir.Op.get("tirx.cuda.thread_idx")
    argument_names = [argument.name for argument in op.args_info]
    print(argument_names)
@@ -54,7 +51,7 @@ The output is:
 
    ['axis']
 
-The list contains one parameter name, ``axis``.
+The list contains one parameter name, ``axis``. In the GPU example,
 ``T.cuda.thread_idx("x")`` passes the string ``"x"`` for this parameter.
 This selects the x axis, so the call reads the current thread's x-axis
 coordinate within its block.
@@ -79,12 +76,12 @@ is passed to it, and what type of value it produces:
    * - ``args``
      - Value arguments in calling order.
    * - ``ty_args``
-     - Types passed as arguments to the callee, empty by default.
+     - Types supplied as arguments to the callee, empty by default.
    * - ``attrs``
      - Operator-specific configuration or annotations for this call,
        stored as an ``Attrs`` object, or ``None``.
    * - ``ty``
-     - The result type of this call, inferred or explicitly specified.
+     - The result type of this call, inferred or explicitly supplied.
 
 The thread-index call refers to the registered ``tirx.cuda.thread_idx``
 operator. We can construct it directly through the IR API:
@@ -106,19 +103,19 @@ creates an expression whose ``op`` refers to that definition and whose
    └── ty: ir.PrimType                   int32
 
 ``op.args_info[0].name`` is the parameter name ``"axis"``;
-``x_call.args[0]`` holds its argument value ``"x"``. The call describes
+``x_call.args[0]`` supplies its argument value ``"x"``. The call describes
 reading the current thread's x-axis coordinate when the compiled GPU
 program runs.
 
 For this registered operator, ``ir.Call`` infers ``ty`` from the
-operator's type rule. If we pass ``ty`` to the constructor, it uses that
-result type and skips inference.
+operator's type rule. An explicit ``ty`` supplies the result type directly
+and skips inference.
 
 The constructor also accepts the registered name directly:
 ``ir.Call("tirx.cuda.thread_idx", [ir.StringImm("x")])``.
 
-The call above selects the x axis. We can construct a call for the
-y axis with the same operator:
+The program uses the x axis. As an additional example, we can construct
+a call for the y axis with the same operator:
 
 .. code-block:: python
 
@@ -134,9 +131,8 @@ both calls produce an int32 coordinate:
                ├──> op: ir.Op  tirx.cuda.thread_idx
    y_call.op ──┘
 
-A call's result can be an operand in a larger expression. A kernel with
-256 threads per block can combine the block and thread coordinates to
-find the tensor element assigned to a thread:
+A call's result can be an operand in a larger expression. In the GPU
+example, two calls contribute to the element index ``i``:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cuda.py
    :language: python
@@ -144,10 +140,10 @@ find the tensor element assigned to a thread:
    :end-at:     i = T.cuda.block_idx
    :dedent: 4
 
-The block-index call produces the block coordinate, and the thread-index
-call produces the coordinate within that block. Each helper constructs
-an ``ir.Call``. The multiplication and addition use the calls' results
-as operands:
+``T.cuda.block_idx("x")`` supplies the block coordinate, and
+``T.cuda.thread_idx("x")`` supplies the thread's coordinate within that
+block. Each helper constructs an ``ir.Call``. The multiplication and
+addition use the calls' results as operands:
 
 .. code-block:: text
 
@@ -160,8 +156,10 @@ as operands:
 Expression Arguments
 ~~~~~~~~~~~~~~~~~~~~
 
-A call can also receive a computation as an argument. We can add one to
-a float32 scalar and pass the result to sigmoid:
+A call can also receive a computation as an argument.
+As an extension of the scalar add-one expression, we can apply sigmoid to
+``scalar_value + 1``. The variable ``scalar_value`` has type
+``ir.PrimType("float32")``:
 
 .. code-block:: python
 
@@ -169,10 +167,10 @@ a float32 scalar and pass the result to sigmoid:
    scalar_plus_one = scalar_value + 1
    activated_plus_one = ir.prim.sigmoid(scalar_plus_one)
 
-``activated_plus_one`` is the ``ir.Call`` returned by the
-``ir.prim.sigmoid`` helper. Its result type is ``ir.PrimType("float32")``,
-so it is also a primitive expression. We can construct the same call
-explicitly:
+``ir.prim.sigmoid(...)`` constructs and returns an ``ir.Call`` object.
+``activated_plus_one`` refers to this call, which is also a primitive
+expression because its result type is ``ir.PrimType("float32")``.
+We can construct the same call explicitly:
 
 .. code-block:: python
 
@@ -198,10 +196,9 @@ addition. This expression therefore computes
 Function Calls
 --------------
 
-The callee can also be a function defined in IR. An ``IRModule`` stores
-named function definitions, and an ``ir.GlobalVar`` identifies one of
-those definitions. For example, a small helper can put the scalar
-add-one computation in a function:
+The callee can also be a function defined in IR. A function stored in an
+``IRModule`` is referenced through an ``ir.GlobalVar``. For example, a
+small helper can put the scalar add-one computation in a function:
 
 .. code-block:: python
 
@@ -222,22 +219,20 @@ module and construct a call that passes ``scalar_value`` as its argument:
 
 ``callee`` is the module's global reference to ``add_one_scalar``.
 ``function_call.op`` refers to this ``GlobalVar``, and
-``function_call.args[0]`` holds the value passed to the helper's parameter
-``value``. The call records this reference and argument; the module holds
-the function's definition.
-
-In this example, ``callee.ty`` is ``MissingType``, so the reference does
-not provide a signature for result-type inference. We pass the return
-type from the definition through ``ty`` instead. Other function-valued
-IR expressions can also serve as callees. When their ``ty`` is a
-``FuncType``, the constructor can infer the result from its return type.
+``function_call.args[0]`` supplies the value for the helper's parameter
+``value``. A function-valued callee with a ``FuncType`` supplies a return
+type for inference. Here, ``callee.ty`` is ``MissingType``: the reference
+itself does not carry the function's signature. We therefore supply the
+return type from the definition through ``ty``. The call holds the
+reference and argument; the module holds the function's definition.
+Other function-valued IR expressions can also serve as callees.
 
 Calls in Function Bodies
 ------------------------
 
 A call contributes to a function's computation through the expression or
-statement that uses it. This CPU function applies sigmoid to each
-input element after adding one:
+statement that uses it. We can extend the CPU example to apply sigmoid
+to each add-one result:
 
 .. code-block:: python
 
@@ -263,7 +258,7 @@ The tensor store uses that call as its ``value`` expression:
    └── value: ir.Call                   prim.sigmoid
        └── args[0]: ir.prim.Add         A[i] + 1
 
-When the function runs, the addition produces the sigmoid input and the
+When the function runs, the addition supplies the sigmoid input and the
 store writes its result to ``B[i]``.
 
 Calls for Their Effects
@@ -329,10 +324,10 @@ write merely because its result is unused; it updates the output tensor.
 Type Arguments and Attributes
 -----------------------------
 
-A call's value arguments do not always determine its result type.
-A tensor allocation, for example, has no input tensor from which to
-infer a shape or dtype. We pass the required tensor type through
-``ty_args``. This call describes four float32 elements in local storage:
+Some operators need a type as an input to describe the value they
+produce. For example, a tensor allocation needs the shape and element
+type of the storage to create. This additional example describes a
+four-element float32 tensor in local storage:
 
 .. code-block:: python
 
@@ -340,31 +335,21 @@ infer a shape or dtype. We pass the required tensor type through
 
    temporary_type = tirx.TensorType((4,), "float32", scope="local")
    allocation_call = ir.Call(
-       "tirx.alloc_tensor", [], ty_args=[temporary_type],
-       attrs={"tirx.volatile": True},
+       "tirx.alloc_tensor", [], ty_args=[temporary_type], attrs={}
    )
 
-``ty_args[0]`` gives the tensor type to the allocation operator. Its
+``ty_args[0]`` supplies the tensor type to the allocation operator. Its
 type rule uses this argument as the result type, so ``allocation_call.ty``
 is ``temporary_type``. A call can therefore produce a tensor as well as a
 scalar or vector value.
+A surrounding ``ir.Bind`` can name the allocated tensor for subsequent
+reads and writes, as described in :doc:`statements`.
 
-The ``attrs`` dictionary configures this allocation. It becomes an
-``ir.DictAttrs`` object, and ``"tirx.volatile": True`` requests volatile
-accesses: code generation must preserve the loads and stores to this
-storage. These attributes belong to this call; the attributes on ``ir.Op``
-describe the operation shared by all its calls.
-
-We can give the allocated tensor a name with a binding:
-
-.. code-block:: python
-
-   temporary = ir.Var("temporary", temporary_type)
-   allocation_binding = ir.Bind(temporary, allocation_call)
-
-The binding's ``value`` is the allocation call, and its ``var`` is
-``temporary``. A function body can place this binding before statements
-that read or write the temporary tensor.
+The ``attrs`` argument supplies annotations for an individual call. A
+dictionary becomes an ``ir.DictAttrs`` object; the operator determines
+which annotations it supports and how they are used. These annotations
+belong to this call, while the attributes on ``ir.Op`` describe
+properties shared by every call to that operator.
 
 .. _types-and-validation:
 
@@ -373,11 +358,11 @@ that read or write the temporary tensor.
 Call Types and Validation
 -------------------------
 
-A call needs a result type that matches its inputs. For sigmoid, a scalar
-float32 input produces float32, and a four-lane input produces float32x4.
-The constructor normally infers this type. An explicit ``ty`` skips
-inference, and ``ty=ir.Type.missing()`` leaves the result undetermined.
-With the scalar addition defined above, the three choices are:
+The earlier examples inferred a call's result type or supplied it
+explicitly. During IR construction, we may also need a call whose result
+type is not known yet. ``ty=ir.Type.missing()`` records this state and
+defers inference. The same scalar sigmoid input, ``scalar_plus_one``,
+lets us compare all three choices:
 
 .. code-block:: python
 
@@ -387,12 +372,12 @@ With the scalar addition defined above, the three choices are:
    untyped_call = ir.Call(sigmoid_op, [scalar_plus_one], ty=ir.Type.missing())
 
 ``inferred_call`` and ``typed_call`` both store a float32 result type.
-``untyped_call`` explicitly sets ``MissingType``, so its result type
+``untyped_call`` explicitly supplies ``MissingType``, so its result type
 remains undetermined.
 
-Now suppose we are rebuilding the scalar call to work on four values at
-once. We can first set its vector argument and leave the result type
-undetermined until we run the operator's inference rule:
+The same operator also accepts a four-lane float32 vector. We can leave
+this call's result type undetermined, then infer it from the vector
+argument:
 
 .. code-block:: python
 
@@ -420,7 +405,7 @@ passes ``vector_value`` as that input. The following call leaves it out:
 
    invalid_sigmoid = ir.Call(sigmoid_op, [], ty="float32x4")
 
-``ty="float32x4"`` sets the result type directly, so the constructor
+``ty="float32x4"`` supplies the result type directly, so the constructor
 skips inference. It still creates the incomplete ``ir.Call`` object
 because argument checks do not run automatically. We can use
 :meth:`Call.validate() <tvm_tirx.ir.Call.validate>` to check whether the
@@ -431,6 +416,6 @@ arguments satisfy the operator's requirements:
    invalid_sigmoid.validate()
 
 ``invalid_sigmoid.validate()`` raises ``TypeError`` for the missing input.
-``untyped_sigmoid.validate()`` succeeds because the call includes
+``untyped_sigmoid.validate()`` succeeds because the call supplies
 ``vector_value``. Its ``ty`` remains ``MissingType`` because validation
 checks the arguments without inferring the result type.
