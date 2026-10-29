@@ -22,9 +22,17 @@ Types and Expressions
 
 In this chapter, we will introduce types and expressions. Expressions
 represent values and computations, and their types describe properties
-such as dtypes, tensor shapes, and function signatures. The add-one
-examples will show how to inspect these objects and construct expressions
-directly with the IR API.
+such as dtypes, tensor shapes, and function signatures. We will inspect
+the values in a small add-one function, then construct scalar and vector
+expressions through the IR API.
+
+This CPU function reads each element of ``A``, adds one, and writes the
+result to ``B``. Both tensors have the same symbolic length ``n``:
+
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+   :language: python
+   :start-at: from tvm_tirx.script import tirx as T
+   :end-at:         B[i] = A[i] + 1
 
 .. _user-ir-type:
 
@@ -57,8 +65,8 @@ for scalar and vector values, tensor types, and function types:
      - A tensor's shape, element type, and storage properties
      - ``shape``, ``dtype``, ``scope``, ``data_alignment``, ``layout``
 
-Next, we will look at two common types in tensor programs in more detail:
-``ir.PrimType`` for scalar and vector values, and ``tirx.TensorType`` for tensors.
+We will examine primitive and tensor types first, then look at the
+pointer type used for a tensor's data address.
 
 .. _user-ir-prim-type:
 
@@ -72,14 +80,14 @@ floating-point, and boolean values, either as scalars or vectors. Its
 In the program's tensor annotations, ``T.float32`` is an
 ``ir.PrimType("float32")`` object.
 
-The program declares its dynamic length as:
+The tensor length ``n`` is an integer symbol:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cpu.py
    :language: python
    :start-at: from tvm_tirx.script import tirx as T
    :end-at: n = T.dynamic
 
-where ``n`` is a 32-bit integer symbol with type ``ir.PrimType("int32")``.
+The default dtype is int32, so ``n`` has type ``ir.PrimType("int32")``.
 The loop index ``i`` has the same primitive type.
 
 We can express the addition ``A[i] + 1`` directly through the IR API,
@@ -141,6 +149,22 @@ when the function is compiled. Each call determines ``n`` from the length
 of ``A``. Since ``B`` uses the same symbol in its type, its length must
 match ``A``. The loop then uses ``n`` as its bound.
 
+PtrType
+~~~~~~~
+
+Some low-level operations take a memory address. The ``data`` property
+of a tensor parameter constructs an expression for its data pointer:
+
+.. code-block:: python
+
+   data_pointer = add_one.params[0].data
+   pointer_type = data_pointer.ty
+
+``pointer_type`` is an ``ir.PtrType``. Its ``element_type`` is
+``ir.PrimType("float32")``, and its ``scope`` is ``"global"``, matching
+the tensor's storage. This type describes the elements addressed by the
+pointer. The tensor's ``TensorType`` also records their shape.
+
 Expressions
 -----------
 
@@ -175,15 +199,13 @@ The output is:
    float32
    float32
 
-The variable's type was supplied by the ``"float32"`` argument in
-``ir.Var("scalar_value", "float32")``. The addition's constructor
-determines its result type from its operands; this process is called
-type inference.
+``ir.Var("scalar_value", "float32")`` sets the variable's type explicitly.
+The addition's constructor determines its result type from its operands;
+this process is called type inference.
 
 An expression under construction can also have an ``ir.MissingType``
-in ``ty`` while its type is undetermined. The
-:ref:`Call Types and Validation <types-and-validation>` section shows
-how a missing result type can be inferred later.
+in ``ty`` while its type is undetermined. Once its inputs are ready,
+the appropriate type rule can determine a concrete result type.
 
 Each expression class adds fields for its value or operands, alongside
 the shared ``ty`` field:
@@ -229,10 +251,9 @@ they produce primitive scalar or vector values.
 
 **Scalar expressions.** The CPU example uses the int32 expressions ``n``
 and ``i`` for the loop bound and index. The tensor read ``A[i]`` and the
-addition ``A[i] + 1`` both produce a single float32 value. In the GPU
-example, ``i < n`` produces a boolean that decides whether a thread
-writes its result. These scalar result types are stored as ``PrimType``
-objects in ``ty``.
+addition ``A[i] + 1`` both produce a single float32 value. A comparison
+such as ``i < n`` produces a boolean. These scalar result types are
+stored as ``PrimType`` objects in ``ty``.
 
 ``A`` itself represents the whole tensor and has a ``TensorType``.
 The expression ``A[i]`` reads element ``i`` of this tensor. TVMScript
@@ -262,11 +283,10 @@ For example, the GPU expression ``T.cuda.thread_idx("x")`` is an
 Primitive Operations
 ~~~~~~~~~~~~~~~~~~~~
 
-The previous section grouped expressions by result type. The operations
-below describe the computations that produce those values. The
-``ir.prim`` namespace provides node classes and Python helpers for
-arithmetic, comparisons, boolean logic, casts, and other primitive
-computations:
+Arithmetic and comparisons combine variables, constants, and tensor
+reads into larger expressions. The ``ir.prim`` namespace provides node
+classes and Python helpers for these operations, as well as boolean
+logic, casts, and other primitive computations:
 
 .. list-table::
    :header-rows: 1
@@ -282,9 +302,6 @@ computations:
 Python operators such as ``+``, ``*``, and ``<`` construct arithmetic
 and comparison nodes. The Python helper ``ir.prim.sigmoid`` constructs
 a call to a registered operator; the returned IR node is an ``ir.Call``.
-The :ref:`Call <user-ir-call>` section below examines its fields.
-The :doc:`ir.prim </reference/python/ir.prim>` API reference lists the
-available classes and construction helpers.
 
 In the CPU example, ``A[i] + 1`` becomes an ``ir.prim.Add``. A binary node
 stores its left operand in ``a`` and its right operand in ``b``:
@@ -303,8 +320,9 @@ These constructors also support vector operands. In ``vector_value + 1``,
 the scalar constant is broadcast to all four lanes, producing the
 four-lane expression ``vector_plus_one``.
 
-The GPU example combines multiplication, addition, and comparison to
-compute and check each thread's element index:
+A GPU version assigns one element to each thread. The following part of
+its body combines multiplication, addition, and comparison to compute
+and check that element's index:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cuda.py
    :language: python
@@ -325,6 +343,31 @@ operands are the index and tensor length:
 
 The comparison checks whether the thread has a valid element to process.
 
+Boolean operations combine comparisons into a single condition. For
+example, both checks must hold for a scalar to lie in the interval
+``[0, 1)``:
+
+.. code-block:: python
+
+   in_unit_interval = ir.prim.And(scalar_value >= 0, scalar_value < 1)
+
+The ``And`` node holds the two comparisons in ``a`` and ``b``. Its result
+type is ``ir.PrimType("bool")``.
+
+An operation can also change the dtype of a value. To produce a float16
+version of the add-one result, we can use a cast:
+
+.. code-block:: python
+
+   half_plus_one = ir.prim.Cast("float16", scalar_plus_one)
+
+The cast's ``value`` field refers to ``scalar_plus_one``. Its ``ty`` is
+``ir.PrimType("float16")``, which tells code generation to convert the
+float32 result to float16.
+
+The :doc:`ir.prim </reference/python/ir.prim>` API reference lists other
+operations and their construction helpers.
+
 .. _user-ir-var:
 
 Var
@@ -334,11 +377,9 @@ Var
 function parameters, loop indices, or intermediate values defined by
 bindings.
 
-The tensor parameters ``A`` and ``B`` in the program are represented by
-``ir.Var`` objects. The PyTorch tensors ``a`` and ``b`` are passed to these
-parameters when the compiled function is called. In the CPU example, we
-can retrieve the parameter variables from ``add_one.params`` and inspect
-their types through ``ty``:
+The tensor parameters ``A`` and ``B`` in our CPU function are represented
+by ``ir.Var`` objects. We can retrieve them from ``add_one.params`` and
+inspect their types through ``ty``:
 
 .. code-block:: python
 
@@ -368,6 +409,25 @@ scalar add-one example in PrimType uses this constructor:
 ``ir.Var("scalar_value", "float32")`` creates a variable whose ``name``
 is ``"scalar_value"`` and whose ``ty`` is ``ir.PrimType("float32")``.
 
+Tuples
+~~~~~~
+
+An expression can group several values into a tuple. For example, we can
+keep the original scalar and its add-one result together, then select
+the second value:
+
+.. code-block:: python
+
+   paired_values = ir.Tuple([scalar_value, scalar_plus_one])
+   second_value = ir.TupleGetItem(paired_values, 1)
+
+``paired_values.fields`` holds the two expressions. Its type is an
+``ir.TupleType`` whose ``fields`` holds their types: two
+``ir.PrimType("float32")`` objects. ``TupleGetItem`` records the tuple
+in ``tuple_value`` and the selected position in ``index``. Index 1
+selects ``scalar_plus_one``, so ``second_value`` has type
+``ir.PrimType("float32")``.
+
 .. _user-ir-call:
 
 Call
@@ -378,8 +438,8 @@ function. Its ``op`` field refers to the operator or function expression
 being called, and ``args`` holds the argument expressions. A registered
 operator is represented by ``ir.Op``.
 
-In the GPU example, the index expression contains calls to
-``T.cuda.block_idx("x")`` and ``T.cuda.thread_idx("x")``.
+The GPU index calculation above uses ``T.cuda.block_idx("x")`` and
+``T.cuda.thread_idx("x")`` to read the block and thread coordinates.
 These TVMScript helpers construct calls to registered CUDA operators.
 We can construct the thread-index call directly through the IR API:
 

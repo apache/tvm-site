@@ -79,5 +79,5 @@ The function signatures list timeout and capture-limit options.
 ``IketProfileResult.trace_json``, ``perfetto``, and ``html`` return the
 single artifact of each requested format. For captures producing multiple
 artifacts, use ``json_traces``, ``perfetto_traces``, and ``html_reports``
-instead. The :doc:`IKET Profiling guide </cuda/iket_profiling>` contains a
+instead. The :doc:`Profiling with IKET guide </programming_guides/iket_profiling>` contains a
 complete annotation and capture example.

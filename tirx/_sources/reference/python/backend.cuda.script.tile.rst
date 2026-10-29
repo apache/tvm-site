@@ -25,7 +25,7 @@ tvm_tirx.backend.cuda.script.tile
 .. currentmodule:: tvm_tirx.backend.cuda.script.tile
 
 These constructors build tile operations in TVMScript. The
-:doc:`operand guide </cuda/tile_patterns>` introduces the group, repeat,
+:doc:`Tile Operands and Execution guide </programming_guides/tile/tile_patterns>` introduces the group, repeat,
 and atom coordinates. The :doc:`instruction reference
 <backend.cuda.tile.instructions>` specifies the supported families and
 their parameters, operand layouts, alignment, and completion requirements.

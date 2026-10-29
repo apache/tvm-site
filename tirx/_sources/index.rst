@@ -56,22 +56,26 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: Programming Guides
+   :titlesonly:
+
+   programming_guides/index
+   programming_guides/language_basics
+   programming_guides/control_flow
+   programming_guides/types_tensors_memory
+   programming_guides/metaprogramming
+   programming_guides/cuda_ptx_interfaces
+   programming_guides/data_layout
+   programming_guides/tile/index
+   programming_guides/compiling
+   programming_guides/iket_profiling
+
+.. toctree::
+   :maxdepth: 1
    :caption: Compiler Internals
    :titlesonly:
 
    compiler/symbolic_integer_analysis
-
-.. toctree::
-   :maxdepth: 1
-   :caption: CUDA/PTX Programming Guides
-   :titlesonly:
-
-   cuda/language_basics
-   cuda/layouts
-   cuda/tile_operations
-   cuda/iket_profiling
-   cuda/backend_implementation
-   cuda/ptx_tablegen
 
 .. toctree::
    :maxdepth: 1
@@ -87,5 +91,6 @@ Table of Contents
 
    dev/source_build
    dev/doc_build
+   dev/cuda/index
    dev/ci_cd
    dev/release_process

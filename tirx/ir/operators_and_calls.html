@@ -161,18 +161,22 @@
 <li class="toctree-l1"><a class="reference internal" href="functions_and_modules.html">Functions and Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="printing_and_parsing.html">Printing and Parsing</a></li>
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/index.html">Programming Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/language_basics.html">Language Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/control_flow.html">Control Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/types_tensors_memory.html">Types, Tensors, and Memory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/metaprogramming.html">Metaprogramming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/cuda_ptx_interfaces.html">Calling CUDA and PTX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/data_layout.html">Data Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/tile/index.html">Tile Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/compiling.html">Compiling and Inspecting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/iket_profiling.html">Profiling with IKET</a></li>
+</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Compiler Internals</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../compiler/symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">CUDA/PTX Programming Guides</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../cuda/language_basics.html">CUDA Language Basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/layouts.html">Axis Layouts for CUDA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/tile_operations.html">CUDA Tile Operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/iket_profiling.html">IKET Profiling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/backend_implementation.html">CUDA Backend Source Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/ptx_tablegen.html">PTX Tablegen</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="nav bd-sidenav">
@@ -184,6 +188,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../dev/source_build.html">Build from Source</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/doc_build.html">Build This Doc Site</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/cuda/index.html">CUDA Backend Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/ci_cd.html">Reproduce CI/CD</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/release_process.html">Release Process</a></li>
 </ul>
@@ -377,7 +382,7 @@ document.write(`
 <p>In this chapter, we will introduce operators and calls. A registered
 operator provides the shared argument requirements, type rules, and effect
 information for a computation. A call refers to an operator or function
-and supplies argument expressions for that use. We will examine how
+and records the argument expressions for one use. We will examine how
 the IR records these definitions and calls, infers result types, and
 checks arguments.</p>
 <section id="operators">
@@ -387,10 +392,13 @@ thread-index lookup. <a class="reference internal" href="../reference/python/gen
 registered operator and records its name, argument descriptions, and
 attributes. The operator’s registration also provides rules for
 result-type inference and argument validation.</p>
-<p>The GPU example uses the registered operator <code class="docutils literal notranslate"><span class="pre">tirx.cuda.thread_idx</span></code> to
-obtain a thread coordinate. <code class="docutils literal notranslate"><span class="pre">ir.Op.get</span></code> retrieves its <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> object,
-and <code class="docutils literal notranslate"><span class="pre">op.args_info</span></code> describes its parameters. We can extract their names:</p>
+<p>A CUDA kernel can read a thread’s x-axis coordinate with
+<code class="docutils literal notranslate"><span class="pre">T.cuda.thread_idx(&quot;x&quot;)</span></code>. The registered operator behind this helper is
+<code class="docutils literal notranslate"><span class="pre">tirx.cuda.thread_idx</span></code>. We can retrieve its <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> object and inspect
+the names of the parameters it accepts:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
 <span class="n">op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tirx.cuda.thread_idx"</span><span class="p">)</span>
 <span class="n">argument_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">argument</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">argument</span> <span class="ow">in</span> <span class="n">op</span><span class="o">.</span><span class="n">args_info</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">argument_names</span><span class="p">)</span>
@@ -400,7 +408,7 @@ and <code class="docutils literal notranslate"><span class="pre">op.args_info</s
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['axis']
 </pre></div>
 </div>
-<p>The list contains one parameter name, <code class="docutils literal notranslate"><span class="pre">axis</span></code>. In the GPU example,
+<p>The list contains one parameter name, <code class="docutils literal notranslate"><span class="pre">axis</span></code>.
 <code class="docutils literal notranslate"><span class="pre">T.cuda.thread_idx(&quot;x&quot;)</span></code> passes the string <code class="docutils literal notranslate"><span class="pre">&quot;x&quot;</span></code> for this parameter.
 This selects the x axis, so the call reads the current thread’s x-axis
 coordinate within its block.</p>
@@ -430,14 +438,14 @@ is passed to it, and what type of value it produces:</p>
 <td><p>Value arguments in calling order.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ty_args</span></code></p></td>
-<td><p>Types supplied as arguments to the callee, empty by default.</p></td>
+<td><p>Types passed as arguments to the callee, empty by default.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">attrs</span></code></p></td>
 <td><p>Operator-specific configuration or annotations for this call,
 stored as an <code class="docutils literal notranslate"><span class="pre">Attrs</span></code> object, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ty</span></code></p></td>
-<td><p>The result type of this call, inferred or explicitly supplied.</p></td>
+<td><p>The result type of this call, inferred or explicitly specified.</p></td>
 </tr>
 </tbody>
 </table>
@@ -458,16 +466,16 @@ creates an expression whose <code class="docutils literal notranslate"><span cla
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">op.args_info[0].name</span></code> is the parameter name <code class="docutils literal notranslate"><span class="pre">&quot;axis&quot;</span></code>;
-<code class="docutils literal notranslate"><span class="pre">x_call.args[0]</span></code> supplies its argument value <code class="docutils literal notranslate"><span class="pre">&quot;x&quot;</span></code>. The call describes
+<code class="docutils literal notranslate"><span class="pre">x_call.args[0]</span></code> holds its argument value <code class="docutils literal notranslate"><span class="pre">&quot;x&quot;</span></code>. The call describes
 reading the current thread’s x-axis coordinate when the compiled GPU
 program runs.</p>
 <p>For this registered operator, <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> infers <code class="docutils literal notranslate"><span class="pre">ty</span></code> from the
-operator’s type rule. An explicit <code class="docutils literal notranslate"><span class="pre">ty</span></code> supplies the result type directly
-and skips inference.</p>
+operator’s type rule. If we pass <code class="docutils literal notranslate"><span class="pre">ty</span></code> to the constructor, it uses that
+result type and skips inference.</p>
 <p>The constructor also accepts the registered name directly:
 <code class="docutils literal notranslate"><span class="pre">ir.Call(&quot;tirx.cuda.thread_idx&quot;,</span> <span class="pre">[ir.StringImm(&quot;x&quot;)])</span></code>.</p>
-<p>The program uses the x axis. As an additional example, we can construct
-a call for the y axis with the same operator:</p>
+<p>The call above selects the x axis. We can construct a call for the
+y axis with the same operator:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">y_call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="p">[</span><span class="n">ir</span><span class="o">.</span><span class="n">StringImm</span><span class="p">(</span><span class="s2">"y"</span><span class="p">)])</span>
 </pre></div>
 </div>
@@ -479,15 +487,16 @@ both calls produce an int32 coordinate:</p>
 y_call.op ──┘
 </pre></div>
 </div>
-<p>A call’s result can be an operand in a larger expression. In the GPU
-example, two calls contribute to the element index <code class="docutils literal notranslate"><span class="pre">i</span></code>:</p>
+<p>A call’s result can be an operand in a larger expression. A kernel with
+256 threads per block can combine the block and thread coordinates to
+find the tensor element assigned to a thread:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">T.cuda.block_idx(&quot;x&quot;)</span></code> supplies the block coordinate, and
-<code class="docutils literal notranslate"><span class="pre">T.cuda.thread_idx(&quot;x&quot;)</span></code> supplies the thread’s coordinate within that
-block. Each helper constructs an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code>. The multiplication and
-addition use the calls’ results as operands:</p>
+<p>The block-index call produces the block coordinate, and the thread-index
+call produces the coordinate within that block. Each helper constructs
+an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code>. The multiplication and addition use the calls’ results
+as operands:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.prim.Add
 ├── a: ir.prim.Mul
 │   ├── a: ir.Call                   T.cuda.block_idx("x")
@@ -497,19 +506,17 @@ addition use the calls’ results as operands:</p>
 </div>
 <section id="expression-arguments">
 <h3>Expression Arguments<a class="headerlink" href="#expression-arguments" title="Link to this heading">#</a></h3>
-<p>A call can also receive a computation as an argument.
-As an extension of the scalar add-one expression, we can apply sigmoid to
-<code class="docutils literal notranslate"><span class="pre">scalar_value</span> <span class="pre">+</span> <span class="pre">1</span></code>. The variable <code class="docutils literal notranslate"><span class="pre">scalar_value</span></code> has type
-<code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>:</p>
+<p>A call can also receive a computation as an argument. We can add one to
+a float32 scalar and pass the result to sigmoid:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scalar_value</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"scalar_value"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
 <span class="n">scalar_plus_one</span> <span class="o">=</span> <span class="n">scalar_value</span> <span class="o">+</span> <span class="mi">1</span>
 <span class="n">activated_plus_one</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">scalar_plus_one</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">ir.prim.sigmoid(...)</span></code> constructs and returns an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> object.
-<code class="docutils literal notranslate"><span class="pre">activated_plus_one</span></code> refers to this call, which is also a primitive
-expression because its result type is <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>.
-We can construct the same call explicitly:</p>
+<p><code class="docutils literal notranslate"><span class="pre">activated_plus_one</span></code> is the <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> returned by the
+<code class="docutils literal notranslate"><span class="pre">ir.prim.sigmoid</span></code> helper. Its result type is <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>,
+so it is also a primitive expression. We can construct the same call
+explicitly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sigmoid_op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prim.sigmoid"</span><span class="p">)</span>
 <span class="n">activated_plus_one</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">sigmoid_op</span><span class="p">,</span> <span class="p">[</span><span class="n">scalar_plus_one</span><span class="p">])</span>
 </pre></div>
@@ -531,9 +538,10 @@ addition. This expression therefore computes
 </section>
 <section id="function-calls">
 <h2>Function Calls<a class="headerlink" href="#function-calls" title="Link to this heading">#</a></h2>
-<p>The callee can also be a function defined in IR. A function stored in an
-<code class="docutils literal notranslate"><span class="pre">IRModule</span></code> is referenced through an <code class="docutils literal notranslate"><span class="pre">ir.GlobalVar</span></code>. For example, a
-small helper can put the scalar add-one computation in a function:</p>
+<p>The callee can also be a function defined in IR. An <code class="docutils literal notranslate"><span class="pre">IRModule</span></code> stores
+named function definitions, and an <code class="docutils literal notranslate"><span class="pre">ir.GlobalVar</span></code> identifies one of
+those definitions. For example, a small helper can put the scalar
+add-one computation in a function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -550,19 +558,20 @@ module and construct a call that passes <code class="docutils literal notranslat
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">callee</span></code> is the module’s global reference to <code class="docutils literal notranslate"><span class="pre">add_one_scalar</span></code>.
 <code class="docutils literal notranslate"><span class="pre">function_call.op</span></code> refers to this <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">function_call.args[0]</span></code> supplies the value for the helper’s parameter
-<code class="docutils literal notranslate"><span class="pre">value</span></code>. A function-valued callee with a <code class="docutils literal notranslate"><span class="pre">FuncType</span></code> supplies a return
-type for inference. Here, <code class="docutils literal notranslate"><span class="pre">callee.ty</span></code> is <code class="docutils literal notranslate"><span class="pre">MissingType</span></code>: the reference
-itself does not carry the function’s signature. We therefore supply the
-return type from the definition through <code class="docutils literal notranslate"><span class="pre">ty</span></code>. The call holds the
-reference and argument; the module holds the function’s definition.
-Other function-valued IR expressions can also serve as callees.</p>
+<code class="docutils literal notranslate"><span class="pre">function_call.args[0]</span></code> holds the value passed to the helper’s parameter
+<code class="docutils literal notranslate"><span class="pre">value</span></code>. The call records this reference and argument; the module holds
+the function’s definition.</p>
+<p>In this example, <code class="docutils literal notranslate"><span class="pre">callee.ty</span></code> is <code class="docutils literal notranslate"><span class="pre">MissingType</span></code>, so the reference does
+not provide a signature for result-type inference. We pass the return
+type from the definition through <code class="docutils literal notranslate"><span class="pre">ty</span></code> instead. Other function-valued
+IR expressions can also serve as callees. When their <code class="docutils literal notranslate"><span class="pre">ty</span></code> is a
+<code class="docutils literal notranslate"><span class="pre">FuncType</span></code>, the constructor can infer the result from its return type.</p>
 </section>
 <section id="calls-in-function-bodies">
 <h2>Calls in Function Bodies<a class="headerlink" href="#calls-in-function-bodies" title="Link to this heading">#</a></h2>
 <p>A call contributes to a function’s computation through the expression or
-statement that uses it. We can extend the CPU example to apply sigmoid
-to each add-one result:</p>
+statement that uses it. This CPU function applies sigmoid to each
+input element after adding one:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
@@ -583,7 +592,7 @@ The tensor store uses that call as its <code class="docutils literal notranslate
     └── args[0]: ir.prim.Add         A[i] + 1
 </pre></div>
 </div>
-<p>When the function runs, the addition supplies the sigmoid input and the
+<p>When the function runs, the addition produces the sigmoid input and the
 store writes its result to <code class="docutils literal notranslate"><span class="pre">B[i]</span></code>.</p>
 <section id="calls-for-their-effects">
 <h3>Calls for Their Effects<a class="headerlink" href="#calls-for-their-effects" title="Link to this heading">#</a></h3>
@@ -638,37 +647,44 @@ write merely because its result is unused; it updates the output tensor.</p>
 </section>
 <section id="type-arguments-and-attributes">
 <h2>Type Arguments and Attributes<a class="headerlink" href="#type-arguments-and-attributes" title="Link to this heading">#</a></h2>
-<p>Some operators need a type as an input to describe the value they
-produce. For example, a tensor allocation needs the shape and element
-type of the storage to create. This additional example describes a
-four-element float32 tensor in local storage:</p>
+<p>A call’s value arguments do not always determine its result type.
+A tensor allocation, for example, has no input tensor from which to
+infer a shape or dtype. We pass the required tensor type through
+<code class="docutils literal notranslate"><span class="pre">ty_args</span></code>. This call describes four float32 elements in local storage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span>
 
 <span class="n">temporary_type</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">TensorType</span><span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"local"</span><span class="p">)</span>
 <span class="n">allocation_call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span>
-    <span class="s2">"tirx.alloc_tensor"</span><span class="p">,</span> <span class="p">[],</span> <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">temporary_type</span><span class="p">],</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{}</span>
+    <span class="s2">"tirx.alloc_tensor"</span><span class="p">,</span> <span class="p">[],</span> <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">temporary_type</span><span class="p">],</span>
+    <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">"tirx.volatile"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">ty_args[0]</span></code> supplies the tensor type to the allocation operator. Its
+<p><code class="docutils literal notranslate"><span class="pre">ty_args[0]</span></code> gives the tensor type to the allocation operator. Its
 type rule uses this argument as the result type, so <code class="docutils literal notranslate"><span class="pre">allocation_call.ty</span></code>
 is <code class="docutils literal notranslate"><span class="pre">temporary_type</span></code>. A call can therefore produce a tensor as well as a
-scalar or vector value.
-A surrounding <code class="docutils literal notranslate"><span class="pre">ir.Bind</span></code> can name the allocated tensor for subsequent
-reads and writes, as described in <a class="reference internal" href="statements.html"><span class="doc">Statements</span></a>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">attrs</span></code> argument supplies annotations for an individual call. A
-dictionary becomes an <code class="docutils literal notranslate"><span class="pre">ir.DictAttrs</span></code> object; the operator determines
-which annotations it supports and how they are used. These annotations
-belong to this call, while the attributes on <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> describe
-properties shared by every call to that operator.</p>
+scalar or vector value.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">attrs</span></code> dictionary configures this allocation. It becomes an
+<code class="docutils literal notranslate"><span class="pre">ir.DictAttrs</span></code> object, and <code class="docutils literal notranslate"><span class="pre">&quot;tirx.volatile&quot;:</span> <span class="pre">True</span></code> requests volatile
+accesses: code generation must preserve the loads and stores to this
+storage. These attributes belong to this call; the attributes on <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code>
+describe the operation shared by all its calls.</p>
+<p>We can give the allocated tensor a name with a binding:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">temporary</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"temporary"</span><span class="p">,</span> <span class="n">temporary_type</span><span class="p">)</span>
+<span class="n">allocation_binding</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">temporary</span><span class="p">,</span> <span class="n">allocation_call</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The binding’s <code class="docutils literal notranslate"><span class="pre">value</span></code> is the allocation call, and its <code class="docutils literal notranslate"><span class="pre">var</span></code> is
+<code class="docutils literal notranslate"><span class="pre">temporary</span></code>. A function body can place this binding before statements
+that read or write the temporary tensor.</p>
 </section>
 <section id="call-types-and-validation">
 <span id="type-inference-and-validation"></span><span id="types-and-validation"></span><h2>Call Types and Validation<a class="headerlink" href="#call-types-and-validation" title="Link to this heading">#</a></h2>
-<p>The earlier examples inferred a call’s result type or supplied it
-explicitly. During IR construction, we may also need a call whose result
-type is not known yet. <code class="docutils literal notranslate"><span class="pre">ty=ir.Type.missing()</span></code> records this state and
-defers inference. The same scalar sigmoid input, <code class="docutils literal notranslate"><span class="pre">scalar_plus_one</span></code>,
-lets us compare all three choices:</p>
+<p>A call needs a result type that matches its inputs. For sigmoid, a scalar
+float32 input produces float32, and a four-lane input produces float32x4.
+The constructor normally infers this type. An explicit <code class="docutils literal notranslate"><span class="pre">ty</span></code> skips
+inference, and <code class="docutils literal notranslate"><span class="pre">ty=ir.Type.missing()</span></code> leaves the result undetermined.
+With the scalar addition defined above, the three choices are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sigmoid_op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prim.sigmoid"</span><span class="p">)</span>
 <span class="n">inferred_call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">sigmoid_op</span><span class="p">,</span> <span class="p">[</span><span class="n">scalar_plus_one</span><span class="p">])</span>
 <span class="n">typed_call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">sigmoid_op</span><span class="p">,</span> <span class="p">[</span><span class="n">scalar_plus_one</span><span class="p">],</span> <span class="n">ty</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>
@@ -676,11 +692,11 @@ lets us compare all three choices:</p>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">inferred_call</span></code> and <code class="docutils literal notranslate"><span class="pre">typed_call</span></code> both store a float32 result type.
-<code class="docutils literal notranslate"><span class="pre">untyped_call</span></code> explicitly supplies <code class="docutils literal notranslate"><span class="pre">MissingType</span></code>, so its result type
+<code class="docutils literal notranslate"><span class="pre">untyped_call</span></code> explicitly sets <code class="docutils literal notranslate"><span class="pre">MissingType</span></code>, so its result type
 remains undetermined.</p>
-<p>The same operator also accepts a four-lane float32 vector. We can leave
-this call’s result type undetermined, then infer it from the vector
-argument:</p>
+<p>Now suppose we are rebuilding the scalar call to work on four values at
+once. We can first set its vector argument and leave the result type
+undetermined until we run the operator’s inference rule:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vector_value</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"vector_value"</span><span class="p">,</span> <span class="s2">"float32x4"</span><span class="p">)</span>
 <span class="n">untyped_sigmoid</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">sigmoid_op</span><span class="p">,</span> <span class="p">[</span><span class="n">vector_value</span><span class="p">],</span> <span class="n">ty</span><span class="o">=</span><span class="n">ir</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">missing</span><span class="p">())</span>
 </pre></div>
@@ -701,7 +717,7 @@ passes <code class="docutils literal notranslate"><span class="pre">vector_value
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">invalid_sigmoid</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">sigmoid_op</span><span class="p">,</span> <span class="p">[],</span> <span class="n">ty</span><span class="o">=</span><span class="s2">"float32x4"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">ty=&quot;float32x4&quot;</span></code> supplies the result type directly, so the constructor
+<p><code class="docutils literal notranslate"><span class="pre">ty=&quot;float32x4&quot;</span></code> sets the result type directly, so the constructor
 skips inference. It still creates the incomplete <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> object
 because argument checks do not run automatically. We can use
 <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Call.html#tvm_tirx.ir.Call.validate" title="tvm_tirx.ir.Call.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Call.validate()</span></code></a> to check whether the
@@ -710,7 +726,7 @@ arguments satisfy the operator’s requirements:</p>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">invalid_sigmoid.validate()</span></code> raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for the missing input.
-<code class="docutils literal notranslate"><span class="pre">untyped_sigmoid.validate()</span></code> succeeds because the call supplies
+<code class="docutils literal notranslate"><span class="pre">untyped_sigmoid.validate()</span></code> succeeds because the call includes
 <code class="docutils literal notranslate"><span class="pre">vector_value</span></code>. Its <code class="docutils literal notranslate"><span class="pre">ty</span></code> remains <code class="docutils literal notranslate"><span class="pre">MissingType</span></code> because validation
 checks the arguments without inferring the result type.</p>
 </section>

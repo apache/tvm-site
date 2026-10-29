@@ -106,5 +106,5 @@ available:
 ``gen_stubs`` generates signatures for editor tooling, and ``gen_coverage``
 reports instruction families and variants. These files support inspection;
 runtime code generation reads the instruction table directly. Each command's
-``--help`` describes its available options. The :doc:`PTX Tablegen guide
-</cuda/ptx_tablegen>` follows an instruction through the implementation.
+``--help`` describes its available options. The :doc:`PTX TableGen guide
+</dev/cuda/ptx_tablegen>` follows an instruction through the implementation.

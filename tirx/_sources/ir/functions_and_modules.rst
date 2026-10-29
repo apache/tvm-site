@@ -27,11 +27,25 @@ implementation and locate definitions through global references.
 Functions
 ---------
 
-:class:`ir.BaseFunc <tvm_tirx.ir.BaseFunc>` is the common base class for
-IR function definitions. It provides the ``attrs`` field for named
-function properties. :class:`tirx.Function <tvm_tirx.tirx.Function>` is
-its subclass for tensor programs, adding parameters, a return type, and
-a statement body:
+We can inspect a small CPU function to see how its parameters and body
+fit together. It accepts two tensors of length ``n`` and writes each
+input value plus one to the output:
+
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+   :language: python
+   :start-at: from tvm_tirx.script import tirx as T
+   :end-at:         B[i] = A[i] + 1
+
+``@T.function`` parses the definition into a
+:class:`tirx.Function <tvm_tirx.tirx.Function>` object, which the name
+``add_one`` now refers to. Its ``params`` field holds ``A`` and ``B``,
+and its ``body`` holds the loop.
+
+``tirx.Function`` inherits from
+:class:`ir.BaseFunc <tvm_tirx.ir.BaseFunc>`, the common base class for
+IR function definitions. The base class provides ``attrs`` for named
+function properties. ``tirx.Function`` adds the tensor program's
+parameters, return type, and statement body:
 
 .. code-block:: text
 
@@ -55,17 +69,8 @@ The main fields of ``tirx.Function`` are:
    * - ``attrs``
      - An ``ir.DictAttrs`` containing named function properties.
 
-In TVMScript, ``@T.function`` produces this IR object from a function
-definition. The CPU example is defined as:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
-   :language: python
-   :start-at: from tvm_tirx.script import tirx as T
-   :end-at:         B[i] = A[i] + 1
-
-The name ``add_one`` refers to the resulting ``tirx.Function``. Its
-parameters are the variables ``A`` and ``B``, and its body contains the
-loop. The loop has its own body containing the tensor store:
+The loop has its own body containing the tensor store. These nested
+bodies give ``add_one`` the following structure:
 
 .. code-block:: text
 
@@ -94,8 +99,8 @@ themselves. ``return_type`` is the same type stored in
 ``add_one.ret_type``: an empty tuple type, ``ir.TupleType([])``, indicating
 no return value. This function writes its results into ``B``.
 
-A function can also return a value explicitly. The ``add_one_scalar``
-helper from :doc:`operators_and_calls` returns a single float32 value:
+A function can also return a value explicitly. This helper adds one
+to a scalar and returns the result:
 
 .. code-block:: python
 
@@ -132,7 +137,7 @@ The new function takes ``A`` and ``B`` as parameters and runs ``loop``
 as its body. The constructor wraps this single statement in a ``SeqStmt``.
 ``ret_type=ir.TupleType([])`` specifies that the function returns no value;
 its loop writes the result to ``B``. A function that returns a value needs
-its return type supplied through ``ret_type``; the constructor does not
+its return type set through ``ret_type``; the constructor does not
 infer it from the body.
 
 We will put ``ir_function`` in a module and compile it below. To make the
@@ -144,9 +149,8 @@ compiled function available under the name ``"add_one"``, we set its
    ir_function = ir_function.with_attr("global_symbol", "add_one")
 
 ``with_attr``, inherited from ``ir.BaseFunc``, returns a new function with
-this entry in ``attrs``. For public functions written in TVMScript,
-``@T.function`` sets
-``global_symbol`` to the Python function name automatically.
+this entry in ``attrs``. For public TVMScript functions, ``@T.function``
+sets ``global_symbol`` to the Python function name automatically.
 
 Modules
 -------
@@ -186,17 +190,18 @@ then use it to look up the definition:
 The first line returns the ``GlobalVar`` key, and the second returns
 the ``tirx.Function`` stored under it. ``module["add_one"]`` retrieves
 the same definition directly by name. A call can use ``add_one_ref`` as
-its ``op`` to identify this function, as in the function-call example in
-:doc:`operators_and_calls`.
+its ``op`` to identify this function. The call records the reference and
+its arguments; the module stores the definition that the reference
+identifies.
 
 The name ``"add_one"`` used in this lookup is the function's name within
 the module. The function's ``attrs["global_symbol"]`` specifies its
 exported name for code generation. Both names are ``"add_one"`` in this
 example, but they serve these separate purposes.
 
-``tvm_tirx.compile`` accepts a module as well as a standalone function. We
-can compile ``module`` with the same LLVM target used in Quick Start,
-then create CPU tensors and call its exported ``add_one`` function:
+``tvm_tirx.compile`` accepts a module as well as a standalone function.
+We can compile ``module`` for the CPU with LLVM, then call its exported
+``add_one`` function with input and output tensors:
 
 .. code-block:: python
 
@@ -210,4 +215,4 @@ then create CPU tensors and call its exported ``add_one`` function:
    compiled["add_one"](a, b)
 
 ``compiled["add_one"]`` retrieves the exported function. The call reads
-``a`` and writes ``a + 1`` into ``b``, just as in Quick Start.
+``a`` and writes ``a + 1`` into ``b``.

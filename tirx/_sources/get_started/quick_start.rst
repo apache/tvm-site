@@ -304,7 +304,7 @@ Further Reading
 ---------------
 
 - :doc:`/ir/overview`: the IR objects in depth and how they fit together.
-- :doc:`TIRx CUDA Programming Guide </cuda/language_basics>`: writing CUDA
+- :doc:`Programming Guides </programming_guides/index>`: writing CUDA
   kernels with TIRx.
 - :doc:`Python API </reference/python/index>`: the full Python API reference.
 - :doc:`/dev/source_build`: building TIRx from source.

@@ -24,8 +24,8 @@ CUDA tile instruction reference
 
 This reference specifies the operands, parameters, storage requirements, and
 lowering behavior of CUDA tile instructions. For a worked introduction to
-operand views, see :doc:`/cuda/tile_patterns`. The :doc:`instruction guides
-</cuda/tile_operations>` provide complete kernels and completion protocols.
+operand views, see :doc:`/programming_guides/tile/tile_patterns`. The :doc:`instruction guides
+</programming_guides/tile/index>` provide complete kernels and completion protocols.
 
 .. contents:: Instruction families
    :local:
@@ -120,7 +120,7 @@ Register instructions
      - Meaning
    * - ``scope``
      - static str; default "thread"
-     - Execution scope; group axes follow :doc:`/cuda/tile_patterns`. It does not elect an issuing thread.
+     - Execution scope; group axes follow :doc:`/programming_guides/tile/tile_patterns`. It does not elect an issuing thread.
    * - ``pred``
      - runtime bool; default None
      - Execute the instruction when true; None is unconditional.
@@ -167,7 +167,7 @@ Operand order: ``dst, src; or the explicit packing/unpacking register groups``.
 
 ``mov`` copies register bits or assembles/disassembles a native register group. It
 performs no numeric conversion and cannot change which thread owns a value. Use
-:ref:`numeric conversion <cuda-tile-contract-cvt>` for conversion and :doc:`/cuda/tile_ops/data_movement` for memory.
+:ref:`numeric conversion <cuda-tile-contract-cvt>` for conversion and :doc:`/programming_guides/tile/data_movement` for memory.
 
 The scalar form ends both tensor operands in ``(1,)``. All earlier axes after the
 execution-group prefix are repeats. A scalar source expression can broadcast, for
@@ -407,7 +407,7 @@ registers``. For example::
 
 Both calls transfer four 32-bit words per repeat. Global-to-shared copying through
 registers consists of these two explicit calls and caller-allocated register storage. To
-issue a direct asynchronous transfer, use :doc:`/cuda/tile_ops/async_copies`.
+issue a direct asynchronous transfer, use :doc:`/programming_guides/tile/async_copies`.
 
 Contract and instruction selection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -446,7 +446,7 @@ word order. Emit one selected ld/st, optionally with cache_policy and pred. Repe
 unroll; group axes bind hardware IDs. Ordinary ld/st performs no asynchronous completion
 protocol.
 
-For a complete kernel, see :doc:`/cuda/tile_ops/data_movement`.
+For a complete kernel, see :doc:`/programming_guides/tile/data_movement`.
 
 .. _cuda-tile-contract-ldmatrix-stmatrix:
 
@@ -581,7 +581,7 @@ An insufficiently aligned row, wrong register owner, overlapping loaded register
 partially active warp is rejected. Gaps **between** rows or register slots are legal;
 gaps **within** a shared 16-byte row are not.
 
-For a complete kernel, see :doc:`/cuda/tile_ops/warp_matrix`.
+For a complete kernel, see :doc:`/programming_guides/tile/warp_matrix`.
 
 .. _cuda-tile-contract-cp-async:
 
@@ -716,7 +716,7 @@ shared-to-global request, a noncontiguous chunk, an unaligned base, or a missing
 axis fails its contract; lowering never substitutes a synchronous copy or a narrower
 instruction.
 
-For a complete kernel, see :doc:`/cuda/tile_ops/async_copies`.
+For a complete kernel, see :doc:`/programming_guides/tile/async_copies`.
 
 .. _cuda-tile-contract-cp-async-bulk:
 
@@ -768,7 +768,7 @@ This pattern issues
 ``cp.async.bulk.shared::cluster.shared::cta.mbarrier::complete_tx::bytes``. It copies
 one contiguous shared-memory chunk to another CTA in the launch cluster and completes
 transaction bytes on a barrier in the destination CTA. For global tensor maps, use
-:doc:`/cuda/tile_ops/tma` instead.
+:doc:`/programming_guides/tile/tma` instead.
 
 The pointer contract
 ^^^^^^^^^^^^^^^^^^^^
@@ -1066,7 +1066,7 @@ sixteen-byte shared block. The remaining eight bytes are undefined padding; barr
 accounting counts payload bytes, not this padding. Swizzle 0/3 and gather4 use this
 explicit packed image.
 
-For a complete kernel, see :doc:`/cuda/tile_ops/tma`.
+For a complete kernel, see :doc:`/programming_guides/tile/tma`.
 
 .. _cuda-tile-contract-mma-sync:
 
@@ -1184,11 +1184,11 @@ values between lanes; an incompatible physical owner requires explicit preparati
 the intended rounding order.
 
 The tile call inserts no shared loads, ``ldmatrix``, communication, or barrier. Use
-:doc:`/cuda/tile_ops/warp_matrix` to prepare fragments when that native shared/register image
+:doc:`/programming_guides/tile/warp_matrix` to prepare fragments when that native shared/register image
 matches your operands. Sparse and other MMA shapes require their own explicit pattern;
 this page does not claim those forms.
 
-For a complete kernel, see :doc:`/cuda/tile_ops/warp_matrix`.
+For a complete kernel, see :doc:`/programming_guides/tile/warp_matrix`.
 
 .. _cuda-tile-contract-tcgen05-ld-st:
 
@@ -1332,7 +1332,7 @@ complete a preceding MMA. Allocation, deallocation, fences and synchronization r
 explicit.
 
 For TMEM allocation, MMA completion, and result readback in one kernel, see
-:doc:`/cuda/tile_ops/blackwell_tensor_cores`.
+:doc:`/programming_guides/tile/blackwell_tensor_cores`.
 
 .. _cuda-tile-contract-tcgen05-cp:
 
@@ -1466,7 +1466,7 @@ chooses this qualifier.
 Allocation, shared proxy fencing, election, commit, wait and deallocation are caller
 code. ``pred`` gates the cp but does not adjust a surrounding completion protocol.
 
-The :doc:`Blackwell Tensor Core guide </cuda/tile_ops/blackwell_tensor_cores>`
+The :doc:`Blackwell Tensor Cores guide </programming_guides/tile/blackwell_tensor_cores>`
 compares this completion protocol with TMEM loads and stores.
 
 .. _cuda-tile-contract-tcgen05-mma:
@@ -1653,7 +1653,7 @@ input kind/scale-vector mode.
 tile does not initialize barriers, elect a thread, perform TMA, prepare scale factors,
 commit or wait. Keep the shared/TMEM allocations alive until their consumers complete.
 
-For a complete kernel, see :doc:`/cuda/tile_ops/blackwell_tensor_cores`.
+For a complete kernel, see :doc:`/programming_guides/tile/blackwell_tensor_cores`.
 
 .. _cuda-tile-contract-ewise:
 
@@ -1727,7 +1727,7 @@ corresponding destination slot. There is one scalar function evaluation per elem
 a guaranteed single PTX instruction. Numeric conversion, packed arithmetic and
 load/store staging must be written explicitly by the caller.
 
-For a complete kernel, see :doc:`/cuda/tile_ops/arithmetic`.
+For a complete kernel, see :doc:`/programming_guides/tile/arithmetic`.
 
 .. _cuda-matrix-descriptor-extraction:
 

@@ -18,13 +18,12 @@
 Symbolic Integer Analysis
 =========================
 
-In this chapter, we will introduce symbolic integer analysis for tensor
-shapes, loop bounds, and element indices. A pass that combines four scalar
-accesses into one vector access needs to preserve their positions and
-establish that the whole group is within the tensor. The length may only
-be known at runtime, so these decisions require reasoning about symbolic
-expressions. We will start from a loop's known range, then examine grouped
-indices and a neighboring-element access.
+This guide introduces symbolic integer analysis for tensor shapes, loop bounds,
+and element indices. A pass that combines four scalar accesses into one vector
+access needs to preserve their positions and establish that the whole group is
+within the tensor. The length may only be known at runtime, so these decisions
+require reasoning about symbolic expressions. We will start from a loop's known
+range, then examine grouped indices and a neighboring-element access.
 
 The Analyzer
 ------------

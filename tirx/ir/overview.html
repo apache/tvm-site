@@ -161,18 +161,22 @@
 <li class="toctree-l1"><a class="reference internal" href="functions_and_modules.html">Functions and Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="printing_and_parsing.html">Printing and Parsing</a></li>
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/index.html">Programming Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/language_basics.html">Language Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/control_flow.html">Control Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/types_tensors_memory.html">Types, Tensors, and Memory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/metaprogramming.html">Metaprogramming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/cuda_ptx_interfaces.html">Calling CUDA and PTX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/data_layout.html">Data Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/tile/index.html">Tile Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/compiling.html">Compiling and Inspecting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/iket_profiling.html">Profiling with IKET</a></li>
+</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Compiler Internals</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../compiler/symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">CUDA/PTX Programming Guides</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../cuda/language_basics.html">CUDA Language Basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/layouts.html">Axis Layouts for CUDA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/tile_operations.html">CUDA Tile Operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/iket_profiling.html">IKET Profiling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/backend_implementation.html">CUDA Backend Source Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cuda/ptx_tablegen.html">PTX Tablegen</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="nav bd-sidenav">
@@ -184,6 +188,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../dev/source_build.html">Build from Source</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/doc_build.html">Build This Doc Site</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/cuda/index.html">CUDA Backend Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/ci_cd.html">Reproduce CI/CD</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/release_process.html">Release Process</a></li>
 </ul>
@@ -364,17 +369,17 @@ document.write(`
                   
   <section id="ir-overview">
 <h1>IR Overview<a class="headerlink" href="#ir-overview" title="Link to this heading">#</a></h1>
-<p>One primary design goal of TIRx is to allow developers and agents to quickly
-access every stage of compilation, not only its input and output, and to
-work with every stage in the same way, so they can customize the compiler.</p>
+<p>TIRx gives developers and agents direct access to the programs and
+transformations at each stage of compilation. They can inspect the
+intermediate program, apply an existing pass, or add their own compiler
+components.</p>
 <p>TIRx represents a program as a tree of intermediate representation (IR)
 nodes, such as functions, statements, and values. The tree is similar to the
 abstract syntax tree (AST) of Python code, but in a more structured, typed
-form. A compiler pipeline analyzes and transforms this tree step by step and
-maps it to the target program. At every stage, the tree can be printed as
-Python code, in a syntax we call TVMScript (provided by the
-<code class="docutils literal notranslate"><span class="pre">tvm_tirx.script</span></code> module). For example, the following TVMScript program
-defines <code class="docutils literal notranslate"><span class="pre">add_one</span></code> for a GPU:</p>
+form. A compiler pipeline analyzes and transforms this tree step by step
+to produce target code. The <code class="docutils literal notranslate"><span class="pre">tvm_tirx.script</span></code> interfaces print the IR as
+TVMScript, a Python-based notation for tensor programs. For example, this
+TVMScript definition describes an add-one computation on a GPU:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
@@ -507,10 +512,10 @@ TIRx is designed for extension: downstream projects can build on the IR in the
 same way, registering new operators, defining new types, and adding their own
 TVMScript namespaces from Python, C++, or Rust, while reusing TIRx as a
 foundation.</p>
-<p>Every IR node can also carry a source location
-(<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Location.html#tvm_tirx.ir.Location" title="tvm_tirx.ir.Location"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.Location</span></code></a>) in its <code class="docutils literal notranslate"><span class="pre">loc</span></code> field, which
-records where the node comes from in the source code and can be used for
-diagnostics.</p>
+<p>IR nodes can also carry source locations
+(<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Location.html#tvm_tirx.ir.Location" title="tvm_tirx.ir.Location"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.Location</span></code></a>). For example, an expression’s
+<code class="docutils literal notranslate"><span class="pre">loc</span></code> field records where it came from in the source, so a diagnostic
+can point back to the original code.</p>
 </section>
 <section id="what-to-read-next">
 <span id="choose-a-chapter"></span><h2>What to Read Next<a class="headerlink" href="#what-to-read-next" title="Link to this heading">#</a></h2>
