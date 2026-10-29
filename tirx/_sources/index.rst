@@ -79,6 +79,15 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: Extending TIRx: everything is a plugin
+   :titlesonly:
+
+   advanced/extending_ir_in_rust
+   advanced/defining_ir_extensions
+   advanced/using_ir_extensions
+
+.. toctree::
+   :maxdepth: 1
    :caption: Reference
 
    Python API <reference/python/index>
