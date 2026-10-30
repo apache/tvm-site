@@ -44,7 +44,7 @@ Program Listing for File base.h
    // passes the setuptools_scm-resolved version through CMake). The literal below is the
    // fallback for a bare build with no override.
    #ifndef TVM_TIRX_VERSION
-   #define TVM_TIRX_VERSION "0.1.0a5"
+   #define TVM_TIRX_VERSION "0.1.0a6"
    #endif
    
    // Core runtime visibility is independent of TIRx compiler visibility.

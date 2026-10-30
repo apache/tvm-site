@@ -101,9 +101,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1a347abc17ec6c0eb59caebbc1a1e36c8d`
 
-- :ref:`exhale_function_namespacetvm_1_1sym_1a8fa82d2e07a32fa65c1fa29f46306004`
-
 - :ref:`exhale_function_namespacetvm_1_1sym_1a31682215119ca2688c6320c32760bfe0`
+
+- :ref:`exhale_function_namespacetvm_1_1sym_1a8fa82d2e07a32fa65c1fa29f46306004`
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1a31777d76a43ae690df345bda94e8487d`
 
