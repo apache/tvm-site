@@ -67,30 +67,23 @@ it is installed and imported like any other package. The example package,
    ├── python/my_ext/    # loads the library and registers a compilation pipeline
    └── run_example.py    # compiles and runs a function that uses the extension
 
-The Rust library is an ordinary crate that builds a shared library:
+The Rust library is an ordinary crate that builds a shared library. Its only
+dependency is the `tvm-tirx <https://crates.io/crates/tvm-tirx>`_ crate, which
+re-exports TVM FFI as ``tvm_tirx::tvm_ffi``:
 
 .. literalinclude:: ../../examples/extension/Cargo.toml
    :language: toml
    :start-at: [lib]
-   :end-before: # Standalone crate
 
-``tvm-tirx`` re-exports TVM FFI as ``tvm_tirx::tvm_ffi``, so it is the only
-dependency.
-
-To build and install the package, follow :doc:`../dev/source_build` to install
-TIRx with LLVM enabled, and use Rust 1.84 or newer; the build looks for cargo
-in ``~/.cargo/bin``, where rustup installs it, and then on ``PATH``. Then, from
-the TIRx repository root:
+With Rust 1.84 or newer, build and install the package from the TIRx
+repository root:
 
 .. code-block:: bash
 
-   uv pip install scikit-build-core
-   uv pip install --no-build-isolation examples/extension
+   pip install ./examples/extension
 
-``--no-build-isolation`` builds the package against the TIRx in the project
-environment: the cargo build runs its ``tvm-tirx-config`` and
-``tvm-ffi-config`` tools to find the native libraries, so the extension links
-the TIRx it runs with.
+The package depends on ``apache-tvm-tirx``, and the build links the library
+against the TIRx native libraries that this package provides.
 
 Case Study: Complex Numbers
 ---------------------------

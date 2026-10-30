@@ -18,11 +18,12 @@
 Rust API
 ========
 
-The ``tvm-tirx`` crate in ``rust/`` binds the TIRx compiler objects over TVM FFI.
-Its modules follow the Python package: ``tvm_tirx::ir`` is :doc:`tvm_tirx.ir
-<../python/ir>`, ``tvm_tirx::tirx`` is :doc:`tvm_tirx.tirx <../python/tirx>`, and so
-on. Operators and types can also be defined from Rust in ``tvm_ffi::static_init_block!``
-blocks, which run when :doc:`tvm_tirx.backend.rust <../python/backend.rust>` loads the
+The `tvm-tirx <https://crates.io/crates/tvm-tirx>`__ crate binds the TIRx compiler
+objects over TVM FFI. Its modules follow the Python package: ``tvm_tirx::ir`` is
+:doc:`tvm_tirx.ir <../python/ir>`, ``tvm_tirx::tirx`` is :doc:`tvm_tirx.tirx
+<../python/tirx>`, and so on. Operators and types can also be defined from Rust in
+``tvm_ffi::static_init_block!`` blocks, which run when their library loads; the
+:doc:`Rust extension tutorial <../../advanced/extending_ir_in_rust>` builds such a
 library.
 
 The crate is built on the ``tvm-ffi`` crate, which provides the objects, functions,

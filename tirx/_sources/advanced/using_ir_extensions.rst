@@ -89,7 +89,7 @@ With the package installed as in :doc:`extending_ir_in_rust`, run the script:
 
 .. code-block:: bash
 
-   uv run --no-sync python examples/extension/run_example.py
+   python examples/extension/run_example.py
 
 A successful run prints:
 
