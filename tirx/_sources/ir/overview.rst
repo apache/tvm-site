@@ -250,3 +250,5 @@ What to Read Next
   in modules.
 - :doc:`printing_and_parsing` covers utilities for parsing and printing
   TVMScript.
+- :doc:`/compiler/structural_utilities` introduces structural walks, maps,
+  visitors, and mutators for inspecting and rewriting these objects.

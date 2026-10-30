@@ -43,8 +43,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'compiler/symbolic_integer_analysis';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Getting Started with Rust Extensions" href="../advanced/extending_ir_in_rust.html" />
-    <link rel="prev" title="Profiling with IKET" href="../programming_guides/iket_profiling.html" />
+    <link rel="next" title="Writing and Debugging Passes" href="writing_passes.html" />
+    <link rel="prev" title="Traversing and Transforming IR" href="structural_utilities.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -161,6 +161,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../ir/functions_and_modules.html">Functions and Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../ir/printing_and_parsing.html">Printing and Parsing</a></li>
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with IR</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="structural_utilities.html">Traversing and Transforming IR</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Symbolic Integer Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing_passes.html">Writing and Debugging Passes</a></li>
+</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../programming_guides/index.html">Programming Overview</a></li>
@@ -173,10 +179,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../programming_guides/tile/index.html">Tile Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../programming_guides/compiling.html">Compiling and Inspecting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../programming_guides/iket_profiling.html">Profiling with IKET</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Compiler Internals</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Symbolic Integer Analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Extending TIRx: everything is a plugin</span></p>
 <ul class="nav bd-sidenav">
@@ -360,11 +362,14 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-analyzer">The Analyzer</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#facts-from-the-program">Facts from the Program</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simplifying-index-expressions">Simplifying Index Expressions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bounds-and-divisibility">Bounds and Divisibility</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#proving-conditions">Proving Conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-from-a-loop">Starting from a Loop</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#splitting-and-recombining-an-index">Splitting and Recombining an Index</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-a-group-s-bounds">Checking a Group’s Bounds</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#following-facts-into-a-branch">Following Facts into a Branch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-facts-during-traversal">Getting Facts During Traversal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping-groups-and-lanes">Mapping Groups and Lanes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#covering-an-accessed-region">Covering an Accessed Region</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stronger-proofs">Stronger Proofs</a></li>
 </ul>
             </nav>
         </div>
@@ -378,200 +383,427 @@ document.write(`
                   
   <section id="symbolic-integer-analysis">
 <h1>Symbolic Integer Analysis<a class="headerlink" href="#symbolic-integer-analysis" title="Link to this heading">#</a></h1>
-<p>This guide introduces symbolic integer analysis for tensor shapes, loop bounds,
-and element indices. A pass that combines four scalar accesses into one vector
-access needs to preserve their positions and establish that the whole group is
-within the tensor. The length may only be known at runtime, so these decisions
-require reasoning about symbolic expressions. We will start from a loop’s known
-range, then examine grouped indices and a neighboring-element access.</p>
-<section id="the-analyzer">
-<h2>The Analyzer<a class="headerlink" href="#the-analyzer" title="Link to this heading">#</a></h2>
-<p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.Analyzer.html#tvm_tirx.sym.Analyzer" title="tvm_tirx.sym.Analyzer"><code class="xref py py-class docutils literal notranslate"><span class="pre">sym.Analyzer</span></code></a> answers queries about integer
-IR expressions. It combines algebraic rules with facts supplied by a pass,
-such as a loop variable’s range. The same analyzer can use those facts
-across several queries:</p>
+<p>Before combining four scalar accesses into one vector access, a compiler
+pass needs to check the index calculation and make sure all four elements
+are within the tensor. When the tensor length is known only at runtime,
+these questions involve symbolic expressions. We will use
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.Analyzer.html#tvm_tirx.sym.Analyzer" title="tvm_tirx.sym.Analyzer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Analyzer</span></code></a> to simplify those expressions, find their
+bounds, and prove conditions using facts from loops and branches. We will
+then use the same groups of four to examine coordinate mappings and
+accessed regions.</p>
+<p>The core types separate the facts an analysis knows, the analyzer that
+uses them, and the results of its queries:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 32.0%" />
-<col style="width: 28.0%" />
-<col style="width: 40.0%" />
+<col style="width: 35.0%" />
+<col style="width: 65.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Query</p></th>
-<th class="head"><p>Arguments</p></th>
-<th class="head"><p>Result</p></th>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Purpose</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">simplify(expr)</span></code></p></td>
-<td><p>An IR expression.</p></td>
-<td><p>An equivalent IR expression in a simpler form.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.Analyzer.html#tvm_tirx.sym.Analyzer" title="tvm_tirx.sym.Analyzer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Analyzer</span></code></a></p></td>
+<td><p>Uses known facts to simplify expressions, infer bounds, and prove conditions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">int_set(expr)</span></code></p></td>
-<td><p>An integer IR expression.</p></td>
-<td><p>A <code class="docutils literal notranslate"><span class="pre">sym.IntSet</span></code> covering its possible values, including symbolic bounds.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.ConstraintContext.html#tvm_tirx.sym.ConstraintContext" title="tvm_tirx.sym.ConstraintContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConstraintContext</span></code></a></p></td>
+<td><p>Holds facts valid at a particular point in the program.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">const_int_bound(expr)</span></code></p></td>
-<td><p>An integer IR expression.</p></td>
-<td><p>A <code class="docutils literal notranslate"><span class="pre">sym.ConstIntBound</span></code> with inclusive numeric bounds.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.RangeConstraint.html#tvm_tirx.sym.RangeConstraint" title="tvm_tirx.sym.RangeConstraint"><code class="xref py py-class docutils literal notranslate"><span class="pre">RangeConstraint</span></code></a></p></td>
+<td><p>Records a variable’s range of possible values.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">modular_set(expr)</span></code></p></td>
-<td><p>An integer IR expression.</p></td>
-<td><p>A <code class="docutils literal notranslate"><span class="pre">sym.ModularSet</span></code> describing divisibility and remainders.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.PredicateConstraint.html#tvm_tirx.sym.PredicateConstraint" title="tvm_tirx.sym.PredicateConstraint"><code class="xref py py-class docutils literal notranslate"><span class="pre">PredicateConstraint</span></code></a></p></td>
+<td><p>Records a condition known to hold at that program point.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">can_prove(expr)</span></code></p></td>
-<td><p>A boolean IR expression.</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the condition is established from the known facts.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.BindingConstraint.html#tvm_tirx.sym.BindingConstraint" title="tvm_tirx.sym.BindingConstraint"><code class="xref py py-class docutils literal notranslate"><span class="pre">BindingConstraint</span></code></a></p></td>
+<td><p>Records the value captured when a variable is bound.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">can_prove_equal(lhs,</span> <span class="pre">rhs)</span></code></p></td>
-<td><p>Two integer IR expressions.</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if their values are established to be equal.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.IntSet.html#tvm_tirx.sym.IntSet" title="tvm_tirx.sym.IntSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntSet</span></code></a>, <a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.IntervalSet.html#tvm_tirx.sym.IntervalSet" title="tvm_tirx.sym.IntervalSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntervalSet</span></code></a></p></td>
+<td><p>Describe possible integer values. <code class="docutils literal notranslate"><span class="pre">IntervalSet</span></code> represents an inclusive
+interval whose endpoints can contain symbolic expressions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.ConstIntBound.html#tvm_tirx.sym.ConstIntBound" title="tvm_tirx.sym.ConstIntBound"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConstIntBound</span></code></a></p></td>
+<td><p>Gives inclusive numeric lower and upper bounds.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.ModularSet.html#tvm_tirx.sym.ModularSet" title="tvm_tirx.sym.ModularSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModularSet</span></code></a></p></td>
+<td><p>Describes integer divisibility and remainder patterns.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>These calls show the required arguments. The expressions describe
-calculations in the program, and the analyzer uses its known facts to
-reason about their runtime values.</p>
-</section>
-<section id="facts-from-the-program">
-<h2>Facts from the Program<a class="headerlink" href="#facts-from-the-program" title="Link to this heading">#</a></h2>
-<p>The analyzer needs facts from the point in the program where a rewrite
-would occur. In a loop over a contiguous tensor of symbolic length <code class="docutils literal notranslate"><span class="pre">n</span></code>,
-the index <code class="docutils literal notranslate"><span class="pre">i</span></code> satisfies <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>. We can represent the length and
-index directly with integer IR variables:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">sym</span>
+<p>We will first record a loop’s range in a constraint context, then use an
+analyzer to simplify and check its indices. The queries will show how to
+interpret the different result types.</p>
+<section id="starting-from-a-loop">
+<h2>Starting from a Loop<a class="headerlink" href="#starting-from-a-loop" title="Link to this heading">#</a></h2>
+<p>The following function adds one to each element of <code class="docutils literal notranslate"><span class="pre">A</span></code> and writes the
+result to <code class="docutils literal notranslate"><span class="pre">B</span></code>. <code class="docutils literal notranslate"><span class="pre">T.dynamic(&quot;n&quot;)</span></code> creates a symbolic length shared by the
+tensor shapes and loop bound:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
-<span class="n">n</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"n"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
-<span class="n">i</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"i"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Inside the loop, <code class="docutils literal notranslate"><span class="pre">i</span></code> satisfies <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>. We can obtain that
+variable from the loop’s IR and ask an analyzer whether <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> holds:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># The for loop is the function's first statement.</span>
+<span class="n">i</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">var</span>
 <span class="n">analyzer</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">Analyzer</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The loop bounds belong to the loop statement, while the variable <code class="docutils literal notranslate"><span class="pre">i</span></code>
-records a name and type. A query on <code class="docutils literal notranslate"><span class="pre">i</span></code> therefore does not automatically
-include those bounds. The pass supplies them through a <code class="docutils literal notranslate"><span class="pre">RangeConstraint</span></code>;
-a <code class="docutils literal notranslate"><span class="pre">ConstraintContext</span></code> collects the facts for the current program point:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">range_fact</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">RangeConstraint</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
-<span class="n">context</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">ConstraintContext</span><span class="p">()</span>
-<span class="n">context</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">range_fact</span><span class="p">)</span>
-<span class="n">analyzer</span><span class="o">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">False</span></code>, meaning the analyzer has not proved the condition.
+It has only received the expression <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>. The variable <code class="docutils literal notranslate"><span class="pre">i</span></code> records
+its name and type, while its bounds belong to the surrounding loop. The
+analyzer needs those bounds as facts before it can use them in a proof.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">ConstraintContext</span></code> holds such facts. Add the loop range, then
+synchronize the analyzer with the context:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loop_context</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">ConstraintContext</span><span class="p">()</span>
+<span class="n">loop_context</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">RangeConstraint</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">begin</span><span class="p">,</span> <span class="n">loop</span><span class="o">.</span><span class="n">end</span><span class="p">)))</span>
+<span class="n">analyzer</span><span class="o">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">loop_context</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The range starts at zero and has extent <code class="docutils literal notranslate"><span class="pre">n</span></code>:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>range_fact: sym.RangeConstraint
-├── var → ir.Var                     i
-└── range: ir.Range
-    ├── begin: ir.IntImm              0
-    └── extent: ir.Var                n
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">sync_constraint_context</span></code> makes these facts available to subsequent
-queries. The analyzer captures the context at synchronization, so later
-additions need another synchronization. A pass moving to another part
-of the program must supply the context valid there.</p>
+<p>The output is now <code class="docutils literal notranslate"><span class="pre">True</span></code>. <code class="docutils literal notranslate"><span class="pre">ir.Range(begin,</span> <span class="pre">end)</span></code> describes a half-open
+interval, including <code class="docutils literal notranslate"><span class="pre">begin</span></code> and excluding <code class="docutils literal notranslate"><span class="pre">end</span></code>. Here it is <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">n)</span></code>,
+matching the values taken by <code class="docutils literal notranslate"><span class="pre">i</span></code>. Subsequent queries on this analyzer can
+use the same range fact.</p>
 </section>
-<section id="simplifying-index-expressions">
-<h2>Simplifying Index Expressions<a class="headerlink" href="#simplifying-index-expressions" title="Link to this heading">#</a></h2>
-<p>A vectorization pass can split the loop index <code class="docutils literal notranslate"><span class="pre">i</span></code> into a group start
-and a lane within a group of four. The address calculation may later
-recombine these parts, leaving division and remainder operations that can
-be removed. The group starts at <code class="docutils literal notranslate"><span class="pre">(i</span> <span class="pre">//</span> <span class="pre">4)</span> <span class="pre">*</span> <span class="pre">4</span></code>, and <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">%</span> <span class="pre">4</span></code> gives its
-lane. For example, index 6 belongs to the group starting at 4 and occupies
-lane 2. The analyzer can simplify the recombined expression:</p>
+<section id="splitting-and-recombining-an-index">
+<h2>Splitting and Recombining an Index<a class="headerlink" href="#splitting-and-recombining-an-index" title="Link to this heading">#</a></h2>
+<p>To group consecutive elements in fours, split an index into its group’s
+starting position and its position within that group, called a lane.
+For example, index 6 belongs to the group starting at 4 and occupies
+lane 2. Division and remainder express this split:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">group_start</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
 <span class="n">lane</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">4</span>
-<span class="n">simplified</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">group_start</span> <span class="o">+</span> <span class="n">lane</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">simplified</span><span class="p">)</span>
+<span class="n">recombined</span> <span class="o">=</span> <span class="n">group_start</span> <span class="o">+</span> <span class="n">lane</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">recombined</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove_equal</span><span class="p">(</span><span class="n">recombined</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The output is:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>i
+True
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">simplified</span></code> is the IR expression a pass can use to replace the longer
-index calculation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">simplify</span></code> returns a simpler IR expression that a pass can use in place
+of the longer calculation. <code class="docutils literal notranslate"><span class="pre">can_prove_equal</span></code> instead returns a boolean:
+it confirms that the two expressions compute the same value, even though
+their node structures differ.</p>
 </section>
-<section id="bounds-and-divisibility">
-<h2>Bounds and Divisibility<a class="headerlink" href="#bounds-and-divisibility" title="Link to this heading">#</a></h2>
-<p>The loop range guarantees that <code class="docutils literal notranslate"><span class="pre">A[i]</span></code> is in bounds. A computation that
-also reads <code class="docutils literal notranslate"><span class="pre">A[i</span> <span class="pre">+</span> <span class="pre">1]</span></code> needs to establish a bound for that new index.
-<code class="docutils literal notranslate"><span class="pre">int_set</span></code> can bound its possible values before the pass decides whether
-the access needs a guard:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">next_index</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">possible_values</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">int_set</span><span class="p">(</span><span class="n">next_index</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">possible_values</span><span class="o">.</span><span class="n">min_value</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">possible_values</span><span class="o">.</span><span class="n">max_value</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>1
-n
-</pre></div>
-</div>
-<p>For this expression, <code class="docutils literal notranslate"><span class="pre">int_set</span></code> returns a <code class="docutils literal notranslate"><span class="pre">sym.IntervalSet</span></code>. Its
-<code class="docutils literal notranslate"><span class="pre">min_value</span></code> and <code class="docutils literal notranslate"><span class="pre">max_value</span></code> fields are integer IR expressions, so
-the endpoints can depend on <code class="docutils literal notranslate"><span class="pre">n</span></code>. The interval is inclusive: <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">+</span> <span class="pre">1</span></code>
-can reach <code class="docutils literal notranslate"><span class="pre">n</span></code> on the last iteration. This matters because the final
-valid tensor index is <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
-<p>The grouping calculation gives another bounds query: the lane must select
-one of the group’s four positions. Its bounds are numeric, so
-<code class="docutils literal notranslate"><span class="pre">const_int_bound</span></code> can report them directly:</p>
+<section id="checking-a-group-s-bounds">
+<h2>Checking a Group’s Bounds<a class="headerlink" href="#checking-a-group-s-bounds" title="Link to this heading">#</a></h2>
+<p>Recombining the group start and lane recovers the scalar index <code class="docutils literal notranslate"><span class="pre">i</span></code>.
+To read the whole group, we also need to check the lane positions,
+the group’s start, and whether its last element is within the tensor.</p>
+<p>First, find the lane’s numeric bounds with <code class="docutils literal notranslate"><span class="pre">const_int_bound</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lane_bounds</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">const_int_bound</span><span class="p">(</span><span class="n">lane</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">lane_bounds</span><span class="o">.</span><span class="n">min_value</span><span class="p">,</span> <span class="n">lane_bounds</span><span class="o">.</span><span class="n">max_value</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">3</span></code>. Both endpoints are inclusive, so the lane selects
+one of four positions. We can also check whether each group starts at a
+multiple of four:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">starts</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">modular_set</span><span class="p">(</span><span class="n">group_start</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">starts</span><span class="o">.</span><span class="n">coeff</span><span class="p">,</span> <span class="n">starts</span><span class="o">.</span><span class="n">base</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">0</span></code>. A modular set describes values of the form
+<code class="docutils literal notranslate"><span class="pre">coeff*k</span> <span class="pre">+</span> <span class="pre">base</span></code> for integer <code class="docutils literal notranslate"><span class="pre">k</span></code>, so the group starts at <code class="docutils literal notranslate"><span class="pre">4*k</span></code>.
+This establishes the element offset’s divisibility. Aligned vector
+accesses also depend on the tensor’s base-address alignment.</p>
+<p>The loop index has symbolic bounds because the tensor length is not fixed.
+<code class="docutils literal notranslate"><span class="pre">int_set</span></code> can express those bounds in terms of <code class="docutils literal notranslate"><span class="pre">n</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">indices</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">int_set</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">min_value</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">max_value</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>0 3
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>0
+n - 1
 </pre></div>
 </div>
-<p>These endpoints are also inclusive, describing the four lane positions.
-Bounds cover every possible value; for more complex expressions, an
-inferred interval may also contain values that never occur.</p>
-<p>The start offset also matters for a vector access. A pass can use
-<code class="docutils literal notranslate"><span class="pre">modular_set</span></code> to check whether every group starts on a multiple of four:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">multiples</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">modular_set</span><span class="p">(</span><span class="n">group_start</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">multiples</span><span class="o">.</span><span class="n">coeff</span><span class="p">,</span> <span class="n">multiples</span><span class="o">.</span><span class="n">base</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>4 0
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">coeff</span></code> and <code class="docutils literal notranslate"><span class="pre">base</span></code> describe values of the form <code class="docutils literal notranslate"><span class="pre">coeff*k</span> <span class="pre">+</span> <span class="pre">base</span></code>
-for integer <code class="docutils literal notranslate"><span class="pre">k</span></code>. Every group therefore starts on a four-element boundary.
-A vectorization pass can use this offset information together with the
-base-address alignment and access bounds.</p>
-</section>
-<section id="proving-conditions">
-<h2>Proving Conditions<a class="headerlink" href="#proving-conditions" title="Link to this heading">#</a></h2>
-<p>A compiler pass often needs a yes-or-no answer before it removes a check
-or replaces an index. A proof query asks whether the required condition
-holds for every value allowed by the known facts. The following calls
-check the original index, the neighboring index, and the regrouped index:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">next_index</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove_equal</span><span class="p">(</span><span class="n">group_start</span> <span class="o">+</span> <span class="n">lane</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+<p>For this expression, the result is an <code class="docutils literal notranslate"><span class="pre">IntervalSet</span></code> with inclusive
+endpoints. Unlike <code class="docutils literal notranslate"><span class="pre">const_int_bound</span></code>, these endpoints are IR expressions
+and can contain variables. In general, a computed bound covers the
+possible values and may also include values that never occur.</p>
+<p>Every scalar index <code class="docutils literal notranslate"><span class="pre">i</span></code> is within those bounds. A full group ends at
+<code class="docutils literal notranslate"><span class="pre">group_start</span> <span class="pre">+</span> <span class="pre">3</span></code>, which can be larger than <code class="docutils literal notranslate"><span class="pre">i</span></code>. We can ask whether
+that last index is also in bounds:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">group_last</span> <span class="o">=</span> <span class="n">group_start</span> <span class="o">+</span> <span class="mi">3</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">group_last</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The output is:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>True
 False
+</pre></div>
+</div>
+<p>For example, when <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">6</span></code> and <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">=</span> <span class="pre">5</span></code>, the group starts at 4 and ends
+at 7. The original scalar access is valid, but indices 6 and 7 are outside
+the tensor. A pass must handle this partial group, for example by using
+scalar accesses for the tail.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">False</span></code> proof result means the analyzer did not establish the condition.
+It does not prove the opposite. In this case we have a concrete
+counterexample, but other queries may need additional facts or stronger
+reasoning.</p>
+</section>
+<section id="following-facts-into-a-branch">
+<span id="symbolic-constraint-management"></span><h2>Following Facts into a Branch<a class="headerlink" href="#following-facts-into-a-branch" title="Link to this heading">#</a></h2>
+<p>One way to handle partial groups is to test <code class="docutils literal notranslate"><span class="pre">group_last</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> before
+taking a path that accesses all four elements. Inside the true branch,
+that test becomes an additional fact. If the last element is in bounds,
+the earlier element at <code class="docutils literal notranslate"><span class="pre">group_start</span> <span class="pre">+</span> <span class="pre">2</span></code> is also safe. We can represent
+the branch with a snapshot of the loop context and ask the analyzer to
+prove this consequence:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">third_index</span> <span class="o">=</span> <span class="n">group_start</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="n">branch_context</span> <span class="o">=</span> <span class="n">loop_context</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
+<span class="n">branch_context</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">PredicateConstraint</span><span class="p">(</span><span class="n">group_last</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
+<span class="n">analyzer</span><span class="o">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">branch_context</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">third_index</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
+
+<span class="n">analyzer</span><span class="o">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">loop_context</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">third_index</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>True
+False
+</pre></div>
+</div>
+<p>The first query uses the branch condition to prove that the third element
+is in bounds.
+Synchronizing with <code class="docutils literal notranslate"><span class="pre">loop_context</span></code> again models leaving the branch and
+removes the branch-only fact. The original context remains unchanged
+because we extended a snapshot.</p>
+<p>Adding the predicate represents a test that has already succeeded at this
+program point. It does not show that the test is true on every iteration.
+Likewise, appending a fact to a context affects an analyzer only after
+<code class="docutils literal notranslate"><span class="pre">sync_constraint_context</span></code> is called. Keeping the context synchronized is
+what makes the same analyzer usable at different points in a program.</p>
+</section>
+<section id="getting-facts-during-traversal">
+<span id="ir-traversal-with-constraints"></span><h2>Getting Facts During Traversal<a class="headerlink" href="#getting-facts-during-traversal" title="Link to this heading">#</a></h2>
+<p>In a pass over a complete function, manually reconstructing the facts for
+every statement would be tedious. TIRx provides
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.structural.structural_walk_with_constraint_context.html#tvm_tirx.tirx.structural.structural_walk_with_constraint_context" title="tvm_tirx.tirx.structural.structural_walk_with_constraint_context"><code class="xref py py-func docutils literal notranslate"><span class="pre">structural_walk_with_constraint_context()</span></code></a> to collect
+them while walking the IR. Its callback receives both the current value
+and the facts valid there.</p>
+<p>The group check above protects accesses that may extend beyond the tensor.
+We will now examine a scalar check, <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>, which repeats a condition
+already guaranteed by the loop. We can use the traversal to identify this
+unnecessary check:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">guarded_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="n">guard_analyzer</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">Analyzer</span><span class="p">()</span>
+<span class="n">proven_guards</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">inspect_guard</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">If</span><span class="p">):</span>
+        <span class="n">guard_analyzer</span><span class="o">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+        <span class="n">proven_guards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">guard_analyzer</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">condition</span><span class="p">))</span>
+
+<span class="n">tirx</span><span class="o">.</span><span class="n">structural_walk_with_constraint_context</span><span class="p">(</span>
+    <span class="n">guarded_add_one</span><span class="p">,</span> <span class="n">inspect_guard</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"pre"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">proven_guards</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">[True]</span></code>. At the <code class="docutils literal notranslate"><span class="pre">ir.If</span></code> node, the callback synchronizes
+the analyzer with the surrounding loop’s range. That range is enough to
+prove <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>. A pass can therefore remove this check.</p>
+<p>The pre-order callback runs before entering either branch. This matters
+because using the condition as a fact inside its own true branch would
+only show that it holds there, not that the test is redundant. Synchronize
+at each callback that makes a query so facts from a previous program point
+are replaced by the ones valid now.</p>
+<p>Do not append facts to the context passed to the callback or modify the
+facts it contains. To explore an additional assumption, extend a snapshot
+as in the branch example. The
+<a class="reference internal" href="../reference/python/tirx.html"><span class="doc">TIRx traversal API</span></a>
+describes the collection rules for bindings, loops, branches, and other
+constructs. <a class="reference internal" href="writing_passes.html"><span class="doc">Writing and Debugging Passes</span></a> uses the same guarded function in a
+transformation pipeline.</p>
+</section>
+<section id="mapping-groups-and-lanes">
+<span id="symbolic-iteration-maps"></span><h2>Mapping Groups and Lanes<a class="headerlink" href="#mapping-groups-and-lanes" title="Link to this heading">#</a></h2>
+<p>Bounds tell us whether a group’s accesses fit. To replace a linear loop
+with group and lane loops, we also need to check that the coordinate mapping
+covers each original index exactly once. Consider a fixed length of 16,
+which forms four complete groups. <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">//</span> <span class="pre">4</span></code> selects a group, and
+<code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">%</span> <span class="pre">4</span></code> selects a lane within it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">detect_iter_map</span></code> analyzes these coordinates over the input domain.
+<code class="docutils literal notranslate"><span class="pre">check_level=&quot;bijective&quot;</span></code> asks it to check that every group-and-lane pair
+has exactly one input index. We use a fresh analyzer for this fixed domain:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">map_analyzer</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">Analyzer</span><span class="p">()</span>
+<span class="n">detected</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">detect_iter_map</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">k</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">k</span> <span class="o">%</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">ir</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">)},</span>
+    <span class="n">check_level</span><span class="o">=</span><span class="s2">"bijective"</span><span class="p">,</span>
+    <span class="n">analyzer</span><span class="o">=</span><span class="n">map_analyzer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">detected</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">detected</span><span class="o">.</span><span class="n">errors</span>
+</pre></div>
+</div>
+<p>The two entries in <code class="docutils literal notranslate"><span class="pre">detected.indices</span></code> describe the group and lane
+coordinates. If detection fails, the array is empty and <code class="docutils literal notranslate"><span class="pre">errors</span></code> gives
+diagnostics. With a successful bijective mapping, we can recover the
+original index from the output coordinates:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">group</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"group"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">lane_index</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"lane_index"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">inverse</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">inverse_affine_iter_map</span><span class="p">(</span><span class="n">detected</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="p">[</span><span class="n">group</span><span class="p">,</span> <span class="n">lane_index</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">inverse</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">map_analyzer</span><span class="o">.</span><span class="n">can_prove_equal</span><span class="p">(</span><span class="n">inverse</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">group</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">lane_index</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lane_index + group * 4
 True
 </pre></div>
 </div>
-<p>The known range proves <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>, so a redundant check of this condition
-inside the loop can be removed. The neighboring index can reach <code class="docutils literal notranslate"><span class="pre">n</span></code>,
-so <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">+</span> <span class="pre">1</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> cannot be established for every iteration. That access
-needs a guard or an iteration range that excludes the last element.</p>
-<p>In general, <code class="docutils literal notranslate"><span class="pre">False</span></code> means that the analyzer did not prove a condition;
-it does not prove the opposite condition. A pass cannot use that result
-to justify removing a bounds check.</p>
-<p><code class="docutils literal notranslate"><span class="pre">can_prove_equal</span></code> compares expression values. Here, its <code class="docutils literal notranslate"><span class="pre">True</span></code> result
-confirms that a pass can replace <code class="docutils literal notranslate"><span class="pre">group_start</span> <span class="pre">+</span> <span class="pre">lane</span></code> with <code class="docutils literal notranslate"><span class="pre">i</span></code> while
-preserving the element index, even though their IR structures differ.</p>
-<p>The analysis infrastructure and its APIs are under active development.
-The <a class="reference internal" href="../reference/python/sym.html"><span class="doc">tvm_tirx.sym</span></a> reference describes the
-current interfaces.</p>
+<p>The recovered expression gives the original index. For example, group 1
+and lane 2 give index 6. The equality query confirms the expected formula
+regardless of the printed operand order.</p>
+<p>The detector checks an index calculation over a specified domain.
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.IndexMap.html#tvm_tirx.tirx.IndexMap" title="tvm_tirx.tirx.IndexMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndexMap</span></code></a> instead records a coordinate rule that a
+pass can apply to indices and shapes. We can define the same split into
+groups and lanes as an index map:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">split</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">IndexMap</span><span class="o">.</span><span class="n">from_func</span><span class="p">(</span><span class="k">lambda</span> <span class="n">index</span><span class="p">:</span> <span class="p">(</span><span class="n">index</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">index</span> <span class="o">%</span> <span class="mi">4</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">split</span><span class="o">.</span><span class="n">map_indices</span><span class="p">([</span><span class="mi">6</span><span class="p">])])</span>
+<span class="nb">print</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">split</span><span class="o">.</span><span class="n">map_shape</span><span class="p">([</span><span class="mi">16</span><span class="p">])])</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[1, 2]
+[4, 4]
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">map_indices</span></code> maps index 6 to group 1, lane 2. <code class="docutils literal notranslate"><span class="pre">map_shape</span></code> maps the
+16-element shape to four groups of four lanes. These queries describe
+the coordinate transformation. A pass uses that information when rewriting
+loops and tensor accesses.</p>
+</section>
+<section id="covering-an-accessed-region">
+<span id="symbolic-region-analysis"></span><h2>Covering an Accessed Region<a class="headerlink" href="#covering-an-accessed-region" title="Link to this heading">#</a></h2>
+<p>The mapping tells us how to name individual elements. We may also need to
+find the whole region accessed by a loop, for example to size a scratch
+tensor. Suppose group 0 accesses elements 0 through 3, group 1 accesses
+4 through 7, and so on. Each group’s access is a range starting at
+<code class="docutils literal notranslate"><span class="pre">group</span> <span class="pre">*</span> <span class="pre">4</span></code> with extent 4:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">region</span> <span class="o">=</span> <span class="p">[</span><span class="n">ir</span><span class="o">.</span><span class="n">Range</span><span class="o">.</span><span class="n">from_min_extent</span><span class="p">(</span><span class="n">group</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+<span class="n">covered</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">estimate_region_strict_bound</span><span class="p">(</span>
+    <span class="n">region</span><span class="p">,</span>
+    <span class="p">{</span><span class="n">group</span><span class="p">:</span> <span class="n">ir</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)},</span>
+    <span class="n">predicate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">analyzer</span><span class="o">=</span><span class="n">map_analyzer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">assert</span> <span class="n">covered</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">map_analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">covered</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min_value</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">map_analyzer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">covered</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max_value</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>0
+15
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">from_min_extent</span></code> takes a starting value and a size. The estimator combines
+that range over all four group indices. <code class="docutils literal notranslate"><span class="pre">predicate=True</span></code> includes every
+iteration, and the result covers all sixteen elements. The input ranges
+are half-open, while the returned integer-set endpoints are inclusive.
+A scratch tensor covering indices 0 through 15 therefore needs 16 elements.</p>
+<p>Here the groups fill one contiguous interval. If each group accessed only
+two elements, the accessed indices would instead be <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code>, <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">5]</span></code>,
+<code class="docutils literal notranslate"><span class="pre">[8,</span> <span class="pre">9]</span></code>, and <code class="docutils literal notranslate"><span class="pre">[12,</span> <span class="pre">13]</span></code>. An upper bound of <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">13]</span></code> would cover all
+those accesses but also include the gaps. The estimator’s guarantee matters
+when using its result:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Estimator</p></th>
+<th class="head"><p>Guarantee</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">estimate_region_upper_bound</span></code></p></td>
+<td><p>Includes every accessed point, and may include additional points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">estimate_region_lower_bound</span></code></p></td>
+<td><p>Includes only accessed points, but may omit some of them.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">estimate_region_strict_bound</span></code></p></td>
+<td><p>Represents the accessed region without adding or omitting points.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A lower bound alone does not guarantee enough storage for every access.
+Strict and lower-bound estimation can return <code class="docutils literal notranslate"><span class="pre">None</span></code> when they cannot
+produce the required result. The
+<a class="reference internal" href="../reference/python/sym.html"><span class="doc">symbolic analysis API</span></a> covers other region
+queries and iteration-map operations.</p>
+</section>
+<section id="stronger-proofs">
+<h2>Stronger Proofs<a class="headerlink" href="#stronger-proofs" title="Link to this heading">#</a></h2>
+<p>The default proof strength can be inconclusive even when a condition follows
+from the known facts. Consider scratch storage rounded up to a multiple of
+four. It has <code class="docutils literal notranslate"><span class="pre">(n</span> <span class="pre">+</span> <span class="pre">3)</span> <span class="pre">//</span> <span class="pre">4</span></code> complete groups. When <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">6</span></code>, for example,
+there are two groups and room for eight elements.</p>
+<p>We want to prove that any group and lane select an index within this padded
+allocation. <code class="docutils literal notranslate"><span class="pre">g</span></code> is the group number and <code class="docutils literal notranslate"><span class="pre">lane_id</span></code> is its lane:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">group_count</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span>
+<span class="n">padded_length</span> <span class="o">=</span> <span class="n">group_count</span> <span class="o">*</span> <span class="mi">4</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"g"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">lane_id</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"lane_id"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+
+<span class="n">padded_context</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">ConstraintContext</span><span class="p">()</span>
+<span class="n">padded_context</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">PredicateConstraint</span><span class="p">(</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">padded_context</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">RangeConstraint</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">group_count</span><span class="p">)))</span>
+<span class="n">padded_context</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">RangeConstraint</span><span class="p">(</span><span class="n">lane_id</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+<span class="n">prover</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">Analyzer</span><span class="p">()</span>
+<span class="n">prover</span><span class="o">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">padded_context</span><span class="p">)</span>
+
+<span class="n">fits_allocation</span> <span class="o">=</span> <span class="n">g</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">lane_id</span> <span class="o">&lt;</span> <span class="n">padded_length</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prover</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">fits_allocation</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prover</span><span class="o">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">fits_allocation</span><span class="p">,</span> <span class="n">sym</span><span class="o">.</span><span class="n">ProofStrength</span><span class="o">.</span><span class="n">SYMBOLIC_BOUND</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The following output is from a build without Z3:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>False
+True
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">SYMBOLIC_BOUND</span></code> requests additional reasoning with symbolic bounds.
+Here, native analysis combines the group and lane ranges to prove
+<code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">*</span> <span class="pre">4</span> <span class="pre">+</span> <span class="pre">lane_id</span> <span class="pre">&lt;</span> <span class="pre">padded_length</span></code>. With <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">6</span></code>, the final two positions
+are still outside the original tensor, so accesses to that tensor still
+need tail handling.</p>
+<p>In a build with <code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_Z3=ON</span></code>, both <code class="docutils literal notranslate"><span class="pre">DEFAULT</span></code> and
+<code class="docutils literal notranslate"><span class="pre">SYMBOLIC_BOUND</span></code> try Z3 after native reasoning fails. A default query may
+already succeed through this fallback.
+<code class="docutils literal notranslate"><span class="pre">prover.is_z3_enabled</span></code> reports whether the current build supports it.
+The <a class="reference internal" href="../reference/python/generated/tvm_tirx.sym.Analyzer.html#tvm_tirx.sym.Analyzer" title="tvm_tirx.sym.Analyzer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Analyzer</span></code></a> reference documents solver timeouts,
+resource limits, and proof diagnostics. A <code class="docutils literal notranslate"><span class="pre">False</span></code> result still means
+unproved, including when the solver cannot handle a condition or reaches
+a limit.</p>
 </section>
 </section>
 
@@ -587,20 +819,20 @@ current interfaces.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../programming_guides/iket_profiling.html"
+       href="structural_utilities.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Profiling with IKET</p>
+        <p class="prev-next-title">Traversing and Transforming IR</p>
       </div>
     </a>
     <a class="right-next"
-       href="../advanced/extending_ir_in_rust.html"
+       href="writing_passes.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Getting Started with Rust Extensions</p>
+        <p class="prev-next-title">Writing and Debugging Passes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -620,11 +852,14 @@ current interfaces.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-analyzer">The Analyzer</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#facts-from-the-program">Facts from the Program</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simplifying-index-expressions">Simplifying Index Expressions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bounds-and-divisibility">Bounds and Divisibility</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#proving-conditions">Proving Conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-from-a-loop">Starting from a Loop</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#splitting-and-recombining-an-index">Splitting and Recombining an Index</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-a-group-s-bounds">Checking a Group’s Bounds</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#following-facts-into-a-branch">Following Facts into a Branch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-facts-during-traversal">Getting Facts During Traversal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping-groups-and-lanes">Mapping Groups and Lanes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#covering-an-accessed-region">Covering an Accessed Region</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stronger-proofs">Stronger Proofs</a></li>
 </ul>
   </nav></div>
 

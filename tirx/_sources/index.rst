@@ -56,6 +56,15 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: Working with IR
+   :titlesonly:
+
+   compiler/structural_utilities
+   compiler/symbolic_integer_analysis
+   compiler/writing_passes
+
+.. toctree::
+   :maxdepth: 1
    :caption: Programming Guides
    :titlesonly:
 
@@ -69,13 +78,6 @@ Table of Contents
    programming_guides/tile/index
    programming_guides/compiling
    programming_guides/iket_profiling
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Compiler Internals
-   :titlesonly:
-
-   compiler/symbolic_integer_analysis
 
 .. toctree::
    :maxdepth: 1

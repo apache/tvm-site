@@ -1,0 +1,1882 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Traversing and Transforming IR &#8212; tvm-tirx</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'compiler/structural_utilities';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Symbolic Integer Analysis" href="symbolic_integer_analysis.html" />
+    <link rel="prev" title="Printing and Parsing" href="../ir/printing_and_parsing.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">tvm-tirx</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/quick_start.html">Quick Start</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../ir/overview.html">IR Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/types_and_expressions.html">Types and Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/statements.html">Statements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/operators_and_calls.html">Operators and Calls</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/functions_and_modules.html">Functions and Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/printing_and_parsing.html">Printing and Parsing</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with IR</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Traversing and Transforming IR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing_passes.html">Writing and Debugging Passes</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/index.html">Programming Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/language_basics.html">Language Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/control_flow.html">Control Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/types_tensors_memory.html">Types, Tensors, and Memory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/metaprogramming.html">Metaprogramming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/cuda_ptx_interfaces.html">Calling CUDA and PTX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/data_layout.html">Data Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/tile/index.html">Tile Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/compiling.html">Compiling and Inspecting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/iket_profiling.html">Profiling with IKET</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Extending TIRx: everything is a plugin</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extending_ir_in_rust.html">Getting Started with Rust Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/defining_ir_extensions.html">Defining Types, Operators, and Passes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/using_ir_extensions.html">Using and Compiling the Extension</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../reference/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/cpp/index.html">C++ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/rust/index.html">Rust API</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Manual</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../dev/source_build.html">Build from Source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/doc_build.html">Build This Doc Site</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/cuda/index.html">CUDA Backend Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/ci_cd.html">Reproduce CI/CD</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release_process.html">Release Process</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/apache/tvm-tirx" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/compiler/structural_utilities.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Traversing and Transforming IR</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-walk">Structural Walk</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#walking-an-expression">Walking an Expression</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-callbacks">Choosing Callbacks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#traversal-order">Traversal Order</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#skipping-and-stopping">Skipping and Stopping</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#containers-and-shared-objects">Containers and Shared Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions-and-uses">Definitions and Uses</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-map">Structural Map</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#replacing-variables">Replacing Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Choosing Callbacks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping-order">Mapping Order</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Definitions and Uses</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-objects">Shared Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#copies-and-storage-reuse">Copies and Storage Reuse</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-visit">Structural Visit</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-children">Choosing Children</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-default-traversal">Using the Default Traversal</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-child-order">Choosing Child Order</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-the-current-path">Tracking the Current Path</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-early-exit">Handling Early Exit</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preserving-definition-roles">Preserving Definition Roles</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-mutate">Structural Mutate</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rewriting-selected-children">Rewriting Selected Children</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#returning-replacements">Returning Replacements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rewriting-children-before-parents">Rewriting Children Before Parents</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-variable-replacements">Tracking Variable Replacements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Copies and Storage Reuse</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="traversing-and-transforming-ir">
+<h1>Traversing and Transforming IR<a class="headerlink" href="#traversing-and-transforming-ir" title="Link to this heading">#</a></h1>
+<p>Compiler passes often need to find variable uses, check a property of a
+subtree, or rewrite an expression. TVM FFI’s structural operations follow
+the child relationships defined by IR types so these tasks can be written
+as callbacks. A callback, also called a handler here, is a Python function
+that runs when the traversal reaches a matching value.</p>
+<p>The table below summarizes the four APIs and their roles:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 24.0%" />
+<col style="width: 38.0%" />
+<col style="width: 38.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Task</p></th>
+<th class="head"><p>Automatic recursion</p></th>
+<th class="head"><p>Callback-controlled recursion</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Inspect values</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_walk</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_visit</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Replace values</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_map</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_mutate</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>These operations inspect and rewrite IR without executing the programs it
+describes. Walk and map handle recursion, letting callbacks focus on
+inspecting or replacing nodes. Visit and mutate give a matching callback
+control over recursive calls, so it can choose which children to process,
+change their order, and manage state before and after each call.</p>
+<p>We will use the expression <code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(y</span> <span class="pre">+</span> <span class="pre">2)</span></code> to compare these workflows.
+Each of the four API sections creates its own variables and expression,
+so it can be run independently. Within a section, run the examples in
+order: later examples reuse the objects and helper functions defined
+earlier.</p>
+<section id="structural-walk">
+<h2>Structural Walk<a class="headerlink" href="#structural-walk" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_walk</span></code> automatically traverses IR. Its callbacks can
+collect nodes, check properties, or stop the traversal when a matching value
+is found. The API has the following signature:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tvm_ffi.structural_walk(
+    root, callbacks=(), with_def_region_kind=(), order="post")
+</pre></div>
+</div>
+<section id="walking-an-expression">
+<h3>Walking an Expression<a class="headerlink" href="#walking-an-expression" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">root</span></code> is the value to traverse, such as an IR expression, a function,
+or an FFI container. A <code class="docutils literal notranslate"><span class="pre">(Type,</span> <span class="pre">handler)</span></code> pair in <code class="docutils literal notranslate"><span class="pre">callbacks</span></code> specifies
+the type to match and a function to call for each matching value. The
+following example uses a callback to print the variable names in
+<code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(y</span> <span class="pre">+</span> <span class="pre">2)</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_var</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">on_var</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x
+y
+</pre></div>
+</div>
+<p>To see how the walker reaches these variables, we can print the
+expression’s IR structure with
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.format_tree.html#tvm_tirx.ir.format_tree" title="tvm_tirx.ir.format_tree"><code class="xref py py-func docutils literal notranslate"><span class="pre">ir.format_tree</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">expr</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Mul
+├── a: Add
+│   ├── a: x
+│   └── b: IntImm(value=1)
+└── b: Add
+    ├── a: y
+    └── b: IntImm(value=2)
+</pre></div>
+</div>
+<p>The root <code class="docutils literal notranslate"><span class="pre">Mul</span></code> represents multiplication. Binary arithmetic nodes such
+as <code class="docutils literal notranslate"><span class="pre">Mul</span></code> and <code class="docutils literal notranslate"><span class="pre">Add</span></code> store their left operand in <code class="docutils literal notranslate"><span class="pre">a</span></code> and their right
+operand in <code class="docutils literal notranslate"><span class="pre">b</span></code>. For example, in the <code class="docutils literal notranslate"><span class="pre">Add</span></code> representing <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">a</span></code> is the variable <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> is the integer constant <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<p id="ir-default-structural-traversal">The walker descends from <code class="docutils literal notranslate"><span class="pre">Mul</span></code> through the two <code class="docutils literal notranslate"><span class="pre">Add</span></code> nodes to their
+operands without needing callbacks for those arithmetic nodes. Each
+IR node type defines which children to visit, and the walker follows these
+rules automatically. This is the default structural traversal.
+<code class="docutils literal notranslate"><span class="pre">callbacks=(ir.Var,</span> <span class="pre">on_var)</span></code> determines where <code class="docutils literal notranslate"><span class="pre">on_var</span></code> runs during that
+traversal: only <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> match <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code>, so the walker calls
+<code class="docutils literal notranslate"><span class="pre">on_var(x)</span></code> and <code class="docutils literal notranslate"><span class="pre">on_var(y)</span></code> to print their names.</p>
+</section>
+<section id="choosing-callbacks">
+<h3>Choosing Callbacks<a class="headerlink" href="#choosing-callbacks" title="Link to this heading">#</a></h3>
+<p>The following table lists the accepted callback forms, using <code class="docutils literal notranslate"><span class="pre">on_var</span></code> from
+the example and Python’s built-in <code class="docutils literal notranslate"><span class="pre">print</span></code> function:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 48.0%" />
+<col style="width: 52.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">callbacks</span></code> argument</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">(ir.Var,</span> <span class="pre">on_var)</span></code></p></td>
+<td><p>Variables are passed to <code class="docutils literal notranslate"><span class="pre">on_var</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">((ir.prim.Add,</span> <span class="pre">ir.prim.Mul),</span> <span class="pre">print)</span></code></p></td>
+<td><p>Additions and multiplications are passed to <code class="docutils literal notranslate"><span class="pre">print</span></code>, one node per call.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">[(ir.Var,</span> <span class="pre">on_var),</span> <span class="pre">(ir.IntImm,</span> <span class="pre">print)]</span></code></p></td>
+<td><p>A Python list of two <code class="docutils literal notranslate"><span class="pre">(Type,</span> <span class="pre">handler)</span></code> pairs. Variables are passed to
+<code class="docutils literal notranslate"><span class="pre">on_var</span></code>, and integer IR constants are passed to <code class="docutils literal notranslate"><span class="pre">print</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">((ir.Var,</span> <span class="pre">on_var),</span> <span class="pre">(ir.IntImm,</span> <span class="pre">print))</span></code></p></td>
+<td><p>The same two pairs in a Python tuple, with the same matching order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">print</span></code></p></td>
+<td><p>Every visited value is passed to <code class="docutils literal notranslate"><span class="pre">print</span></code>, with no type filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">()</span></code></p></td>
+<td><p>The empty tuple selects no handlers. The walker still visits
+child nodes. This is the default when <code class="docutils literal notranslate"><span class="pre">callbacks</span></code> is omitted.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A class in <code class="docutils literal notranslate"><span class="pre">callbacks</span></code> also matches objects of its subclasses. Since
+<code class="docutils literal notranslate"><span class="pre">ir.Var</span></code> is a subclass of <code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code>, both pairs below match <code class="docutils literal notranslate"><span class="pre">x</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">selected</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span>
+    <span class="n">root</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">var</span><span class="p">:</span> <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable"</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"expression"</span><span class="p">)),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">['variable']</span></code>. The walker checks the pairs in order and
+calls only the first matching handler. If the <code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> pair came first,
+the expression handler would run instead.
+Returning <code class="docutils literal notranslate"><span class="pre">None</span></code> continues traversal. It does not try the next handler.</p>
+</section>
+<section id="traversal-order">
+<h3>Traversal Order<a class="headerlink" href="#traversal-order" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">order</span></code> controls when a matching handler runs. With <code class="docutils literal notranslate"><span class="pre">order=&quot;post&quot;</span></code>
+(the default), it runs after the node’s children have been visited. With
+<code class="docutils literal notranslate"><span class="pre">order=&quot;pre&quot;</span></code>, it runs before them. The corresponding enum values are
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi.WalkOrder.POSTORDER</span></code> and <code class="docutils literal notranslate"><span class="pre">tvm_ffi.WalkOrder.PREORDER</span></code>.</p>
+<p>We can compare the two orders by recording a short label for each visited
+expression. The <code class="docutils literal notranslate"><span class="pre">describe</span></code> function below creates these labels, and
+<code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> matches variables, integer constants, and arithmetic nodes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+
+<span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"pre"</span><span class="p">,</span> <span class="s2">"post"</span><span class="p">):</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span>
+        <span class="n">expr</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">trace</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">describe</span><span class="p">(</span><span class="n">node</span><span class="p">))),</span>
+        <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pre ['Mul', 'Add', 'x', '1', 'Add', 'y', '2']
+post ['x', '1', 'Add', 'y', '2', 'Add', 'Mul']
+</pre></div>
+</div>
+<p>The pre-order trace records <code class="docutils literal notranslate"><span class="pre">Mul</span></code> before its <code class="docutils literal notranslate"><span class="pre">Add</span></code> children. The
+post-order trace records it after them. In both cases, each binary
+expression’s left operand <code class="docutils literal notranslate"><span class="pre">a</span></code> is visited before its right operand <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
+</section>
+<section id="skipping-and-stopping">
+<h3>Skipping and Stopping<a class="headerlink" href="#skipping-and-stopping" title="Link to this heading">#</a></h3>
+<p>A callback can also control whether traversal continues, skips children,
+or stops entirely. Its return value determines what happens next:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Callback returns</p></th>
+<th class="head"><p>Effect</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">None</span></code> or <code class="docutils literal notranslate"><span class="pre">tvm_ffi.WalkResult.ADVANCE</span></code></p></td>
+<td><p>The walk continues.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.WalkResult.SKIP</span></code></p></td>
+<td><p>In pre-order, this value’s children are omitted, and traversal continues
+elsewhere.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.VisitInterrupt(payload)</span></code></p></td>
+<td><p>The whole walk stops and returns the interrupt to the caller.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code> returns <code class="docutils literal notranslate"><span class="pre">None</span></code> on completion or <code class="docutils literal notranslate"><span class="pre">VisitInterrupt</span></code> on
+early exit. The interrupt’s <code class="docutils literal notranslate"><span class="pre">value</span></code> field holds the payload from the
+callback.</p>
+<p>A pre-order callback can return <code class="docutils literal notranslate"><span class="pre">WalkResult.SKIP</span></code> to omit the current
+node’s children. We can skip the children of <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> while continuing
+through the rest of the expression. <code class="docutils literal notranslate"><span class="pre">node.a.same_as(x)</span></code> checks whether
+an addition’s left operand is the original variable <code class="docutils literal notranslate"><span class="pre">x</span></code>, using object
+identity rather than its printed name:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trace</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">skip_left_add</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">describe</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">)</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">WalkResult</span><span class="o">.</span><span class="n">SKIP</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">skip_left_add</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s2">"pre"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['Mul', 'Add', 'Add', 'y', '2']
+</pre></div>
+</div>
+<p>The callback records the first <code class="docutils literal notranslate"><span class="pre">Add</span></code> before returning <code class="docutils literal notranslate"><span class="pre">SKIP</span></code>, so that
+node appears in the trace while its children, <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">1</span></code>, do not.
+Traversal continues through the right subtree. Skipping children requires
+pre-order traversal, because a post-order callback runs after the children
+have already been visited.</p>
+<p>A search can stop as soon as it finds a match. The following callback
+returns <code class="docutils literal notranslate"><span class="pre">VisitInterrupt(var)</span></code> when it reaches <code class="docutils literal notranslate"><span class="pre">y</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_y</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">VisitInterrupt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="n">found</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">find_y</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">found</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Returning <code class="docutils literal notranslate"><span class="pre">VisitInterrupt(var)</span></code> stops the walk and makes that interrupt
+the return value of <code class="docutils literal notranslate"><span class="pre">structural_walk</span></code>. Here, <code class="docutils literal notranslate"><span class="pre">found.value</span></code> is the
+matching variable <code class="docutils literal notranslate"><span class="pre">y</span></code>, so the output is <code class="docutils literal notranslate"><span class="pre">y</span></code>. The walk stops before
+visiting the remaining constant <code class="docutils literal notranslate"><span class="pre">2</span></code>.</p>
+</section>
+<section id="containers-and-shared-objects">
+<span id="ir-ffi-containers"></span><h3>Containers and Shared Objects<a class="headerlink" href="#containers-and-shared-objects" title="Link to this heading">#</a></h3>
+<p>A walk can also start from a collection of IR nodes. We use TVM FFI’s data
+structures here: <code class="docutils literal notranslate"><span class="pre">tvm_ffi.Array</span></code> for sequences and <code class="docutils literal notranslate"><span class="pre">tvm_ffi.Map</span></code> for
+key-value mappings. The following example collects variables from an array
+stored inside a map:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">container_nodes</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+<span class="n">container_groups</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Map</span><span class="p">({</span><span class="s2">"inputs"</span><span class="p">:</span> <span class="n">container_nodes</span><span class="p">})</span>
+<span class="n">container_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">collect_container_var</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="n">container_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span>
+    <span class="n">root</span><span class="o">=</span><span class="n">container_groups</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">collect_container_var</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">container_names</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['x', 'y']
+</pre></div>
+</div>
+<p>The walk follows the map’s <code class="docutils literal notranslate"><span class="pre">&quot;inputs&quot;</span></code> value to the array, then visits
+<code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>. The string key <code class="docutils literal notranslate"><span class="pre">&quot;inputs&quot;</span></code> is skipped.</p>
+<p>The same rules apply to <code class="docutils literal notranslate"><span class="pre">tvm_ffi.List</span></code> and <code class="docutils literal notranslate"><span class="pre">tvm_ffi.Dict</span></code>.</p>
+<p>An expression can use the same IR object in multiple positions. The following
+example checks whether the walker visits that object once or separately at
+each position:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">shared</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">twice</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">(</span><span class="n">shared</span><span class="p">,</span> <span class="n">shared</span><span class="p">)</span>
+<span class="n">additions</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span><span class="n">twice</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="n">additions</span><span class="o">.</span><span class="n">append</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Add visits:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">additions</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Same object:"</span><span class="p">,</span> <span class="n">additions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">additions</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add visits: 2
+Same object: True
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">shared</span> <span class="pre">=</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> creates one <code class="docutils literal notranslate"><span class="pre">Add</span></code> object. <code class="docutils literal notranslate"><span class="pre">twice</span></code> uses it as both
+operands of a multiplication, representing <code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span></code>. The walker
+reaches that object through each operand, so <code class="docutils literal notranslate"><span class="pre">additions.append</span></code> records
+it twice even though both list entries refer to the same object.</p>
+</section>
+<section id="definitions-and-uses">
+<span id="ir-definition-regions"></span><h3>Definitions and Uses<a class="headerlink" href="#definitions-and-uses" title="Link to this heading">#</a></h3>
+<p>Repeated visits to a variable can have different roles: one position may
+define it, while another uses it. An analysis that checks for unused
+variables needs to distinguish these roles. For example, a Python
+calculation might use a temporary like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">+</span> <span class="n">tmp</span>
+</pre></div>
+</div>
+<p>The first line defines <code class="docutils literal notranslate"><span class="pre">tmp</span></code>. The second line uses it twice.
+<code class="docutils literal notranslate"><span class="pre">ir.prim.Let(var,</span> <span class="pre">value,</span> <span class="pre">body)</span></code> describes this pattern in IR: compute
+<code class="docutils literal notranslate"><span class="pre">value</span></code>, name its result <code class="docutils literal notranslate"><span class="pre">var</span></code>, then compute <code class="docutils literal notranslate"><span class="pre">body</span></code> using that
+variable. The result of <code class="docutils literal notranslate"><span class="pre">body</span></code> is the result of the whole <code class="docutils literal notranslate"><span class="pre">Let</span></code>
+expression. Using our earlier <code class="docutils literal notranslate"><span class="pre">expr</span></code> for the intermediate calculation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"tmp"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">scoped_expr</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Let</span><span class="p">(</span>
+    <span class="n">tmp</span><span class="p">,</span>        <span class="c1"># var: the temporary variable</span>
+    <span class="n">expr</span><span class="p">,</span>       <span class="c1"># value: (x + 1) * (y + 2)</span>
+    <span class="n">tmp</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">,</span>  <span class="c1"># body: use the temporary variable twice</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Var</span></code> creates the variable object. The <code class="docutils literal notranslate"><span class="pre">Let</span></code> node makes <code class="docutils literal notranslate"><span class="pre">tmp</span></code>
+available within <code class="docutils literal notranslate"><span class="pre">body</span></code>. Creating these IR objects does not execute the
+calculation.</p>
+<p>There are three occurrences of the same <code class="docutils literal notranslate"><span class="pre">tmp</span></code> object: the definition in
+<code class="docutils literal notranslate"><span class="pre">Let.var</span></code> and the two uses in <code class="docutils literal notranslate"><span class="pre">Let.body</span></code>. Counting all three visits
+would overcount the uses. An ordinary callback receives only the variable,
+so it cannot distinguish these roles from the object alone.</p>
+<p>To count only the uses, register the callback through
+<code class="docutils literal notranslate"><span class="pre">with_def_region_kind</span></code>. The walker then calls <code class="docutils literal notranslate"><span class="pre">handler(var,</span> <span class="pre">kind)</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">kind</span></code> is a <code class="docutils literal notranslate"><span class="pre">tvm_ffi.DefRegionKind</span></code> value describing the role at
+that position. In this <code class="docutils literal notranslate"><span class="pre">Let</span></code>, <code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code> marks the definition of
+<code class="docutils literal notranslate"><span class="pre">tmp</span></code> in <code class="docutils literal notranslate"><span class="pre">var</span></code>, and <code class="docutils literal notranslate"><span class="pre">NONE</span></code> marks each use in <code class="docutils literal notranslate"><span class="pre">body</span></code>. The callback
+below focuses on <code class="docutils literal notranslate"><span class="pre">tmp</span></code> and records only its uses:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tmp_uses</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">record_tmp</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">tmp</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">DefRegionKind</span><span class="o">.</span><span class="n">NONE</span><span class="p">:</span>
+            <span class="n">tmp_uses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span>
+    <span class="n">scoped_expr</span><span class="p">,</span>
+    <span class="n">with_def_region_kind</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">record_tmp</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"tmp uses:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp_uses</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tmp DEF_SIMPLE
+tmp NONE
+tmp NONE
+tmp uses: 2
+</pre></div>
+</div>
+<p>The identity check excludes <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> from the report. The callback
+prints all three visits to <code class="docutils literal notranslate"><span class="pre">tmp</span></code> but adds only the two <code class="docutils literal notranslate"><span class="pre">NONE</span></code> visits
+to <code class="docutils literal notranslate"><span class="pre">tmp_uses</span></code>. A zero use count would let a checker flag an unused
+temporary.</p>
+<p id="ir-pattern-definition-regions">Defining <code class="docutils literal notranslate"><span class="pre">tmp</span></code> introduces only that variable, whose type is <code class="docutils literal notranslate"><span class="pre">int32</span></code>.
+A tensor’s type can itself contain variables describing its shape. A
+tensor parameter can introduce these variables along with the tensor,
+as in this function that returns its input length:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tensor_length</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">n</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">T.dynamic(&quot;n&quot;)</span></code> creates a symbolic length. The annotation describes
+<code class="docutils literal notranslate"><span class="pre">A</span></code> as a one-dimensional float32 tensor of that length. For example, if
+the input has shape <code class="docutils literal notranslate"><span class="pre">(100,)</span></code>, <code class="docutils literal notranslate"><span class="pre">n</span></code> represents 100 for that call. The
+parameter declaration introduces both the tensor variable <code class="docutils literal notranslate"><span class="pre">A</span></code> and its
+length <code class="docutils literal notranslate"><span class="pre">n</span></code>, and <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">n</span></code> reads that length.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code> definition introduces the variable and also treats
+variables encountered in its type as definitions. We can use
+<code class="docutils literal notranslate"><span class="pre">with_def_region_kind</span></code> again to see the roles in the parameter
+declaration and the return statement:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">show_parameter_role</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_walk</span><span class="p">(</span>
+    <span class="n">tensor_length</span><span class="p">,</span>
+    <span class="n">with_def_region_kind</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">show_parameter_role</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>n DEF_PATTERN
+A DEF_PATTERN
+n NONE
+</pre></div>
+</div>
+<p>The first two lines come from the parameter declaration: both <code class="docutils literal notranslate"><span class="pre">A</span></code> and
+the <code class="docutils literal notranslate"><span class="pre">n</span></code> in its shape are definitions. The default post-order traversal
+reports <code class="docutils literal notranslate"><span class="pre">n</span></code> in the type before <code class="docutils literal notranslate"><span class="pre">A</span></code> itself. The last line comes from
+<code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">n</span></code>, where <code class="docutils literal notranslate"><span class="pre">n</span></code> is used.</p>
+<p>A local tensor variable <code class="docutils literal notranslate"><span class="pre">B</span></code> can instead have a type that refers to a
+length <code class="docutils literal notranslate"><span class="pre">n</span></code> defined earlier. Its binding uses the <code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code> rule:
+only <code class="docutils literal notranslate"><span class="pre">B</span></code> is defined, while the <code class="docutils literal notranslate"><span class="pre">n</span></code> in its type is a use and receives
+<code class="docutils literal notranslate"><span class="pre">NONE</span></code>.
+The two kinds let an analysis distinguish a shape variable introduced by
+a definition from a dependency on an existing variable. Each IR node’s
+traversal rules determine which kind applies. Function parameters are one
+example of where the IR uses <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code>.</p>
+<p>If a handler in <code class="docutils literal notranslate"><span class="pre">callbacks</span></code> also matches the variable, it runs instead
+of the handler in <code class="docutils literal notranslate"><span class="pre">with_def_region_kind</span></code>. Register the variable handler
+only through <code class="docutils literal notranslate"><span class="pre">with_def_region_kind</span></code> when it needs <code class="docutils literal notranslate"><span class="pre">kind</span></code>.</p>
+</section>
+</section>
+<section id="structural-map">
+<h2>Structural Map<a class="headerlink" href="#structural-map" title="Link to this heading">#</a></h2>
+<p>A walk can tell us which variables occur in an expression. To replace
+those variables, we can use <code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_map</span></code>, whose callbacks
+return replacements for matching nodes. When a child changes, the mapper
+builds its parent with the updated child and returns the rewritten root.
+A callback can therefore replace a variable without constructing the
+whole expression that contains it. The API has the following signature:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tvm_ffi.structural_map(
+    root, callbacks=(), with_def_region_kind=(), order="post")
+</pre></div>
+</div>
+<section id="replacing-variables">
+<h3>Replacing Variables<a class="headerlink" href="#replacing-variables" title="Link to this heading">#</a></h3>
+<p>Suppose we know the values of <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> in <code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(y</span> <span class="pre">+</span> <span class="pre">2)</span></code>.
+We can replace these variables with IR constants to obtain an expression
+specialized for those values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">specialize_var</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">var</span>
+
+<span class="n">bound</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">specialize_var</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>T.Add(8, 1) * T.Add(3, 2)
+(x + 1) * (y + 2)
+</pre></div>
+</div>
+<p>The callback uses <code class="docutils literal notranslate"><span class="pre">same_as</span></code> to identify the original variables.
+<code class="docutils literal notranslate"><span class="pre">ir.const(8,</span> <span class="pre">var.ty)</span></code> creates the constant 8 with the variable’s type,
+and <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">var</span></code> keeps any other variable unchanged.</p>
+<p>The mapper keeps <code class="docutils literal notranslate"><span class="pre">expr</span></code> unchanged by constructing new <code class="docutils literal notranslate"><span class="pre">Add</span></code> nodes for
+<code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">+</span> <span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">3</span> <span class="pre">+</span> <span class="pre">2</span></code>, then a <code class="docutils literal notranslate"><span class="pre">Mul</span></code> using those additions. It returns
+the new expression as <code class="docutils literal notranslate"><span class="pre">bound</span></code>. The arithmetic operations are still IR
+nodes: replacing the variables does not itself compute <code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">+</span> <span class="pre">1</span></code> or
+<code class="docutils literal notranslate"><span class="pre">3</span> <span class="pre">+</span> <span class="pre">2</span></code>, which is why the result prints those additions as <code class="docutils literal notranslate"><span class="pre">T.Add</span></code>.</p>
+<p>For an expression field, a callback must return an IR expression. Return
+the input expression to keep it unchanged. <code class="docutils literal notranslate"><span class="pre">None</span></code> is not a valid
+replacement.</p>
+</section>
+<section id="id1">
+<h3>Choosing Callbacks<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>The mapper still processes a node’s children when no handler matches that
+node. This is why <code class="docutils literal notranslate"><span class="pre">(ir.Var,</span> <span class="pre">specialize_var)</span></code> alone is sufficient for the
+variable replacement above. Default recursion also processes elements of
+FFI sequences and values of FFI mappings.</p>
+<p>The following table summarizes callback forms. A Python list or tuple
+can combine several <code class="docutils literal notranslate"><span class="pre">(Type,</span> <span class="pre">handler)</span></code> pairs:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 52.0%" />
+<col style="width: 48.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">callbacks</span></code> argument</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">(ir.Var,</span> <span class="pre">specialize_var)</span></code></p></td>
+<td><p>Run the variable replacement rule.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">((ir.prim.Add,</span> <span class="pre">ir.prim.Mul),</span> <span class="pre">lambda</span> <span class="pre">node:</span> <span class="pre">node)</span></code></p></td>
+<td><p>Additions and multiplications share one handler.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">[(ir.Var,</span> <span class="pre">specialize_var),</span> <span class="pre">(ir.Expr,</span> <span class="pre">lambda</span> <span class="pre">node:</span> <span class="pre">node)]</span></code></p></td>
+<td><p>Variables use the first handler. Other expressions use the second.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">value:</span> <span class="pre">value</span></code></p></td>
+<td><p>One function matches every reached value and returns it.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">()</span></code></p></td>
+<td><p>No callbacks run. Default mapping still processes children.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Classes match their subclasses, and only the first matching handler runs.
+In the list above, <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code> must come before <code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> for variable
+replacement to run. Reversing them would send variables to the lambda,
+which returns them unchanged.</p>
+</section>
+<section id="mapping-order">
+<h3>Mapping Order<a class="headerlink" href="#mapping-order" title="Link to this heading">#</a></h3>
+<p>After replacing the variables, <code class="docutils literal notranslate"><span class="pre">bound</span></code> represents
+<code class="docutils literal notranslate"><span class="pre">(8</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(3</span> <span class="pre">+</span> <span class="pre">2)</span></code>. We can reduce it to 45 by computing operations whose
+operands are constants. This is constant folding. To finish in one
+traversal, we need the additions to become 9 and 5 before computing the
+multiplication. The following rule handles both kinds of operation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fold_arithmetic</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">node</span>
+    <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">lhs</span> <span class="o">+</span> <span class="n">rhs</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">lhs</span> <span class="o">*</span> <span class="n">rhs</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+
+<span class="n">arithmetic_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">)</span>
+<span class="n">folded</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+    <span class="n">bound</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">arithmetic_types</span><span class="p">,</span> <span class="n">fold_arithmetic</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s2">"post"</span>
+<span class="p">)</span>
+<span class="n">folded_pre</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+    <span class="n">bound</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">arithmetic_types</span><span class="p">,</span> <span class="n">fold_arithmetic</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s2">"pre"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"post:"</span><span class="p">,</span> <span class="n">folded</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"pre:"</span><span class="p">,</span> <span class="n">folded_pre</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>post: 45
+pre: T.Mul(9, 5)
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">order=&quot;post&quot;</span></code> (the default), the mapper processes children before
+calling their parent’s handler. The two additions become 9 and 5, so the
+multiplication’s handler receives constant operands and returns 45.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">order=&quot;pre&quot;</span></code>, the multiplication’s handler runs first. Its operands
+are still additions, so it returns the node unchanged. The mapper then
+processes the returned node’s children, folding the additions to 9 and 5.
+It does not call the multiplication’s handler again afterward.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">arithmetic_types</span></code> filter ensures that <code class="docutils literal notranslate"><span class="pre">fold_arithmetic</span></code> receives
+only additions and multiplications, both of which have <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>
+operands. <code class="docutils literal notranslate"><span class="pre">int(node.a)</span></code> reads a constant’s Python integer value, and
+<code class="docutils literal notranslate"><span class="pre">ir.const(value,</span> <span class="pre">node.ty)</span></code> converts the result back into typed IR.</p>
+<p>The order can also be written as <code class="docutils literal notranslate"><span class="pre">tvm_ffi.WalkOrder.POSTORDER</span></code> or
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi.WalkOrder.PREORDER</span></code>. In either order, the mapper applies a handler
+once at each position. A post-order replacement is final and is not
+traversed again. Reaching a result that needs no further rewrites may
+require another map or a separate simplification pass.</p>
+</section>
+<section id="id2">
+<h3>Definitions and Uses<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>In Structural Walk, we used <code class="docutils literal notranslate"><span class="pre">with_def_region_kind</span></code> to count variable
+uses. A map callback receives the same <code class="docutils literal notranslate"><span class="pre">(var,</span> <span class="pre">kind)</span></code> information but
+returns a replacement. We can use it to rename a function parameter and a
+loop variable, updating their uses throughout the function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">example</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will rename <code class="docutils literal notranslate"><span class="pre">n</span></code> to <code class="docutils literal notranslate"><span class="pre">n_new</span></code> and <code class="docutils literal notranslate"><span class="pre">i</span></code> to <code class="docutils literal notranslate"><span class="pre">i_new</span></code>. Each definition
+and its uses must refer to the same new variable object. The callback
+below records each old variable and its replacement in a Python dictionary,
+<code class="docutils literal notranslate"><span class="pre">replacements</span></code>. At each use, it retrieves the same replacement. The
+parameter <code class="docutils literal notranslate"><span class="pre">n</span></code> has kind <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code>, the loop variable <code class="docutils literal notranslate"><span class="pre">i</span></code> has kind
+<code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code>, and their uses have kind <code class="docutils literal notranslate"><span class="pre">NONE</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">replacements</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rename</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">!=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">DefRegionKind</span><span class="o">.</span><span class="n">NONE</span><span class="p">:</span>
+        <span class="n">replacements</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_new"</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">replacements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+<span class="n">renamed</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+    <span class="n">example</span><span class="p">,</span>
+    <span class="n">with_def_region_kind</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">rename</span><span class="p">),</span>
+    <span class="n">order</span><span class="o">=</span><span class="s2">"pre"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">loop</span> <span class="o">=</span> <span class="n">renamed</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>       <span class="c1"># The function's first statement is the loop.</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>    <span class="c1"># The loop's first statement is T.evaluate.</span>
+<span class="n">addition</span> <span class="o">=</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">value</span>     <span class="c1"># Its argument is i + n.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">renamed</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">loop</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">renamed</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">addition</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">var</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">addition</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">renamed</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>n_new i_new
+True
+True
+True
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">order=&quot;pre&quot;</span></code>, the mapper reaches the definitions of <code class="docutils literal notranslate"><span class="pre">n</span></code> and
+<code class="docutils literal notranslate"><span class="pre">i</span></code> before their uses in this function. The callback records each
+replacement at its definition and returns that same object at each use.
+The <code class="docutils literal notranslate"><span class="pre">body.seq</span></code> fields contain the function’s and loop’s statement
+sequences, which let us inspect the rewritten loop and its addition.
+The three <code class="docutils literal notranslate"><span class="pre">True</span></code> results confirm that the loop bound refers to
+<code class="docutils literal notranslate"><span class="pre">n_new</span></code> and that the addition refers to <code class="docutils literal notranslate"><span class="pre">i_new</span></code> and <code class="docutils literal notranslate"><span class="pre">n_new</span></code>.
+Creating a new variable at each use would break these connections, even
+if the names matched. The mapper builds the rewritten function and leaves
+<code class="docutils literal notranslate"><span class="pre">example</span></code> unchanged.</p>
+</section>
+<section id="shared-objects">
+<h3>Shared Objects<a class="headerlink" href="#shared-objects" title="Link to this heading">#</a></h3>
+<p>A multiplication can use the same addition as both operands:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">shared</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">twice</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">(</span><span class="n">shared</span><span class="p">,</span> <span class="n">shared</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">shared</span></code> is one <code class="docutils literal notranslate"><span class="pre">Add</span></code> object representing <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>. Both <code class="docutils literal notranslate"><span class="pre">twice.a</span></code>
+and <code class="docutils literal notranslate"><span class="pre">twice.b</span></code> refer to it, so the multiplication represents
+<code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span></code>.</p>
+<p>The mapper reaches this object through each operand and calls its handler
+twice. We can see what happens when each call creates a new addition,
+changing the constant from 1 to 2:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mapped_additions</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rewrite_add</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="n">mapped_additions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">ty</span><span class="p">))</span>
+
+<span class="n">mapped_twice</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span><span class="n">twice</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="n">rewrite_add</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mapped_twice</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Add callbacks:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mapped_additions</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Input operands are the same object:"</span><span class="p">,</span> <span class="n">twice</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">twice</span><span class="o">.</span><span class="n">b</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Output operands are the same object:"</span><span class="p">,</span> <span class="n">mapped_twice</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">mapped_twice</span><span class="o">.</span><span class="n">b</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(x + 2) * (x + 2)
+Add callbacks: 2
+Input operands are the same object: True
+Output operands are the same object: False
+</pre></div>
+</div>
+<p>The input <code class="docutils literal notranslate"><span class="pre">twice</span></code> uses <code class="docutils literal notranslate"><span class="pre">shared</span></code> for both operands, so its identity
+check is <code class="docutils literal notranslate"><span class="pre">True</span></code>. In the output <code class="docutils literal notranslate"><span class="pre">mapped_twice</span></code>, both operands represent
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">2</span></code>, but <code class="docutils literal notranslate"><span class="pre">rewrite_add</span></code> created a distinct <code class="docutils literal notranslate"><span class="pre">Add</span></code> for each operand.
+The output identity check is therefore <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>Each call to <code class="docutils literal notranslate"><span class="pre">rewrite_add</span></code> creates a new <code class="docutils literal notranslate"><span class="pre">Add</span></code>, and the mapper does not
+cache the callback’s results. To keep both operands pointing to the same
+new addition, we can use a dictionary as we did for variable replacements.
+The callback records a replacement on its first visit and returns that
+same object on later visits to the original addition:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_replacements</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rewrite_add_once</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">add_replacements</span><span class="p">:</span>
+        <span class="n">add_replacements</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">ty</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">add_replacements</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
+
+<span class="n">shared_result</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+    <span class="n">twice</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="n">rewrite_add_once</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">shared_result</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">shared_result</span><span class="o">.</span><span class="n">b</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">True</span></code>. Both callback calls receive the same original
+<code class="docutils literal notranslate"><span class="pre">Add</span></code>, so the second retrieves the replacement created by the first.
+The two operands of <code class="docutils literal notranslate"><span class="pre">shared_result</span></code> therefore share one new addition.</p>
+</section>
+<section id="copies-and-storage-reuse">
+<h3>Copies and Storage Reuse<a class="headerlink" href="#copies-and-storage-reuse" title="Link to this heading">#</a></h3>
+<p>The earlier rewrite returned <code class="docutils literal notranslate"><span class="pre">mapped_twice</span></code> while leaving <code class="docutils literal notranslate"><span class="pre">twice</span></code>
+unchanged. We can print <code class="docutils literal notranslate"><span class="pre">twice</span></code> to check that it still contains
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>, then inspect the left addition in <code class="docutils literal notranslate"><span class="pre">mapped_twice</span></code> to check
+whether it still uses the original variable <code class="docutils literal notranslate"><span class="pre">x</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">twice</span><span class="p">)</span>
+
+<span class="n">left_add</span> <span class="o">=</span> <span class="n">mapped_twice</span><span class="o">.</span><span class="n">a</span>   <span class="c1"># The left addition: x + 2.</span>
+<span class="n">left_operand</span> <span class="o">=</span> <span class="n">left_add</span><span class="o">.</span><span class="n">a</span>  <span class="c1"># Its left operand: x.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">left_operand</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(x + 1) * (x + 1)
+True
+</pre></div>
+</div>
+<p>The first line confirms that <code class="docutils literal notranslate"><span class="pre">twice</span></code> is unchanged. The <code class="docutils literal notranslate"><span class="pre">True</span></code> result
+shows that the rewritten addition reuses the original <code class="docutils literal notranslate"><span class="pre">x</span></code> object.
+In an ordinary call, default mapping preserves the input through
+copy-on-write: it copies changed nodes and reuses unchanged children.</p>
+<p>If the original IR is no longer needed, <code class="docutils literal notranslate"><span class="pre">root._move()</span></code> allows an
+additional optimization. It transfers ownership to the mapper, allowing
+default mapping to update nodes in place when they are not shared with
+other references. Callbacks still return replacements and must not modify
+their input objects in place.</p>
+</section>
+</section>
+<section id="structural-visit">
+<span id="structural-visitor"></span><h2>Structural Visit<a class="headerlink" href="#structural-visit" title="Link to this heading">#</a></h2>
+<p>With <code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_walk</span></code>, the walker handles recursion, so callbacks
+do not need to visit children themselves. With
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_visit</span></code>, a matching callback decides which children
+to visit and in what order. If it returns without making recursive calls,
+those children are not visited. The callback can also update analysis
+state before and after a child visit. The API has the following signature:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tvm_ffi.structural_visit(root, callbacks=())
+</pre></div>
+</div>
+<section id="choosing-children">
+<h3>Choosing Children<a class="headerlink" href="#choosing-children" title="Link to this heading">#</a></h3>
+<p>Suppose an analysis needs the variables in just the left operand of
+<code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(y</span> <span class="pre">+</span> <span class="pre">2)</span></code>. A visitor callback can make that choice at the
+multiplication, before visiting either operand. The following handler
+continues into <code class="docutils literal notranslate"><span class="pre">a</span></code> and leaves <code class="docutils literal notranslate"><span class="pre">b</span></code> unvisited:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">left_variables</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">visit_left</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">record_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="n">left_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_visit</span><span class="p">(</span>
+    <span class="n">root</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="n">visit_left</span><span class="p">),</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">record_var</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">left_variables</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">['x']</span></code>. The multiplication matches <code class="docutils literal notranslate"><span class="pre">visit_left</span></code>, which
+receives the node and a <code class="docutils literal notranslate"><span class="pre">tvm_ffi.StructuralVisitor</span></code> created for this
+traversal. <code class="docutils literal notranslate"><span class="pre">node.a</span></code> is the left operand, <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>. Calling
+<code class="docutils literal notranslate"><span class="pre">visitor.visit(node.a)</span></code> processes it with the same callbacks.</p>
+<p>The addition has no matching handler, so the visitor follows its children
+automatically and passes <code class="docutils literal notranslate"><span class="pre">x</span></code> to <code class="docutils literal notranslate"><span class="pre">record_var</span></code>. The multiplication’s
+right operand, <code class="docutils literal notranslate"><span class="pre">node.b</span></code>, is never visited, so <code class="docutils literal notranslate"><span class="pre">y</span></code> is absent from the
+result. A matched callback chooses all further visits from its node.
+Returning <code class="docutils literal notranslate"><span class="pre">None</span></code> without a recursive call finishes that callback without
+visiting its children.</p>
+<p><code class="docutils literal notranslate"><span class="pre">callbacks</span></code> accepts a single <code class="docutils literal notranslate"><span class="pre">(Type,</span> <span class="pre">handler)</span></code> pair, a list or tuple
+of pairs, grouped classes, or a function matching every reached value.
+Classes match subclasses, and only the first matching handler runs.
+With no matching handler, including when <code class="docutils literal notranslate"><span class="pre">callbacks=()</span></code>, the visitor
+uses the node’s default child traversal.</p>
+</section>
+<section id="using-the-default-traversal">
+<span id="visiting-default-children"></span><h3>Using the Default Traversal<a class="headerlink" href="#using-the-default-traversal" title="Link to this heading">#</a></h3>
+<p>Here, “default” means the child traversal defined by the current node’s
+IR type. For a multiplication, that rule visits <code class="docutils literal notranslate"><span class="pre">a</span></code> before <code class="docutils literal notranslate"><span class="pre">b</span></code>.
+<code class="docutils literal notranslate"><span class="pre">visitor.default_visit(node)</span></code> follows this rule without calling the
+current node’s handler again. At each child, a matching handler still
+decides whether to visit its own children. Calling <code class="docutils literal notranslate"><span class="pre">visitor.visit(node)</span></code>
+on the current multiplication would select its handler again.</p>
+<p>Inside the multiplication’s handler, the choices are:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 38.0%" />
+<col style="width: 62.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Within the handler</p></th>
+<th class="head"><p>Effect</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">visitor.visit(node.a)</span></code></p></td>
+<td><p>Visit the left operand, <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>. The right operand is not visited
+automatically.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">visitor.default_visit(node)</span></code></p></td>
+<td><p>Visit <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> followed by <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">+</span> <span class="pre">2</span></code>. Each operand is processed using
+the same callback rules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">None</span></code> without recursive calls</p></td>
+<td><p>Return from the current handler without visiting either operand.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Structural Walk’s <code class="docutils literal notranslate"><span class="pre">order</span></code> option selects whether a handler runs before
+or after its children. A visitor callback can do work at both points in
+the same call: first before <code class="docutils literal notranslate"><span class="pre">default_visit</span></code>, then after the child visits
+are complete. We can record both pre-order and post-order traces this way.
+The handler below calls <code class="docutils literal notranslate"><span class="pre">default_visit</span></code> for every expression, so it
+visits all nodes in <code class="docutils literal notranslate"><span class="pre">expr</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+
+<span class="n">before_children</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">after_children</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">visit_expr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="n">before_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">describe</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="n">interrupted</span> <span class="o">=</span> <span class="n">visitor</span><span class="o">.</span><span class="n">default_visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">interrupted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">interrupted</span>
+    <span class="n">after_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">describe</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_visit</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">visit_expr</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">before_children</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">after_children</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['Mul', 'Add', 'x', '1', 'Add', 'y', '2']
+['x', '1', 'Add', 'y', '2', 'Add', 'Mul']
+</pre></div>
+</div>
+<p>Each callback records its node, visits the children, then records the node
+again. The first list therefore follows pre-order and the second follows
+post-order. The placement of recursive calls determines the order, so
+<code class="docutils literal notranslate"><span class="pre">structural_visit</span></code> has no <code class="docutils literal notranslate"><span class="pre">order</span></code> argument.</p>
+<p>Both visitor methods return <code class="docutils literal notranslate"><span class="pre">None</span></code> when visiting finishes, or a
+<code class="docutils literal notranslate"><span class="pre">VisitInterrupt</span></code> when a child requests an early exit. The check after
+<code class="docutils literal notranslate"><span class="pre">default_visit</span></code> returns that interrupt immediately, before appending to
+<code class="docutils literal notranslate"><span class="pre">after_children</span></code>.</p>
+</section>
+<section id="choosing-child-order">
+<h3>Choosing Child Order<a class="headerlink" href="#choosing-child-order" title="Link to this heading">#</a></h3>
+<p>Suppose a search should try the right branch first. Structural Walk’s
+pre-order and post-order options change when a handler runs relative to
+its children, but keep the default left-to-right operand order. A visitor
+callback can choose that order explicitly. We can visit <code class="docutils literal notranslate"><span class="pre">b</span></code> before <code class="docutils literal notranslate"><span class="pre">a</span></code>
+for both additions and multiplications, then collect variable names to
+check the order:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reversed_variables</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">visit_right_first</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">):</span>
+        <span class="n">interrupted</span> <span class="o">=</span> <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">interrupted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">interrupted</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">record_variable</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="n">reversed_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_visit</span><span class="p">(</span>
+    <span class="n">expr</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">((</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">),</span> <span class="n">visit_right_first</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">record_variable</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reversed_variables</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">['y',</span> <span class="pre">'x']</span></code>. The multiplication visits <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">+</span> <span class="pre">2</span></code> before
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>. Each addition also visits its constant before its variable.
+The loop continues to the next child only if the previous visit returned
+<code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</section>
+<section id="tracking-the-current-path">
+<h3>Tracking the Current Path<a class="headerlink" href="#tracking-the-current-path" title="Link to this heading">#</a></h3>
+<p>When reporting a variable occurrence, an analysis may need the path from
+the root to that variable. A visitor callback can maintain this path by
+adding its node’s label before visiting children and removing it
+afterward. Each child then sees the path for its own branch:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">variable_paths</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">visit_with_path</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">describe</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">):</span>
+            <span class="n">variable_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"/"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">visitor</span><span class="o">.</span><span class="n">default_visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_visit</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">visit_with_path</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">variable_paths</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['Mul/Add/x', 'Mul/Add/y']
+[]
+</pre></div>
+</div>
+<p>Before visiting children, the callback adds its node’s label to <code class="docutils literal notranslate"><span class="pre">path</span></code>.
+Each recursive child call sees that label along with its earlier ancestors.
+On return, <code class="docutils literal notranslate"><span class="pre">finally</span></code> removes the label. This prevents entries from the
+left branch from remaining in the right branch’s path. The push and pop
+surround the same recursive call, keeping the path active for exactly
+that subtree. Cleanup also runs if a child interrupts or raises an error.
+The final empty list confirms that the path has been restored after the
+whole visit.</p>
+</section>
+<section id="handling-early-exit">
+<span id="stopping-a-visit"></span><h3>Handling Early Exit<a class="headerlink" href="#handling-early-exit" title="Link to this heading">#</a></h3>
+<p>Structural Walk carries an interrupt from a callback back to its caller
+as part of its automatic traversal. When a visitor callback makes
+recursive calls itself, it must check each child’s result and return any
+interrupt before visiting another child. The checks in
+<code class="docutils literal notranslate"><span class="pre">visit_right_first</span></code> do this. We can test them by searching for <code class="docutils literal notranslate"><span class="pre">y</span></code>
+with that traversal and recording which variables are reached:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">searched_variables</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">visit_until_y</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="n">searched_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">VisitInterrupt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="n">visitor_found</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_visit</span><span class="p">(</span>
+    <span class="n">expr</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">((</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">),</span> <span class="n">visit_right_first</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">visit_until_y</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">visitor_found</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Variables visited:"</span><span class="p">,</span> <span class="n">searched_variables</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>y
+Variables visited: ['y']
+</pre></div>
+</div>
+<p>The right branch reaches <code class="docutils literal notranslate"><span class="pre">y</span></code> first. <code class="docutils literal notranslate"><span class="pre">visit_until_y</span></code> returns an
+interrupt containing that variable, and each <code class="docutils literal notranslate"><span class="pre">visit_right_first</span></code> call
+returns it before trying its next child. The interrupt passes through
+the addition and multiplication to <code class="docutils literal notranslate"><span class="pre">structural_visit</span></code>, which returns it
+as <code class="docutils literal notranslate"><span class="pre">visitor_found</span></code>. The visit never reaches <code class="docutils literal notranslate"><span class="pre">x</span></code> in the left branch,
+so only <code class="docutils literal notranslate"><span class="pre">y</span></code> appears in <code class="docutils literal notranslate"><span class="pre">searched_variables</span></code>.</p>
+<p>Ignoring a child’s return value would let its parent callback continue
+running after the child requests an early exit. When the whole visit
+finishes normally, <code class="docutils literal notranslate"><span class="pre">structural_visit</span></code> returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</section>
+<section id="preserving-definition-roles">
+<span id="definitions-and-uses-2"></span><h3>Preserving Definition Roles<a class="headerlink" href="#preserving-definition-roles" title="Link to this heading">#</a></h3>
+<p>A binding node’s default traversal also marks which fields define
+variables. When a visitor callback chooses those fields manually, it must
+preserve these roles. Otherwise, a definition could be reported as a use.
+We can check this with a <code class="docutils literal notranslate"><span class="pre">Let</span></code> that defines <code class="docutils literal notranslate"><span class="pre">tmp</span></code> and uses it twice.
+First, leave the <code class="docutils literal notranslate"><span class="pre">Let</span></code> traversal to its default rule and record each
+variable’s role through <code class="docutils literal notranslate"><span class="pre">visitor.def_region_kind()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"tmp"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">scoped_expr</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Let</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">tmp</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">)</span>
+<span class="n">variable_contexts</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">record_context</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="n">variable_contexts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">visitor</span><span class="o">.</span><span class="n">def_region_kind</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">visitor</span><span class="o">.</span><span class="n">default_visit</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_visit</span><span class="p">(</span><span class="n">scoped_expr</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">record_context</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">variable_contexts</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tmp DEF_SIMPLE
+x NONE
+y NONE
+tmp NONE
+tmp NONE
+</pre></div>
+</div>
+<p>The default <code class="docutils literal notranslate"><span class="pre">Let</span></code> traversal visits <code class="docutils literal notranslate"><span class="pre">Let.var</span></code> under <code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code> and
+visits <code class="docutils literal notranslate"><span class="pre">Let.value</span></code> and <code class="docutils literal notranslate"><span class="pre">Let.body</span></code> outside that definition region.
+The temporary therefore appears once as a definition and twice as a use.
+The variable handler calls <code class="docutils literal notranslate"><span class="pre">default_visit(var)</span></code> to also follow any
+children in the variable’s type under the appropriate roles.</p>
+<p>Now we can take over the <code class="docutils literal notranslate"><span class="pre">Let</span></code> traversal with our own handler. Because
+the default <code class="docutils literal notranslate"><span class="pre">Let</span></code> rule will no longer run, calling <code class="docutils literal notranslate"><span class="pre">visit(node.var)</span></code>
+directly would report the definition as an ordinary use. The handler
+enters <code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code> explicitly for that visit, then visits <code class="docutils literal notranslate"><span class="pre">value</span></code> and
+<code class="docutils literal notranslate"><span class="pre">body</span></code> outside the definition region:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">visit_let</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">visitor</span><span class="p">):</span>
+    <span class="n">interrupted</span> <span class="o">=</span> <span class="n">visitor</span><span class="o">.</span><span class="n">with_def_region_kind</span><span class="p">(</span>
+        <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">DefRegionKind</span><span class="o">.</span><span class="n">DEF_SIMPLE</span><span class="p">,</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">var</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">interrupted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">interrupted</span>
+    <span class="n">interrupted</span> <span class="o">=</span> <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">interrupted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">interrupted</span>
+    <span class="k">return</span> <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+
+<span class="n">variable_contexts</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_visit</span><span class="p">(</span>
+    <span class="n">scoped_expr</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Let</span><span class="p">,</span> <span class="n">visit_let</span><span class="p">),</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">record_context</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">variable_contexts</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This prints the same five lines, confirming that the custom traversal
+preserves the default definition roles. <code class="docutils literal notranslate"><span class="pre">with_def_region_kind(kind,</span> <span class="pre">fn)</span></code>
+calls <code class="docutils literal notranslate"><span class="pre">fn()</span></code> under the requested definition kind and restores the
+previous kind afterward. An enclosing <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code> propagates through
+nested regions, as described in
+<a class="reference internal" href="#ir-pattern-definition-regions"><span class="std std-ref">the pattern-definition example</span></a>.</p>
+</section>
+</section>
+<section id="structural-mutate">
+<span id="structural-mutator"></span><h2>Structural Mutate<a class="headerlink" href="#structural-mutate" title="Link to this heading">#</a></h2>
+<p>Structural Map handles child rewrites and rebuilds parents automatically.
+With <code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_mutate</span></code>, a matching callback takes responsibility
+for both steps. It chooses which children to rewrite, makes the recursive
+calls, and returns a result containing the child replacements it wants to
+keep. It can also maintain state during those calls, as a visitor does.
+The API has the following signature:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tvm_ffi.structural_mutate(root, callbacks=())
+</pre></div>
+</div>
+<section id="rewriting-selected-children">
+<h3>Rewriting Selected Children<a class="headerlink" href="#rewriting-selected-children" title="Link to this heading">#</a></h3>
+<p>Suppose we want to replace variables only in the left operand of
+<code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(y</span> <span class="pre">+</span> <span class="pre">2)</span></code>. The multiplication handler can select that operand
+for rewriting and keep the right operand as it is. It then builds the
+result using the rewritten left operand and the original right operand:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">replace_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">mutator</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">var</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">mutate_left</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">mutator</span><span class="p">):</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="n">mutator</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">left</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">a</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">node</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">loc</span><span class="p">)</span>
+
+<span class="n">partial</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_mutate</span><span class="p">(</span>
+    <span class="n">root</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="n">mutate_left</span><span class="p">),</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">replace_var</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">partial</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">b</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>T.Add(8, 1) * (y + 2)
+True
+(x + 1) * (y + 2)
+</pre></div>
+</div>
+<p>Each handler receives <code class="docutils literal notranslate"><span class="pre">(value,</span> <span class="pre">mutator)</span></code>, where <code class="docutils literal notranslate"><span class="pre">mutator</span></code> is a
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi.StructuralMutator</span></code> created for this rewrite. The multiplication
+handler calls <code class="docutils literal notranslate"><span class="pre">mutator.mutate(node.a)</span></code> to process <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> with the same
+callbacks. The addition has no matching handler, so default mutation
+processes its children and <code class="docutils literal notranslate"><span class="pre">replace_var</span></code> changes <code class="docutils literal notranslate"><span class="pre">x</span></code> to the constant 8.</p>
+<p>The recursive call returns the rewritten left operand. <code class="docutils literal notranslate"><span class="pre">mutate_left</span></code>
+puts it in a new multiplication and keeps <code class="docutils literal notranslate"><span class="pre">node.b</span></code> as the right operand.
+<code class="docutils literal notranslate"><span class="pre">loc=node.loc</span></code> retains the original multiplication’s source location.
+Because this handler takes over the multiplication’s rewrite, it must
+return a node containing the child result. Its identity check lets it
+return the original multiplication when the left operand is unchanged.</p>
+<p>Since the handler never calls <code class="docutils literal notranslate"><span class="pre">mutate</span></code> on the right operand, <code class="docutils literal notranslate"><span class="pre">y</span></code> stays
+a variable. The <code class="docutils literal notranslate"><span class="pre">True</span></code> identity check shows that the result shares this
+unchanged subtree with <code class="docutils literal notranslate"><span class="pre">expr</span></code>. Printing <code class="docutils literal notranslate"><span class="pre">expr</span></code> confirms that the input
+still contains both variables.</p>
+<p>Callback selection follows the same rules as in Structural Map: classes match
+subclasses, and only the first matching handler runs. A list or tuple
+combines rules, grouped classes can share a handler, and a function passed
+on its own matches every reached value. Nodes with no matching handler
+follow default mutation, including when <code class="docutils literal notranslate"><span class="pre">callbacks=()</span></code>.</p>
+</section>
+<section id="returning-replacements">
+<h3>Returning Replacements<a class="headerlink" href="#returning-replacements" title="Link to this heading">#</a></h3>
+<p>In the ordinary calls used here, rewriting a child does not edit its
+original parent. <code class="docutils literal notranslate"><span class="pre">mutate_left</span></code> must include the rewritten child in the
+<code class="docutils literal notranslate"><span class="pre">Mul</span></code> it returns. Returning the original <code class="docutils literal notranslate"><span class="pre">node</span></code> instead would discard
+that child replacement. A handler can also return a new expression
+without processing its children, for example when a rule replaces an
+entire subtree.</p>
+<p>Inside a multiplication handler, recursive calls and return values have
+the following effects:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 38.0%" />
+<col style="width: 62.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Within the handler</p></th>
+<th class="head"><p>Effect</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mutator.mutate(node.a)</span></code></p></td>
+<td><p>Rewrite only the left operand. Use the returned child when building
+the parent result.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mutator.default_mutate(node)</span></code></p></td>
+<td><p>For a multiplication, rewrite both operands using the same callbacks
+and return a multiplication containing their results.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">node</span></code> without recursive calls</p></td>
+<td><p>Keep the node and its children without processing them.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">replacement</span></code></p></td>
+<td><p>Use the replacement as the result at this position.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">mutate(node)</span></code> on the current node would select its handler
+again. <code class="docutils literal notranslate"><span class="pre">default_mutate(node)</span></code> bypasses that callback for the current
+node and processes its children. For an expression field, the handler
+must return a compatible IR expression, either the original or a
+replacement. <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">WalkResult.SKIP</span></code>, and <code class="docutils literal notranslate"><span class="pre">VisitInterrupt</span></code> are not
+control results for expression mutation.</p>
+<p>Once a handler returns a replacement, the mutator accepts that result
+without automatically processing it again. We can check this by replacing
+<code class="docutils literal notranslate"><span class="pre">x</span></code> with a new addition and recording any integer constants visited by
+another handler:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">new_literals</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">replace_symbol</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">mutator</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">),</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">))</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">observe_literal</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">mutator</span><span class="p">):</span>
+    <span class="n">new_literals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+<span class="n">replacement</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_mutate</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">replace_symbol</span><span class="p">),</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">,</span> <span class="n">observe_literal</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">replacement</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">new_literals</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>T.Add(10, 20)
+[]
+</pre></div>
+</div>
+<p>The variable handler returns a new addition containing 10 and 20. The
+mutator accepts it without visiting its children, so neither constant
+reaches <code class="docutils literal notranslate"><span class="pre">observe_literal</span></code>. If we want the introduced constants to pass
+through our rules too, the variable handler can explicitly process the
+new addition’s children before returning it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">new_literals</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">replace_and_process</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">mutator</span><span class="p">):</span>
+    <span class="n">introduced</span> <span class="o">=</span> <span class="n">replace_symbol</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">mutator</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mutator</span><span class="o">.</span><span class="n">default_mutate</span><span class="p">(</span><span class="n">introduced</span><span class="p">)</span>
+
+<span class="n">processed</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_mutate</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">replace_and_process</span><span class="p">),</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">,</span> <span class="n">observe_literal</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">new_literals</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>T.Add(10, 20)
+[10, 20]
+</pre></div>
+</div>
+<p>The constants are now recorded, but the addition remains unchanged
+because these callbacks do not compute its result. The callback chooses
+whether its replacement’s children are processed, separately from
+constructing and returning that replacement.</p>
+</section>
+<section id="rewriting-children-before-parents">
+<h3>Rewriting Children Before Parents<a class="headerlink" href="#rewriting-children-before-parents" title="Link to this heading">#</a></h3>
+<p>Our first rewrite produced <code class="docutils literal notranslate"><span class="pre">T.Add(8,</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">(y</span> <span class="pre">+</span> <span class="pre">2)</span></code>. We can also compute
+the left addition, while keeping the same rule that leaves the right
+operand untouched. An addition handler first rewrites its children, then
+checks whether their results are constants it can add together:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">mutate_and_fold_add</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">mutator</span><span class="p">):</span>
+    <span class="n">rewritten</span> <span class="o">=</span> <span class="n">mutator</span><span class="o">.</span><span class="n">default_mutate</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rewritten</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rewritten</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">IntImm</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rewritten</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">rewritten</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">rewritten</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rewritten</span>
+
+<span class="n">folded_left</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_mutate</span><span class="p">(</span>
+    <span class="n">expr</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="n">mutate_left</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="n">mutate_and_fold_add</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">replace_var</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">folded_left</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">folded_left</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">b</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>9 * (y + 2)
+True
+(x + 1) * (y + 2)
+</pre></div>
+</div>
+<p>The multiplication still calls only <code class="docutils literal notranslate"><span class="pre">mutator.mutate(node.a)</span></code>. Inside
+that branch, <code class="docutils literal notranslate"><span class="pre">default_mutate</span></code> replaces <code class="docutils literal notranslate"><span class="pre">x</span></code> with 8 before the addition
+handler computes <code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">+</span> <span class="pre">1</span></code>. The resulting constant 9 returns to
+<code class="docutils literal notranslate"><span class="pre">mutate_left</span></code>, which puts it in the new multiplication. The right branch
+is never processed and remains shared with the original expression.</p>
+<p>Each handler determines how to use its children’s results. The
+multiplication selects one child, while the addition uses default
+recursion and computes a result afterward. These recursive calls establish
+the processing order, so <code class="docutils literal notranslate"><span class="pre">structural_mutate</span></code> has no <code class="docutils literal notranslate"><span class="pre">order</span></code> argument.</p>
+</section>
+<section id="tracking-variable-replacements">
+<span id="renaming-bound-variables"></span><h3>Tracking Variable Replacements<a class="headerlink" href="#tracking-variable-replacements" title="Link to this heading">#</a></h3>
+<p>In Structural Map, we kept a Python dictionary to connect renamed
+definitions with their uses. A mutation callback can use the variable
+substitution table owned by its mutator. The same table is available
+throughout its recursive calls, so a replacement recorded at a definition
+can be retrieved when rewriting a use. We can apply this to a function
+parameter and loop variable:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">example</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rename_bound</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">mutator</span><span class="p">):</span>
+    <span class="n">replacement</span> <span class="o">=</span> <span class="n">mutator</span><span class="o">.</span><span class="n">var_remap_get</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">replacement</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">replacement</span>
+    <span class="k">if</span> <span class="n">mutator</span><span class="o">.</span><span class="n">def_region_kind</span><span class="p">()</span> <span class="o">!=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">DefRegionKind</span><span class="o">.</span><span class="n">NONE</span><span class="p">:</span>
+        <span class="n">replacement</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_new"</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+        <span class="n">mutator</span><span class="o">.</span><span class="n">var_remap_set</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">replacement</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">replacement</span>
+    <span class="k">return</span> <span class="n">var</span>
+
+<span class="n">renamed_function</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_mutate</span><span class="p">(</span>
+    <span class="n">example</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">rename_bound</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">loop</span> <span class="o">=</span> <span class="n">renamed_function</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># The function's first statement is the loop.</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>        <span class="c1"># The loop's first statement is T.evaluate.</span>
+<span class="n">addition</span> <span class="o">=</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">value</span>         <span class="c1"># Its argument is i + n.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">renamed_function</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">loop</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">renamed_function</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">addition</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">var</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">addition</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">renamed_function</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">example</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>n_new i_new
+True
+True
+True
+n
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">var_remap_get(var)</span></code> retrieves a recorded replacement or returns
+<code class="docutils literal notranslate"><span class="pre">None</span></code>. At each definition, the callback creates a new variable and
+records it with <code class="docutils literal notranslate"><span class="pre">var_remap_set(var,</span> <span class="pre">replacement)</span></code>. The default function
+and loop traversal identify their definitions through
+<code class="docutils literal notranslate"><span class="pre">def_region_kind()</span></code>. Later uses retrieve the recorded variables, keeping
+the loop bound and addition connected to the new definitions. The final
+line confirms that the original function still has its parameter <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<p>The callback must perform the lookup explicitly because it handles the
+variable itself. Default variable mutation does not run after this handler
+returns. This table records variable substitutions, not the results of
+every arithmetic rewrite.</p>
+<p>If a callback takes over a binding node and selects its fields manually,
+it must preserve their definition roles. It can use
+<code class="docutils literal notranslate"><span class="pre">mutator.with_def_region_kind(kind,</span> <span class="pre">fn)</span></code> to run <code class="docutils literal notranslate"><span class="pre">fn()</span></code> under the
+appropriate kind, just as the visitor does. The previous kind is restored
+afterward, and an enclosing <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code> continues to propagate through
+nested regions.</p>
+</section>
+<section id="id3">
+<h3>Copies and Storage Reuse<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<p>The selective rewrite also shows which parts of the result can be reused.
+The multiplication handler constructs a new parent but keeps the original
+right operand. Default mutation similarly copies changed nodes and reuses
+unchanged children when preserving the input. Returning a rewritten value
+does not require copying the whole tree.</p>
+<p>If the input is no longer needed, <code class="docutils literal notranslate"><span class="pre">root._move()</span></code> transfers ownership and
+allows default mutation to reuse storage where it is not shared. A custom
+mutation handler can also choose an implementation based on ownership by
+accepting a third argument:
+<code class="docutils literal notranslate"><span class="pre">handler(value,</span> <span class="pre">mutator,</span> <span class="pre">inplace_mode)</span></code>. The mode is an integer that
+can be compared with <code class="docutils literal notranslate"><span class="pre">tvm_ffi.InplaceMode.DISALLOW</span></code> or
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi.InplaceMode.ALLOW</span></code>. <code class="docutils literal notranslate"><span class="pre">DISALLOW</span></code> requires preserving the input,
+and <code class="docutils literal notranslate"><span class="pre">ALLOW</span></code> permits reusing storage for the current value. This
+permission is determined for each callback invocation, so passing
+<code class="docutils literal notranslate"><span class="pre">_move()</span></code> does not make every node available for reuse. The examples here
+use ordinary references and return replacement values from two-argument
+handlers.</p>
+<p>The TVM FFI
+<a class="reference external" href="https://github.com/apache/tvm-ffi/blob/e9fdc58fa4bf2e60ed701dacac48a01e41a3dc1f/docs/concepts/structural_eq_hash.rst#structural-walk-and-map">structural operations guide</a>
+covers ownership options, custom object hooks, and native implementations.
+For analysis that also tracks variable ranges and constraints, continue to
+<a class="reference internal" href="symbolic_integer_analysis.html"><span class="doc">Symbolic Integer Analysis</span></a>. <a class="reference internal" href="writing_passes.html"><span class="doc">Writing and Debugging Passes</span></a> explains how to
+package a rewrite as a compiler pass.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../ir/printing_and_parsing.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Printing and Parsing</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="symbolic_integer_analysis.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Symbolic Integer Analysis</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-walk">Structural Walk</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#walking-an-expression">Walking an Expression</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-callbacks">Choosing Callbacks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#traversal-order">Traversal Order</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#skipping-and-stopping">Skipping and Stopping</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#containers-and-shared-objects">Containers and Shared Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions-and-uses">Definitions and Uses</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-map">Structural Map</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#replacing-variables">Replacing Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Choosing Callbacks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping-order">Mapping Order</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Definitions and Uses</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-objects">Shared Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#copies-and-storage-reuse">Copies and Storage Reuse</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-visit">Structural Visit</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-children">Choosing Children</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-default-traversal">Using the Default Traversal</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-child-order">Choosing Child Order</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-the-current-path">Tracking the Current Path</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-early-exit">Handling Early Exit</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preserving-definition-roles">Preserving Definition Roles</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-mutate">Structural Mutate</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rewriting-selected-children">Rewriting Selected Children</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#returning-replacements">Returning Replacements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rewriting-children-before-parents">Rewriting Children Before Parents</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-variable-replacements">Tracking Variable Replacements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Copies and Storage Reuse</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Apache TVM Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

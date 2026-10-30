@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Writing and Debugging Passes &#8212; tvm-tirx</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'compiler/writing_passes';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Programming Overview" href="../programming_guides/index.html" />
+    <link rel="prev" title="Symbolic Integer Analysis" href="symbolic_integer_analysis.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">tvm-tirx</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/quick_start.html">Quick Start</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../ir/overview.html">IR Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/types_and_expressions.html">Types and Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/statements.html">Statements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/operators_and_calls.html">Operators and Calls</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/functions_and_modules.html">Functions and Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ir/printing_and_parsing.html">Printing and Parsing</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with IR</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="structural_utilities.html">Traversing and Transforming IR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Writing and Debugging Passes</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/index.html">Programming Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/language_basics.html">Language Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/control_flow.html">Control Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/types_tensors_memory.html">Types, Tensors, and Memory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/metaprogramming.html">Metaprogramming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/cuda_ptx_interfaces.html">Calling CUDA and PTX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/data_layout.html">Data Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/tile/index.html">Tile Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/compiling.html">Compiling and Inspecting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming_guides/iket_profiling.html">Profiling with IKET</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Extending TIRx: everything is a plugin</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extending_ir_in_rust.html">Getting Started with Rust Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/defining_ir_extensions.html">Defining Types, Operators, and Passes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/using_ir_extensions.html">Using and Compiling the Extension</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../reference/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/cpp/index.html">C++ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/rust/index.html">Rust API</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Manual</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../dev/source_build.html">Build from Source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/doc_build.html">Build This Doc Site</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/cuda/index.html">CUDA Backend Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/ci_cd.html">Reproduce CI/CD</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release_process.html">Release Process</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/apache/tvm-tirx" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/compiler/writing_passes.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Writing and Debugging Passes</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-program">Starting Program</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#writing-a-function-pass">Writing a Function Pass</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-pipeline">Running a Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-result">Checking the Result</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-pass-s-input-and-output">Inspecting a Pass’s Input and Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-reproducing-a-stage">Saving and Reproducing a Stage</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="writing-and-debugging-passes">
+<h1>Writing and Debugging Passes<a class="headerlink" href="#writing-and-debugging-passes" title="Link to this heading">#</a></h1>
+<p>Suppose we want a version of an add-one function for tensors of length 128.
+We will write a pass that fixes its symbolic length, then combine it with
+statement simplification. A compiler pass packages an IR transformation so
+the pass manager can run it as part of a pipeline. As we build this pipeline,
+we will check its result, inspect the intermediate programs, and save one
+to reproduce a single transformation.</p>
+<section id="starting-program">
+<h2>Starting Program<a class="headerlink" href="#starting-program" title="Link to this heading">#</a></h2>
+<p>The following function adds one to each input element. <code class="docutils literal notranslate"><span class="pre">T.dynamic(&quot;n&quot;)</span></code>
+creates a symbolic length, so the tensor shapes and loop bound use the same
+variable <code class="docutils literal notranslate"><span class="pre">n</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">guarded_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The bounds check is deliberately redundant: <code class="docutils literal notranslate"><span class="pre">range(n)</span></code> already guarantees
+<code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code>. This gives us two changes to make. Our pass will replace <code class="docutils literal notranslate"><span class="pre">n</span></code>
+with 128 in the shapes and body. The existing <code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code> pass will
+remove the unnecessary check. The resulting function will accept tensors
+of length 128 rather than a length determined at runtime.</p>
+<p>Passes run on an <code class="docutils literal notranslate"><span class="pre">ir.IRModule</span></code>, which holds named functions. We place our
+function in a module before transforming it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">before</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">"guarded_add_one"</span><span class="p">:</span> <span class="n">guarded_add_one</span><span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="writing-a-function-pass">
+<h2>Writing a Function Pass<a class="headerlink" href="#writing-a-function-pass" title="Link to this heading">#</a></h2>
+<p>The replacement rule matches the original variable <code class="docutils literal notranslate"><span class="pre">n</span></code> and returns an
+integer constant in its place. We can use <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> from
+<a class="reference internal" href="structural_utilities.html"><span class="doc">Traversing and Transforming IR</span></a> to apply this rule throughout a function.
+The <a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.transform.function_pass.html#tvm_tirx.tirx.transform.function_pass" title="tvm_tirx.tirx.transform.function_pass"><code class="xref py py-func docutils literal notranslate"><span class="pre">function_pass()</span></code></a> decorator turns the
+rewrite into a pass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">specialize_dimension</span><span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="n">extent</span><span class="p">):</span>
+    <span class="n">replacement</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">dimension</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+
+    <span class="nd">@tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">function_pass</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"SpecializeDimension"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">replace_dimension</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">replacement</span>
+            <span class="k">return</span> <span class="n">var</span>
+
+        <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+            <span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">replace_dimension</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s2">"pre"</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">transform</span>
+</pre></div>
+</div>
+<p>The inner callback <code class="docutils literal notranslate"><span class="pre">transform</span></code> receives a function, its module, and the
+active pass context. This rewrite uses only <code class="docutils literal notranslate"><span class="pre">func</span></code> and returns the
+rewritten function. The pass manager calls it for each TIRx function in
+the module. <code class="docutils literal notranslate"><span class="pre">same_as</span></code> selects the original dimension object, so unrelated
+variables with the printed name <code class="docutils literal notranslate"><span class="pre">n</span></code> stay unchanged.</p>
+<p><code class="docutils literal notranslate"><span class="pre">specialize_dimension</span></code> creates a pass configured for a particular
+dimension and extent. Calling that pass with a module runs the rewrite:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">specialize</span> <span class="o">=</span> <span class="n">specialize_dimension</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+<span class="n">specialized</span> <span class="o">=</span> <span class="n">specialize</span><span class="p">(</span><span class="n">before</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">specialized</span><span class="p">[</span><span class="s2">"guarded_add_one"</span><span class="p">]</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ty</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The output is <code class="docutils literal notranslate"><span class="pre">128</span></code>. <code class="docutils literal notranslate"><span class="pre">params[0]</span></code> is parameter <code class="docutils literal notranslate"><span class="pre">A</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">ty.shape[0]</span></code> is its first dimension. The rewrite also changes <code class="docutils literal notranslate"><span class="pre">B</span></code>’s
+shape, the loop bound, and the condition to use 128. It leaves the original
+module <code class="docutils literal notranslate"><span class="pre">before</span></code> unchanged.</p>
+</section>
+<section id="running-a-pipeline">
+<h2>Running a Pipeline<a class="headerlink" href="#running-a-pipeline" title="Link to this heading">#</a></h2>
+<p>The specialized function still contains <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">128</span></code>. We can follow our
+pass with <code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code> to remove that check. <code class="docutils literal notranslate"><span class="pre">Sequential</span></code> runs the
+passes in the order listed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simplify</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">StmtSimplify</span><span class="p">()</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span><span class="n">specialize</span><span class="p">,</span> <span class="n">simplify</span><span class="p">])</span>
+
+<span class="k">with</span> <span class="n">ir</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">after</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="n">before</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">after</span><span class="p">[</span><span class="s2">"guarded_add_one"</span><span class="p">]</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The function now has fixed shapes and no bounds check:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>@T.function
+def guarded_add_one(A: T.Tensor((128,), T.float32), B: T.Tensor((128,), T.float32)):
+    for i in range(128):
+        B[i] = A[i] + T.float32(1.0)
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">PassContext</span></code> sets execution options for the pipeline. Its optimization
+level of 2 allows our level-0 pass and the built-in simplifier to run.
+<code class="docutils literal notranslate"><span class="pre">Sequential</span></code> specifies the transformations and their order.</p>
+</section>
+<section id="checking-the-result">
+<h2>Checking the Result<a class="headerlink" href="#checking-the-result" title="Link to this heading">#</a></h2>
+<p>First, check that the transformed module is well formed. For example,
+each variable use must have a valid definition, and a tensor load’s result
+type must agree with its source and indices:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">tirx</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">check_well_formed</span><span class="p">(</span><span class="n">after</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We also want to check that it has the structure we intended. We can parse
+an independently written version of the expected function, then compare it
+with the result:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_source</span>
+
+<span class="n">expected</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">@T.function</span>
+<span class="sd">def guarded_add_one(A: T.Tensor((128,), T.float32), B: T.Tensor((128,), T.float32)):</span>
+<span class="sd">    for i in range(128):</span>
+<span class="sd">        B[i] = A[i] + 1</span>
+<span class="sd">"""</span><span class="p">,</span>
+    <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">[</span><span class="s2">"guarded_add_one"</span><span class="p">],</span> <span class="n">expected</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This comparison checks both fixed tensor shapes and the loop with a direct
+store in its body. Neither well-formedness nor structural comparison proves
+that an arbitrary rewrite preserves computation. Here, specialization
+restricts the accepted length to 128, and removing the guard is valid because
+the loop already ensures <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">128</span></code>.</p>
+</section>
+<section id="inspecting-a-pass-s-input-and-output">
+<h2>Inspecting a Pass’s Input and Output<a class="headerlink" href="#inspecting-a-pass-s-input-and-output" title="Link to this heading">#</a></h2>
+<p>If the structural comparison fails, we need to find which stage produced
+the unexpected IR. A pass instrument can print the module immediately
+before and after a selected pass. To inspect statement simplification,
+use its <code class="docutils literal notranslate"><span class="pre">info.name</span></code> in both name lists:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.ir.transform.instrument</span><span class="w"> </span><span class="kn">import</span> <span class="n">PassPrintingInstrument</span>
+
+<span class="n">printing</span> <span class="o">=</span> <span class="n">PassPrintingInstrument</span><span class="p">(</span>
+    <span class="n">print_before_pass_names</span><span class="o">=</span><span class="p">[</span><span class="n">simplify</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+    <span class="n">print_after_pass_names</span><span class="o">=</span><span class="p">[</span><span class="n">simplify</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="k">with</span> <span class="n">ir</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">instruments</span><span class="o">=</span><span class="p">[</span><span class="n">printing</span><span class="p">]):</span>
+    <span class="n">inspected</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="n">before</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output has two labeled programs, <code class="docutils literal notranslate"><span class="pre">Print</span> <span class="pre">IR</span> <span class="pre">before:</span> <span class="pre">tirx.StmtSimplify</span></code>
+and <code class="docutils literal notranslate"><span class="pre">Print</span> <span class="pre">IR</span> <span class="pre">after:</span> <span class="pre">tirx.StmtSimplify</span></code>. Both have length 128. The first
+still contains <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">128</span></code>, and the second has the direct store. This
+shows the boundary between the two transformations: specialization has
+already fixed the length when the simplifier receives the module.</p>
+<p>The instrument observes the pipeline without changing it. To inspect our
+own pass instead, use <code class="docutils literal notranslate"><span class="pre">specialize.info.name</span></code> in the lists.</p>
+</section>
+<section id="saving-and-reproducing-a-stage">
+<h2>Saving and Reproducing a Stage<a class="headerlink" href="#saving-and-reproducing-a-stage" title="Link to this heading">#</a></h2>
+<p>Once we have identified a stage to investigate, we can save its input and
+run that pass on its own. <code class="docutils literal notranslate"><span class="pre">specialized</span></code> is the module produced earlier by
+our pass, before statement simplification. Save it as TVMScript with imports
+included so it can be parsed independently:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">stage_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"before_simplify.py"</span><span class="p">)</span>
+<span class="n">stage_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
+    <span class="n">specialized</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">extra_config</span><span class="o">=</span><span class="p">{</span><span class="s2">"ir.comment_imports"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}),</span>
+    <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In a separate experiment, load this file and apply only <code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code>.
+There is no need to recreate the original symbolic dimension or rerun the
+specialization pass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_source</span>
+
+<span class="n">restored</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"before_simplify.py"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>
+<span class="n">reproduced</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">StmtSimplify</span><span class="p">()(</span><span class="n">restored</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reproduced</span><span class="p">[</span><span class="s2">"guarded_add_one"</span><span class="p">]</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The printed function has the same fixed shapes and direct store as before.
+If we run this loading code in the original Python session, we can also
+compare <code class="docutils literal notranslate"><span class="pre">reproduced</span></code> with the full pipeline’s result, <code class="docutils literal notranslate"><span class="pre">after</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">reproduced</span><span class="p">,</span> <span class="n">after</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The saved input can now serve as a small reproducer when investigating a
+simplifier change.</p>
+<p>The <a class="reference internal" href="../reference/python/ir.transform.html"><span class="doc">pass API</span></a> and
+<a class="reference internal" href="../reference/python/tirx.transform.html"><span class="doc">TIRx transformation API</span></a> cover
+other pass forms and built-in transformations. The
+<a class="reference internal" href="../reference/python/ir.transform.instrument.html"><span class="doc">instrument API</span></a> also
+provides tools for dumping every stage and measuring pass timings.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="symbolic_integer_analysis.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Symbolic Integer Analysis</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../programming_guides/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Programming Overview</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-program">Starting Program</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#writing-a-function-pass">Writing a Function Pass</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-pipeline">Running a Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-result">Checking the Result</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-pass-s-input-and-output">Inspecting a Pass’s Input and Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-reproducing-a-stage">Saving and Reproducing a Stage</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Apache TVM Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
