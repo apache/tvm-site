@@ -165,6 +165,38 @@ finished expression always carries a concrete type. While an expression
 is still being built and its type is not yet known, ``ty`` holds the
 placeholder ``ir.MissingType``.
 
+The following table lists the expression classes and the fields each
+adds, and the subsections below introduce them in turn:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 35 35
+
+   * - Class
+     - Represents
+     - Fields
+   * - ``ir.Var``
+     - A named value
+     - ``name``
+   * - ``ir.IntImm``, ``ir.FloatImm``, ``ir.StringImm``
+     - Literal constants
+     - ``value``
+   * - ``ir.prim`` nodes, such as ``ir.prim.Add``
+     - Primitive computations, listed in Primitive Expressions
+     - Operands, such as ``a`` and ``b``
+   * - ``ir.TensorLoad``
+     - A tensor element read
+     - ``source``, ``indices``
+   * - ``ir.Tuple``
+     - A group of values
+     - ``fields``
+   * - ``ir.TupleGetItem``
+     - One field of a tuple
+     - ``tuple_value``, ``index``
+   * - ``ir.Call``
+     - A call to an operator or function
+     - ``op``, ``args``, ``ty_args``, ``attrs``
+
 .. _user-ir-var:
 
 Var
@@ -252,6 +284,43 @@ analyses and transformations can recognize, reason about, and simplify
 them by their structure. Python operators on expressions construct
 these nodes.
 
+The following table lists the primitive expression node classes in
+``ir.prim``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 45 35
+
+   * - Category
+     - Node classes
+     - TVMScript syntax
+   * - Arithmetic
+     - ``Add``, ``Sub``, ``Mul``, ``Div``, ``Mod``, ``FloorDiv``,
+       ``FloorMod``, ``Min``, ``Max``
+     - ``+``, ``-``, ``*``, ``/`` (float), ``//``, ``%`` (int)
+   * - Comparison
+     - ``EQ``, ``NE``, ``LT``, ``LE``, ``GT``, ``GE``
+     - ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``
+   * - Logical
+     - ``And``, ``Or``, ``Not``
+     - ``and``, ``or``, ``not``
+   * - Bitwise
+     - ``BitwiseAnd``, ``BitwiseOr``, ``BitwiseXor``, ``BitwiseNot``,
+       ``LShift``, ``RShift``
+     - ``&``, ``|``, ``^``, ``~``, ``<<``, ``>>``
+   * - Conversion
+     - ``Cast``
+     - —
+   * - Selection
+     - ``Select``
+     - —
+   * - Vector
+     - ``Broadcast``, ``Ramp``, ``Shuffle``
+     - —
+   * - Binding
+     - ``Let``
+     - —
+
 **Index expressions.** Index calculations combine integer variables and
 constants, such as a block offset plus a thread index. A binary node
 stores its operands in ``a`` and ``b``, and nodes nest to form larger
@@ -320,43 +389,6 @@ The output is:
        │   └── ty: PrimType(dtype=float32)
        └── lanes: IntImm(value=4)
            └── ty: PrimType(dtype=int32)
-
-The following table lists the primitive expression node classes in
-``ir.prim``:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 20 45 35
-
-   * - Category
-     - Node classes
-     - Python syntax
-   * - Arithmetic
-     - ``Add``, ``Sub``, ``Mul``, ``Div``, ``Mod``, ``FloorDiv``,
-       ``FloorMod``, ``Min``, ``Max``
-     - ``+``, ``-``, ``*``, ``/`` (float), ``//``, ``%`` (int)
-   * - Comparison
-     - ``EQ``, ``NE``, ``LT``, ``LE``, ``GT``, ``GE``
-     - ``<``, ``<=``, ``>``, ``>=``
-   * - Logical
-     - ``And``, ``Or``, ``Not``
-     - —
-   * - Bitwise
-     - ``BitwiseAnd``, ``BitwiseOr``, ``BitwiseXor``, ``BitwiseNot``,
-       ``LShift``, ``RShift``
-     - ``&``, ``|``, ``^``, ``~``, ``<<``, ``>>``
-   * - Conversion
-     - ``Cast``
-     - —
-   * - Selection
-     - ``Select``
-     - —
-   * - Vector
-     - ``Broadcast``, ``Ramp``, ``Shuffle``
-     - —
-   * - Binding
-     - ``Let``
-     - —
 
 Operations without dedicated node classes, such as ``ir.prim.exp`` and
 ``ir.prim.sigmoid``, construct an ``ir.Call`` to a registered operator.
@@ -465,9 +497,80 @@ The output is:
        └── b: FloatImm(value=1.0)
            └── ty: PrimType(dtype=float32)
 
-The example hides two other fields of ``ir.Call``: ``attrs``, which
-holds operator-specific attributes, and ``ty_args``, which holds
-explicit type arguments.
+**Type arguments and attributes.** Some calls need inputs that are not
+value expressions. ``ty_args`` passes types to the callee, and ``attrs``
+holds configuration specific to this call. A tensor allocation has no
+input from which to infer its shape, so it receives its tensor type in
+``ty_args``:
+
+.. code-block:: python
+
+   from tvm_tirx.script import tirx as T
+
+   @T.function
+   def scratch(A: T.Tensor((4,), T.float32)):
+       tmp = T.alloc_local((4,), T.float32)
+       for i in range(4):
+           tmp[i] = A[i] + 1
+
+   alloc = scratch.body[0].value
+   print(alloc.op.name)
+   print(alloc.ty_args[0])
+
+The output is:
+
+.. code-block:: text
+
+   tirx.alloc_tensor
+   T.Tensor((4,), T.float32, scope="local")
+
+The allocation's type rule uses this type argument as the call's result
+type, so the call produces a tensor. This allocation needs no extra
+configuration, so its ``attrs`` is empty.
+
+**Function calls.** The callee can also be another function in the
+same module. Here ``main`` calls the helper ``add_one_scalar`` on each
+element:
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+   from tvm_tirx.script import ir as I
+   from tvm_tirx.script import tirx as T
+
+   @I.ir_module
+   class Module:
+       @T.function(private=True)
+       def add_one_scalar(value: T.float32) -> T.float32:
+           return value + 1
+
+       @T.function
+       def main(A: T.Tensor((4,), T.float32), B: T.Tensor((4,), T.float32)):
+           for i in range(4):
+               B[i] = Module.add_one_scalar(A[i])
+
+   store = Module["main"].body[0].body[0]
+   print(ir.format_tree(store.value, expand=[(ir.Expr, "ty")],
+                        hide=["attrs", "ty_args"]))
+
+The output is:
+
+.. code-block:: text
+
+   Call(op=GlobalVar(ty=FuncType(arg_types=[float32], ret_type=float32), name_hint='add_one_scalar'))
+   ├── ty: PrimType(dtype=float32)
+   └── args[0]: TensorLoad(source=A, indices=[i])
+       └── ty: PrimType(dtype=float32)
+
+The call's ``op`` is an ``ir.GlobalVar``, the module's name for the
+helper. Its type is the helper's ``FuncType``, and the call takes its
+result type from that signature.
+
+.. note::
+
+   Operators are the main extension point of TIRx.
+   :doc:`operators_and_calls` covers how operators are registered and
+   how their attributes define type rules, effects, and lowering.
 
 .. _user-ir-dependent-type:
 
@@ -545,12 +648,8 @@ equivalence checking, printing, and parsing out of the box. A library
 adds only what is specific to its extension, such as passes that lower
 the new operations to what the backend supports.
 
-What to Read Next
------------------
+.. note::
 
-- :doc:`statements` shows how expressions are used in loops, stores,
-  and other statements.
-- :doc:`operators_and_calls` covers calls to functions, operator
-  registration, and how operators define their result types.
-- :doc:`../advanced/defining_ir_extensions` walks through an extension
-  that defines a complex type, its operators, and a lowering pass.
+   :doc:`../advanced/defining_ir_extensions` walks through a complete
+   extension that defines a complex type, its operators, and a lowering
+   pass.

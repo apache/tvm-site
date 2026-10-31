@@ -362,16 +362,12 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-classes">Statement Classes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-sequences">Statement Sequences</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#control-flow">Control Flow</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-loops">For loops</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#branches">Branches</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#while-loops">While loops</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loop-exits">Loop exits</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#assertions-and-returns">Assertions and returns</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sequences-bindings-and-stores">Sequences, Bindings, and Stores</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loops">Loops</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#branches">Branches</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loop-exits">Loop Exits</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#assertions-and-returns">Assertions and Returns</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#regions">Regions</a></li>
 </ul>
             </nav>
         </div>
@@ -385,33 +381,48 @@ document.write(`
                   
   <section id="statements">
 <span id="statements-and-control-flow"></span><h1>Statements<a class="headerlink" href="#statements" title="Link to this heading">#</a></h1>
-<p>In this chapter, we will introduce statements, which describe the actions
-a function performs and their execution order. A statement can bind an
-intermediate value to a variable, write a result to a tensor, or control
-execution through a branch or loop. These statements form the function’s
-body, which compiler passes can inspect and rewrite through the IR
-interfaces.</p>
-<p>We will start with this CPU function, which adds one to every element
-of <code class="docutils literal notranslate"><span class="pre">A</span></code> and writes the results to <code class="docutils literal notranslate"><span class="pre">B</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<p>This guide introduces <strong>statements</strong>, the IR nodes that describe
+actions: binding a value to a variable, writing to a tensor, repeating
+work in a loop, or choosing between branches. TIRx provides a generic
+set of statements that appear in most high-level kernel programs.
+Statements run in order, and they contain expressions: a loop holds
+its bounds, and a store holds the value it writes.</p>
+<p>A function’s <code class="docutils literal notranslate"><span class="pre">body</span></code> is a tree of statements. This add-one function
+loops over its input and writes each result to <code class="docutils literal notranslate"><span class="pre">B</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
-
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">))</span>
 </pre></div>
 </div>
-<section id="statement-classes">
-<span id="statements-and-sequences"></span><h2>Statement Classes<a class="headerlink" href="#statement-classes" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ir.Stmt</span></code> is the base class for all statements, from bindings and tensor
-writes to sequences, branches, and loops:</p>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>SeqStmt
+└── seq[0]: For(begin=IntImm(value=0), end=n)
+    ├── var: i = Var(ty=int32)
+    └── body: SeqStmt
+        └── seq[0]: TensorStore(dest=B, indices=[i])
+            └── value: Add
+                ├── a: TensorLoad(source=A, indices=[i])
+                └── b: FloatImm(value=1.0)
+</pre></div>
+</div>
+<p>The body is a sequence holding one <code class="docutils literal notranslate"><span class="pre">For</span></code> loop. The loop’s body is
+another sequence holding one <code class="docutils literal notranslate"><span class="pre">TensorStore</span></code>, which writes the
+expression <code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code> to <code class="docutils literal notranslate"><span class="pre">B[i]</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Stmt</span></code> is the base class of all statements. The following table
+lists the statement classes, and the sections below introduce them in
+turn, ending with regions, the main place for extensions:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 25.0%" />
-<col style="width: 35.0%" />
+<col style="width: 22.0%" />
+<col style="width: 38.0%" />
 <col style="width: 40.0%" />
 </colgroup>
 <thead>
@@ -421,122 +432,86 @@ writes to sequences, branches, and loops:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Bind</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.SeqStmt</span></code></p></td>
+<td><p>Statements that run in order</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">seq</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Bind</span></code></p></td>
 <td><p>A variable definition</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">var</span></code>, <code class="docutils literal notranslate"><span class="pre">value</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.TensorStore</span></code></p></td>
-<td><p>A tensor element write; the destination type must support stores</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.TensorStore</span></code></p></td>
+<td><p>A write to a tensor element</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">dest</span></code>, <code class="docutils literal notranslate"><span class="pre">indices</span></code>, <code class="docutils literal notranslate"><span class="pre">value</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Evaluate</span></code></p></td>
-<td><p>Expression evaluation with its result discarded</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Evaluate</span></code></p></td>
+<td><p>An expression run for its effect</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">value</span></code></p></td>
 </tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.For</span></code></p></td>
+<td><p>A loop over an integer range</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">var</span></code>, <code class="docutils literal notranslate"><span class="pre">begin</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span></code>, <code class="docutils literal notranslate"><span class="pre">step</span></code>, <code class="docutils literal notranslate"><span class="pre">kind</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code>,
+<code class="docutils literal notranslate"><span class="pre">annotations</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.While</span></code></p></td>
+<td><p>A loop that runs while a condition holds</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.If</span></code></p></td>
+<td><p>A choice between two sequences</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">then_case</span></code>, <code class="docutils literal notranslate"><span class="pre">else_case</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Continue</span></code></p></td>
+<td><p>Skip to the next iteration of the innermost loop</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Break</span></code></p></td>
+<td><p>Leave the innermost loop</p></td>
+<td><p>None</p></td>
+</tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.AssertStmt</span></code></p></td>
-<td><p>A program assertion</p></td>
+<td><p>A run-time check that raises an error</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">error_kind</span></code>, <code class="docutils literal notranslate"><span class="pre">message_parts</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Return</span></code></p></td>
 <td><p>A function return</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">value</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Break</span></code></p></td>
-<td><p>Exit the current loop</p></td>
-<td><p>None</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.Continue</span></code></p></td>
-<td><p>Start the next loop iteration</p></td>
-<td><p>None</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.SeqStmt</span></code></p></td>
-<td><p>A sequence of statements in execution order</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">seq</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.If</span></code></p></td>
-<td><p>Select a branch</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">then_case</span></code>, <code class="docutils literal notranslate"><span class="pre">else_case</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.For</span></code></p></td>
-<td><p>Repeat a body over an integer range</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">var</span></code>, <code class="docutils literal notranslate"><span class="pre">begin</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span></code>, <code class="docutils literal notranslate"><span class="pre">step</span></code>, <code class="docutils literal notranslate"><span class="pre">kind</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code>, <code class="docutils literal notranslate"><span class="pre">annotations</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir.While</span></code></p></td>
-<td><p>Repeat while a condition is true</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code></p></td>
-</tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir.RegionStmt</span></code></p></td>
 <td><p>An operator-defined statement with a nested body</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">op</span></code>, <code class="docutils literal notranslate"><span class="pre">args</span></code>, <code class="docutils literal notranslate"><span class="pre">attrs</span></code>, <code class="docutils literal notranslate"><span class="pre">body_params</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code>, <code class="docutils literal notranslate"><span class="pre">result_vars</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">op</span></code>, <code class="docutils literal notranslate"><span class="pre">args</span></code>, <code class="docutils literal notranslate"><span class="pre">attrs</span></code>, <code class="docutils literal notranslate"><span class="pre">body_params</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code>,
+<code class="docutils literal notranslate"><span class="pre">result_vars</span></code></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-</section>
-<section id="statement-sequences">
-<h2>Statement Sequences<a class="headerlink" href="#statement-sequences" title="Link to this heading">#</a></h2>
-<p>A function body often contains several statements that run one after
-another. <code class="docutils literal notranslate"><span class="pre">ir.SeqStmt</span></code> stores these statements in execution order in
-its <code class="docutils literal notranslate"><span class="pre">seq</span></code> field. The statements inside a loop or branch are also
-stored in a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code>.</p>
-<p>The loop in <code class="docutils literal notranslate"><span class="pre">add_one</span></code> writes one output element in each iteration:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>The indented assignment <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code> becomes an
-<code class="docutils literal notranslate"><span class="pre">ir.TensorStore</span></code> statement describing a write to a tensor element.
-The loop body is a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> containing this statement. We can retrieve
-it from the parsed function and print its structure:</p>
+<section id="sequences-bindings-and-stores">
+<h2>Sequences, Bindings, and Stores<a class="headerlink" href="#sequences-bindings-and-stores" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.SeqStmt</span></code> holds statements that run one after another, in its
+<code class="docutils literal notranslate"><span class="pre">seq</span></code> field. A function body, a loop body, and each branch of an
+<code class="docutils literal notranslate"><span class="pre">if</span></code> are all sequences.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Bind</span></code> defines a variable: its <code class="docutils literal notranslate"><span class="pre">var</span></code> field holds the new
+variable, and its <code class="docutils literal notranslate"><span class="pre">value</span></code> field holds the expression that computes
+it. <code class="docutils literal notranslate"><span class="pre">ir.TensorStore</span></code> writes <code class="docutils literal notranslate"><span class="pre">value</span></code> to the element of <code class="docutils literal notranslate"><span class="pre">dest</span></code>
+selected by <code class="docutils literal notranslate"><span class="pre">indices</span></code>. In this add-one loop, the sum is bound to a
+name before it is written:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
-<span class="n">parsed_loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># The for statement.</span>
-<span class="n">body</span> <span class="o">=</span> <span class="n">parsed_loop</span><span class="o">.</span><span class="n">body</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">body</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>SeqStmt
-└── seq[0]: TensorStore(dest=B, indices=[i])
-    └── value: Add
-        ├── a: TensorLoad(source=A, indices=[i])
-        └── b: FloatImm(value=1.0)
-</pre></div>
-</div>
-<p>When the compiled function runs, the store computes <code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code> and
-writes the result to element <code class="docutils literal notranslate"><span class="pre">i</span></code> of <code class="docutils literal notranslate"><span class="pre">B</span></code>. We can retrieve this
-statement with <code class="docutils literal notranslate"><span class="pre">body[0]</span></code>, which is shorthand for <code class="docutils literal notranslate"><span class="pre">body.seq[0]</span></code>.</p>
-<p>We can also construct this body directly through the IR API:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">params</span>
-<span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">ty</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">i</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"i"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
-<span class="n">store</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">TensorStore</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">body</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">SeqStmt</span><span class="p">([</span><span class="n">store</span><span class="p">])</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">ir.TensorStore</span></code> takes the destination tensor <code class="docutils literal notranslate"><span class="pre">B</span></code>, the index list
-<code class="docutils literal notranslate"><span class="pre">[i]</span></code>, and the value expression <code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>. These arguments populate
-its <code class="docutils literal notranslate"><span class="pre">dest</span></code>, <code class="docutils literal notranslate"><span class="pre">indices</span></code>, and <code class="docutils literal notranslate"><span class="pre">value</span></code> fields. <code class="docutils literal notranslate"><span class="pre">ir.SeqStmt([store])</span></code>
-puts the store in a sequence with the structure shown above.</p>
-<p>A small extension of the CPU loop names the addition’s result before
-writing it to the output:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one_bound</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The assignment to <code class="docutils literal notranslate"><span class="pre">value</span></code> becomes an <code class="docutils literal notranslate"><span class="pre">ir.Bind</span></code> statement: its
-<code class="docutils literal notranslate"><span class="pre">var</span></code> field holds the variable, and its <code class="docutils literal notranslate"><span class="pre">value</span></code> field holds the
-addition expression. The following <code class="docutils literal notranslate"><span class="pre">TensorStore</span></code> uses that variable
-as the value to write. We can inspect the sequence in the loop body:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bound_loop</span> <span class="o">=</span> <span class="n">add_one_bound</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">bound_body</span> <span class="o">=</span> <span class="n">bound_loop</span><span class="o">.</span><span class="n">body</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">bound_body</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
+<p><code class="docutils literal notranslate"><span class="pre">add_one.body[0]</span></code> is shorthand for <code class="docutils literal notranslate"><span class="pre">add_one.body.seq[0]</span></code>, the first
+statement in the sequence. The output is:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>SeqStmt
 ├── seq[0]: Bind
 │   ├── var: value = Var(ty=float32)
@@ -547,45 +522,50 @@ as the value to write. We can inspect the sequence in the loop body:</p>
     └── value: value
 </pre></div>
 </div>
-<p>This prints the body parsed from <code class="docutils literal notranslate"><span class="pre">add_one_bound</span></code>. The first statement
-binds the addition to <code class="docutils literal notranslate"><span class="pre">value</span></code>, and the second uses that same variable
-as the value to store. When the function runs, the binding computes the
-addition before the store writes it to <code class="docutils literal notranslate"><span class="pre">B[i]</span></code>.</p>
-<p>The IR API can also construct a sequence with a binding followed by a
-store:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">value</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"value"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
-<span class="n">binding</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">store_from_value</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">TensorStore</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
-<span class="n">sequence</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">SeqStmt</span><span class="p">([</span><span class="n">binding</span><span class="p">,</span> <span class="n">store_from_value</span><span class="p">])</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">Bind</span></code> defines <code class="docutils literal notranslate"><span class="pre">value</span></code>, and the <code class="docutils literal notranslate"><span class="pre">TensorStore</span></code> that follows it
+uses it. A variable defined by a statement in a sequence is visible to
+the statements after it in the same sequence, including any nested
+inside them, but not outside that sequence. Each variable is defined
+only once in a function.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Evaluate</span></code> runs an expression and discards its result. Its most
+common use is to hold a <code class="docutils literal notranslate"><span class="pre">Call</span></code> made only for its effect.
+<code class="docutils literal notranslate"><span class="pre">T.cuda.cta_sync()</span></code> is such a call: it makes each thread in a GPU
+block wait until all threads in the block reach it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sync_block</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="mi">128</span><span class="p">))</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">cta_sync</span><span class="p">()</span>
+
+<span class="n">region</span> <span class="o">=</span> <span class="n">sync_block</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"ty_args"</span><span class="p">]))</span>
 </pre></div>
 </div>
-<p>The next section places the original single-store <code class="docutils literal notranslate"><span class="pre">body</span></code> inside the
-CPU loop.</p>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Evaluate
+└── value: Call(op=tirx.cuda.cta_sync)
+    └── args: []
+</pre></div>
+</div>
+<p>The barrier produces no value; <code class="docutils literal notranslate"><span class="pre">Evaluate</span></code> turns the call into a
+statement.</p>
 </section>
-<section id="control-flow">
-<span id="control-flow-and-scope"></span><h2>Control Flow<a class="headerlink" href="#control-flow" title="Link to this heading">#</a></h2>
-<p>Control-flow statements determine which parts of a program execute and
-how often. A loop repeats a body of statements, while a branch selects
-which body runs.</p>
-<section id="for-loops">
-<h3>For loops<a class="headerlink" href="#for-loops" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">add_one</span></code> visits every element with a loop:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>The loop becomes an <code class="docutils literal notranslate"><span class="pre">ir.For</span></code>. Its <code class="docutils literal notranslate"><span class="pre">var</span></code> field identifies the loop
-variable <code class="docutils literal notranslate"><span class="pre">i</span></code>, and its <code class="docutils literal notranslate"><span class="pre">body</span></code> field holds the <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> containing
-the tensor store. We can construct this loop using <code class="docutils literal notranslate"><span class="pre">i</span></code> and <code class="docutils literal notranslate"><span class="pre">body</span></code>
-from the previous section:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loop</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">ForKind</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The arguments <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">n</span></code>, and <code class="docutils literal notranslate"><span class="pre">1</span></code> set the <code class="docutils literal notranslate"><span class="pre">begin</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">step</span></code> fields. <code class="docutils literal notranslate"><span class="pre">ForKind.DEFAULT</span></code> selects execution in iteration
-order. On each iteration, the loop executes the statements in <code class="docutils literal notranslate"><span class="pre">body</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parsed_loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>     <span class="c1"># The for statement in the CPU function.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">parsed_loop</span><span class="p">))</span>
+<section id="loops">
+<h2>Loops<a class="headerlink" href="#loops" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.For</span></code> repeats its <code class="docutils literal notranslate"><span class="pre">body</span></code> once for each value of its loop
+variable <code class="docutils literal notranslate"><span class="pre">var</span></code>, from <code class="docutils literal notranslate"><span class="pre">begin</span></code> up to but not including <code class="docutils literal notranslate"><span class="pre">end</span></code>, in
+steps of <code class="docutils literal notranslate"><span class="pre">step</span></code>. The loop defines <code class="docutils literal notranslate"><span class="pre">var</span></code>, which is visible only
+inside <code class="docutils literal notranslate"><span class="pre">body</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p>The output is:</p>
@@ -598,38 +578,55 @@ order. On each iteration, the loop executes the statements in <code class="docut
             └── b: FloatImm(value=1.0)
 </pre></div>
 </div>
-<p>The default view puts <code class="docutils literal notranslate"><span class="pre">begin</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> on the loop’s first line;
-its unit step and sequential kind are omitted because they match the
-defaults. The end bound is exclusive, so <code class="docutils literal notranslate"><span class="pre">i</span></code> runs from 0 through <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">-</span> <span class="pre">1</span></code>.
-Each iteration executes the store in <code class="docutils literal notranslate"><span class="pre">body</span></code> with that value of <code class="docutils literal notranslate"><span class="pre">i</span></code>.
-The loop defines <code class="docutils literal notranslate"><span class="pre">i</span></code> for use inside <code class="docutils literal notranslate"><span class="pre">For.body</span></code>, which is its scope.
-The <code class="docutils literal notranslate"><span class="pre">For</span></code> establishes this scope, and its <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> body records
-the order of the statements within it. The
-<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.For.html#tvm_tirx.ir.ForKind" title="tvm_tirx.ir.ForKind"><code class="xref py py-class docutils literal notranslate"><span class="pre">ForKind</span></code></a> API reference describes the other execution
-kinds.</p>
+<p>The tree omits <code class="docutils literal notranslate"><span class="pre">step</span></code> and <code class="docutils literal notranslate"><span class="pre">kind</span></code> because they have their default
+values: a step of one, and iterations that run in order. Other values
+of <code class="docutils literal notranslate"><span class="pre">kind</span></code> (<code class="docutils literal notranslate"><span class="pre">ir.ForKind</span></code>) ask for the iterations to be run in
+parallel, vectorized, or unrolled.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ir.While</span></code> repeats its <code class="docutils literal notranslate"><span class="pre">body</span></code> as long as its <code class="docutils literal notranslate"><span class="pre">condition</span></code> is
+true. The condition is checked before each iteration. This loop halves
+a value until it is at most one:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">halve_until_small</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">while</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">halve_until_small</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>While
+├── condition: GT
+│   ├── a: TensorLoad(source=X, indices=[IntImm(value=0)])
+│   └── b: FloatImm(value=1.0)
+└── body: SeqStmt
+    └── seq[0]: TensorStore(dest=X, indices=[IntImm(value=0)])
+        └── value: Mul
+            ├── a: TensorLoad(source=X, indices=[IntImm(value=0)])
+            └── b: FloatImm(value=0.5)
+</pre></div>
+</div>
 </section>
 <section id="branches">
-<h3>Branches<a class="headerlink" href="#branches" title="Link to this heading">#</a></h3>
-<p>A branch can choose between two results. This CPU function applies
-ReLU: positive input values pass through, and all other values become
-zero:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<h2>Branches<a class="headerlink" href="#branches" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.If</span></code> runs <code class="docutils literal notranslate"><span class="pre">then_case</span></code> when its <code class="docutils literal notranslate"><span class="pre">condition</span></code> is true, and
+<code class="docutils literal notranslate"><span class="pre">else_case</span></code> otherwise. Both cases are sequences, and <code class="docutils literal notranslate"><span class="pre">else_case</span></code>
+is <code class="docutils literal notranslate"><span class="pre">None</span></code> when the branch has no <code class="docutils literal notranslate"><span class="pre">else</span></code>. This loop applies ReLU,
+keeping positive values and replacing the rest with zero:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">relu</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-</pre></div>
-</div>
-<p>TVMScript represents the branch as an <code class="docutils literal notranslate"><span class="pre">ir.If</span></code>. Its <code class="docutils literal notranslate"><span class="pre">condition</span></code> is
-the boolean comparison <code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>. Its <code class="docutils literal notranslate"><span class="pre">then_case</span></code> and <code class="docutils literal notranslate"><span class="pre">else_case</span></code>
-each hold a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> containing one store. Only the sequence selected
-by the condition runs for each element. We can retrieve the branch
-from the loop body:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">relu_loop</span> <span class="o">=</span> <span class="n">relu</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">relu_branch</span> <span class="o">=</span> <span class="n">relu_loop</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>    <span class="c1"># The if/else statement.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">relu_branch</span><span class="p">))</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">relu</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p>The output is:</p>
@@ -645,125 +642,20 @@ from the loop body:</p>
         └── value: FloatImm(value=0.0)
 </pre></div>
 </div>
-<p>A bounds check uses the same kind of statement. A GPU version of add-one
-distributes the elements across threads, and each thread checks whether
-it has a valid element to process:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">gpu_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> becomes an <code class="docutils literal notranslate"><span class="pre">ir.If</span></code>. Its <code class="docutils literal notranslate"><span class="pre">condition</span></code> field holds
-the comparison, an <code class="docutils literal notranslate"><span class="pre">ir.prim.LT</span></code> expression. Its <code class="docutils literal notranslate"><span class="pre">then_case</span></code> field
-holds a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> containing the tensor store:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device_region</span> <span class="o">=</span> <span class="n">gpu_add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">branch</span> <span class="o">=</span> <span class="n">device_region</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>    <span class="c1"># The if after the index definition.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">branch</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>If(else_case=None)
-├── condition: LT
-│   ├── a: i
-│   └── b: n
-└── then_case: SeqStmt
-    └── seq[0]: TensorStore(dest=B, indices=[i])
-        └── value: Add
-            ├── a: TensorLoad(source=A, indices=[i])
-            └── b: FloatImm(value=1.0)
-</pre></div>
-</div>
-<p>The condition produces a boolean. When it is true, the thread executes
-the store in <code class="docutils literal notranslate"><span class="pre">then_case</span></code>. An else branch has its own <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> in
-<code class="docutils literal notranslate"><span class="pre">else_case</span></code>. This example has no else branch, so <code class="docutils literal notranslate"><span class="pre">else_case</span></code> is
-<code class="docutils literal notranslate"><span class="pre">None</span></code> and threads whose indices are outside the tensor perform no
-tensor access. These branch bodies can also contain further loops and
-branches.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">T.device_entry(...)</span></code> line groups the statements that follow it in
-the same function body into a device region. An
-<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.RegionStmt.html#tvm_tirx.ir.RegionStmt" title="tvm_tirx.ir.RegionStmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.RegionStmt</span></code></a> represents this region in
-the IR. Its <code class="docutils literal notranslate"><span class="pre">op</span></code> identifies <code class="docutils literal notranslate"><span class="pre">tirx.device_entry</span></code>, and its <code class="docutils literal notranslate"><span class="pre">body</span></code> is
-a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> containing the index definition followed by the branch:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
-    <span class="n">device_region</span><span class="p">,</span>
-    <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"args"</span><span class="p">,</span> <span class="s2">"body_params"</span><span class="p">,</span> <span class="s2">"result_vars"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">],</span>
-<span class="p">))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>RegionStmt(op=tirx.device_entry)
-└── body: SeqStmt
-    ├── seq[0]: Bind
-    │   └── var: i = Var(ty=int32)
-    └── seq[1]: If(else_case=None)
-        ├── condition: LT
-        │   ├── a: i
-        │   └── b: n
-        └── then_case: SeqStmt
-            └── seq[0]: TensorStore(dest=B, indices=[i])
-</pre></div>
-</div>
-<p>This view hides launch settings and value expressions to focus on the
-statements inside <code class="docutils literal notranslate"><span class="pre">body</span></code>. The <code class="docutils literal notranslate"><span class="pre">Bind</span></code> defines <code class="docutils literal notranslate"><span class="pre">i</span></code> before the <code class="docutils literal notranslate"><span class="pre">If</span></code>
-uses it. The variable is available to the condition and tensor store
-within the region. The <a class="reference internal" href="printing_and_parsing.html#tvmscript-region-syntax"><span class="std std-ref">Printing and Parsing</span></a>
-chapter explains
-the grouping rule for this syntax and the equivalent <code class="docutils literal notranslate"><span class="pre">with</span></code> form.</p>
-</section>
-<section id="while-loops">
-<h3>While loops<a class="headerlink" href="#while-loops" title="Link to this heading">#</a></h3>
-<p>A <code class="docutils literal notranslate"><span class="pre">while</span></code> loop tests a condition before each iteration. We can express
-the same add-one computation with an index that advances until it reaches
-the tensor length:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one_while</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-    <span class="n">i</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">i:</span> <span class="pre">T.int32</span> <span class="pre">=</span> <span class="pre">0</span></code> creates a mutable scalar, so <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">+=</span> <span class="pre">1</span></code> updates the
-index for the next test. The loop stops when <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> becomes false.
-Without that update, the loop would keep processing the same element.</p>
-<p>TVMScript represents the loop as an <code class="docutils literal notranslate"><span class="pre">ir.While</span></code>. Its <code class="docutils literal notranslate"><span class="pre">condition</span></code>
-holds the comparison, and its <code class="docutils literal notranslate"><span class="pre">body</span></code> contains both the output store
-and the index update:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">while_loop</span> <span class="o">=</span> <span class="n">add_one_while</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># After i's allocation and initialization.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">while_loop</span><span class="p">,</span> <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"indices"</span><span class="p">]))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>While
-├── condition: LT
-│   ├── a: TensorLoad(source=i)
-│   └── b: n
-└── body: SeqStmt
-    ├── seq[0]: TensorStore(dest=B)
-    │   └── value: Add
-    │       ├── a: TensorLoad(source=A)
-    │       └── b: FloatImm(value=1.0)
-    └── seq[1]: TensorStore(dest=i)
-        └── value: Add
-            ├── a: TensorLoad(source=i)
-            └── b: IntImm(value=1)
-</pre></div>
-</div>
-<p>This view hides index lists to focus on the condition and the two stores.
-The mutable scalar uses a one-element local tensor in IR, so reads of
-<code class="docutils literal notranslate"><span class="pre">i</span></code> appear as <code class="docutils literal notranslate"><span class="pre">TensorLoad(source=i)</span></code>.
-The first store in the loop writes to <code class="docutils literal notranslate"><span class="pre">B</span></code>; the second writes the new
-index to <code class="docutils literal notranslate"><span class="pre">i</span></code>. The condition reads that index before the next iteration.</p>
+<p>The condition is a boolean expression, here the comparison
+<code class="docutils literal notranslate"><span class="pre">A[i]</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>. For each element, only one of the two stores runs.</p>
 </section>
 <section id="loop-exits">
-<h3>Loop exits<a class="headerlink" href="#loop-exits" title="Link to this heading">#</a></h3>
-<p>Some loops can finish before reaching their bound. This function finds
-the index of the first positive integer. It leaves <code class="docutils literal notranslate"><span class="pre">B[0]</span></code> at <code class="docutils literal notranslate"><span class="pre">-1</span></code>
-if no such element exists:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<h2>Loop Exits<a class="headerlink" href="#loop-exits" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Continue</span></code> skips to the next iteration of the innermost enclosing
+loop, and <code class="docutils literal notranslate"><span class="pre">ir.Break</span></code> leaves that loop. This loop records the index of
+the first positive element of <code class="docutils literal notranslate"><span class="pre">A</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">first_positive</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">)):</span>
     <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -771,16 +663,9 @@ if no such element exists:</p>
             <span class="k">continue</span>
         <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
         <span class="k">break</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">continue</span></code> starts the next iteration when <code class="docutils literal notranslate"><span class="pre">A[i]</span></code> is nonpositive. If
-the element is positive, the store records its index and <code class="docutils literal notranslate"><span class="pre">break</span></code> ends
-the loop. These statements become
-<code class="docutils literal notranslate"><span class="pre">ir.Continue</span></code> and <code class="docutils literal notranslate"><span class="pre">ir.Break</span></code> inside their enclosing loop; neither
-has operands or a nested body. We can inspect the loop after the initial
-store to <code class="docutils literal notranslate"><span class="pre">B[0]</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">search_loop</span> <span class="o">=</span> <span class="n">first_positive</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># The for loop after B[0] = -1.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">search_loop</span><span class="o">.</span><span class="n">body</span><span class="p">))</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">first_positive</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">body</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The output is:</p>
@@ -796,24 +681,25 @@ store to <code class="docutils literal notranslate"><span class="pre">B[0]</span
 └── seq[2]: Break()
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">Continue</span></code> and <code class="docutils literal notranslate"><span class="pre">Break</span></code> have no fields.</p>
 </section>
 <section id="assertions-and-returns">
-<h3>Assertions and returns<a class="headerlink" href="#assertions-and-returns" title="Link to this heading">#</a></h3>
-<p>A function can check a precondition before computing its result. This
-function adds one to the first input element and returns the value.
-The assertion ensures that the tensor has an element to read:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<h2>Assertions and Returns<a class="headerlink" href="#assertions-and-returns" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.AssertStmt</span></code> checks a <code class="docutils literal notranslate"><span class="pre">condition</span></code> at run time and raises an
+error when it is false. <code class="docutils literal notranslate"><span class="pre">ir.Return</span></code> ends the function and gives its
+<code class="docutils literal notranslate"><span class="pre">value</span></code> to the caller. This function checks that its input is not
+empty, then returns the first element plus one:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">first_plus_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
     <span class="k">assert</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"the input must contain at least one element"</span>
     <span class="k">return</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">assert</span></code> becomes an <code class="docutils literal notranslate"><span class="pre">ir.AssertStmt</span></code>. Its <code class="docutils literal notranslate"><span class="pre">condition</span></code> holds
-<code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>, its <code class="docutils literal notranslate"><span class="pre">error_kind</span></code> names <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>, and its
-<code class="docutils literal notranslate"><span class="pre">message_parts</span></code> contains the error message. An empty input raises that
-error before the tensor read. Otherwise, execution reaches the
-<code class="docutils literal notranslate"><span class="pre">ir.Return</span></code>, whose <code class="docutils literal notranslate"><span class="pre">value</span></code> is the addition expression:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">first_plus_one</span><span class="o">.</span><span class="n">body</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">first_plus_one</span><span class="o">.</span><span class="n">body</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The output is:</p>
@@ -830,10 +716,80 @@ error before the tensor read. Otherwise, execution reaches the
         └── b: FloatImm(value=1.0)
 </pre></div>
 </div>
-<p>The return annotation <code class="docutils literal notranslate"><span class="pre">-&gt;</span> <span class="pre">T.float32</span></code> declares the result type. For an
-input starting with <code class="docutils literal notranslate"><span class="pre">3.5</span></code>, the function returns <code class="docutils literal notranslate"><span class="pre">4.5</span></code> directly to its
-caller. It needs no output tensor parameter.</p>
+<p>The assertion’s <code class="docutils literal notranslate"><span class="pre">error_kind</span></code> names the error it raises, and its
+<code class="docutils literal notranslate"><span class="pre">message_parts</span></code> hold the message as a list of string fragments. The
+fragments are joined only when the assertion fails, through the TVM FFI
+C API. Many assertions can therefore share common fragments, such as
+an argument name or a shared phrase, which keeps error messages
+compact in the compiled code. Calling the function with an empty
+tensor fails with this message before the tensor read. Otherwise, the
+function returns <code class="docutils literal notranslate"><span class="pre">A[0]</span> <span class="pre">+</span> <span class="pre">1</span></code>.</p>
 </section>
+<section id="regions">
+<h2>Regions<a class="headerlink" href="#regions" title="Link to this heading">#</a></h2>
+<p>Regions are the main place for extensions. <code class="docutils literal notranslate"><span class="pre">ir.RegionStmt</span></code> is a
+statement whose meaning is defined by an operator rather than by a
+dedicated node class. A library registers a region operator to add a
+new kind of statement, and the IR represents every such statement in
+the same form:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">op</span></code> is the operator that defines the region’s meaning.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">args</span></code> and <code class="docutils literal notranslate"><span class="pre">attrs</span></code> are the operator’s operands and attributes,
+evaluated in the enclosing scope.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">body</span></code> is the sequence of statements inside the region.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">body_params</span></code> are variables the region defines on entry, visible
+only inside <code class="docutils literal notranslate"><span class="pre">body</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">result_vars</span></code> are variables the region defines for the statements
+that follow it.</p></li>
+</ul>
+<p>This GPU version of add-one places its computation in a device region,
+where each thread handles one element:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gpu_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="n">region</span> <span class="o">=</span> <span class="n">gpu_add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span>
+    <span class="n">region</span><span class="p">,</span> <span class="n">hide</span><span class="o">=</span><span class="p">[</span><span class="s2">"attrs"</span><span class="p">,</span> <span class="s2">"args"</span><span class="p">,</span> <span class="s2">"body_params"</span><span class="p">,</span> <span class="s2">"result_vars"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>RegionStmt(op=tirx.device_entry)
+└── body: SeqStmt
+    ├── seq[0]: Bind
+    │   └── var: i = Var(ty=int32)
+    └── seq[1]: If(else_case=None)
+        ├── condition: LT
+        │   ├── a: i
+        │   └── b: n
+        └── then_case: SeqStmt
+            └── seq[0]: TensorStore(dest=B, indices=[i])
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">tirx.device_entry</span></code> operator marks its body as code that runs on
+the GPU, and its operands carry the launch configuration. The view
+hides those operands and the value expressions to focus on the
+statements inside the region.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Regions and calls are the two ways operators extend TIRx: a call
+applies an operator as an expression, and a region applies one as a
+statement.
+<a class="reference internal" href="operators_and_calls.html"><span class="doc">Operators and Calls</span></a> covers how operators are registered and
+how calls and regions use them.
+<a class="reference internal" href="printing_and_parsing.html#tvmscript-region-syntax"><span class="std std-ref">Region Syntax</span></a> explains how TVMScript
+writes a region, and <a class="reference internal" href="../advanced/defining_ir_extensions.html"><span class="doc">Defining Types, Operators, and Passes</span></a> walks
+through a complete extension with its own type, operators, and
+lowering pass.</p>
+</div>
 </section>
 </section>
 
@@ -882,16 +838,12 @@ caller. It needs no output tensor parameter.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-classes">Statement Classes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-sequences">Statement Sequences</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#control-flow">Control Flow</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-loops">For loops</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#branches">Branches</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#while-loops">While loops</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loop-exits">Loop exits</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#assertions-and-returns">Assertions and returns</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sequences-bindings-and-stores">Sequences, Bindings, and Stores</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loops">Loops</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#branches">Branches</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loop-exits">Loop Exits</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#assertions-and-returns">Assertions and Returns</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#regions">Regions</a></li>
 </ul>
   </nav></div>
 
