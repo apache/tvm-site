@@ -18,10 +18,10 @@
 IR Overview
 ===========
 
-TIRx gives developers and agents direct access to the programs and
-transformations at each stage of compilation. They can inspect the
-intermediate program, apply an existing pass, or add their own compiler
-components.
+One primary design goal of TIRx is to give developers and agents easy access
+to every stage of compilation, not only its input and output. By providing
+a consistent way to inspect and modify programs at each stage, TIRx makes
+it easier to understand and customize the compiler.
 
 TIRx represents a program as a tree of intermediate representation (IR)
 nodes, such as functions, statements, and values. The tree is similar to the
@@ -54,6 +54,81 @@ contains the following elements:
   of statements with parameters, such as ``add_one``.
 - **Modules** (:py:class:`ir.IRModule <tvm_tirx.ir.IRModule>`) group named
   functions into a complete program.
+
+Exploring the IR Tree
+---------------------
+
+To get a visual sense of the IR structure, we can use
+:py:func:`ir.format_tree <tvm_tirx.ir.format_tree>` to display an IR object
+and its fields as a text tree. Let's start with the GPU function's body,
+follow it down to the addition in ``B[i] = A[i] + 1``, and print that
+expression:
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+
+   region = add_one.body.seq[0]          # The device region.
+   branch = region.body.seq[1]          # The if statement after the index binding.
+   store = branch.then_case.seq[0]      # The write to B[i].
+   addition = store.value
+   print(ir.format_tree(addition))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── a: TensorLoad(source=A, indices=[i])
+   └── b: FloatImm(value=1.0)
+
+The root is the addition. Its ``a`` field holds the tensor read, and
+its ``b`` field holds the constant. Names such as ``A`` and ``i`` refer
+to variables already defined in the function. The display uses short
+class names: ``Add``, for example, is ``ir.prim.Add``.
+
+The ``ir.format_tree`` function provides options to control how the tree
+is displayed. For example, we can show expression types by expanding the
+``ty`` field for ``ir.Expr`` objects:
+
+.. code-block:: python
+
+   print(ir.format_tree(addition, expand=[(ir.Expr, "ty")]))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── ty: PrimType(dtype=float32)
+   ├── a: TensorLoad(source=A, indices=[i])
+   │   └── ty: PrimType(dtype=float32)
+   └── b: FloatImm(value=1.0)
+       └── ty: PrimType(dtype=float32)
+
+Here, each ``PrimType(dtype=float32)`` tells us that the expression it
+belongs to produces a ``float32`` value. Field selectors can be names,
+such as ``"a"``, or ``(class, field)`` pairs that target a particular
+class. We use a class selector here to override the default rule that
+hides ``Expr.ty``.
+
+We can also make the display more compact by folding selected fields onto
+the same line as their parent. For example, folding ``a`` and ``b`` displays
+this addition on a single line:
+
+.. code-block:: python
+
+   print(ir.format_tree(addition, fold=["a", "b"]))
+
+The output is:
+
+.. code-block:: text
+
+   Add(a=TensorLoad(source=A, indices=[i]), b=FloatImm(value=1.0))
+
+This guide uses ``format_tree`` to inspect the objects in each example.
+Its API reference describes the remaining options for expanding, folding,
+and hiding fields.
 
 Class Hierarchy
 ---------------
@@ -163,77 +238,6 @@ IR nodes can also carry source locations
 (:py:class:`ir.Location <tvm_tirx.ir.Location>`). For example, an expression's
 ``loc`` field records where it came from in the source, so a diagnostic
 can point back to the original code.
-
-Inspecting the IR
------------------
-
-:py:func:`ir.format_tree <tvm_tirx.ir.format_tree>` displays an IR object's
-fields as a text tree. We can follow the GPU function's body to the
-addition in ``B[i] = A[i] + 1`` and print that expression:
-
-.. code-block:: python
-
-   from tvm_tirx import ir
-
-   region = add_one.body.seq[0]          # The device region.
-   branch = region.body.seq[1]          # The if statement after the index binding.
-   store = branch.then_case.seq[0]      # The write to B[i].
-   addition = store.value
-   print(ir.format_tree(addition))
-
-The output is:
-
-.. code-block:: text
-
-   Add
-   ├── a: TensorLoad(source=A, indices=[i])
-   └── b: FloatImm(value=1.0)
-
-The root is the addition. Its ``a`` field holds the tensor read, and
-its ``b`` field holds the constant. Names such as ``A`` and ``i`` refer
-to variables already defined in the function. The display uses short
-class names: ``Add``, for example, is ``ir.prim.Add``.
-
-The default view keeps common details compact and hides expression
-types. To show the type of each expression, we can expand ``ty`` for
-``ir.Expr`` objects:
-
-.. code-block:: python
-
-   print(ir.format_tree(addition, expand=[(ir.Expr, "ty")]))
-
-The output is:
-
-.. code-block:: text
-
-   Add
-   ├── ty: PrimType(dtype=float32)
-   ├── a: TensorLoad(source=A, indices=[i])
-   │   └── ty: PrimType(dtype=float32)
-   └── b: FloatImm(value=1.0)
-       └── ty: PrimType(dtype=float32)
-
-Each ``PrimType(dtype=float32)`` describes the value produced by the
-expression above it. Field selectors can be names, such as ``"a"``, or
-``(class, field)`` pairs that target a particular class. We use a class
-selector here to override the default rule that hides ``Expr.ty``.
-
-The ``fold`` option instead puts selected fields on the same line as
-their parent:
-
-.. code-block:: python
-
-   print(ir.format_tree(addition, fold=["a", "b"]))
-
-The output is:
-
-.. code-block:: text
-
-   Add(a=TensorLoad(source=A, indices=[i]), b=FloatImm(value=1.0))
-
-We will use ``format_tree`` throughout the walkthrough to inspect the
-objects in each example. Its API reference describes the remaining
-options for expanding, folding, and hiding fields.
 
 .. _choose-a-chapter:
 

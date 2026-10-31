@@ -362,8 +362,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploring-the-ir-tree">Exploring the IR Tree</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#class-hierarchy">Class Hierarchy</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-the-ir">Inspecting the IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-to-read-next">What to Read Next</a></li>
 </ul>
             </nav>
@@ -378,10 +378,10 @@ document.write(`
                   
   <section id="ir-overview">
 <h1>IR Overview<a class="headerlink" href="#ir-overview" title="Link to this heading">#</a></h1>
-<p>TIRx gives developers and agents direct access to the programs and
-transformations at each stage of compilation. They can inspect the
-intermediate program, apply an existing pass, or add their own compiler
-components.</p>
+<p>One primary design goal of TIRx is to give developers and agents easy access
+to every stage of compilation, not only its input and output. By providing
+a consistent way to inspect and modify programs at each stage, TIRx makes
+it easier to understand and customize the compiler.</p>
 <p>TIRx represents a program as a tree of intermediate representation (IR)
 nodes, such as functions, statements, and values. The tree is similar to the
 abstract syntax tree (AST) of Python code, but in a more structured, typed
@@ -421,6 +421,66 @@ of statements with parameters, such as <code class="docutils literal notranslate
 <li><p><strong>Modules</strong> (<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.IRModule.html#tvm_tirx.ir.IRModule" title="tvm_tirx.ir.IRModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.IRModule</span></code></a>) group named
 functions into a complete program.</p></li>
 </ul>
+<section id="exploring-the-ir-tree">
+<h2>Exploring the IR Tree<a class="headerlink" href="#exploring-the-ir-tree" title="Link to this heading">#</a></h2>
+<p>To get a visual sense of the IR structure, we can use
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.format_tree.html#tvm_tirx.ir.format_tree" title="tvm_tirx.ir.format_tree"><code class="xref py py-func docutils literal notranslate"><span class="pre">ir.format_tree</span></code></a> to display an IR object
+and its fields as a text tree. Let’s start with the GPU function’s body,
+follow it down to the addition in <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>, and print that
+expression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+
+<span class="n">region</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>          <span class="c1"># The device region.</span>
+<span class="n">branch</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>          <span class="c1"># The if statement after the index binding.</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">branch</span><span class="o">.</span><span class="n">then_case</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>      <span class="c1"># The write to B[i].</span>
+<span class="n">addition</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">value</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">addition</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add
+├── a: TensorLoad(source=A, indices=[i])
+└── b: FloatImm(value=1.0)
+</pre></div>
+</div>
+<p>The root is the addition. Its <code class="docutils literal notranslate"><span class="pre">a</span></code> field holds the tensor read, and
+its <code class="docutils literal notranslate"><span class="pre">b</span></code> field holds the constant. Names such as <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">i</span></code> refer
+to variables already defined in the function. The display uses short
+class names: <code class="docutils literal notranslate"><span class="pre">Add</span></code>, for example, is <code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ir.format_tree</span></code> function provides options to control how the tree
+is displayed. For example, we can show expression types by expanding the
+<code class="docutils literal notranslate"><span class="pre">ty</span></code> field for <code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> objects:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">addition</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">)]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add
+├── ty: PrimType(dtype=float32)
+├── a: TensorLoad(source=A, indices=[i])
+│   └── ty: PrimType(dtype=float32)
+└── b: FloatImm(value=1.0)
+    └── ty: PrimType(dtype=float32)
+</pre></div>
+</div>
+<p>Here, each <code class="docutils literal notranslate"><span class="pre">PrimType(dtype=float32)</span></code> tells us that the expression it
+belongs to produces a <code class="docutils literal notranslate"><span class="pre">float32</span></code> value. Field selectors can be names,
+such as <code class="docutils literal notranslate"><span class="pre">&quot;a&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">(class,</span> <span class="pre">field)</span></code> pairs that target a particular
+class. We use a class selector here to override the default rule that
+hides <code class="docutils literal notranslate"><span class="pre">Expr.ty</span></code>.</p>
+<p>We can also make the display more compact by folding selected fields onto
+the same line as their parent. For example, folding <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> displays
+this addition on a single line:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">addition</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="p">[</span><span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add(a=TensorLoad(source=A, indices=[i]), b=FloatImm(value=1.0))
+</pre></div>
+</div>
+<p>This guide uses <code class="docutils literal notranslate"><span class="pre">format_tree</span></code> to inspect the objects in each example.
+Its API reference describes the remaining options for expanding, folding,
+and hiding fields.</p>
+</section>
 <section id="class-hierarchy">
 <h2>Class Hierarchy<a class="headerlink" href="#class-hierarchy" title="Link to this heading">#</a></h2>
 <p>The following diagram shows the class hierarchy of the IR nodes:</p>
@@ -526,62 +586,6 @@ foundation.</p>
 <code class="docutils literal notranslate"><span class="pre">loc</span></code> field records where it came from in the source, so a diagnostic
 can point back to the original code.</p>
 </section>
-<section id="inspecting-the-ir">
-<h2>Inspecting the IR<a class="headerlink" href="#inspecting-the-ir" title="Link to this heading">#</a></h2>
-<p><a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.format_tree.html#tvm_tirx.ir.format_tree" title="tvm_tirx.ir.format_tree"><code class="xref py py-func docutils literal notranslate"><span class="pre">ir.format_tree</span></code></a> displays an IR object’s
-fields as a text tree. We can follow the GPU function’s body to the
-addition in <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code> and print that expression:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
-
-<span class="n">region</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>          <span class="c1"># The device region.</span>
-<span class="n">branch</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>          <span class="c1"># The if statement after the index binding.</span>
-<span class="n">store</span> <span class="o">=</span> <span class="n">branch</span><span class="o">.</span><span class="n">then_case</span><span class="o">.</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>      <span class="c1"># The write to B[i].</span>
-<span class="n">addition</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">value</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">addition</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add
-├── a: TensorLoad(source=A, indices=[i])
-└── b: FloatImm(value=1.0)
-</pre></div>
-</div>
-<p>The root is the addition. Its <code class="docutils literal notranslate"><span class="pre">a</span></code> field holds the tensor read, and
-its <code class="docutils literal notranslate"><span class="pre">b</span></code> field holds the constant. Names such as <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">i</span></code> refer
-to variables already defined in the function. The display uses short
-class names: <code class="docutils literal notranslate"><span class="pre">Add</span></code>, for example, is <code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code>.</p>
-<p>The default view keeps common details compact and hides expression
-types. To show the type of each expression, we can expand <code class="docutils literal notranslate"><span class="pre">ty</span></code> for
-<code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> objects:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">addition</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="s2">"ty"</span><span class="p">)]))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add
-├── ty: PrimType(dtype=float32)
-├── a: TensorLoad(source=A, indices=[i])
-│   └── ty: PrimType(dtype=float32)
-└── b: FloatImm(value=1.0)
-    └── ty: PrimType(dtype=float32)
-</pre></div>
-</div>
-<p>Each <code class="docutils literal notranslate"><span class="pre">PrimType(dtype=float32)</span></code> describes the value produced by the
-expression above it. Field selectors can be names, such as <code class="docutils literal notranslate"><span class="pre">&quot;a&quot;</span></code>, or
-<code class="docutils literal notranslate"><span class="pre">(class,</span> <span class="pre">field)</span></code> pairs that target a particular class. We use a class
-selector here to override the default rule that hides <code class="docutils literal notranslate"><span class="pre">Expr.ty</span></code>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">fold</span></code> option instead puts selected fields on the same line as
-their parent:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">addition</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="p">[</span><span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">]))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Add(a=TensorLoad(source=A, indices=[i]), b=FloatImm(value=1.0))
-</pre></div>
-</div>
-<p>We will use <code class="docutils literal notranslate"><span class="pre">format_tree</span></code> throughout the walkthrough to inspect the
-objects in each example. Its API reference describes the remaining
-options for expanding, folding, and hiding fields.</p>
-</section>
 <section id="what-to-read-next">
 <span id="choose-a-chapter"></span><h2>What to Read Next<a class="headerlink" href="#what-to-read-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -646,8 +650,8 @@ visitors, and mutators for inspecting and rewriting these objects.</p></li>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploring-the-ir-tree">Exploring the IR Tree</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#class-hierarchy">Class Hierarchy</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-the-ir">Inspecting the IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-to-read-next">What to Read Next</a></li>
 </ul>
   </nav></div>
