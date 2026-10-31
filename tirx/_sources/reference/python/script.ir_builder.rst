@@ -127,6 +127,5 @@ Namespaces
    :maxdepth: 1
 
    script.ir_builder.frame
-   script.ir_builder.parser_protocol
    script.ir_builder.stmt
    script.ir_builder.tracing

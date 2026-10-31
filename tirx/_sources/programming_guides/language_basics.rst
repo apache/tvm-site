@@ -172,7 +172,7 @@ skips the remaining threads in this example.
 
 In ``add_one``, the statements after ``T.device_entry(...)`` form the GPU
 computation. The same section can also be written inside a
-``with T.device_entry(...):`` block. :ref:`Region syntax <tvmscript-region-syntax>`
+``with T.device_entry(...):`` block. :ref:`tvmscript-region-syntax`
 explains both forms.
 
 ``grid`` and ``block`` accept an integer or up to three dimensions.

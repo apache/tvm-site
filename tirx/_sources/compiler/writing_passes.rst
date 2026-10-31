@@ -22,7 +22,8 @@ Suppose we want a version of an add-one function for tensors of length 128.
 We will write a pass that fixes its symbolic length, then combine it with
 statement simplification. A compiler pass packages an IR transformation so
 the pass manager can run it as part of a pipeline. As we build this pipeline,
-we will check its result and inspect the intermediate programs.
+we will check its result, inspect the intermediate programs, and save one
+to reproduce a single transformation.
 
 Starting Program
 ----------------
@@ -146,19 +147,24 @@ type must agree with its source and indices:
 
    assert tirx.analysis.check_well_formed(after)
 
-We also want to check that it has the structure we intended. We can write
-the expected module directly in TVMScript, then compare it with the result:
+We also want to check that it has the structure we intended. We can parse
+an independently written version of the expected function, then compare it
+with the result:
 
 .. code-block:: python
 
-   @T.ir_module
-   class Expected:
-       @T.function
-       def guarded_add_one(A: T.Tensor((128,), T.float32), B: T.Tensor((128,), T.float32)):
-           for i in range(128):
-               B[i] = A[i] + 1
+   from tvm_tirx.script import from_source
 
-   ir.assert_structural_equal(after, Expected)
+   expected = from_source(
+       """
+   @T.function
+   def guarded_add_one(A: T.Tensor((128,), T.float32), B: T.Tensor((128,), T.float32)):
+       for i in range(128):
+           B[i] = A[i] + 1
+   """,
+       extra_vars={"T": T},
+   )
+   ir.assert_structural_equal(after["guarded_add_one"], expected)
 
 This comparison checks both fixed tensor shapes and the loop with a direct
 store in its body. Neither well-formedness nor structural comparison proves
@@ -193,6 +199,50 @@ already fixed the length when the simplifier receives the module.
 
 The instrument observes the pipeline without changing it. To inspect our
 own pass instead, use ``specialize.info.name`` in the lists.
+
+Saving and Reproducing a Stage
+------------------------------
+
+Once we have identified a stage to investigate, we can save its input and
+run that pass on its own. ``specialized`` is the module produced earlier by
+our pass, before statement simplification. Save it as TVMScript with imports
+included so it can be parsed independently:
+
+.. code-block:: python
+
+   from pathlib import Path
+
+   stage_file = Path("before_simplify.py")
+   stage_file.write_text(
+       specialized.script(extra_config={"ir.comment_imports": False}),
+       encoding="utf-8",
+   )
+
+In a separate experiment, load this file and apply only ``StmtSimplify``.
+There is no need to recreate the original symbolic dimension or rerun the
+specialization pass:
+
+.. code-block:: python
+
+   from pathlib import Path
+
+   from tvm_tirx import tirx
+   from tvm_tirx.script import from_source
+
+   restored = from_source(Path("before_simplify.py").read_text(encoding="utf-8"))
+   reproduced = tirx.transform.StmtSimplify()(restored)
+   print(reproduced["guarded_add_one"].script())
+
+The printed function has the same fixed shapes and direct store as before.
+If we run this loading code in the original Python session, we can also
+compare ``reproduced`` with the full pipeline's result, ``after``:
+
+.. code-block:: python
+
+   ir.assert_structural_equal(reproduced, after)
+
+The saved input can now serve as a small reproducer when investigating a
+simplifier change.
 
 The :doc:`pass API </reference/python/ir.transform>` and
 :doc:`TIRx transformation API </reference/python/tirx.transform>` cover

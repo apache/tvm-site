@@ -367,6 +367,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-pipeline">Running a Pipeline</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-result">Checking the Result</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-pass-s-input-and-output">Inspecting a Pass’s Input and Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-reproducing-a-stage">Saving and Reproducing a Stage</a></li>
 </ul>
             </nav>
         </div>
@@ -384,7 +385,8 @@ document.write(`
 We will write a pass that fixes its symbolic length, then combine it with
 statement simplification. A compiler pass packages an IR transformation so
 the pass manager can run it as part of a pipeline. As we build this pipeline,
-we will check its result and inspect the intermediate programs.</p>
+we will check its result, inspect the intermediate programs, and save one
+to reproduce a single transformation.</p>
 <section id="starting-program">
 <h2>Starting Program<a class="headerlink" href="#starting-program" title="Link to this heading">#</a></h2>
 <p>The following function adds one to each input element. <code class="docutils literal notranslate"><span class="pre">T.dynamic(&quot;n&quot;)</span></code>
@@ -488,16 +490,21 @@ type must agree with its source and indices:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">tirx</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">check_well_formed</span><span class="p">(</span><span class="n">after</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We also want to check that it has the structure we intended. We can write
-the expected module directly in TVMScript, then compare it with the result:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
-    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">guarded_add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">128</span><span class="p">):</span>
-            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<p>We also want to check that it has the structure we intended. We can parse
+an independently written version of the expected function, then compare it
+with the result:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_source</span>
 
-<span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="n">Expected</span><span class="p">)</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">@T.function</span>
+<span class="sd">def guarded_add_one(A: T.Tensor((128,), T.float32), B: T.Tensor((128,), T.float32)):</span>
+<span class="sd">    for i in range(128):</span>
+<span class="sd">        B[i] = A[i] + 1</span>
+<span class="sd">"""</span><span class="p">,</span>
+    <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">"T"</span><span class="p">:</span> <span class="n">T</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">[</span><span class="s2">"guarded_add_one"</span><span class="p">],</span> <span class="n">expected</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This comparison checks both fixed tensor shapes and the loop with a direct
@@ -529,6 +536,43 @@ shows the boundary between the two transformations: specialization has
 already fixed the length when the simplifier receives the module.</p>
 <p>The instrument observes the pipeline without changing it. To inspect our
 own pass instead, use <code class="docutils literal notranslate"><span class="pre">specialize.info.name</span></code> in the lists.</p>
+</section>
+<section id="saving-and-reproducing-a-stage">
+<h2>Saving and Reproducing a Stage<a class="headerlink" href="#saving-and-reproducing-a-stage" title="Link to this heading">#</a></h2>
+<p>Once we have identified a stage to investigate, we can save its input and
+run that pass on its own. <code class="docutils literal notranslate"><span class="pre">specialized</span></code> is the module produced earlier by
+our pass, before statement simplification. Save it as TVMScript with imports
+included so it can be parsed independently:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">stage_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"before_simplify.py"</span><span class="p">)</span>
+<span class="n">stage_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
+    <span class="n">specialized</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">extra_config</span><span class="o">=</span><span class="p">{</span><span class="s2">"ir.comment_imports"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}),</span>
+    <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In a separate experiment, load this file and apply only <code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code>.
+There is no need to recreate the original symbolic dimension or rerun the
+specialization pass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_source</span>
+
+<span class="n">restored</span> <span class="o">=</span> <span class="n">from_source</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"before_simplify.py"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>
+<span class="n">reproduced</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">StmtSimplify</span><span class="p">()(</span><span class="n">restored</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reproduced</span><span class="p">[</span><span class="s2">"guarded_add_one"</span><span class="p">]</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The printed function has the same fixed shapes and direct store as before.
+If we run this loading code in the original Python session, we can also
+compare <code class="docutils literal notranslate"><span class="pre">reproduced</span></code> with the full pipeline’s result, <code class="docutils literal notranslate"><span class="pre">after</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">reproduced</span><span class="p">,</span> <span class="n">after</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The saved input can now serve as a small reproducer when investigating a
+simplifier change.</p>
 <p>The <a class="reference internal" href="../reference/python/ir.transform.html"><span class="doc">pass API</span></a> and
 <a class="reference internal" href="../reference/python/tirx.transform.html"><span class="doc">TIRx transformation API</span></a> cover
 other pass forms and built-in transformations. The
@@ -587,6 +631,7 @@ provides tools for dumping every stage and measuring pass timings.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-pipeline">Running a Pipeline</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-result">Checking the Result</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-pass-s-input-and-output">Inspecting a Pass’s Input and Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-reproducing-a-stage">Saving and Reproducing a Stage</a></li>
 </ul>
   </nav></div>
 

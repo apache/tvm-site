@@ -185,11 +185,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1af7b8be795dd2e9889636e2383c554c67`
 
-- :ref:`exhale_function_namespacetvm_1afcdbd1fab3bdd58534c7fa93f3443d91`
-
 - :ref:`exhale_function_namespacetvm_1a15550334ba622451f41e2f04d386c1a2`
 
 - :ref:`exhale_function_namespacetvm_1ab09a39be17461ad9a4f0ec0b3cb963d9`
+
+- :ref:`exhale_function_namespacetvm_1afcdbd1fab3bdd58534c7fa93f3443d91`
 
 - :ref:`exhale_function_namespacetvm_1a253689828377e1e885a14b913f37a1c8`
 
