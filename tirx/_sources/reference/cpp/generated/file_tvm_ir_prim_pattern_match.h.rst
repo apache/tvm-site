@@ -145,11 +145,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a7daabd0d8657f2d55915420bbc3af874`
 
-- :ref:`exhale_function_namespacetvm_1a7be71ed571f41ce0a36e87446aa04f35`
-
 - :ref:`exhale_function_namespacetvm_1a5ca8906ddad2083a761664c49de0213f`
 
 - :ref:`exhale_function_namespacetvm_1a02224802057577e4a98e692b72a47225`
+
+- :ref:`exhale_function_namespacetvm_1a7be71ed571f41ce0a36e87446aa04f35`
 
 - :ref:`exhale_function_namespacetvm_1aba7b9587003dda3fe9f353c80c2f5dfd`
 

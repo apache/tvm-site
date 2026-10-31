@@ -516,6 +516,7 @@ Functions
    unpack_
    while_
    function
+   function.builder
    function_
    arg_
    func_name_
