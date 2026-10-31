@@ -20,33 +20,43 @@
 Printing and Parsing
 ====================
 
-In this chapter, we will introduce printing and parsing with TVMScript,
-TIRx's Python-based syntax for tensor programs.
-The printer turns IR objects into readable TVMScript code, and the parser
-constructs IR objects from that code. We will use these interfaces to
-inspect the add-one function, save and load programs, and examine a
-compiler pass's changes.
+Every TIRx program, at any stage of compilation, can be written in
+TVMScript, an embedded Python syntax. The printer turns IR into TVMScript,
+and the parser turns TVMScript back into IR. This lets one syntax serve
+three roles:
 
-Printing IR
------------
+- **DSL frontend**: developers and agents write tensor programs directly
+  in TVMScript.
+- **IR constructor for tests**: a test writes its input and expected
+  output as TVMScript, then compares them structurally with the result of
+  a pass.
+- **Diagnostic printer**: when compilation fails, the printer shows the
+  program as it stands at that stage, in the same syntax the user wrote.
 
-We will use a CPU function that adds one to each tensor element. The
-TVMScript decorator ``@T.function`` parses its definition into a
-``tirx.Function`` IR object:
+.. note::
 
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+   The runnable code in this chapter is under
+   `examples/ir_walkthrough <https://github.com/apache/tvm-tirx/tree/main/examples/ir_walkthrough>`_
+   in the repository.
+
+Printing and Parsing
+--------------------
+
+We will use a CPU function that adds one to each tensor element:
+
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
    :language: python
-   :start-at: from tvm_tirx.script import tirx as T
-   :end-at:         B[i] = A[i] + 1
+   :start-after: # [function.begin]
+   :end-before: # [function.end]
 
-The ``script()`` method returns the function's TVMScript source:
+The ``script()`` method prints any IR object as TVMScript:
 
-.. code-block:: python
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+   :language: python
+   :start-after: # [print.begin]
+   :end-before: # [print.end]
 
-   source = add_one.script()
-   print(source)
-
-The output makes the symbolic dimension and constant's type explicit:
+The output is:
 
 .. code-block:: python
 
@@ -59,325 +69,216 @@ The output makes the symbolic dimension and constant's type explicit:
        for i in range(n):
            B[i] = A[i] + T.float32(1.0)
 
-The original code declares ``n`` with ``T.dynamic``. The printer places
-that declaration in ``[n]`` after the function name, so the printed
-definition includes the symbol needed by its tensor shapes and loop
-bound. ``T.float32(1.0)`` records the float32 constant used by the addition.
-The printed form represents the same IR as the original definition.
+The printer writes out everything the IR records. The constant ``1``
+becomes ``T.float32(1.0)``, its value with the type the addition uses. The
+symbolic dimension ``n`` is declared in ``[n]`` after the function name,
+using the type-parameter syntax introduced in Python 3.12. Each name in
+the brackets declares a symbolic variable as if by ``T.dynamic``, but
+scoped to this function, so the printed function is self-contained. On
+Python 3.12 and newer, we can also write this form ourselves. A symbol with a dtype other than ``int32`` carries an
+annotation, as in ``[m: T.int64]``. The same method works on smaller
+objects. For example, ``add_one.params[0].ty.script()`` returns
+``T.Tensor((n,), T.float32)``.
 
-The same method works on modules and smaller IR objects. For example,
-``add_one.params[0].ty.script()`` returns ``T.Tensor((n,), T.float32)``
-for the input tensor type.
+A module prints the same way, as a class marked with ``@T.ir_module`` with
+one ``@T.function`` per member:
 
-.. _parsing-source:
-
-Parsing TVMScript
------------------
-
-The :doc:`TVMScript parser </reference/python/script.parser>` provides
-``from_source`` to construct IR from a string containing TVMScript code.
-We can use it with the add-one definition:
-
-.. code-block:: python
-
-   from tvm_tirx.script import from_source
-
-   source_text = """
-   from tvm_tirx.script import tirx as T
-
-   @T.function
-   def add_one[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
-       for i in range(n):
-           B[i] = A[i] + T.float32(1.0)
-   """
-   parsed_function = from_source(source_text)
-   print(type(parsed_function).__name__)
-   print(parsed_function.script())
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+   :language: python
+   :start-after: # [print_module.begin]
+   :end-before: # [print_module.end]
 
 The output is:
 
-.. code-block:: text
+.. code-block:: python
 
-   Function
    from __future__ import annotations
 
    # from tvm_tirx.script import tirx as T
 
-   @T.function
-   def add_one[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
-       for i in range(n):
-           B[i] = A[i] + T.float32(1.0)
+   n = T.dynamic("n", dtype="int32")
+   @T.ir_module
+   class Module:
+       @T.function
+       def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+           for i in range(n):
+               B[i] = A[i] + T.float32(1.0)
 
-``parsed_function`` is a ``tirx.Function`` containing the parameter
-variables, loop, and tensor store. It can be inspected or compiled
-through the same interfaces as ``add_one``.
+Functions in a module can share symbols, so ``n`` is declared once before
+the class instead of in ``[n]``.
 
-The import inside ``source_text`` tells the parser what ``T`` refers to.
-Our first call to ``add_one.script()`` returned ``source`` with that
-import commented out. To parse this string, we can bind the name ``T``
-to the existing namespace through ``extra_vars``:
+The printed output is TVMScript that ``@T.function`` and ``@T.ir_module``
+accept. On Python 3.12 and newer, a printed function placed in a Python
+file, here ``add_one_printed.py`` with its import enabled, builds the same
+IR again:
 
-.. code-block:: python
-
-   from tvm_tirx import ir
-   from tvm_tirx.script import tirx as T
-
-   restored_function = from_source(source, extra_vars={"T": T})
-   ir.assert_structural_equal(add_one, restored_function)
-
-The printed ``[n]`` declares the symbolic dimension, so it needs no
-external binding.
-
-Saving and Loading a Module
----------------------------
-
-An IR module can be saved as TVMScript for later inspection or reuse.
-We can store the CPU function in a module and write its source to a file.
-The file can include its own imports, so a parser can read it in another
-process. ``ir.comment_imports=False`` enables those imports:
-
-.. code-block:: python
-
-   from pathlib import Path
-
-   module = ir.IRModule({"add_one": add_one})
-   module_source = module.script(extra_config={"ir.comment_imports": False})
-   output_path = Path("add_one_module.py")
-   output_path.write_text(module_source)
-
-We can read the saved source and reconstruct the module:
-
-.. code-block:: python
-
-   restored_module = from_source(output_path.read_text())
-   ir.assert_structural_equal(module, restored_module)
-
-The parser resolves the namespace names from the imports, so this call
-needs no ``extra_vars``. ``restored_module`` is an ``ir.IRModule``
-with the same function definitions as ``module``.
-
-Inspecting IR
--------------
-
-The printer can also help us locate a selected computation in the source
-or see how a compiler pass changes the program.
-
-.. _highlighting-nodes:
-
-Highlighting IR Objects
-~~~~~~~~~~~~~~~~~~~~~~~
-
-An analysis may need to identify an expression in a diagnostic. We can
-reach the addition in ``B[i] = A[i] + 1`` through the function's body,
-then ask the printer to underline it and attach a message about its type:
-
-.. code-block:: python
-
-   loop = add_one.body[0]
-   store = loop.body[0]
-   addition = store.value
-   marked_source = add_one.script(
-       obj_to_underline=[addition],
-       obj_to_annotate={addition: "result dtype: float32"},
-       print_line_numbers=True,
-       num_context_lines=1,
-   )
-   print(marked_source)
-
-The marked lines include:
-
-.. code-block:: text
-
-   7     for i in range(n):
-   8         B[i] = A[i] + T.float32(1.0)  # result dtype: float32
-                    ^^^^^^^^^^^^^^^^^^^^^
-
-``obj_to_underline`` selects the expression to mark, and ``obj_to_annotate``
-attaches the message. The line numbers refer to this printed source.
-``num_context_lines=1`` keeps one surrounding line, so the diagnostic
-shows the loop containing the addition.
-
-For interactive inspection,
-:meth:`add_one.show() <tvm_tirx.tirx.Function.show>` displays highlighted
-source directly and accepts the same options.
-
-Inspecting a Transformation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The printer also helps us check what a compiler pass changes. Consider
-this version of add-one with a bounds check inside the loop:
-
-.. code-block:: python
-
-   @T.function
-   def guarded_add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
-       for i in range(n):
-           if i < n:
-               B[i] = A[i] + 1
-
-The loop already guarantees ``i < n``, so this extra branch is redundant.
-The ``StmtSimplify`` pass can remove it. We can print the module before
-and after applying that pass:
-
-.. code-block:: python
-
-   from tvm_tirx import ir, tirx
-
-   before_simplify = ir.IRModule({"guarded_add_one": guarded_add_one})
-   print(before_simplify.script())
-   after_simplify = tirx.transform.StmtSimplify()(before_simplify)
-   print(after_simplify.script())
-
-The second output contains the simplified loop:
-
-.. code-block:: python
-
-   for i in range(n):
-       B[i] = A[i] + T.float32(1.0)
-
-Building Program Variants
--------------------------
-
-A source generator may produce functions with the same structure but
-different constants. ``from_source`` can parse the same template with
-different ``extra_vars`` to build these variants. This template replaces
-the add-one constant with ``increment``:
-
-.. code-block:: python
-
-   variant_source = """
-   @T.function
-   def add_constant[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
-       for i in range(n):
-           B[i] = A[i] + increment
-   """
-
-The same text can produce versions that add one or two:
-
-.. code-block:: python
-
-   add_one_variant = from_source(
-       variant_source, extra_vars={"T": T, "increment": 1.0}
-   )
-   add_two_variant = from_source(
-       variant_source, extra_vars={"T": T, "increment": 2.0}
-   )
-   print(add_two_variant.script())
-
-The parser turns the ``increment`` value passed through ``extra_vars``
-into a constant. The addition in ``add_two_variant`` is therefore
-``A[i] + T.float32(2.0)``; both functions still take only ``A`` and ``B``
-as parameters.
-
-.. _user-ir-source-locations:
-
-Source Locations
-----------------
-
-IR nodes can carry source locations to help diagnostics point back to
-the original code. The ``loc`` field stores this information, and
-:class:`ir.SourceLoc <tvm_tirx.ir.SourceLoc>` records the source file
-and range.
-
-The parameter ``A`` is declared on this line of the CPU program:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+.. literalinclude:: ../../examples/ir_walkthrough/add_one_printed.py
    :language: python
-   :start-at: def add_one(
-   :end-at: def add_one(
-   :lineno-match:
+   :start-after: # [printed.begin]
+   :end-before: # [printed.end]
 
-The parameter's ``loc`` points back to this declaration. We can read
-``start_line`` to report its line number:
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+   :language: python
+   :start-after: # [parse.begin]
+   :end-before: # [parse.end]
 
-.. code-block:: python
+Printing and then parsing gives back the same IR. This is what lets a test
+write its expected IR as TVMScript and compare it with the output of a
+pass. To store or transfer IR, use ``ir.save_json`` and ``ir.load_json``,
+which serialize the IR objects directly.
 
-   parameter = add_one.params[0]
-   location = parameter.loc
-   line = location.start_line
-   print(f"Parameter {parameter.name} is declared on line {line}.")
+How the Parser Works
+--------------------
 
-For the CPU source file shown above, the output is:
+The parser is a thin layer over an IR builder, the Python API that
+constructs IR. The builder works with frames: entering a function, loop,
+or region opens a frame, and the statements built inside it become its
+body. Parsing is transpilation: the parser reads the Python syntax tree of
+a TVMScript definition, rewrites each syntax form into the matching
+builder call, then compiles and runs the result as an ordinary Python
+function in the definition's original scope.
 
-.. code-block:: text
+For example, this definition:
 
-   Parameter A is declared on line 29.
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+   :language: python
+   :start-at: @T.function
+   :end-at: B[i] = A[i] + 1
 
-The number follows the definition's position in its source file; it can
-change if you save the definition elsewhere.
-
-We can also retrieve the source filename through
-``location.source_name.name``. To inspect which fields a source location
-records without displaying its file path, we can print the location
-with ``source_name`` hidden:
-
-.. code-block:: python
-
-   print(ir.format_tree(location, hide=["source_name"]))
-
-The fields include ``start_line``, ``end_line``, ``start_column``, and
-``end_column``, which identify the declaration's range in the source.
-
-Source locations are also useful when parsing fails. The following
-source is missing the type annotation for parameter ``A``. We give the
-text a filename so the diagnostic can identify it:
+becomes this builder program:
 
 .. code-block:: python
 
-   invalid_source = """@T.function
-   def invalid_add_one(A):
-       T.evaluate(0)
-   """
-   try:
-       from_source(
-           invalid_source,
-           extra_vars={"T": T},
-           filename="generated_add_one.py",
-       )
-   except SyntaxError as error:
-       print(error)
+   with _I0.IRBuilder() as _builder0:
+       with T.function_() as _fn0:
 
-The output is:
+           def _declare0():
+               T.func_name_('add_one')
+               A = T.arg_('A', T.Tensor((n,), T.float32))
+               B = T.arg_('B', T.Tensor((n,), T.float32))
+           _declare0()
 
-.. code-block:: text
+           def _build0():
+               A, B = _fn0.params
+               with T.for_(T.range_(n), names='i') as i:
+                   T.setitem_(value=A[i] + 1, target=B, key=i)
+           _build0()
+   _result0 = _fn0.function
+   _result0.__name__ = 'add_one'
+   T.check_well_formed_(_result0)
 
-   Parameter 'A' requires an annotation (generated_add_one.py, line 2)
+Each syntax form maps to builder calls: the definition becomes a
+``function_`` frame, parameter annotations become ``arg_`` calls with
+their types, the loop becomes a ``for_`` frame,
+and the store becomes ``setitem_``. The signature is declared before the
+body is built, and the finished function is checked for well-formedness.
+Expressions such as ``A[i] + 1`` stay as written: ``A`` is the IR
+variable returned by ``arg_``, so Python's ``[]`` and ``+`` build the IR
+expression directly.
+Because the program runs as normal Python, ``n`` and other names come from
+the surrounding scope. The real output also passes source positions to
+each call, which is how parsed IR gets its ``loc``.
 
-The message identifies the supplied source text and the line with the
-invalid parameter. Successfully parsed nodes record the filename and
-their positions in ``loc``.
+Because the builder program runs as ordinary Python, the parser supports
+metaprogramming out of the box. A TVMScript function can read any Python
+value from its enclosing scope, and a Python function can build a new
+TVMScript function on each call:
+
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+   :language: python
+   :start-after: # [metaprogramming.begin]
+   :end-before: # [metaprogramming.end]
+
+``add_two`` adds ``2`` to ``int32`` tensors, and ``add_three`` adds
+``T.float32(3.0)`` to ``float32`` tensors. The parser needs no template
+language for this: ``value`` and ``dtype`` are evaluated like any other
+Python name when the builder program runs.
+
+The builder is also a public API, so we can construct the same function
+directly, without the parser:
+
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+   :language: python
+   :start-after: # [builder.begin]
+   :end-before: # [builder.end]
+
+``builder.get()`` returns a ``tirx.Function`` that is structurally equal
+to ``add_one``. Hand-written builder code uses the user-facing API, such as
+``T.serial`` and ``T.assign``, rather than the protocol hooks the parser
+emits. Writing builder code directly is sometimes helpful because
+it stays unambiguously in the Python domain. A plain Python ``for`` or
+``if`` runs while the IR is built, and IR control flow comes only from
+explicit frames such as ``T.serial`` and ``T.if_`` with ``T.then_``. Developers and agents
+therefore know exactly what each line executes. To record source
+locations, wrap the construction in ``builder.line_trace_scope()``, and
+each statement then records its source line in ``loc``.
 
 .. _tvmscript-region-syntax:
 
-Region Syntax
--------------
-
-The parser also determines which statements belong to a region. A CUDA
-function uses ``T.device_entry`` to mark the statements that execute on
-the GPU. In the following function, the region starts at that line:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cuda.py
-   :language: python
-   :start-at: @T.function
-   :end-at:         B[i] = A[i] + 1
-
-For this form, TVMScript takes all following statements in the same
-enclosing block as the region's body. The enclosing block here is the
-function body: the region extends from ``T.device_entry(...)`` to the
-end of the function. It contains the assignment to ``i`` and the entire
-``if`` branch, even though those statements have the same indentation
-as ``T.device_entry(...)``.
-
-An explicit ``with`` block shows the same region through indentation:
+Regions are built with frames in the same way. A region operator such as
+``T.device_entry`` opens a frame, and the statements inside its ``with``
+block become the region's body:
 
 .. code-block:: python
 
-   @T.function
-   def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
-       with T.device_entry(launch=T.cuda.LaunchConfig(grid=T.ceildiv(n, 256), block=256)):
-           i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
-           if i < n:
-               B[i] = A[i] + 1
+   with T.device_entry(launch=T.cuda.LaunchConfig(grid=T.ceildiv(n, 256), block=256)):
+       i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
+       if i < n:
+           B[i] = A[i] + 1
 
-Both forms produce the same ``ir.RegionStmt``. The :doc:`statements`
-chapter explains the IR structure inside that region.
+As a shorthand, a region call written as a plain statement opens the same
+frame for the rest of its enclosing block, so ``T.device_entry(...)``
+followed by the same statements at the same indentation produces the same
+``ir.RegionStmt``.
+
+We value **predictability** over syntactic sugar. Each syntax form has one
+fixed meaning: an annotation is a type, an assignment binds a variable, a
+subscript store writes a tensor, and a call is an ordinary Python call.
+Types such as ``T.Tensor`` and operators such as ``T.cuda.thread_idx`` are
+plain functions that return IR, so the parser has no rules specific to
+them.
+
+Extending the Syntax
+--------------------
+
+Because the parser only rewrites syntax into builder calls, extending
+TVMScript rarely touches the parser. Operators and types registered by an
+extension package are plain functions that return IR, so they work in
+TVMScript as soon as the package is imported. For example, an operator
+registered under an extension namespace ``my_ext`` is written
+``my_ext.cmul(a, b)``, like any built-in operator.
+
+As an advanced topic, a new language variant can also be added if
+necessary. The builder hooks that the parser emits for each syntax form,
+such as ``bind_``, ``setitem_``, and ``for_``, form the *parser protocol*,
+defined in ``tvm_tirx.script.ir_builder.parser_protocol``. A variant
+implements these hooks on its own namespace and registers it with the
+parser, and the same parser then builds its IR.
+
+Diagnostics
+-----------
+
+When compilation fails, the most useful view is usually the program as it
+stands at that stage. Calling ``script()`` on the module at that point
+shows it in the same syntax used to write it.
+
+The printer can also point at specific objects. ``obj_to_underline`` marks
+objects in the output, and ``obj_to_annotate`` attaches a message to them:
+
+.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+   :language: python
+   :start-after: # [highlight.begin]
+   :end-before: # [highlight.end]
+
+The output ends with:
+
+.. code-block:: text
+
+   @T.function
+   def add_one[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       for i in range(n):
+           B[i] = A[i] + T.float32(1.0)  # result dtype: float32
+                  ^^^^^^^^^^^^^^^^^^^^^
+
+``show()`` accepts the same options and displays the result with syntax
+highlighting.
