@@ -20,14 +20,42 @@
 Types and Expressions
 =====================
 
-In this chapter, we will introduce types and expressions. Expressions
-represent values and computations, and their types describe properties
-such as dtypes, tensor shapes, and function signatures. We will inspect
-the values in a small add-one function, then construct scalar and vector
-expressions through the IR API.
+An **expression** is an IR node that represents a value: a variable, a
+constant, an arithmetic operation, a tensor read, or a call. Expressions
+nest to form computations. In ``A[i] + 1``, the addition node holds the
+tensor read ``A[i]`` and the constant ``1`` as its operands.
 
-This CPU function reads each element of ``A``, adds one, and writes the
-result to ``B``. Both tensors have the same symbolic length ``n``:
+Every expression has a **type** attached to it in its ``ty`` field. The
+type describes the value the expression produces: a float32 scalar, a
+four-lane float32 vector, a tensor with shape ``(n,)``, and so on.
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+   x = ir.Var("x", "float32")
+   y = x + 1
+   print(ir.format_tree(y, expand=[(ir.Expr, "ty")]))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── ty: PrimType(dtype=float32)
+   ├── a: x
+   └── b: FloatImm(value=1.0)
+       └── ty: PrimType(dtype=float32)
+
+``y`` is an ``ir.prim.Add`` node. Its operands are the variable ``x`` and
+the constant ``1``, and each node carries its own ``ty``. The variable was
+given type float32 when it was created; the constant and the addition
+derive theirs from it.
+
+``ir.Expr`` is the base class of all expressions, and ``ir.Type`` is the
+base class of all types. The rest of this chapter introduces the main
+type classes, then the main expression classes, and finally how types
+can depend on expressions. It uses this add-one function as the running
+example:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cpu.py
    :language: python
@@ -39,8 +67,19 @@ result to ``B``. Both tensors have the same symbolic length ``n``:
 Types
 -----
 
-``ir.Type`` is the base class for all IR types, including primitive types
-for scalar and vector values, tensor types, and function types:
+``ir.Type`` is the base class of all types. A type describes a value:
+its dtype, its shape, or the values it is built from.
+
+``ir.PrimType`` describes a scalar or vector value by its dtype: the
+element kind, the bit width, and the number of lanes. ``float32`` is a
+single 32-bit floating-point value, and ``float32x4`` holds four of
+them in one vector. In TVMScript, ``T.float32`` is the object
+``ir.PrimType("float32")``.
+
+``tirx.TensorType`` describes a whole tensor, and the next subsection
+covers it in detail.
+
+The main type classes are:
 
 .. list-table::
    :header-rows: 1
@@ -50,385 +89,96 @@ for scalar and vector values, tensor types, and function types:
      - Describes
      - Fields
    * - ``ir.PrimType``
-     - A scalar or vector dtype
+     - A scalar or vector value
      - ``dtype``
-   * - ``ir.PtrType``
-     - A pointer's element type and memory scope
-     - ``element_type``, ``scope``
-   * - ``ir.TupleType``
-     - Ordered tuple field types
-     - ``fields``
-   * - ``ir.FuncType``
-     - Function argument and return types
-     - ``arg_types``, ``ret_type``
    * - ``tirx.TensorType``
-     - A tensor's shape, element type, and storage properties
+     - A tensor's shape, element type, and storage
      - ``shape``, ``dtype``, ``scope``, ``data_alignment``, ``layout``
-
-We will examine primitive and tensor types first, then look at the
-pointer type used for a tensor's data address.
-
-.. _user-ir-prim-type:
-
-PrimType
-~~~~~~~~
-
-:class:`ir.PrimType <tvm_tirx.ir.PrimType>` describes integer,
-floating-point, and boolean values, either as scalars or vectors. Its
-``dtype`` records the element kind, bit width, and number of lanes.
-
-In the program's tensor annotations, ``T.float32`` is an
-``ir.PrimType("float32")`` object.
-
-The tensor length ``n`` is an integer symbol:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
-   :language: python
-   :start-at: from tvm_tirx.script import tirx as T
-   :end-at: n = T.dynamic
-
-The default dtype is int32, so ``n`` has type ``ir.PrimType("int32")``.
-The loop index ``i`` has the same primitive type.
-
-We can express the addition ``A[i] + 1`` directly through the IR API,
-with a scalar variable standing for the input element:
-
-.. code-block:: python
-
-   from tvm_tirx import ir
-   scalar_value = ir.Var("scalar_value", "float32")
-   scalar_plus_one = scalar_value + 1
-
-``scalar_value`` has type ``ir.PrimType("float32")``, so it represents a single
-32-bit floating-point value. The result ``scalar_plus_one`` has the
-same type, just like ``A[i] + 1`` in the program.
-
-.. _user-ir-vector-expression:
-
-``PrimType`` also supports vector values. We can extend the same addition
-to four float32 values at once:
-
-.. code-block:: python
-
-   vector_value = ir.Var("vector_value", "float32x4")
-   vector_plus_one = vector_value + 1
-
-The type of ``vector_value`` is ``ir.PrimType("float32x4")``. The ``x4`` suffix
-specifies four float32 lanes within one vector value. The addition adds
-one to each lane, and ``vector_plus_one`` has the same vector type.
+   * - ``ir.TupleType``
+     - An ordered group of values
+     - ``fields``
+   * - ``ir.PtrType``
+     - A memory address and the element type it points to
+     - ``element_type``, ``scope``
+   * - ``ir.FuncType``
+     - A function's argument and result types
+     - ``arg_types``, ``ret_type``
 
 .. _user-tensor-type:
 
 TensorType
 ~~~~~~~~~~
 
-:class:`tirx.TensorType <tvm_tirx.tirx.TensorType>` is an IR type object
-that describes a whole tensor. It records the tensor's dimensions and
-the type of each element.
-
-The program declares its input and output as:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
-   :language: python
-   :start-at: def add_one(
-   :end-at: def add_one(
-
-``T.Tensor((n,), T.float32)`` is the TVMScript notation for a tensor type;
-the parser represents it as a ``tirx.TensorType`` object. Its ``shape``
-field contains one dimension, ``n``, and its ``dtype`` field is
-``ir.PrimType("float32")``:
+``tirx.TensorType`` describes a whole tensor: its shape, its element
+type, and how it is stored. ``T.Tensor`` builds one:
 
 .. code-block:: python
 
-   input_type = add_one.params[0].ty
-   print(ir.format_tree(input_type))
+   from tvm_tirx import ir
+   from tvm_tirx.script import tirx as T
+
+   tile_type = T.Tensor((16, 4), T.float16)
+   print(ir.format_tree(tile_type))
 
 The output is:
 
 .. code-block:: text
 
    TensorType
-   ├── shape[0]: n = Var(ty=int32)
-   └── dtype: PrimType(dtype=float32)
+   ├── shape[0]: IntImm(value=16)
+   ├── shape[1]: IntImm(value=4)
+   └── dtype: PrimType(dtype=float16)
 
-The dimension ``n`` is symbolic: it is not fixed to a particular number
-when the function is compiled. Each call determines ``n`` from the length
-of ``A``. Since ``B`` uses the same symbol in its type, its length must
-match ``A``. The loop then uses ``n`` as its bound.
+``shape`` lists one expression per dimension; here both are integer
+constants. ``dtype`` is the ``PrimType`` of each element.
 
-PtrType
-~~~~~~~
-
-Some low-level operations take a memory address. The ``data`` property
-of a tensor parameter constructs an expression for its data pointer:
+A tensor type also records where its elements are stored. ``scope`` is
+the memory space that holds them, such as ``"global"`` (the default),
+``"shared"``, or ``"local"``:
 
 .. code-block:: python
 
-   data_pointer = add_one.params[0].data
-   pointer_type = data_pointer.ty
+   from tvm_tirx.script import tirx as T
 
-``pointer_type`` is an ``ir.PtrType``. Its ``element_type`` is
-``ir.PrimType("float32")``, and its ``scope`` is ``"global"``, matching
-the tensor's storage. This type describes the elements addressed by the
-pointer. The tensor's ``TensorType`` also records their shape.
+   shared_type = T.Tensor((16, 4), T.float16, scope="shared")
+   print(repr(shared_type.scope))
+
+The output is:
+
+.. code-block:: text
+
+   MemoryScope('shared')
+
+We can optionally supply a tensor's ``layout``, which changes how its
+elements are placed in storage. The
+:doc:`Data Layout </programming_guides/data_layout>` guide covers
+layouts.
+
+.. _user-ir-expr:
 
 Expressions
 -----------
 
-``ir.Expr`` is the base class for expressions, which represent program
-values and computations. All expression classes inherit its ``ty`` field,
-which records the type of value they represent:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 15 25 60
-
-   * - Field
-     - Value type
-     - Meaning
-   * - ``ty``
-     - ``ir.Type``
-     - The type of value represented by the expression.
-
-We can inspect the types of ``scalar_value`` and ``scalar_plus_one``
-through ``ty``. Both are primitive types, so their ``dtype`` fields give
-the dtype names:
-
-.. code-block:: python
-
-   print(scalar_value.ty.dtype)
-   print(scalar_plus_one.ty.dtype)
-
-The output is:
-
-.. code-block:: text
-
-   float32
-   float32
-
-``ir.Var("scalar_value", "float32")`` sets the variable's type explicitly.
-The addition's constructor determines its result type from its operands;
-this process is called type inference.
-
-An expression under construction can also have an ``ir.MissingType``
-in ``ty`` while its type is undetermined. Once its inputs are ready,
-the appropriate type rule can determine a concrete result type.
-
-Each expression class adds fields for its value or operands, alongside
-the shared ``ty`` field:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - Classes (examples)
-     - Represents
-     - Additional fields
-   * - ``ir.Var``
-     - A variable
-     - ``name``
-   * - ``ir.IntImm``, ``ir.FloatImm``, ``ir.StringImm``
-     - Literal constants
-     - ``value``
-   * - ``ir.prim.Add``, ``ir.prim.Sub``, ``ir.prim.Mul``
-     - Binary arithmetic
-     - ``a``, ``b``
-   * - ``ir.prim.EQ``, ``ir.prim.LT``
-     - Comparisons
-     - ``a``, ``b``
-   * - ``ir.Op``
-     - A registered operator
-     - ``name``, ``doc``, ``args_info``
-   * - ``ir.Call``
-     - A call to an operator or function
-     - ``op``, ``args``, ``attrs``, ``ty_args``
-   * - ``ir.TensorLoad``
-     - A tensor element read
-     - ``source``, ``indices``
-
-.. _user-ir-const:
-
-Primitive Expressions
-~~~~~~~~~~~~~~~~~~~~~
-
-A primitive expression is an expression whose ``ty`` is an ``ir.PrimType``.
-This term groups expressions by their result type. Variables, tensor
-reads, arithmetic nodes, and calls can all belong to this group when
-they produce primitive scalar or vector values.
-
-**Scalar expressions.** The CPU example uses the int32 expressions ``n``
-and ``i`` for the loop bound and index. The tensor read ``A[i]`` and the
-addition ``A[i] + 1`` both produce a single float32 value. A comparison
-such as ``i < n`` produces a boolean. These scalar result types are
-stored as ``PrimType`` objects in ``ty``.
-
-``A`` itself represents the whole tensor and has a ``TensorType``.
-The expression ``A[i]`` reads element ``i`` of this tensor. TVMScript
-represents the read as an ``ir.TensorLoad`` node. Its ``source`` field
-refers to ``A``, and ``indices`` contains ``i``, selecting the element
-to read:
-
-.. code-block:: python
-
-   loop = add_one.body.seq[0]            # The for loop.
-   addition = loop.body.seq[0].value     # The value written by its store.
-   element_read = addition.a
-   print(ir.format_tree(
-       element_read,
-       expand=[(ir.Expr, "ty"), "source"],
-   ))
-
-The output is:
-
-.. code-block:: text
-
-   TensorLoad(indices=[i])
-   ├── ty: PrimType(dtype=float32)
-   └── source: A = Var(ty=TensorType(shape=[n], dtype=float32))
-
-``expand`` shows the read's result type and the parameter referenced by
-``source``. The parameter's tensor type remains folded on one line.
-
-**Vector expressions.** A primitive expression can also produce a vector
-value. The earlier add-one result ``vector_plus_one`` has type
-``ir.PrimType("float32x4")``, representing four float32 lanes within
-one value.
-
-A call whose result type is a ``PrimType`` also belongs to this category.
-For example, the GPU expression ``T.cuda.thread_idx("x")`` is an
-``ir.Call`` with result type ``ir.PrimType("int32")``.
-
-.. _user-ir-prim-operations:
-
-Primitive Operations
-~~~~~~~~~~~~~~~~~~~~
-
-Arithmetic and comparisons combine variables, constants, and tensor
-reads into larger expressions. The ``ir.prim`` namespace provides node
-classes and Python helpers for these operations, as well as boolean
-logic, casts, and other primitive computations:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 55 45
-
-   * - Python expression
-     - IR node constructed
-   * - ``scalar_value + 1``
-     - ``ir.prim.Add``
-   * - ``ir.prim.sigmoid(scalar_value)``
-     - ``ir.Call`` to ``prim.sigmoid``
-
-Python operators such as ``+``, ``*``, and ``<`` construct arithmetic
-and comparison nodes. The Python helper ``ir.prim.sigmoid`` constructs
-a call to a registered operator; the returned IR node is an ``ir.Call``.
-
-In the CPU example, ``A[i] + 1`` becomes an ``ir.prim.Add``. A binary node
-stores its left operand in ``a`` and its right operand in ``b``:
-
-.. code-block:: python
-
-   print(ir.format_tree(addition))
-
-The output is:
-
-.. code-block:: text
-
-   Add
-   ├── a: TensorLoad(source=A, indices=[i])
-   └── b: FloatImm(value=1.0)
-
-The arithmetic constructor derives the result type from its operands.
-Since ``A[i]`` is float32, it converts the source literal ``1`` to the
-float32 constant shown as ``ir.FloatImm``. The result is also float32.
-
-These constructors also support vector operands. In ``vector_value + 1``,
-the scalar constant is broadcast to all four lanes, producing the
-four-lane expression ``vector_plus_one``.
-
-A GPU version assigns one element to each thread. Its index calculation
-combines multiplication and addition, and its bounds check uses a
-comparison:
-
-.. code-block:: python
-
-   @T.function
-   def gpu_add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
-       T.device_entry(launch=T.cuda.LaunchConfig(grid=T.ceildiv(n, 256), block=256))
-       i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
-       if i < n:
-           B[i] = A[i] + 1
-
-The GPU launch uses 256 threads per block. The multiplication by 256
-becomes an ``ir.prim.Mul``, and the sum becomes an ``ir.prim.Add``.
-The condition ``i < n`` is an ``ir.prim.LT`` whose ``a`` and ``b``
-operands are the index and tensor length:
-
-.. code-block:: python
-
-   device_region = gpu_add_one.body.seq[0]
-   branch = device_region.body.seq[1]     # The if statement.
-   print(ir.format_tree(branch.condition))
-
-The output is:
-
-.. code-block:: text
-
-   LT
-   ├── a: i
-   └── b: n
-
-The comparison checks whether the thread has a valid element to process.
-
-Boolean operations combine comparisons into a single condition. For
-example, both checks must hold for a scalar to lie in the interval
-``[0, 1)``:
-
-.. code-block:: python
-
-   in_unit_interval = ir.prim.And(scalar_value >= 0, scalar_value < 1)
-
-The ``And`` node holds the two comparisons in ``a`` and ``b``. Its result
-type is ``ir.PrimType("bool")``.
-
-An operation can also change the dtype of a value. To produce a float16
-version of the add-one result, we can use a cast:
-
-.. code-block:: python
-
-   half_plus_one = ir.prim.Cast("float16", scalar_plus_one)
-
-The cast's ``value`` field refers to ``scalar_plus_one``. Its ``ty`` is
-``ir.PrimType("float16")``, which tells code generation to convert the
-float32 result to float16.
-
-The :doc:`ir.prim </reference/python/ir.prim>` API reference lists other
-operations and their construction helpers.
+Each expression class adds its own fields alongside ``ty``. When an
+expression is constructed, its ``ty`` is computed from its inputs, so a
+finished expression always carries a concrete type. While an expression
+is still being built and its type is not yet known, ``ty`` holds the
+placeholder ``ir.MissingType``.
 
 .. _user-ir-var:
 
 Var
 ~~~
 
-``ir.Var`` represents a named value with a type. Variables can be
-function parameters, loop indices, or intermediate values defined by
-bindings.
+``ir.Var`` represents a named value. It has two fields: ``name``, a
+readable label, and ``ty``, the type of the value it stands for.
 
-The tensor parameters ``A`` and ``B`` in our CPU function are represented
-by ``ir.Var`` objects. We can retrieve them from ``add_one.params`` and
-inspect their types through ``ty``:
+In the add-one function, the parameters ``A`` and ``B`` are variables.
+Each one's ``ty`` is the annotation written in the signature:
 
 .. code-block:: python
 
    A, B = add_one.params
-   input_type = A.ty
-   output_type = B.ty
-
-Each parameter is a ``Var`` with its own ``name`` and ``ty`` fields.
-We can expand its type to inspect the shape and element type:
-
-.. code-block:: python
-
    print(ir.format_tree(A, expand=[(ir.Var, "ty")]))
 
 The output is:
@@ -441,122 +191,366 @@ The output is:
        │   └── ty: PrimType(dtype=int32)
        └── dtype: PrimType(dtype=float32)
 
-The variable's name appears before ``= Var``. The ``ty`` edge leads to
-its tensor type, whose shape contains the integer symbol ``n``.
-TVMScript creates these parameter variables when it parses the function.
-We can also create variables directly with ``ir.Var(name, ty)``. The
-scalar add-one example in PrimType uses this constructor:
+``T.Tensor((n,), T.float32)`` becomes a ``tirx.TensorType``. Its
+``shape`` holds the dimension expressions and its ``dtype`` holds the
+element type, ``ir.PrimType("float32")``.
+
+The function has two other kinds of variables. The symbolic dimension
+``n`` comes from ``n = T.dynamic("n")``. It is an int32 ``Var`` that
+stands for a size known only when the function is called, and it appears
+in ``A``'s shape above. The loop index ``i`` is defined by
+``for i in range(n)``. It is an int32 ``Var`` that the loop body uses to
+read ``A[i]`` and write ``B[i]``.
+
+In TIRx canonical form, each ``Var`` is defined at most once in a
+function. A variable is defined where it is introduced, such as a
+function parameter or a loop index, and it can then be used any number
+of times. Two loops cannot share the same ``Var`` object as their index,
+even when neither loop is nested in the other; each loop needs its own
+``Var``, even if the names are the same. This rule keeps analysis
+simple: every use of a variable refers to exactly one definition.
+
+.. _user-ir-const:
+
+Constants
+~~~~~~~~~
+
+``ir.IntImm``, ``ir.FloatImm``, and ``ir.StringImm`` hold literal values
+in their ``value`` field. A constant's ``ty`` records its dtype:
 
 .. code-block:: python
 
    from tvm_tirx import ir
-   scalar_value = ir.Var("scalar_value", "float32")
-   scalar_plus_one = scalar_value + 1
 
-``ir.Var("scalar_value", "float32")`` creates a variable whose ``name``
-is ``"scalar_value"`` and whose ``ty`` is ``ir.PrimType("float32")``.
+   print(ir.format_tree(ir.IntImm("int64", 3), expand=[(ir.Expr, "ty")]))
 
-Tuples
-~~~~~~
+The output is:
 
-An expression can group several values into a tuple. For example, we can
-keep the original scalar and its add-one result together, then select
-the second value:
+.. code-block:: text
+
+   IntImm(value=3)
+   └── ty: PrimType(dtype=int64)
+
+A Python number used in an operation becomes a constant with the dtype
+of the other operand, so ``x + 1`` with a float32 ``x`` contains a
+float32 ``FloatImm``.
+
+.. _user-ir-prim-expr:
+
+Primitive Expressions
+~~~~~~~~~~~~~~~~~~~~~
+
+A primitive expression is an expression whose ``ty`` is an
+``ir.PrimType``. These expressions usually compute an index or an
+element value, and such computations occur in nearly every ML compiler
+scenario: tensor offsets, loop bounds, tiling and vectorization, and the
+scalar math inside each kernel. TIRx therefore gives them dedicated node
+classes in the ``ir.prim`` namespace, such as ``ir.prim.Add``,
+``ir.prim.LT``, and ``ir.prim.Cast``, rather than representing them as
+generic calls. The IR can refer to these common patterns directly, and
+analyses and transformations can recognize, reason about, and simplify
+them by their structure. Python operators on expressions construct
+these nodes.
+
+**Index expressions.** Index calculations combine integer variables and
+constants, such as a block offset plus a thread index. A binary node
+stores its operands in ``a`` and ``b``, and nodes nest to form larger
+computations.
 
 .. code-block:: python
 
-   paired_values = ir.Tuple([scalar_value, scalar_plus_one])
-   second_value = ir.TupleGetItem(paired_values, 1)
+   from tvm_tirx import ir
 
-``paired_values.fields`` holds the two expressions. Its type is an
-``ir.TupleType`` whose ``fields`` holds their types: two
-``ir.PrimType("float32")`` objects. ``TupleGetItem`` records the tuple
-in ``tuple_value`` and the selected position in ``index``. Index 1
-selects ``scalar_plus_one``, so ``second_value`` has type
-``ir.PrimType("float32")``.
+   bx = ir.Var("bx", "int32")
+   tx = ir.Var("tx", "int32")
+   print(ir.format_tree(bx * 256 + tx))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── a: Mul
+   │   ├── a: bx
+   │   └── b: IntImm(value=256)
+   └── b: tx
+
+**Value computations.** Element values can combine operands of different
+dtypes. The constructor determines the result type from its operands and
+inserts an explicit ``ir.prim.Cast`` when they differ, so the conversion
+is visible to later passes and code generation.
+
+.. code-block:: python
+
+   i = ir.Var("i", "int32")
+   x = ir.Var("x", "float32")
+   print(ir.format_tree(i + x, expand=[(ir.Expr, "ty")]))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── ty: PrimType(dtype=float32)
+   ├── a: Cast
+   │   ├── ty: PrimType(dtype=float32)
+   │   └── value: i
+   └── b: x
+
+**Vector expressions.** A ``PrimType`` can hold several lanes, such as
+``float32x4`` for four float32 values, and arithmetic applies lane by
+lane. When one operand is a scalar, the constructor inserts an
+``ir.prim.Broadcast`` that repeats it across the lanes.
+
+.. code-block:: python
+
+   v = ir.Var("v", "float32x4")
+   print(ir.format_tree(v + 1, expand=[(ir.Expr, "ty")]))
+
+The output is:
+
+.. code-block:: text
+
+   Add
+   ├── ty: PrimType(dtype=float32x4)
+   ├── a: v
+   └── b: Broadcast
+       ├── ty: PrimType(dtype=float32x4)
+       ├── value: FloatImm(value=1.0)
+       │   └── ty: PrimType(dtype=float32)
+       └── lanes: IntImm(value=4)
+           └── ty: PrimType(dtype=int32)
+
+The following table lists the primitive expression node classes in
+``ir.prim``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 45 35
+
+   * - Category
+     - Node classes
+     - Python syntax
+   * - Arithmetic
+     - ``Add``, ``Sub``, ``Mul``, ``Div``, ``Mod``, ``FloorDiv``,
+       ``FloorMod``, ``Min``, ``Max``
+     - ``+``, ``-``, ``*``, ``/`` (float), ``//``, ``%`` (int)
+   * - Comparison
+     - ``EQ``, ``NE``, ``LT``, ``LE``, ``GT``, ``GE``
+     - ``<``, ``<=``, ``>``, ``>=``
+   * - Logical
+     - ``And``, ``Or``, ``Not``
+     - —
+   * - Bitwise
+     - ``BitwiseAnd``, ``BitwiseOr``, ``BitwiseXor``, ``BitwiseNot``,
+       ``LShift``, ``RShift``
+     - ``&``, ``|``, ``^``, ``~``, ``<<``, ``>>``
+   * - Conversion
+     - ``Cast``
+     - —
+   * - Selection
+     - ``Select``
+     - —
+   * - Vector
+     - ``Broadcast``, ``Ramp``, ``Shuffle``
+     - —
+   * - Binding
+     - ``Let``
+     - —
+
+Operations without dedicated node classes, such as ``ir.prim.exp`` and
+``ir.prim.sigmoid``, construct an ``ir.Call`` to a registered operator.
+Their results are still primitive expressions.
+
+The :doc:`ir.prim </reference/python/ir.prim>` API reference documents
+each node class, its construction helpers, and the available math
+functions.
+
+.. _user-ir-tensor-read:
+
+Tensor Reads
+~~~~~~~~~~~~
+
+Indexing a tensor variable reads one element. ``A[i]`` constructs an
+``ir.TensorLoad`` whose ``source`` is the tensor and whose ``indices``
+select the element. Its ``ty`` is the tensor's element type, so reading
+from a ``TensorType`` value produces a ``PrimType`` value:
+
+.. code-block:: python
+
+   A, B = add_one.params
+   i = ir.Var("i", "int32")
+   print(ir.format_tree(A[i], expand=[(ir.Expr, "ty")]))
+
+The output is:
+
+.. code-block:: text
+
+   TensorLoad(source=A, indices=[i])
+   └── ty: PrimType(dtype=float32)
+
+Low-level code sometimes needs the tensor's memory address instead.
+``A.data`` is a call to ``tirx.tensor_data_ptr`` whose type is an
+``ir.PtrType`` with element type float32.
+
+.. _user-ir-tuple:
+
+Tuple
+~~~~~
+
+``ir.Tuple`` groups several expressions into one value, for example to
+return more than one result. Its ``fields`` hold the expressions, and
+its type is an ``ir.TupleType`` whose ``fields`` hold their types in the
+same order:
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+
+   i = ir.Var("i", "int32")
+   x = ir.Var("x", "float32")
+   pair = ir.Tuple([i, x])
+   print(ir.format_tree(pair, expand=[(ir.Expr, "ty")]))
+
+The output is:
+
+.. code-block:: text
+
+   Tuple
+   ├── ty: TupleType
+   │   ├── fields[0]: PrimType(dtype=int32)
+   │   └── fields[1]: PrimType(dtype=float32)
+   ├── fields[0]: i
+   └── fields[1]: x
+
+``ir.TupleGetItem(pair, 1)`` selects one field by position. It records
+the tuple in ``tuple_value`` and the position in ``index``, and its type
+is the type of the selected field, ``PrimType("float32")``.
 
 .. _user-ir-call:
 
 Call
 ~~~~
 
-:class:`ir.Call <tvm_tirx.ir.Call>` represents a call to an operator or
-function. Its ``op`` field refers to the operator or function expression
-being called, and ``args`` holds the argument expressions. A registered
-operator is represented by ``ir.Op``.
+``ir.Call`` expresses a call to another function or to a specialized
+operation. Its ``op`` field is the callee, and ``args`` holds the
+argument expressions. A specialized operation is a registered operator,
+represented by ``ir.Op`` and looked up by name. Like every expression, a
+call has a ``ty``, computed from its arguments when the call is
+constructed.
 
-The GPU index calculation above uses ``T.cuda.block_idx("x")`` and
-``T.cuda.thread_idx("x")`` to read the block and thread coordinates.
-These TVMScript helpers construct calls to registered CUDA operators.
-We can construct the thread-index call directly through the IR API:
+For example, sigmoid is a registered operator rather than a dedicated
+``ir.prim`` node. A call to it takes a float32 argument and produces a
+float32 result:
 
 .. code-block:: python
 
    from tvm_tirx import ir
 
-   op = ir.Op.get("tirx.cuda.thread_idx")
-   x_call = ir.Call(op, [ir.StringImm("x")])
-
-``op`` is the ``ir.Op`` object for ``tirx.cuda.thread_idx``. The call's
-``op`` field refers to this object, and its ``args`` array contains the
-string expression ``"x"``. Its ``ty`` is ``ir.PrimType("int32")``:
-
-.. code-block:: python
-
-   print(ir.format_tree(
-       x_call,
-       expand=[(ir.Call, "ty")],
-       hide=["attrs", "ty_args"],
-   ))
-
-The output is:
-
-.. code-block:: text
-
-   Call(op=tirx.cuda.thread_idx)
-   ├── ty: PrimType(dtype=int32)
-   └── args[0]: StringImm(value='x')
-
-The ``"x"`` argument selects the x axis. When the compiled GPU function
-runs, this call reads the current thread's x-axis coordinate within its
-block. The index arithmetic uses the coordinates returned by the
-thread-index and block-index calls to compute ``i``.
-
-A common extension of add-one is an activation applied to its result.
-We can pass the earlier addition expression ``scalar_plus_one`` to the
-built-in ``prim.sigmoid`` operator:
-
-.. code-block:: python
-
+   x = ir.Var("x", "float32")
    sigmoid_op = ir.Op.get("prim.sigmoid")
-   activated_plus_one = ir.Call(sigmoid_op, [scalar_plus_one])
-
-The call's argument is now the addition expression. We fold ``args`` to
-keep the arithmetic on one line and expand the call's result type:
-
-.. code-block:: python
-
-   print(ir.format_tree(
-       activated_plus_one,
-       fold=["args"],
-       expand=[(ir.Call, "ty")],
-       hide=["attrs", "ty_args"],
-   ))
+   y = ir.Call(sigmoid_op, [x + 1])
+   print(ir.format_tree(y, expand=[(ir.Expr, "ty")],
+                        hide=["attrs", "ty_args"]))
 
 The output is:
 
 .. code-block:: text
 
-   Call(op=prim.sigmoid, args=[Add(a=scalar_value, b=FloatImm(value=1.0))])
-   └── ty: PrimType(dtype=float32)
+   Call(op=prim.sigmoid)
+   ├── ty: PrimType(dtype=float32)
+   └── args[0]: Add
+       ├── ty: PrimType(dtype=float32)
+       ├── a: x
+       └── b: FloatImm(value=1.0)
+           └── ty: PrimType(dtype=float32)
 
-``activated_plus_one.args[0]`` refers to ``scalar_plus_one``, so sigmoid
-receives the addition's result. The expression computes
-``1 / (1 + exp(-(scalar_value + 1)))``. The operator's type rule gives
-the call the same type as its input, ``ir.PrimType("float32")``. This
-call is therefore also a primitive expression. The Python helper
-``ir.prim.sigmoid(scalar_plus_one)`` constructs the same call.
+The example hides two other fields of ``ir.Call``: ``attrs``, which
+holds operator-specific attributes, and ``ty_args``, which holds
+explicit type arguments.
 
-The :doc:`operators_and_calls` chapter also covers calls to IR functions
-and explains how registered operators provide result-type inference
-and argument validation.
+.. _user-ir-dependent-type:
+
+Dependent Types
+---------------
+
+A type can contain expressions. The shape of a ``tirx.TensorType`` is a
+list of expressions, so a tensor's dimensions can be symbolic values
+rather than fixed numbers:
+
+.. code-block:: python
+
+   from tvm_tirx import ir
+   from tvm_tirx.script import tirx as T
+
+   n = T.dynamic("n")
+   matrix_type = T.Tensor((n, n * 2), T.float32)
+   print(ir.format_tree(matrix_type))
+
+The output is:
+
+.. code-block:: text
+
+   TensorType
+   ├── shape[0]: n = Var(ty=int32)
+   ├── shape[1]: Mul
+   │   ├── a: n
+   │   └── b: IntImm(value=2)
+   └── dtype: PrimType(dtype=float32)
+
+The first dimension is the int32 variable ``n``, and the second is the
+expression ``n * 2``. A type whose fields refer to expressions is called
+a dependent type: the concrete shape depends on the value of ``n``.
+
+In a function signature, dependent types relate parameters to each
+other. In the add-one function below, both tensors have type
+``T.Tensor((n,), T.float32)``:
+
+.. code-block:: python
+
+   n = T.dynamic("n")
+
+   @T.function
+   def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       for i in range(n):
+           B[i] = A[i] + 1
+
+Both types refer to the same variable ``n``. The first appearance of
+``n``, in ``A``'s type, defines it; the appearance in ``B``'s type is a
+use. When the function is
+called, ``n`` takes the length of ``A``, and ``B`` must have the same
+length. The loop body can also use ``n`` as an ordinary int32 value,
+here as the loop bound.
+
+TIRx analysis and transformation utilities are designed with dependent
+types in mind. When a transformation replaces a variable, it updates
+every type that refers to that variable, not only the expressions. For
+example, replacing ``n`` with ``16`` in the add-one function changes the
+loop bound to ``16`` and also changes the types of ``A`` and ``B`` to
+``T.Tensor((16,), T.float32)``. Types and expressions therefore stay
+consistent after each rewrite.
+
+Customization
+-------------
+
+The type and expression system is open to extension. A library can
+define a new type, such as a complex number type with float32 real and
+imaginary parts, and register operators that construct and consume
+values of that type. Each operator provides a type rule, so a call to it
+gets the new type in its ``ty`` just like a built-in expression.
+
+TIRx provides a common foundation for all IR nodes, so new types and
+the calls that use them support structural traversal, transformation,
+equivalence checking, printing, and parsing out of the box. A library
+adds only what is specific to its extension, such as passes that lower
+the new operations to what the backend supports.
+
+What to Read Next
+-----------------
+
+- :doc:`statements` shows how expressions are used in loops, stores,
+  and other statements.
+- :doc:`operators_and_calls` covers calls to functions, operator
+  registration, and how operators define their result types.
+- :doc:`../advanced/defining_ir_extensions` walks through an extension
+  that defines a complex type, its operators, and a lowering pass.
