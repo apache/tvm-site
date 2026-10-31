@@ -196,6 +196,9 @@ adds, and the subsections below introduce them in turn:
    * - ``ir.Call``
      - A call to an operator or function
      - ``op``, ``args``, ``ty_args``, ``attrs``
+   * - ``ir.GlobalVar``
+     - A reference to a function in a module
+     - ``name_hint``
 
 .. _user-ir-var:
 
@@ -535,10 +538,9 @@ element:
 .. code-block:: python
 
    from tvm_tirx import ir
-   from tvm_tirx.script import ir as I
    from tvm_tirx.script import tirx as T
 
-   @I.ir_module
+   @T.ir_module
    class Module:
        @T.function(private=True)
        def add_one_scalar(value: T.float32) -> T.float32:
@@ -563,8 +565,9 @@ The output is:
        └── ty: PrimType(dtype=float32)
 
 The call's ``op`` is an ``ir.GlobalVar``, the module's name for the
-helper. Its type is the helper's ``FuncType``, and the call takes its
-result type from that signature.
+helper, explained in :ref:`Global Variables <ir-global-var>`. Its type is
+the helper's ``FuncType``, and the call takes its result type from that
+signature.
 
 .. note::
 

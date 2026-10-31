@@ -362,8 +362,12 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#modules">Modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-variables">Global Variables</a></li>
 </ul>
             </nav>
         </div>
@@ -377,204 +381,155 @@ document.write(`
                   
   <section id="functions-and-modules">
 <h1>Functions and Modules<a class="headerlink" href="#functions-and-modules" title="Link to this heading">#</a></h1>
-<p>In this chapter, we will introduce functions and modules as the structures
-that organize IR programs. A function combines parameters, a result type,
-and a statement body; a module collects named function definitions. Compiler
-passes use these structures to inspect a function’s interface and
-implementation and locate definitions through global references.</p>
-<section id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
-<p>We can inspect a small CPU function to see how its parameters and body
-fit together. It accepts two tensors of length <code class="docutils literal notranslate"><span class="pre">n</span></code> and writes each
-input value plus one to the output:</p>
+<p>A function describes one piece of computation: its parameters and types
+say how it is called, and its body says what it does. In many cases, a
+program needs multiple functions that interact with each other, such as a
+host function that launches device kernels. A module collects these
+functions under their names, so calls can refer to one another and passes
+can transform the whole program.</p>
+<p>In TVMScript, a module is written as a class marked with <code class="docutils literal notranslate"><span class="pre">&#64;T.ir_module</span></code>,
+with one <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> per member:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
 
 
-<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Module</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_two</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
+
+
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> parses the definition into a
-<a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.Function.html#tvm_tirx.tirx.Function" title="tvm_tirx.tirx.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">tirx.Function</span></code></a> object, which the name
-<code class="docutils literal notranslate"><span class="pre">add_one</span></code> now refers to. Its <code class="docutils literal notranslate"><span class="pre">params</span></code> field holds <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>,
-and its <code class="docutils literal notranslate"><span class="pre">body</span></code> holds the loop.</p>
-<p><code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> inherits from
-<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.BaseFunc.html#tvm_tirx.ir.BaseFunc" title="tvm_tirx.ir.BaseFunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code></a>, the common base class for
-IR function definitions. The base class provides <code class="docutils literal notranslate"><span class="pre">attrs</span></code> for named
-function properties. <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> adds the tensor program’s
-parameters, return type, and statement body.</p>
-<p>The main fields of <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> are:</p>
+<p><code class="docutils literal notranslate"><span class="pre">add_one</span></code> and <code class="docutils literal notranslate"><span class="pre">add_two</span></code> add one and two to each element of <code class="docutils literal notranslate"><span class="pre">A</span></code>.
+The rest of this chapter looks at the functions and then at how the
+module ties them together.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The runnable code in this chapter is under
+<a class="reference external" href="https://github.com/apache/tvm-tirx/tree/main/examples/ir_walkthrough">examples/ir_walkthrough</a>
+in the repository.</p>
+</div>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> has three fields of its own:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 25.0%" />
-<col style="width: 75.0%" />
+<col style="width: 20.0%" />
+<col style="width: 80.0%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Field</p></th>
-<th class="head"><p>Meaning</p></th>
+<th class="head"><p>What it holds</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">params</span></code></p></td>
-<td><p>Parameter variables in calling order.</p></td>
+<td><p>The parameter variables, in calling order. <code class="docutils literal notranslate"><span class="pre">add_one</span></code> has <code class="docutils literal notranslate"><span class="pre">A</span></code> and
+<code class="docutils literal notranslate"><span class="pre">B</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ret_type</span></code></p></td>
-<td><p>The declared return type.</p></td>
+<td><p>The type of the returned value. <code class="docutils literal notranslate"><span class="pre">add_one</span></code> returns nothing, an
+empty tuple type, and writes its result into <code class="docutils literal notranslate"><span class="pre">B</span></code> instead. A
+function that returns a value declares it with <code class="docutils literal notranslate"><span class="pre">-&gt;</span></code>, as in
+<code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">f(x:</span> <span class="pre">T.float32)</span> <span class="pre">-&gt;</span> <span class="pre">T.float32</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">body</span></code></p></td>
-<td><p>A <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for a declaration without an implementation.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">attrs</span></code></p></td>
-<td><p>An <code class="docutils literal notranslate"><span class="pre">ir.DictAttrs</span></code> containing named function properties.</p></td>
+<td><p>The statements that run when the function is called.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The loop has its own body containing the tensor store. We can print
-these nested bodies and expand the function’s return type:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
+<p>It also has the fields every <code class="docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code> shares: <code class="docutils literal notranslate"><span class="pre">attrs</span></code>, described
+below; <code class="docutils literal notranslate"><span class="pre">ty</span></code>, the function’s signature, built from its parameter and
+return types; and <code class="docutils literal notranslate"><span class="pre">loc</span></code>, its source location.</p>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">attrs</span></code> allows us to store additional attribute information about a
+function. For example, <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> locks in the symbol name of a
+public function: <code class="docutils literal notranslate"><span class="pre">add_one</span></code> is exported as <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> in the compiled
+library. <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> sets it from the Python name. A function
+marked <code class="docutils literal notranslate"><span class="pre">&#64;T.function(private=True)</span></code> has no <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> and stays
+internal to the module.</p>
+<p>In TVMScript, <code class="docutils literal notranslate"><span class="pre">T.func_attr</span></code> adds attributes in the function body, and
+the printer writes them back the same way:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"note"</span><span class="p">:</span> <span class="s2">"example"</span><span class="p">})</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">BaseFunc</span><span class="p">,</span> <span class="s2">"ret_type"</span><span class="p">)]))</span>
 </pre></div>
 </div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Function
-├── params[0]: A = Var(ty=TensorType(shape=[n], dtype=float32))
-├── params[1]: B = Var(ty=TensorType(shape=[n], dtype=float32))
-├── ret_type: TupleType
-│   └── fields: []
-└── body: SeqStmt
-    └── seq[0]: For(begin=IntImm(value=0), end=n)
-        ├── var: i = Var(ty=int32)
-        └── body: SeqStmt
-            └── seq[0]: TensorStore(dest=B, indices=[i])
-                └── value: Add
-                    ├── a: TensorLoad(source=A, indices=[i])
-                    └── b: FloatImm(value=1.0)
+<p>From Python, <code class="docutils literal notranslate"><span class="pre">with_attr</span></code> returns a new function with an attribute added
+and leaves the original unchanged:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one</span> <span class="o">=</span> <span class="n">Module</span><span class="p">[</span><span class="s2">"add_one"</span><span class="p">]</span>
+<span class="n">marked</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">with_attr</span><span class="p">(</span><span class="s2">"note"</span><span class="p">,</span> <span class="s2">"example"</span><span class="p">)</span>
+<span class="k">assert</span> <span class="s2">"note"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">add_one</span><span class="o">.</span><span class="n">attrs</span>  <span class="c1"># the original is unchanged</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">add_one.ty</span></code> stores an <code class="docutils literal notranslate"><span class="pre">ir.FuncType</span></code> describing the function’s
-signature: its parameter types and return type. We can inspect these
-types directly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">signature</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">ty</span>
-<span class="n">parameter_types</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">arg_types</span>
-<span class="n">return_type</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">ret_type</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">parameter_types</span></code> contains the tensor types of <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> in
-calling order. The entries in <code class="docutils literal notranslate"><span class="pre">add_one.params</span></code> are the variables
-themselves. <code class="docutils literal notranslate"><span class="pre">return_type</span></code> is the same type stored in
-<code class="docutils literal notranslate"><span class="pre">add_one.ret_type</span></code>: an empty tuple type, <code class="docutils literal notranslate"><span class="pre">ir.TupleType([])</span></code>, indicating
-no return value. This function writes its results into <code class="docutils literal notranslate"><span class="pre">B</span></code>.</p>
-<p>A function can also return a value explicitly. This helper adds one
-to a scalar and returns the result:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one_scalar</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">value</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>The return annotation <code class="docutils literal notranslate"><span class="pre">-&gt;</span> <span class="pre">T.float32</span></code> sets its <code class="docutils literal notranslate"><span class="pre">ret_type</span></code> to
-<code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>, and the <code class="docutils literal notranslate"><span class="pre">return</span></code> becomes an <code class="docutils literal notranslate"><span class="pre">ir.Return</span></code>
-statement in its body. The result of <code class="docutils literal notranslate"><span class="pre">add_one</span></code> goes into an output
-parameter; the result of <code class="docutils literal notranslate"><span class="pre">add_one_scalar</span></code> is a return value.</p>
-<p>So far, <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> has built a function object for us from source
-code. Compiler code can also build this kind of object directly with
-<code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code>. To focus on the function constructor, we can reuse
-the parameters and loop already stored in <code class="docutils literal notranslate"><span class="pre">add_one</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
-
-<span class="n">A</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">params</span>
-<span class="n">loop</span> <span class="o">=</span> <span class="n">add_one</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> are the IR parameter variables, and <code class="docutils literal notranslate"><span class="pre">loop</span></code> is the
-<code class="docutils literal notranslate"><span class="pre">ir.For</span></code> shown in the tree above. We can pass these objects to the
-constructor to create another function with the same computation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ir_function</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">],</span> <span class="n">loop</span><span class="p">,</span> <span class="n">ret_type</span><span class="o">=</span><span class="n">ir</span><span class="o">.</span><span class="n">TupleType</span><span class="p">([]))</span>
-</pre></div>
-</div>
-<p>The new function takes <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> as parameters and runs <code class="docutils literal notranslate"><span class="pre">loop</span></code>
-as its body. The constructor wraps this single statement in a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code>.
-<code class="docutils literal notranslate"><span class="pre">ret_type=ir.TupleType([])</span></code> specifies that the function returns no value;
-its loop writes the result to <code class="docutils literal notranslate"><span class="pre">B</span></code>. A function that returns a value needs
-its return type set through <code class="docutils literal notranslate"><span class="pre">ret_type</span></code>; the constructor does not
-infer it from the body.</p>
-<p>We will put <code class="docutils literal notranslate"><span class="pre">ir_function</span></code> in a module and compile it below. To make the
-compiled function available under the name <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code>, we set its
-<code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> attribute:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ir_function</span> <span class="o">=</span> <span class="n">ir_function</span><span class="o">.</span><span class="n">with_attr</span><span class="p">(</span><span class="s2">"global_symbol"</span><span class="p">,</span> <span class="s2">"add_one"</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">with_attr</span></code>, inherited from <code class="docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code>, returns a new function with
-this entry in <code class="docutils literal notranslate"><span class="pre">attrs</span></code>. For public TVMScript functions, <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code>
-sets <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> to the Python function name automatically.</p>
+</section>
 </section>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">#</a></h2>
-<p>A program can contain several functions that call one another.
-<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.IRModule.html#tvm_tirx.ir.IRModule" title="tvm_tirx.ir.IRModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.IRModule</span></code></a> collects their definitions so
-compiler passes can find the functions being called and transform the
-program as a whole. We can put the function we just constructed,
-<code class="docutils literal notranslate"><span class="pre">ir_function</span></code>, in a module under the name <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">"add_one"</span><span class="p">:</span> <span class="n">ir_function</span><span class="p">})</span>
+<p>A module has three main fields:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 80.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>What it holds</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">functions</span></code></p></td>
+<td><p>The module’s functions, keyed by <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">attrs</span></code></p></td>
+<td><p>Additional attribute information about the whole module, in the same
+form as a function’s <code class="docutils literal notranslate"><span class="pre">attrs</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">global_infos</span></code></p></td>
+<td><p>Reserved for special use cases that need named objects shared
+across functions. Most modules leave it empty.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">functions</span></code> is keyed by <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code>, which the next section explains.
+The module also keeps an index from names to <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> keys, which
+<code class="docutils literal notranslate"><span class="pre">Module[&quot;add_one&quot;]</span></code> uses to look up a function by name.</p>
+</section>
+<section id="global-variables">
+<span id="ir-global-var"></span><h2>Global Variables<a class="headerlink" href="#global-variables" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.GlobalVar</span></code> is an expression, listed in the
+<a class="reference internal" href="types_and_expressions.html#user-ir-expr"><span class="std std-ref">expression table</span></a>, that refers to a function in a
+module. The module’s <code class="docutils literal notranslate"><span class="pre">functions</span></code> map is keyed by <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code>: we can
+get the reference by name and look up its definition:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_ref</span> <span class="o">=</span> <span class="n">Module</span><span class="o">.</span><span class="n">get_global_var</span><span class="p">(</span><span class="s2">"add_one"</span><span class="p">)</span>
+<span class="n">add_one</span> <span class="o">=</span> <span class="n">Module</span><span class="p">[</span><span class="n">add_one_ref</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>The module’s <code class="docutils literal notranslate"><span class="pre">functions</span></code> field maps global references to function
-definitions. Each key is an <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.GlobalVar.html#tvm_tirx.ir.GlobalVar" title="tvm_tirx.ir.GlobalVar"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.GlobalVar</span></code></a>,
-and each value is a function definition whose class inherits
-<code class="docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code>. Here, that value is our <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> object,
-<code class="docutils literal notranslate"><span class="pre">ir_function</span></code>. The constructor creates a <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> named
-<code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> from the string key and associates it with this function:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">format_tree</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">functions</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Map
-├── [0][0]: GlobalVar(name_hint='add_one')
-└── [0][1]: Function
-    ├── params: Array(...)
-    └── body: SeqStmt(...)
-</pre></div>
-</div>
-<p>The map displays each entry as a key/value pair: <code class="docutils literal notranslate"><span class="pre">[0][0]</span></code> is the
-global reference and <code class="docutils literal notranslate"><span class="pre">[0][1]</span></code> is its function definition. <code class="docutils literal notranslate"><span class="pre">max_depth</span></code>
-limits the display, so <code class="docutils literal notranslate"><span class="pre">...</span></code> marks fields left unexpanded. The
-<code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> serves as a reference; the function body belongs to
-the associated <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code>. We can retrieve the reference by name,
-then use it to look up the definition:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one_ref</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">get_global_var</span><span class="p">(</span><span class="s2">"add_one"</span><span class="p">)</span>
-<span class="n">function</span> <span class="o">=</span> <span class="n">module</span><span class="p">[</span><span class="n">add_one_ref</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>The first line returns the <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> key, and the second returns
-the <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> stored under it. <code class="docutils literal notranslate"><span class="pre">module[&quot;add_one&quot;]</span></code> retrieves
-the same definition directly by name. A call can use <code class="docutils literal notranslate"><span class="pre">add_one_ref</span></code> as
-its <code class="docutils literal notranslate"><span class="pre">op</span></code> to identify this function. The call records the reference and
-its arguments; the module stores the definition that the reference
-identifies.</p>
-<p>The name <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> used in this lookup is the function’s name within
-the module. The function’s <code class="docutils literal notranslate"><span class="pre">attrs[&quot;global_symbol&quot;]</span></code> specifies its
-exported name for code generation. Both names are <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> in this
-example, but they serve these separate purposes.</p>
-<p><code class="docutils literal notranslate"><span class="pre">tvm_tirx.compile</span></code> accepts a module as well as a standalone function.
-We can compile <code class="docutils literal notranslate"><span class="pre">module</span></code> for the CPU with LLVM, then call its exported
-<code class="docutils literal notranslate"><span class="pre">add_one</span></code> function with input and output tensors:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span>
-
-<span class="n">compiled</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"llvm"</span><span class="p">)</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-<span class="n">compiled</span><span class="p">[</span><span class="s2">"add_one"</span><span class="p">](</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">compiled[&quot;add_one&quot;]</span></code> retrieves the exported function. The call reads
-<code class="docutils literal notranslate"><span class="pre">a</span></code> and writes <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">+</span> <span class="pre">1</span></code> into <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
+<p>Keeping the reference separate from the definition lets IR refer to a
+function without containing its body. For example, a <code class="docutils literal notranslate"><span class="pre">Call</span></code> whose
+<code class="docutils literal notranslate"><span class="pre">op</span></code> is a <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> calls that function, and a pass can rewrite or
+replace the definition without touching the places that refer to it.
+In practice, references between functions mostly connect host and device
+functions, such as a host function and the kernels it launches.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code>’s name is the function’s name within the module. It is
+separate from <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code>, the name a public function is exported
+under. For <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, both are <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code>; a private function has a
+module name but no exported symbol.</p>
 </section>
 </section>
 
@@ -623,8 +578,12 @@ We can compile <code class="docutils literal notranslate"><span class="pre">modu
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#modules">Modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-variables">Global Variables</a></li>
 </ul>
   </nav></div>
 

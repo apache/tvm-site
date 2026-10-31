@@ -18,220 +18,131 @@
 Functions and Modules
 =====================
 
-In this chapter, we will introduce functions and modules as the structures
-that organize IR programs. A function combines parameters, a result type,
-and a statement body; a module collects named function definitions. Compiler
-passes use these structures to inspect a function's interface and
-implementation and locate definitions through global references.
+A function describes one piece of computation: its parameters and types
+say how it is called, and its body says what it does. In many cases, a
+program needs multiple functions that interact with each other, such as a
+host function that launches device kernels. A module collects these
+functions under their names, so calls can refer to one another and passes
+can transform the whole program.
+
+In TVMScript, a module is written as a class marked with ``@T.ir_module``,
+with one ``@T.function`` per member:
+
+.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+   :language: python
+   :start-after: # [module.begin]
+   :end-before: # [module.end]
+
+``add_one`` and ``add_two`` add one and two to each element of ``A``.
+The rest of this chapter looks at the functions and then at how the
+module ties them together.
+
+.. note::
+
+   The runnable code in this chapter is under
+   `examples/ir_walkthrough <https://github.com/apache/tvm-tirx/tree/main/examples/ir_walkthrough>`_
+   in the repository.
 
 Functions
 ---------
 
-We can inspect a small CPU function to see how its parameters and body
-fit together. It accepts two tensors of length ``n`` and writes each
-input value plus one to the output:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
-   :language: python
-   :start-at: from tvm_tirx.script import tirx as T
-   :end-at:         B[i] = A[i] + 1
-
-``@T.function`` parses the definition into a
-:class:`tirx.Function <tvm_tirx.tirx.Function>` object, which the name
-``add_one`` now refers to. Its ``params`` field holds ``A`` and ``B``,
-and its ``body`` holds the loop.
-
-``tirx.Function`` inherits from
-:class:`ir.BaseFunc <tvm_tirx.ir.BaseFunc>`, the common base class for
-IR function definitions. The base class provides ``attrs`` for named
-function properties. ``tirx.Function`` adds the tensor program's
-parameters, return type, and statement body.
-
-The main fields of ``tirx.Function`` are:
+A ``tirx.Function`` has three fields of its own:
 
 .. list-table::
    :header-rows: 1
-   :widths: 25 75
+   :widths: 20 80
 
    * - Field
-     - Meaning
+     - What it holds
    * - ``params``
-     - Parameter variables in calling order.
+     - The parameter variables, in calling order. ``add_one`` has ``A`` and
+       ``B``.
    * - ``ret_type``
-     - The declared return type.
+     - The type of the returned value. ``add_one`` returns nothing, an
+       empty tuple type, and writes its result into ``B`` instead. A
+       function that returns a value declares it with ``->``, as in
+       ``def f(x: T.float32) -> T.float32``.
    * - ``body``
-     - A ``SeqStmt``, or ``None`` for a declaration without an implementation.
-   * - ``attrs``
-     - An ``ir.DictAttrs`` containing named function properties.
+     - The statements that run when the function is called.
 
-The loop has its own body containing the tensor store. We can print
-these nested bodies and expand the function's return type:
+It also has the fields every ``ir.BaseFunc`` shares: ``attrs``, described
+below; ``ty``, the function's signature, built from its parameter and
+return types; and ``loc``, its source location.
 
-.. code-block:: python
+Attributes
+~~~~~~~~~~
 
-   from tvm_tirx import ir
+``attrs`` allows us to store additional attribute information about a
+function. For example, ``global_symbol`` locks in the symbol name of a
+public function: ``add_one`` is exported as ``"add_one"`` in the compiled
+library. ``@T.function`` sets it from the Python name. A function
+marked ``@T.function(private=True)`` has no ``global_symbol`` and stays
+internal to the module.
 
-   print(ir.format_tree(add_one, expand=[(ir.BaseFunc, "ret_type")]))
+In TVMScript, ``T.func_attr`` adds attributes in the function body, and
+the printer writes them back the same way:
 
-The output is:
+.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+   :language: python
+   :start-after: # [func_attr.begin]
+   :end-before: # [func_attr.end]
+   :dedent: 4
 
-.. code-block:: text
+From Python, ``with_attr`` returns a new function with an attribute added
+and leaves the original unchanged:
 
-   Function
-   ├── params[0]: A = Var(ty=TensorType(shape=[n], dtype=float32))
-   ├── params[1]: B = Var(ty=TensorType(shape=[n], dtype=float32))
-   ├── ret_type: TupleType
-   │   └── fields: []
-   └── body: SeqStmt
-       └── seq[0]: For(begin=IntImm(value=0), end=n)
-           ├── var: i = Var(ty=int32)
-           └── body: SeqStmt
-               └── seq[0]: TensorStore(dest=B, indices=[i])
-                   └── value: Add
-                       ├── a: TensorLoad(source=A, indices=[i])
-                       └── b: FloatImm(value=1.0)
-
-``add_one.ty`` stores an ``ir.FuncType`` describing the function's
-signature: its parameter types and return type. We can inspect these
-types directly:
-
-.. code-block:: python
-
-   signature = add_one.ty
-   parameter_types = signature.arg_types
-   return_type = signature.ret_type
-
-``parameter_types`` contains the tensor types of ``A`` and ``B`` in
-calling order. The entries in ``add_one.params`` are the variables
-themselves. ``return_type`` is the same type stored in
-``add_one.ret_type``: an empty tuple type, ``ir.TupleType([])``, indicating
-no return value. This function writes its results into ``B``.
-
-A function can also return a value explicitly. This helper adds one
-to a scalar and returns the result:
-
-.. code-block:: python
-
-   @T.function(private=True)
-   def add_one_scalar(value: T.float32) -> T.float32:
-       return value + 1
-
-The return annotation ``-> T.float32`` sets its ``ret_type`` to
-``ir.PrimType("float32")``, and the ``return`` becomes an ``ir.Return``
-statement in its body. The result of ``add_one`` goes into an output
-parameter; the result of ``add_one_scalar`` is a return value.
-
-So far, ``@T.function`` has built a function object for us from source
-code. Compiler code can also build this kind of object directly with
-``tirx.Function``. To focus on the function constructor, we can reuse
-the parameters and loop already stored in ``add_one``:
-
-.. code-block:: python
-
-   from tvm_tirx import ir, tirx
-
-   A, B = add_one.params
-   loop = add_one.body[0]
-
-``A`` and ``B`` are the IR parameter variables, and ``loop`` is the
-``ir.For`` shown in the tree above. We can pass these objects to the
-constructor to create another function with the same computation:
-
-.. code-block:: python
-
-   ir_function = tirx.Function([A, B], loop, ret_type=ir.TupleType([]))
-
-The new function takes ``A`` and ``B`` as parameters and runs ``loop``
-as its body. The constructor wraps this single statement in a ``SeqStmt``.
-``ret_type=ir.TupleType([])`` specifies that the function returns no value;
-its loop writes the result to ``B``. A function that returns a value needs
-its return type set through ``ret_type``; the constructor does not
-infer it from the body.
-
-We will put ``ir_function`` in a module and compile it below. To make the
-compiled function available under the name ``"add_one"``, we set its
-``global_symbol`` attribute:
-
-.. code-block:: python
-
-   ir_function = ir_function.with_attr("global_symbol", "add_one")
-
-``with_attr``, inherited from ``ir.BaseFunc``, returns a new function with
-this entry in ``attrs``. For public TVMScript functions, ``@T.function``
-sets ``global_symbol`` to the Python function name automatically.
+.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+   :language: python
+   :start-after: # [with_attr.begin]
+   :end-before: # [with_attr.end]
 
 Modules
 -------
 
-A program can contain several functions that call one another.
-:class:`ir.IRModule <tvm_tirx.ir.IRModule>` collects their definitions so
-compiler passes can find the functions being called and transform the
-program as a whole. We can put the function we just constructed,
-``ir_function``, in a module under the name ``"add_one"``:
+A module has three main fields:
 
-.. code-block:: python
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
 
-   module = ir.IRModule({"add_one": ir_function})
+   * - Field
+     - What it holds
+   * - ``functions``
+     - The module's functions, keyed by ``GlobalVar``.
+   * - ``attrs``
+     - Additional attribute information about the whole module, in the same
+       form as a function's ``attrs``.
+   * - ``global_infos``
+     - Reserved for special use cases that need named objects shared
+       across functions. Most modules leave it empty.
 
-The module's ``functions`` field maps global references to function
-definitions. Each key is an :class:`ir.GlobalVar <tvm_tirx.ir.GlobalVar>`,
-and each value is a function definition whose class inherits
-``ir.BaseFunc``. Here, that value is our ``tirx.Function`` object,
-``ir_function``. The constructor creates a ``GlobalVar`` named
-``"add_one"`` from the string key and associates it with this function:
+``functions`` is keyed by ``GlobalVar``, which the next section explains.
+The module also keeps an index from names to ``GlobalVar`` keys, which
+``Module["add_one"]`` uses to look up a function by name.
 
-.. code-block:: python
+.. _ir-global-var:
 
-   print(ir.format_tree(module.functions, max_depth=3))
+Global Variables
+----------------
 
-The output is:
+``ir.GlobalVar`` is an expression, listed in the
+:ref:`expression table <user-ir-expr>`, that refers to a function in a
+module. The module's ``functions`` map is keyed by ``GlobalVar``: we can
+get the reference by name and look up its definition:
 
-.. code-block:: text
+.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+   :language: python
+   :start-after: # [global_var.begin]
+   :end-before: # [global_var.end]
 
-   Map
-   ├── [0][0]: GlobalVar(name_hint='add_one')
-   └── [0][1]: Function
-       ├── params: Array(...)
-       └── body: SeqStmt(...)
+Keeping the reference separate from the definition lets IR refer to a
+function without containing its body. For example, a ``Call`` whose
+``op`` is a ``GlobalVar`` calls that function, and a pass can rewrite or
+replace the definition without touching the places that refer to it.
+In practice, references between functions mostly connect host and device
+functions, such as a host function and the kernels it launches.
 
-The map displays each entry as a key/value pair: ``[0][0]`` is the
-global reference and ``[0][1]`` is its function definition. ``max_depth``
-limits the display, so ``...`` marks fields left unexpanded. The
-``GlobalVar`` serves as a reference; the function body belongs to
-the associated ``tirx.Function``. We can retrieve the reference by name,
-then use it to look up the definition:
-
-.. code-block:: python
-
-   add_one_ref = module.get_global_var("add_one")
-   function = module[add_one_ref]
-
-The first line returns the ``GlobalVar`` key, and the second returns
-the ``tirx.Function`` stored under it. ``module["add_one"]`` retrieves
-the same definition directly by name. A call can use ``add_one_ref`` as
-its ``op`` to identify this function. The call records the reference and
-its arguments; the module stores the definition that the reference
-identifies.
-
-The name ``"add_one"`` used in this lookup is the function's name within
-the module. The function's ``attrs["global_symbol"]`` specifies its
-exported name for code generation. Both names are ``"add_one"`` in this
-example, but they serve these separate purposes.
-
-``tvm_tirx.compile`` accepts a module as well as a standalone function.
-We can compile ``module`` for the CPU with LLVM, then call its exported
-``add_one`` function with input and output tensors:
-
-.. code-block:: python
-
-   import torch
-
-   import tvm_tirx
-
-   compiled = tvm_tirx.compile(module, target="llvm")
-   a = torch.arange(10, dtype=torch.float32)
-   b = torch.empty(a.shape, dtype=a.dtype)
-   compiled["add_one"](a, b)
-
-``compiled["add_one"]`` retrieves the exported function. The call reads
-``a`` and writes ``a + 1`` into ``b``.
+The ``GlobalVar``'s name is the function's name within the module. It is
+separate from ``global_symbol``, the name a public function is exported
+under. For ``add_one``, both are ``"add_one"``; a private function has a
+module name but no exported symbol.
