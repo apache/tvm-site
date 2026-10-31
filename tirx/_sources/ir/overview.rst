@@ -248,8 +248,8 @@ What to Read Next
   shapes are represented.
 - :doc:`statements` covers how a body binds variables, writes tensors,
   branches, and loops.
-- :doc:`operators_and_calls` introduces registered operators and function
-  calls.
+- :doc:`operators_calls_and_regions` covers operators, the main extension
+  point, and how calls and regions apply them.
 - :doc:`functions_and_modules` shows how functions are defined and organized
   in modules.
 - :doc:`printing_and_parsing` covers utilities for parsing and printing

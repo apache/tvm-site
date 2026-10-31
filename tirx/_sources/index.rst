@@ -50,7 +50,7 @@ Table of Contents
    ir/overview
    ir/types_and_expressions
    ir/statements
-   ir/operators_and_calls
+   ir/operators_calls_and_regions
    ir/functions_and_modules
    ir/printing_and_parsing
 

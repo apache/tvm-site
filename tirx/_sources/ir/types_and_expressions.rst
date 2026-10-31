@@ -569,7 +569,7 @@ result type from that signature.
 .. note::
 
    Operators are the main extension point of TIRx.
-   :doc:`operators_and_calls` covers how operators are registered and
+   :doc:`operators_calls_and_regions` covers how operators are registered and
    how their attributes define type rules, effects, and lowering.
 
 .. _user-ir-dependent-type:

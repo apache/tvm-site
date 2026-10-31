@@ -450,7 +450,7 @@ statements inside the region.
    Regions and calls are the two ways operators extend TIRx: a call
    applies an operator as an expression, and a region applies one as a
    statement.
-   :doc:`operators_and_calls` covers how operators are registered and
+   :doc:`operators_calls_and_regions` covers how operators are registered and
    how calls and regions use them.
    :ref:`Region Syntax <tvmscript-region-syntax>` explains how TVMScript
    writes a region, and :doc:`../advanced/defining_ir_extensions` walks
