@@ -66,27 +66,54 @@ A ``tirx.Function`` has three fields of its own:
      - The statements that run when the function is called.
 
 It also has the fields every ``ir.BaseFunc`` shares: ``attrs``, described
-below; ``ty``, the function's signature, built from its parameter and
-return types; and ``loc``, its source location.
+below; ``ty``, the function's signature; and ``loc``, its source location.
+``ty`` is built from the parameter and return types:
+
+.. literalinclude:: ../../examples/ir_guides/functions_and_modules.py
+   :language: python
+   :start-after: # [ty.begin]
+   :end-before: # [ty.end]
+
+The output is:
+
+.. code-block:: text
+
+   T.Func([T.Tensor((n,), T.float32), T.Tensor((n,), T.float32)], T.Tuple())
+
+The two tensor parameters come first, and ``T.Tuple()`` is the empty
+return type.
 
 Attributes
 ~~~~~~~~~~
 
-``attrs`` allows us to store additional attribute information about a
-function. For example, ``global_symbol`` locks in the symbol name of a
-public function: ``add_one`` is exported as ``"add_one"`` in the compiled
-library. ``@T.function`` sets it from the Python name. A function
-marked ``@T.function(private=True)`` has no ``global_symbol`` and stays
-internal to the module.
+``attrs`` stores additional information about a function. The most
+common attribute is ``global_symbol``, the name a public function is
+exported under in the compiled library. ``@T.function`` sets it from the
+Python name, so ``add_one`` is exported as ``"add_one"``; a function marked
+``@T.function(private=True)`` has no ``global_symbol`` and stays internal
+to the module.
 
-In TVMScript, ``T.func_attr`` adds attributes in the function body, and
-the printer writes them back the same way:
+In TVMScript, ``T.func_attr`` adds attributes in the function body:
 
 .. literalinclude:: ../../examples/ir_guides/functions_and_modules.py
    :language: python
    :start-after: # [func_attr.begin]
    :end-before: # [func_attr.end]
    :dedent: 4
+
+The printer writes them back the same way. ``add_one.script()`` gives:
+
+.. code-block:: python
+
+   from __future__ import annotations
+
+   # from tvm_tirx.script import tirx as T
+
+   @T.function
+   def add_one[n](A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+       T.func_attr({"note": "example"})
+       for i in range(n):
+           B[i] = A[i] + T.float32(1.0)
 
 From Python, ``with_attr`` returns a new function with an attribute added
 and leaves the original unchanged:
@@ -142,7 +169,23 @@ replace the definition without touching the places that refer to it.
 In practice, references between functions mostly connect host and device
 functions, such as a host function and the kernels it launches.
 
-The ``GlobalVar``'s name is the function's name within the module. It is
-separate from ``global_symbol``, the name a public function is exported
-under. For ``add_one``, both are ``"add_one"``; a private function has a
-module name but no exported symbol.
+A function has two names, which coincide for ``add_one``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 42 16 20
+
+   * - Name
+     - Meaning
+     - ``add_one``
+     - Private function
+   * - ``GlobalVar`` name
+     - The function's name within the module.
+     - ``"add_one"``
+     - Present
+   * - ``global_symbol``
+     - The name a public function is exported under.
+     - ``"add_one"``
+     - Absent
+
+A private function has a module name but no exported symbol.

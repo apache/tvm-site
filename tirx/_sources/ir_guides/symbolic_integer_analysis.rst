@@ -106,10 +106,14 @@ The output is:
 
    False
 
-A ``False`` result means the analyzer could not establish the condition, not
-that the condition is false. Here the analyzer knows nothing about ``i``. As
-far as it can tell, ``i`` could be any integer. The bound depends on the
-loop, and the analyzer needs that information as a fact.
+Here the analyzer knows nothing about ``i``. As far as it can tell, ``i``
+could be any integer. The bound depends on the loop, and the analyzer needs
+that information as a fact.
+
+.. note::
+
+   A ``False`` result means the analyzer could not establish the condition,
+   not that the condition is false.
 
 Constraint Context
 ------------------
@@ -163,21 +167,44 @@ The output is:
 
 Inside the branch, the analyzer proves ``i % 4 < 3``. Synchronizing with
 ``loop_context`` again models leaving the branch, and the fact no longer
-applies. An analyzer uses only the facts of the context it was last
-synchronized with, which lets the same analyzer serve different points in a
-program.
+applies.
+
+.. note::
+
+   An analyzer uses only the facts of the context it was last synchronized
+   with, which lets the same analyzer serve different points in a program.
 
 Structural Walk and Map with Constraint Context
 -----------------------------------------------
 
 Building contexts by hand works for one query, but a pass over a whole
 function would have to rebuild the facts at every node. The structural
-utilities can collect them for us.
-:py:func:`tirx.structural_walk_with_constraint_context <tvm_tirx.tirx.structural.structural_walk_with_constraint_context>`
-and
-:py:func:`tirx.structural_map_with_constraint_context <tvm_tirx.tirx.structural.structural_map_with_constraint_context>`
-work like walk and map, and also pass the facts valid at each node to our
-callback.
+utilities in ``tvm_tirx.tirx`` **collect the facts for us**: each works like
+its TVM-FFI counterpart and also gives our callback the facts valid at each
+node.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 46 22 32
+
+   * - Utility
+     - Works like
+     - Facts reach the callback as
+   * - :py:func:`structural_walk_with_constraint_context <tvm_tirx.tirx.structural.structural_walk_with_constraint_context>`
+     - ``structural_walk``
+     - Callback is ``f(value, constraints)``
+   * - :py:func:`structural_map_with_constraint_context <tvm_tirx.tirx.structural.structural_map_with_constraint_context>`
+     - ``structural_map``
+     - Callback is ``f(value, constraints)``
+   * - :py:func:`structural_visit_with_constraint_context <tvm_tirx.tirx.structural.structural_visit_with_constraint_context>`
+     - ``structural_visit``
+     - ``visitor.constraints``
+   * - :py:func:`structural_mutate_with_constraint_context <tvm_tirx.tirx.structural.structural_mutate_with_constraint_context>`
+     - ``structural_mutate``
+     - ``mutator.constraints``
+
+Here ``constraints`` is a ``ConstraintContext``, which our callback reads but
+must not add facts to.
 
 Compilers often insert bounds checks to stay safe, such as the
 ``if i // 4 < n`` below. Here the loop already guarantees the condition, so
@@ -227,12 +254,6 @@ The output is:
    def add_one_guarded[n](A: T.Tensor((n, 4), T.float32), B: T.Tensor((n, 4), T.float32)):
        for i in range(n * 4):
            B[i // 4, i % 4] = A[i // 4, i % 4] + T.float32(1.0)
-
-Visit and mutate variants,
-:py:func:`structural_visit_with_constraint_context <tvm_tirx.tirx.structural.structural_visit_with_constraint_context>`
-and
-:py:func:`structural_mutate_with_constraint_context <tvm_tirx.tirx.structural.structural_mutate_with_constraint_context>`,
-provide the same facts to callbacks that control their own traversal.
 
 A transformation like ``remove_redundant_guard`` is an ordinary function, and
 we can call it directly. When it helps, we can also wrap it as a pass with

@@ -23,16 +23,19 @@ to every stage of compilation, not only its input and output. By providing
 a consistent way to inspect and modify programs at each stage, TIRx makes
 it easier to understand and customize the compiler.
 
-TIRx represents a program as a tree of intermediate representation (IR)
-nodes, such as functions, statements, and values. The tree is similar to the
-abstract syntax tree (AST) of Python code, but in a more structured, typed
-form. A compiler pipeline analyzes and transforms this tree step by step
-to produce target code. IR objects are immutable: an analysis reads the
-tree, and a transformation builds a new tree instead of modifying the
-existing one, sharing the parts that did not change. The
-``tvm_tirx.script`` interfaces print the IR as TVMScript, a Python-based
-notation for tensor programs. For example, this TVMScript definition
-describes an add-one computation on a GPU:
+TIRx represents a program as a **tree of intermediate representation (IR)
+nodes**, such as functions, statements, and values. The tree is similar to
+the abstract syntax tree (AST) of Python code, but in a more structured,
+typed form. A compiler pipeline analyzes and transforms this tree step by
+step to produce target code.
+
+IR objects are **immutable**: an analysis reads the tree, and a
+transformation builds a new tree instead of modifying the existing one,
+sharing the parts that did not change.
+
+The ``tvm_tirx.script`` interfaces print the IR as TVMScript, a Python-based notation for tensor programs. For
+example, this TVMScript definition describes an add-one computation on a
+GPU:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cuda.py
    :language: python
@@ -223,24 +226,38 @@ The following diagram shows the class hierarchy of the IR nodes:
    │   └── ir.CallSiteLoc       Callee and caller locations
    └── ir.IRModule              Global function definitions
 
-These IR nodes are designed to be generic, so that new IR variants can be built
-on top of them, and their namespaces show their roles. The ``ir`` namespace
-holds the common nodes shared by all variants. Within it, ``ir.prim`` (shown as
-``prim``) holds primitive expressions, which compute scalar or vector values of
-a primitive type (:py:class:`ir.PrimType <tvm_tirx.ir.PrimType>`), such as
-``float32`` or ``int32``. These expressions concisely represent dynamic indices
-and element computations, such as ``A[i] + 1`` in ``add_one``. The ``tirx``
-namespace builds on ``ir`` with the types and operations specific to tensor
-programs, such as ``tirx.Function`` and ``tirx.TensorType``. More generally,
-TIRx is designed for extension: downstream projects can build on the IR in the
-same way, registering new operators, defining new types, and adding their own
-TVMScript namespaces from Python, C++, or Rust, while reusing TIRx as a
-foundation.
+These IR nodes are designed to be generic, so that new IR variants can be
+built on top of them, and their namespaces show their roles:
 
-IR nodes can also carry source locations
-(:py:class:`ir.Location <tvm_tirx.ir.Location>`). For example, an expression's
-``loc`` field records where it came from in the source, so a diagnostic
-can point back to the original code.
+.. list-table::
+   :header-rows: 1
+   :widths: 15 85
+
+   * - Namespace
+     - Holds
+   * - ``ir``
+     - The common nodes shared by all variants.
+   * - ``ir.prim``
+     - Primitive expressions (shown as ``prim``), which compute scalar or
+       vector values of a primitive type
+       (:py:class:`ir.PrimType <tvm_tirx.ir.PrimType>`), such as ``float32``
+       or ``int32``. They concisely represent dynamic indices and element
+       computations, such as ``A[i] + 1`` in ``add_one``.
+   * - ``tirx``
+     - The types and operations specific to tensor programs, built on
+       ``ir``, such as ``tirx.Function`` and ``tirx.TensorType``.
+
+TIRx is **designed for extension**: downstream projects build on the IR
+the same way ``tirx`` builds on ``ir``, registering new operators, defining new types, and adding
+their own TVMScript namespaces from Python, C++, or Rust, while reusing TIRx
+as a foundation.
+
+.. note::
+
+   IR nodes can also carry source locations
+   (:py:class:`ir.Location <tvm_tirx.ir.Location>`). For example, an
+   expression's ``loc`` field records where it came from in the source, so
+   a diagnostic can point back to the original code.
 
 How This Guide Is Organized
 ---------------------------
@@ -263,8 +280,8 @@ and the second covers the tools we use to inspect and transform it.
 
 **Working with IR**
 
-- :doc:`structural_utilities` introduces structural walks, maps, visitors, and
-  mutators for inspecting and rewriting IR.
+- :doc:`structural_utilities` introduces structural walks, maps, visitors,
+  mutators, and equality for traversing, rewriting, and comparing IR.
 - :doc:`symbolic_integer_analysis` covers symbolic analysis and simplification
   of integer indices and bounds, which compiler analyses and transformations
   can use.

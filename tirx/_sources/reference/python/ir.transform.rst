@@ -47,13 +47,12 @@ the module before the first pass and after the last one:
    from tvm_tirx import ir, tirx
    from tvm_tirx.ir.transform import PassContext, Sequential
    from tvm_tirx.ir.transform.instrument import PassPrintingInstrument
-   from tvm_tirx.script import ir as I
    from tvm_tirx.script import tirx as T
 
    n = T.dynamic("n")
 
 
-   @I.ir_module
+   @T.ir_module
    class Module:
        @T.function
        def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
@@ -108,10 +107,6 @@ The output is:
                B[i] = A[i] + T.float32(1.0)
 
 ``Module`` itself is unchanged, and ``result`` holds the transformed module.
-Inside a :py:class:`Sequential`, a pass runs only when its optimization level
-is at most the context's ``opt_level`` or its name is in ``required_pass``,
-and never when its name is in ``disabled_pass``. Calling a pass directly, as
-in ``specialize(Module)``, always runs it.
 
 Classes
 -------

@@ -19,7 +19,7 @@
 Operators, Calls, and Regions
 =============================
 
-This guide introduces **operators**, the main extension point of TIRx.
+This chapter introduces **operators**, the main extension point of TIRx.
 An operator, ``ir.Op``, names a computation such as sigmoid or a
 thread-index read, and carries attributes that tell the compiler how to
 treat it. A call applies an operator as an expression, and a region

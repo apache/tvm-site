@@ -15,12 +15,10 @@
     specific language governing permissions and limitations
     under the License.
 
-.. _statements-and-control-flow:
-
 Statements
 ==========
 
-This guide introduces **statements**, the IR nodes that describe
+This chapter introduces **statements**, the IR nodes that describe
 actions: binding a value to a variable, writing to a tensor, repeating
 work in a loop, or choosing between branches. TIRx provides a generic
 set of statements that appear in most high-level kernel programs.
@@ -450,9 +448,3 @@ statements inside the region.
    Regions and calls are the two ways operators extend TIRx: a call
    applies an operator as an expression, and a region applies one as a
    statement.
-   :doc:`operators_calls_and_regions` covers how operators are registered and
-   how calls and regions use them.
-   :ref:`Region Syntax <tvmscript-region-syntax>` explains how TVMScript
-   writes a region, and :doc:`../advanced/defining_ir_extensions` walks
-   through a complete extension with its own type, operators, and
-   lowering pass.

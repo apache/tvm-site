@@ -625,6 +625,31 @@ payload carries the result back to us. Here we look for the first write:</p>
 <p>The walk ends at the first write, and <code class="docutils literal notranslate"><span class="pre">found.value</span></code> holds it. A walk that
 finishes without an interrupt returns <code class="docutils literal notranslate"><span class="pre">None</span></code>, so the result also tells us
 whether anything was found.</p>
+<p>In summary, a walk callback steers the traversal with its return value:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 65.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Return value</p></th>
+<th class="head"><p>Effect on the walk</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Continue.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WalkResult.SKIP</span></code></p></td>
+<td><p>In pre-order, do not descend into the node’s children. In
+post-order, the children are already visited, so it has no effect.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">VisitInterrupt(payload)</span></code></p></td>
+<td><p>Stop the whole walk; <code class="docutils literal notranslate"><span class="pre">structural_walk</span></code> returns the interrupt.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 </section>
 <section id="structural-map">
@@ -660,10 +685,14 @@ a constant:</p>
 </div>
 <p>Every occurrence of <code class="docutils literal notranslate"><span class="pre">n</span></code>, in both parameter shapes and the loop bound,
 becomes <code class="docutils literal notranslate"><span class="pre">128</span></code>. Because IR is immutable, the map returns a new function
-and leaves <code class="docutils literal notranslate"><span class="pre">add_one</span></code> unchanged. Note that a map callback must always
-return a node, even when it has nothing to change: returning its input
-keeps that node as it is, which is what <code class="docutils literal notranslate"><span class="pre">specialize</span></code> does for every other
-variable.</p>
+and leaves <code class="docutils literal notranslate"><span class="pre">add_one</span></code> unchanged.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A map callback must always return a node, even when it has nothing to
+change: returning its input keeps that node as it is, which is what
+<code class="docutils literal notranslate"><span class="pre">specialize</span></code> does for every other variable. Returning <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+<code class="docutils literal notranslate"><span class="pre">WalkResult.SKIP</span></code>, or a <code class="docutils literal notranslate"><span class="pre">VisitInterrupt</span></code> raises a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
+</div>
 <p>Immutability also keeps rewrites cheap: a map does not copy the whole
 program. It rebuilds only the nodes on the path from each replacement up to
 the root, and the new program shares every unchanged part with the
@@ -672,12 +701,10 @@ or compare.</p>
 </section>
 <section id="structural-equality-and-hashing">
 <h2>Structural Equality and Hashing<a class="headerlink" href="#structural-equality-and-hashing" title="Link to this heading">#</a></h2>
-<p>Once we can rewrite programs, we need a way to check the result. To test a
-transformation, we write down the program we expect and compare it with the
-one the transformation produced. The two programs are built separately, so
-they are different objects even when they describe the same computation,
-and comparing them by identity cannot work. Instead, we compare them by
-structure. Let’s build the same function twice with a small helper:</p>
+<p>To test a transformation, we compare its result with a program we write
+down ourselves. The two are different objects even when they describe the
+same computation, so we compare them <strong>by structure</strong>, not by identity.
+Let’s build the same function twice with a small helper:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">make_add</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
 
@@ -708,9 +735,12 @@ gives them the same hash. Each call to <code class="docutils literal notranslate
 <code class="docutils literal notranslate"><span class="pre">n</span></code>, <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, and <code class="docutils literal notranslate"><span class="pre">i</span></code>. The comparison matches each variable defined
 in one program with its counterpart in the other, so these different
 variable objects do not make the programs unequal.</p>
-<p>A variable that is not defined anywhere in the compared values is free and
-has no definition to match. By default, a free variable is equal only to
-itself. <code class="docutils literal notranslate"><span class="pre">map_free_vars=True</span></code> pairs free variables up as well:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A variable that is not defined anywhere in the compared values is
+<strong>free</strong> and has no definition to match. By default, a free variable is
+equal only to itself. <code class="docutils literal notranslate"><span class="pre">map_free_vars=True</span></code> pairs free variables up as
+well:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">),</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_equal</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_equal</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">map_free_vars</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
@@ -720,6 +750,9 @@ itself. <code class="docutils literal notranslate"><span class="pre">map_free_va
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>False
 True
 </pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">+</span> <span class="pre">1</span></code> differ by default; with the flag, <code class="docutils literal notranslate"><span class="pre">x</span></code> pairs
+with <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p>
 </div>
 <p>In a test, we usually want more than a yes-or-no answer.
 <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.assert_structural_equal.html#tvm_tirx.ir.assert_structural_equal" title="tvm_tirx.ir.assert_structural_equal"><code class="xref py py-func docutils literal notranslate"><span class="pre">ir.assert_structural_equal</span></code></a>
@@ -762,52 +795,61 @@ deduplicate equal programs:</p>
 </section>
 <section id="definitions-and-uses">
 <h2>Definitions and Uses<a class="headerlink" href="#definitions-and-uses" title="Link to this heading">#</a></h2>
-<p>A variable, represented by <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Var_class.html#tvm_tirx.ir.Var" title="tvm_tirx.ir.Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.Var</span></code></a>, can
-appear in a program for one of two purposes. A <strong>definition site</strong>
-introduces the variable, and a <strong>use site</strong> reads its value. In
-<code class="docutils literal notranslate"><span class="pre">add_one</span></code>, the parameters are the definition sites of <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, and
-the length <code class="docutils literal notranslate"><span class="pre">n</span></code>, and the loop is the definition site of <code class="docutils literal notranslate"><span class="pre">i</span></code>. The loop
-bound <code class="docutils literal notranslate"><span class="pre">range(n)</span></code> is a use site of <code class="docutils literal notranslate"><span class="pre">n</span></code>, and <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code>
-contains use sites of <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, and <code class="docutils literal notranslate"><span class="pre">i</span></code>. Each variable has exactly
-one definition site and can have any number of use sites.</p>
-<p>In the IR, every site refers to the same <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code> object. Many tasks need
-to tell the two purposes apart. To rename <code class="docutils literal notranslate"><span class="pre">i</span></code>, we create the new variable
-once at its definition site and point every use site at it. To find an
-unused variable, we look for a definition site with no use sites. To check
-whether two programs are the same, we match each definition site in one
-with its counterpart in the other. The variable object alone does not say
-which purpose it serves at a given site, but its position in the program
-does.</p>
+<p>A variable (<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Var_class.html#tvm_tirx.ir.Var" title="tvm_tirx.ir.Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.Var</span></code></a>) appears in a program in
+two roles: a <strong>definition site</strong> introduces it, and a <strong>use site</strong> reads
+it. In <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, the parameters define <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, and <code class="docutils literal notranslate"><span class="pre">n</span></code>, and the
+loop defines <code class="docutils literal notranslate"><span class="pre">i</span></code>; <code class="docutils literal notranslate"><span class="pre">range(n)</span></code> and <code class="docutils literal notranslate"><span class="pre">B[i]</span> <span class="pre">=</span> <span class="pre">A[i]</span> <span class="pre">+</span> <span class="pre">1</span></code> use them. Each
+variable has one definition site and any number of use sites.</p>
+<p><strong>Every site refers to the same ir.Var object</strong>, so the object alone cannot
+tell us its role; its position can. Renaming, finding unused variables, and
+comparing programs depend on that position.</p>
 <p>TIRx IR nodes use their structural hooks to mark which of their fields are
 definition sites. As the utilities traverse the program, they report the
 role at each position as a <strong>definition region kind</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">NONE</span></code> marks a use site, such as <code class="docutils literal notranslate"><span class="pre">n</span></code> in <code class="docutils literal notranslate"><span class="pre">range(n)</span></code> and <code class="docutils literal notranslate"><span class="pre">A</span></code>,
-<code class="docutils literal notranslate"><span class="pre">B</span></code>, and <code class="docutils literal notranslate"><span class="pre">i</span></code> in the body.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code> defines exactly the variable at the site, such as the
-loop variable <code class="docutils literal notranslate"><span class="pre">i</span></code>. A <code class="docutils literal notranslate"><span class="pre">Bind</span></code> statement defines its variable the same
-way.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code> defines every variable in the site by matching,
-including those in its type.</p></li>
-</ul>
-<p>A <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code> site is a pattern that is matched against the values
-passed in. In <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, the parameter <code class="docutils literal notranslate"><span class="pre">A:</span> <span class="pre">T.Tensor((n,),</span> <span class="pre">T.float32)</span></code>
-is matched against the tensor passed for <code class="docutils literal notranslate"><span class="pre">A</span></code>. This defines both <code class="docutils literal notranslate"><span class="pre">A</span></code> and
-its length <code class="docutils literal notranslate"><span class="pre">n</span></code>, so <code class="docutils literal notranslate"><span class="pre">n</span></code> needs no separate declaration. A variable can
-appear more than once in a pattern. The first appearance defines it, and
-each later appearance adds a constraint that is checked at runtime. Here,
-<code class="docutils literal notranslate"><span class="pre">n</span></code> also appears in <code class="docutils literal notranslate"><span class="pre">B</span></code>’s shape, so <code class="docutils literal notranslate"><span class="pre">B</span></code> must have the same length.
-When we call <code class="docutils literal notranslate"><span class="pre">add_one</span></code> with an <code class="docutils literal notranslate"><span class="pre">A</span></code> of length 100, <code class="docutils literal notranslate"><span class="pre">n</span></code> is bound to
-100, and passing a <code class="docutils literal notranslate"><span class="pre">B</span></code> of length 50 raises an error.</p>
-<p>Importantly, the structural utilities are themselves aware of definitions
-and uses. When <a class="reference internal" href="../reference/python/generated/tvm_ffi.structural_map.html#tvm_ffi.structural_map" title="tvm_ffi.structural_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">structural_map</span></code></a> rewrites
-the type of a variable at its definition site, it creates a new variable
-with the new type and remaps every use site to it. For example, replacing
-<code class="docutils literal notranslate"><span class="pre">n</span></code> with 128 in <code class="docutils literal notranslate"><span class="pre">add_one</span></code> changes the type of <code class="docutils literal notranslate"><span class="pre">A</span></code> from
-<code class="docutils literal notranslate"><span class="pre">T.Tensor((n,),</span> <span class="pre">T.float32)</span></code> to <code class="docutils literal notranslate"><span class="pre">T.Tensor((128,),</span> <span class="pre">T.float32)</span></code>, so the
-result has a new <code class="docutils literal notranslate"><span class="pre">A</span></code>, and <code class="docutils literal notranslate"><span class="pre">A[i]</span></code> in the body refers to that new <code class="docutils literal notranslate"><span class="pre">A</span></code>.
-Our callback only replaced <code class="docutils literal notranslate"><span class="pre">n</span></code>; the mapper kept every definition and its
-uses consistent.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Kind</p></th>
+<th class="head"><p>Meaning</p></th>
+<th class="head"><p>In <code class="docutils literal notranslate"><span class="pre">add_one</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NONE</span></code></p></td>
+<td><p>A use site.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">n</span></code> in <code class="docutils literal notranslate"><span class="pre">range(n)</span></code>; <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, and <code class="docutils literal notranslate"><span class="pre">i</span></code> in the body</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code></p></td>
+<td><p>Defines exactly the variable at the site.</p></td>
+<td><p>The loop variable <code class="docutils literal notranslate"><span class="pre">i</span></code>; a <code class="docutils literal notranslate"><span class="pre">Bind</span></code> works the same way</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code></p></td>
+<td><p>Defines every variable in the site by matching, including those in
+its type.</p></td>
+<td><p>The parameters <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>, with <code class="docutils literal notranslate"><span class="pre">n</span></code> in their shapes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code> site is a pattern matched against the values passed
+in. The parameter <code class="docutils literal notranslate"><span class="pre">A:</span> <span class="pre">T.Tensor((n,),</span> <span class="pre">T.float32)</span></code> defines both <code class="docutils literal notranslate"><span class="pre">A</span></code>
+and its length <code class="docutils literal notranslate"><span class="pre">n</span></code>, so <code class="docutils literal notranslate"><span class="pre">n</span></code> needs no separate declaration. A later
+appearance of <code class="docutils literal notranslate"><span class="pre">n</span></code>, as in <code class="docutils literal notranslate"><span class="pre">B</span></code>’s shape, adds a runtime check: calling
+<code class="docutils literal notranslate"><span class="pre">add_one</span></code> with an <code class="docutils literal notranslate"><span class="pre">A</span></code> of length 100 binds <code class="docutils literal notranslate"><span class="pre">n</span></code> to 100, so a <code class="docutils literal notranslate"><span class="pre">B</span></code> of
+length 50 raises an error.</p>
+</div>
+<p><strong>The utilities keep definitions and uses consistent for us.</strong> When
+<a class="reference internal" href="../reference/python/generated/tvm_ffi.structural_map.html#tvm_ffi.structural_map" title="tvm_ffi.structural_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">structural_map</span></code></a> changes the type of a
+variable at its definition site, it creates a new variable with the new
+type and repoints every use site to it. Replacing <code class="docutils literal notranslate"><span class="pre">n</span></code> with 128, for
+example, changes <code class="docutils literal notranslate"><span class="pre">A</span></code>’s type to <code class="docutils literal notranslate"><span class="pre">T.Tensor((128,),</span> <span class="pre">T.float32)</span></code>, so the
+result has a new <code class="docutils literal notranslate"><span class="pre">A</span></code>, and <code class="docutils literal notranslate"><span class="pre">A[i]</span></code> in the body refers to it.</p>
 <p>To receive the kind in our own function, we register it through
 <code class="docutils literal notranslate"><span class="pre">with_def_region_kind</span></code> instead of <code class="docutils literal notranslate"><span class="pre">callbacks</span></code>, and the function is
 called as <code class="docutils literal notranslate"><span class="pre">fn(var,</span> <span class="pre">kind)</span></code>. The kind gives our function additional context
@@ -831,7 +873,7 @@ i DEF_SIMPLE
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">n</span></code> appears twice, once for each shape: the first defines it, and the
-second is the constraint. Every other site is a use site, reported as
+second is the runtime check. Every other site is a use site, reported as
 <code class="docutils literal notranslate"><span class="pre">NONE</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">structural_map</span></code> accepts the same form. A rename leaves each variable’s
 type unchanged, so we create the new variables ourselves: a new variable at
@@ -868,13 +910,14 @@ shapes share <code class="docutils literal notranslate"><span class="pre">n1</sp
 <section id="advanced-control-visit-and-mutate">
 <h2>Advanced Control: Visit and Mutate<a class="headerlink" href="#advanced-control-visit-and-mutate" title="Link to this heading">#</a></h2>
 <p>Walk and map recurse for us, and that covers most tasks. Some analyses,
-however, need to know where they are in the program, not just which node
-they are looking at. To report the loops around each write, for example, a
-callback must know when the traversal enters a loop and when it leaves
-again. <a class="reference internal" href="../reference/python/generated/tvm_ffi.structural_visit.html#tvm_ffi.structural_visit" title="tvm_ffi.structural_visit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.structural_visit</span></code></a> and
+however, need to know <strong>where they are</strong> in the program, not just which
+node they are looking at. To report the loops around each write, for
+example, a callback must know when the traversal enters a loop and when it
+leaves again.</p>
+<p><a class="reference internal" href="../reference/python/generated/tvm_ffi.structural_visit.html#tvm_ffi.structural_visit" title="tvm_ffi.structural_visit"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.structural_visit</span></code></a> and
 <a class="reference internal" href="../reference/python/generated/tvm_ffi.structural_mutate.html#tvm_ffi.structural_mutate" title="tvm_ffi.structural_mutate"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.structural_mutate</span></code></a> hand that
-control to us: a matching callback also receives the visitor or mutator and
-decides when, or whether, to process the node’s children. If it never does,
+control to us. A matching callback also receives the visitor or mutator and
+decides when, or whether, to process the node’s children; if it never does,
 the children are skipped. Let’s record the loops around each write:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loops</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">writes</span> <span class="o">=</span> <span class="p">[]</span>
@@ -906,10 +949,13 @@ around the current node. <code class="docutils literal notranslate"><span class=
 their usual traversal, without calling the node’s own callback again;
 <a class="reference internal" href="../reference/python/generated/tvm_ffi.StructuralMutator.html#tvm_ffi.StructuralMutator.default_mutate" title="tvm_ffi.StructuralMutator.default_mutate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">default_mutate</span></code></a> does
 the same for a mutator.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Because the callback now drives the recursion, it also takes on what the
-walker used to do for us. <code class="docutils literal notranslate"><span class="pre">visit_for</span></code> returns the result of
-<code class="docutils literal notranslate"><span class="pre">default_visit</span></code>, so that a <code class="docutils literal notranslate"><span class="pre">VisitInterrupt</span></code> from a child reaches the
+walker used to do for us. Return the result of <code class="docutils literal notranslate"><span class="pre">default_visit</span></code>, as
+<code class="docutils literal notranslate"><span class="pre">visit_for</span></code> does, so that a <code class="docutils literal notranslate"><span class="pre">VisitInterrupt</span></code> from a child reaches the
 caller.</p>
+</div>
 <p>Mutate brings the same control to rewriting. A mutate callback returns the
 new node, as in a map, but it can also set up state before its children are
 rewritten. Let’s reverse the loop by replacing each use of <code class="docutils literal notranslate"><span class="pre">i</span></code> with

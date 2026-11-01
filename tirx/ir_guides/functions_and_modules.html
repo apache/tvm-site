@@ -489,24 +489,45 @@ function that returns a value declares it with <code class="docutils literal not
 </table>
 </div>
 <p>It also has the fields every <code class="docutils literal notranslate"><span class="pre">ir.BaseFunc</span></code> shares: <code class="docutils literal notranslate"><span class="pre">attrs</span></code>, described
-below; <code class="docutils literal notranslate"><span class="pre">ty</span></code>, the function’s signature, built from its parameter and
-return types; and <code class="docutils literal notranslate"><span class="pre">loc</span></code>, its source location.</p>
+below; <code class="docutils literal notranslate"><span class="pre">ty</span></code>, the function’s signature; and <code class="docutils literal notranslate"><span class="pre">loc</span></code>, its source location.
+<code class="docutils literal notranslate"><span class="pre">ty</span></code> is built from the parameter and return types:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">add_one</span> <span class="o">=</span> <span class="n">Module</span><span class="p">[</span><span class="s2">"add_one"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">add_one</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>T.Func([T.Tensor((n,), T.float32), T.Tensor((n,), T.float32)], T.Tuple())
+</pre></div>
+</div>
+<p>The two tensor parameters come first, and <code class="docutils literal notranslate"><span class="pre">T.Tuple()</span></code> is the empty
+return type.</p>
 <section id="attributes">
 <h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">attrs</span></code> allows us to store additional attribute information about a
-function. For example, <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> locks in the symbol name of a
-public function: <code class="docutils literal notranslate"><span class="pre">add_one</span></code> is exported as <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code> in the compiled
-library. <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> sets it from the Python name. A function
-marked <code class="docutils literal notranslate"><span class="pre">&#64;T.function(private=True)</span></code> has no <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> and stays
-internal to the module.</p>
-<p>In TVMScript, <code class="docutils literal notranslate"><span class="pre">T.func_attr</span></code> adds attributes in the function body, and
-the printer writes them back the same way:</p>
+<p><code class="docutils literal notranslate"><span class="pre">attrs</span></code> stores additional information about a function. The most
+common attribute is <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code>, the name a public function is
+exported under in the compiled library. <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> sets it from the
+Python name, so <code class="docutils literal notranslate"><span class="pre">add_one</span></code> is exported as <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code>; a function marked
+<code class="docutils literal notranslate"><span class="pre">&#64;T.function(private=True)</span></code> has no <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> and stays internal
+to the module.</p>
+<p>In TVMScript, <code class="docutils literal notranslate"><span class="pre">T.func_attr</span></code> adds attributes in the function body:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
     <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"note"</span><span class="p">:</span> <span class="s2">"example"</span><span class="p">})</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 
+</pre></div>
+</div>
+<p>The printer writes them back the same way. <code class="docutils literal notranslate"><span class="pre">add_one.script()</span></code> gives:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># from tvm_tirx.script import tirx as T</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">[</span><span class="n">n</span><span class="p">](</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"note"</span><span class="p">:</span> <span class="s2">"example"</span><span class="p">})</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>From Python, <code class="docutils literal notranslate"><span class="pre">with_attr</span></code> returns a new function with an attribute added
@@ -566,10 +587,36 @@ function without containing its body. For example, a <code class="docutils liter
 replace the definition without touching the places that refer to it.
 In practice, references between functions mostly connect host and device
 functions, such as a host function and the kernels it launches.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code>’s name is the function’s name within the module. It is
-separate from <code class="docutils literal notranslate"><span class="pre">global_symbol</span></code>, the name a public function is exported
-under. For <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, both are <code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code>; a private function has a
-module name but no exported symbol.</p>
+<p>A function has two names, which coincide for <code class="docutils literal notranslate"><span class="pre">add_one</span></code>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 42.0%" />
+<col style="width: 16.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Meaning</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">add_one</span></code></p></th>
+<th class="head"><p>Private function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GlobalVar</span></code> name</p></td>
+<td><p>The function’s name within the module.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code></p></td>
+<td><p>Present</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">global_symbol</span></code></p></td>
+<td><p>The name a public function is exported under.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;add_one&quot;</span></code></p></td>
+<td><p>Absent</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A private function has a module name but no exported symbol.</p>
 </section>
 </section>
 

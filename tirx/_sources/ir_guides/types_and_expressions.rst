@@ -15,8 +15,6 @@
     specific language governing permissions and limitations
     under the License.
 
-.. _expressions-and-types:
-
 Types and Expressions
 =====================
 
@@ -299,7 +297,8 @@ The following table lists the primitive expression node classes in
      - TVMScript syntax
    * - Arithmetic
      - ``Add``, ``Sub``, ``Mul``, ``Div``, ``Mod``, ``FloorDiv``,
-       ``FloorMod``, ``Min``, ``Max``
+       ``FloorMod``, ``Min``, ``Max`` (``Div`` and ``Mod`` follow C
+       semantics; ``FloorDiv`` and ``FloorMod`` round down)
      - ``+``, ``-``, ``*``, ``/`` (float), ``//``, ``%`` (int)
    * - Comparison
      - ``EQ``, ``NE``, ``LT``, ``LE``, ``GT``, ``GE``
@@ -564,16 +563,15 @@ The output is:
    └── args[0]: TensorLoad(source=A, indices=[i])
        └── ty: PrimType(dtype=float32)
 
-The call's ``op`` is an ``ir.GlobalVar``, the module's name for the
-helper, explained in :ref:`Global Variables <ir-global-var>`. Its type is
-the helper's ``FuncType``, and the call takes its result type from that
-signature.
+The call's ``op`` is an ``ir.GlobalVar``, an expression that refers to
+the helper by its name in the module. Its type is the helper's
+``FuncType``, and the call takes its result type from that signature.
 
 .. note::
 
-   Operators are the main extension point of TIRx.
-   :doc:`operators_calls_and_regions` covers how operators are registered and
-   how their attributes define type rules, effects, and lowering.
+   Operators are the main extension point of TIRx. A library registers new
+   operators, and their attributes define type rules, effects, and
+   lowering.
 
 .. _user-ir-dependent-type:
 
@@ -628,13 +626,11 @@ called, ``n`` takes the length of ``A``, and ``B`` must have the same
 length. The loop body can also use ``n`` as an ordinary int32 value,
 here as the loop bound.
 
-TIRx analysis and transformation utilities are designed with dependent
-types in mind. When a transformation replaces a variable, it updates
-every type that refers to that variable, not only the expressions. For
-example, replacing ``n`` with ``16`` in the add-one function changes the
-loop bound to ``16`` and also changes the types of ``A`` and ``B`` to
-``T.Tensor((16,), T.float32)``. Types and expressions therefore stay
-consistent after each rewrite.
+TIRx rewriting utilities are designed with dependent types in mind: when
+a rewrite replaces a variable, it updates every type that refers to it,
+not only the expressions. Replacing ``n`` with ``16`` in the add-one
+function changes the loop bound and also the types of ``A`` and ``B`` to
+``T.Tensor((16,), T.float32)``.
 
 Customization
 -------------

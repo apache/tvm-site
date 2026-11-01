@@ -15,8 +15,6 @@
     specific language governing permissions and limitations
     under the License.
 
-.. _ir-construction-and-printing:
-
 Printing and Parsing
 ====================
 
@@ -39,7 +37,7 @@ three roles:
    `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`_
    in the repository.
 
-Printing and Parsing
+Print and Parse Back
 --------------------
 
 We will use a CPU function that adds one to each tensor element:
@@ -69,16 +67,21 @@ The output is:
        for i in range(n):
            B[i] = A[i] + T.float32(1.0)
 
-The printer writes out everything the IR records. The constant ``1``
-becomes ``T.float32(1.0)``, its value with the type the addition uses. The
-symbolic dimension ``n`` is declared in ``[n]`` after the function name,
-using the type-parameter syntax introduced in Python 3.12. Each name in
-the brackets declares a symbolic variable as if by ``T.dynamic``, but
-scoped to this function, so the printed function is self-contained. On
-Python 3.12 and newer, we can also write this form ourselves. A symbol with a dtype other than ``int32`` carries an
-annotation, as in ``[m: T.int64]``. The same method works on smaller
-objects. For example, ``add_one.params[0].ty.script()`` returns
-``T.Tensor((n,), T.float32)``.
+The printer writes out **everything the IR records**. The constant ``1``
+becomes ``T.float32(1.0)``, its value with the type the addition uses, and
+the symbolic dimension ``n`` is declared in ``[n]`` after the function
+name, so the printed function is self-contained.
+
+.. note::
+
+   ``[n]`` uses the type-parameter syntax introduced in Python 3.12. Each
+   name in the brackets declares a symbolic variable as if by
+   ``T.dynamic``, but scoped to this function. On Python 3.12 and newer, we
+   can also write this form ourselves. A symbol with a dtype other than
+   ``int32`` carries an annotation, as in ``[m: T.int64]``.
+
+The same method works on smaller objects. For example,
+``add_one.params[0].ty.script()`` returns ``T.Tensor((n,), T.float32)``.
 
 A module prints the same way, as a class marked with ``@T.ir_module`` with
 one ``@T.function`` per member:
@@ -124,11 +127,27 @@ IR again:
 
 Printing and then parsing gives back the same IR. This is what lets a test
 write its expected IR as TVMScript and compare it with the output of a
-pass. To store or transfer IR, use ``ir.save_json`` and ``ir.load_json``,
-which serialize the IR objects directly.
+pass.
+
+.. note::
+
+   To store or transfer IR, use ``ir.save_json`` and ``ir.load_json``,
+   which serialize the IR objects directly.
 
 How the Parser Works
 --------------------
+
+We value **predictability** over syntactic sugar. Each syntax form has one
+fixed meaning:
+
+- an annotation is a type;
+- an assignment binds a variable;
+- a subscript store writes a tensor;
+- a call is an ordinary Python call.
+
+Types such as ``T.Tensor`` and operators such as ``T.cuda.thread_idx`` are
+plain functions that return IR, so the parser has no rules specific to
+them.
 
 The parser is a thin layer over an IR builder, the Python API that
 constructs IR. The builder works with frames: entering a function, loop,
@@ -167,17 +186,40 @@ becomes this builder program:
    _result0.__name__ = 'add_one'
    T.check_well_formed_(_result0)
 
-Each syntax form maps to builder calls: the definition becomes a
-``function_`` frame, parameter annotations become ``arg_`` calls with
-their types, the loop becomes a ``for_`` frame,
-and the store becomes ``setitem_``. The signature is declared before the
-body is built, and the finished function is checked for well-formedness.
-Expressions such as ``A[i] + 1`` stay as written: ``A`` is the IR
-variable returned by ``arg_``, so Python's ``[]`` and ``+`` build the IR
-expression directly.
-Because the program runs as normal Python, ``n`` and other names come from
-the surrounding scope. The real output also passes source positions to
-each call, which is how parsed IR gets its ``loc``.
+Concretely, the parser rewrites each syntax form into builder calls. The
+table also lists forms that this example does not use:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - TVMScript
+     - Builder program
+   * - ``@T.function`` definition
+     - A ``T.function_()`` frame, named by ``T.func_name_('add_one')``
+   * - Parameter ``A: T.Tensor((n,), T.float32)``
+     - ``T.arg_('A', T.Tensor((n,), T.float32))``
+   * - ``for i in range(n):``
+     - A ``T.for_(T.range_(n), names='i')`` frame
+   * - ``x = value``
+     - ``x = T.bind_(value, name='x')``
+   * - ``if cond:`` and ``else:``
+     - A ``T.if_`` frame with ``T.then_`` and ``T.else_``
+   * - ``B[i] = value``
+     - ``T.setitem_(value=value, target=B, key=i)``
+   * - Comparison ``i < n``
+     - ``T.lt_(i, n)``
+   * - Arithmetic ``A[i] + 1``
+     - Unchanged Python
+
+The signature is declared before the body is built, and the finished
+function is checked for well-formedness.
+
+Arithmetic such as ``A[i] + 1`` stays as written: ``A`` is the IR variable
+returned by ``arg_``, so Python's ``[]`` and ``+`` build the IR expression
+directly. Because the program runs as normal Python, ``n`` and other names
+come from the surrounding scope. The real output also passes source
+positions to each call, which is how parsed IR gets its ``loc``.
 
 Because the builder program runs as ordinary Python, the parser supports
 metaprogramming out of the box. A TVMScript function can read any Python
@@ -205,15 +247,24 @@ directly, without the parser:
 ``builder.get()`` returns a ``tirx.Function`` that is structurally equal
 to ``add_one``. Hand-written builder code uses the user-facing API, such as
 ``T.serial`` and ``T.assign``, rather than the protocol hooks the parser
-emits. Writing builder code directly is sometimes helpful because
-it stays unambiguously in the Python domain. A plain Python ``for`` or
-``if`` runs while the IR is built, and IR control flow comes only from
-explicit frames such as ``T.serial`` and ``T.if_`` with ``T.then_``. Developers and agents
-therefore know exactly what each line executes. To record source
-locations, wrap the construction in ``builder.line_trace_scope()``, and
-each statement then records its source line in ``loc``.
+emits.
+
+Writing builder code directly is sometimes helpful because it stays
+**unambiguously in the Python domain**. A plain Python ``for`` or ``if``
+runs while the IR is built, and IR control flow comes only from explicit
+frames such as ``T.serial`` and ``T.if_`` with ``T.then_``. Developers and
+agents therefore know exactly what each line executes.
+
+.. note::
+
+   To record source locations, wrap the construction in
+   ``builder.line_trace_scope()``, and each statement then records its
+   source line in ``loc``.
 
 .. _tvmscript-region-syntax:
+
+Region Syntax
+~~~~~~~~~~~~~
 
 Regions are built with frames in the same way. A region operator such as
 ``T.device_entry`` opens a frame, and the statements inside its ``with``
@@ -230,13 +281,6 @@ As a shorthand, a region call written as a plain statement opens the same
 frame for the rest of its enclosing block, so ``T.device_entry(...)``
 followed by the same statements at the same indentation produces the same
 ``ir.RegionStmt``.
-
-We value **predictability** over syntactic sugar. Each syntax form has one
-fixed meaning: an annotation is a type, an assignment binds a variable, a
-subscript store writes a tensor, and a call is an ordinary Python call.
-Types such as ``T.Tensor`` and operators such as ``T.cuda.thread_idx`` are
-plain functions that return IR, so the parser has no rules specific to
-them.
 
 Extending the Syntax
 --------------------

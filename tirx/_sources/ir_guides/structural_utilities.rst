@@ -204,6 +204,22 @@ The walk ends at the first write, and ``found.value`` holds it. A walk that
 finishes without an interrupt returns ``None``, so the result also tells us
 whether anything was found.
 
+In summary, a walk callback steers the traversal with its return value:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Return value
+     - Effect on the walk
+   * - ``None``
+     - Continue.
+   * - ``WalkResult.SKIP``
+     - In pre-order, do not descend into the node's children. In
+       post-order, the children are already visited, so it has no effect.
+   * - ``VisitInterrupt(payload)``
+     - Stop the whole walk; ``structural_walk`` returns the interrupt.
+
 Structural Map
 --------------
 
@@ -237,10 +253,14 @@ The output is:
 
 Every occurrence of ``n``, in both parameter shapes and the loop bound,
 becomes ``128``. Because IR is immutable, the map returns a new function
-and leaves ``add_one`` unchanged. Note that a map callback must always
-return a node, even when it has nothing to change: returning its input
-keeps that node as it is, which is what ``specialize`` does for every other
-variable.
+and leaves ``add_one`` unchanged.
+
+.. note::
+
+   A map callback must always return a node, even when it has nothing to
+   change: returning its input keeps that node as it is, which is what
+   ``specialize`` does for every other variable. Returning ``None``,
+   ``WalkResult.SKIP``, or a ``VisitInterrupt`` raises a ``TypeError``.
 
 Immutability also keeps rewrites cheap: a map does not copy the whole
 program. It rebuilds only the nodes on the path from each replacement up to
@@ -251,12 +271,10 @@ or compare.
 Structural Equality and Hashing
 -------------------------------
 
-Once we can rewrite programs, we need a way to check the result. To test a
-transformation, we write down the program we expect and compare it with the
-one the transformation produced. The two programs are built separately, so
-they are different objects even when they describe the same computation,
-and comparing them by identity cannot work. Instead, we compare them by
-structure. Let's build the same function twice with a small helper:
+To test a transformation, we compare its result with a program we write
+down ourselves. The two are different objects even when they describe the
+same computation, so we compare them **by structure**, not by identity.
+Let's build the same function twice with a small helper:
 
 .. literalinclude:: ../../examples/ir_guides/structural_utilities.py
    :language: python
@@ -279,21 +297,27 @@ gives them the same hash. Each call to ``make_add`` also creates its own
 in one program with its counterpart in the other, so these different
 variable objects do not make the programs unequal.
 
-A variable that is not defined anywhere in the compared values is free and
-has no definition to match. By default, a free variable is equal only to
-itself. ``map_free_vars=True`` pairs free variables up as well:
+.. note::
 
-.. literalinclude:: ../../examples/ir_guides/structural_utilities.py
-   :language: python
-   :start-after: # [free_vars.begin]
-   :end-before: # [free_vars.end]
+   A variable that is not defined anywhere in the compared values is
+   **free** and has no definition to match. By default, a free variable is
+   equal only to itself. ``map_free_vars=True`` pairs free variables up as
+   well:
 
-The output is:
+   .. literalinclude:: ../../examples/ir_guides/structural_utilities.py
+      :language: python
+      :start-after: # [free_vars.begin]
+      :end-before: # [free_vars.end]
 
-.. code-block:: text
+   The output is:
 
-   False
-   True
+   .. code-block:: text
+
+      False
+      True
+
+   ``x + 1`` and ``y + 1`` differ by default; with the flag, ``x`` pairs
+   with ``y``.
 
 In a test, we usually want more than a yes-or-no answer.
 :py:func:`ir.assert_structural_equal <tvm_tirx.ir.assert_structural_equal>`
@@ -347,55 +371,53 @@ The two ``make_add(1)`` functions collapse into one entry, and
 Definitions and Uses
 --------------------
 
-A variable, represented by :py:class:`ir.Var <tvm_tirx.ir.Var>`, can
-appear in a program for one of two purposes. A **definition site**
-introduces the variable, and a **use site** reads its value. In
-``add_one``, the parameters are the definition sites of ``A``, ``B``, and
-the length ``n``, and the loop is the definition site of ``i``. The loop
-bound ``range(n)`` is a use site of ``n``, and ``B[i] = A[i] + 1``
-contains use sites of ``A``, ``B``, and ``i``. Each variable has exactly
-one definition site and can have any number of use sites.
+A variable (:py:class:`ir.Var <tvm_tirx.ir.Var>`) appears in a program in
+two roles: a **definition site** introduces it, and a **use site** reads
+it. In ``add_one``, the parameters define ``A``, ``B``, and ``n``, and the
+loop defines ``i``; ``range(n)`` and ``B[i] = A[i] + 1`` use them. Each
+variable has one definition site and any number of use sites.
 
-In the IR, every site refers to the same ``ir.Var`` object. Many tasks need
-to tell the two purposes apart. To rename ``i``, we create the new variable
-once at its definition site and point every use site at it. To find an
-unused variable, we look for a definition site with no use sites. To check
-whether two programs are the same, we match each definition site in one
-with its counterpart in the other. The variable object alone does not say
-which purpose it serves at a given site, but its position in the program
-does.
+**Every site refers to the same ir.Var object**, so the object alone cannot
+tell us its role; its position can. Renaming, finding unused variables, and
+comparing programs depend on that position.
 
 TIRx IR nodes use their structural hooks to mark which of their fields are
 definition sites. As the utilities traverse the program, they report the
 role at each position as a **definition region kind**:
 
-- ``NONE`` marks a use site, such as ``n`` in ``range(n)`` and ``A``,
-  ``B``, and ``i`` in the body.
-- ``DEF_SIMPLE`` defines exactly the variable at the site, such as the
-  loop variable ``i``. A ``Bind`` statement defines its variable the same
-  way.
-- ``DEF_PATTERN`` defines every variable in the site by matching,
-  including those in its type.
+.. list-table::
+   :header-rows: 1
+   :widths: 20 45 35
 
-A ``DEF_PATTERN`` site is a pattern that is matched against the values
-passed in. In ``add_one``, the parameter ``A: T.Tensor((n,), T.float32)``
-is matched against the tensor passed for ``A``. This defines both ``A`` and
-its length ``n``, so ``n`` needs no separate declaration. A variable can
-appear more than once in a pattern. The first appearance defines it, and
-each later appearance adds a constraint that is checked at runtime. Here,
-``n`` also appears in ``B``'s shape, so ``B`` must have the same length.
-When we call ``add_one`` with an ``A`` of length 100, ``n`` is bound to
-100, and passing a ``B`` of length 50 raises an error.
+   * - Kind
+     - Meaning
+     - In ``add_one``
+   * - ``NONE``
+     - A use site.
+     - ``n`` in ``range(n)``; ``A``, ``B``, and ``i`` in the body
+   * - ``DEF_SIMPLE``
+     - Defines exactly the variable at the site.
+     - The loop variable ``i``; a ``Bind`` works the same way
+   * - ``DEF_PATTERN``
+     - Defines every variable in the site by matching, including those in
+       its type.
+     - The parameters ``A`` and ``B``, with ``n`` in their shapes
 
-Importantly, the structural utilities are themselves aware of definitions
-and uses. When :py:func:`structural_map <tvm_ffi.structural_map>` rewrites
-the type of a variable at its definition site, it creates a new variable
-with the new type and remaps every use site to it. For example, replacing
-``n`` with 128 in ``add_one`` changes the type of ``A`` from
-``T.Tensor((n,), T.float32)`` to ``T.Tensor((128,), T.float32)``, so the
-result has a new ``A``, and ``A[i]`` in the body refers to that new ``A``.
-Our callback only replaced ``n``; the mapper kept every definition and its
-uses consistent.
+.. note::
+
+   A ``DEF_PATTERN`` site is a pattern matched against the values passed
+   in. The parameter ``A: T.Tensor((n,), T.float32)`` defines both ``A``
+   and its length ``n``, so ``n`` needs no separate declaration. A later
+   appearance of ``n``, as in ``B``'s shape, adds a runtime check: calling
+   ``add_one`` with an ``A`` of length 100 binds ``n`` to 100, so a ``B`` of
+   length 50 raises an error.
+
+**The utilities keep definitions and uses consistent for us.** When
+:py:func:`structural_map <tvm_ffi.structural_map>` changes the type of a
+variable at its definition site, it creates a new variable with the new
+type and repoints every use site to it. Replacing ``n`` with 128, for
+example, changes ``A``'s type to ``T.Tensor((128,), T.float32)``, so the
+result has a new ``A``, and ``A[i]`` in the body refers to it.
 
 To receive the kind in our own function, we register it through
 ``with_def_region_kind`` instead of ``callbacks``, and the function is
@@ -420,7 +442,7 @@ The output is:
    i DEF_SIMPLE
 
 ``n`` appears twice, once for each shape: the first defines it, and the
-second is the constraint. Every other site is a use site, reported as
+second is the runtime check. Every other site is a use site, reported as
 ``NONE``.
 
 ``structural_map`` accepts the same form. A rename leaves each variable's
@@ -454,13 +476,15 @@ Advanced Control: Visit and Mutate
 ----------------------------------
 
 Walk and map recurse for us, and that covers most tasks. Some analyses,
-however, need to know where they are in the program, not just which node
-they are looking at. To report the loops around each write, for example, a
-callback must know when the traversal enters a loop and when it leaves
-again. :py:func:`tvm_ffi.structural_visit <tvm_ffi.structural_visit>` and
+however, need to know **where they are** in the program, not just which
+node they are looking at. To report the loops around each write, for
+example, a callback must know when the traversal enters a loop and when it
+leaves again.
+
+:py:func:`tvm_ffi.structural_visit <tvm_ffi.structural_visit>` and
 :py:func:`tvm_ffi.structural_mutate <tvm_ffi.structural_mutate>` hand that
-control to us: a matching callback also receives the visitor or mutator and
-decides when, or whether, to process the node's children. If it never does,
+control to us. A matching callback also receives the visitor or mutator and
+decides when, or whether, to process the node's children; if it never does,
 the children are skipped. Let's record the loops around each write:
 
 .. literalinclude:: ../../examples/ir_guides/structural_utilities.py
@@ -482,10 +506,12 @@ their usual traversal, without calling the node's own callback again;
 :py:meth:`default_mutate <tvm_ffi.StructuralMutator.default_mutate>` does
 the same for a mutator.
 
-Because the callback now drives the recursion, it also takes on what the
-walker used to do for us. ``visit_for`` returns the result of
-``default_visit``, so that a ``VisitInterrupt`` from a child reaches the
-caller.
+.. note::
+
+   Because the callback now drives the recursion, it also takes on what the
+   walker used to do for us. Return the result of ``default_visit``, as
+   ``visit_for`` does, so that a ``VisitInterrupt`` from a child reaches the
+   caller.
 
 Mutate brings the same control to rewriting. A mutate callback returns the
 new node, as in a map, but it can also set up state before its children are
