@@ -51,7 +51,9 @@ Program Listing for File function.h
     public:
      ffi::Array<tvm::Var> params;
      Type ret_type = Type::Missing();
-     ffi::Optional<SeqStmt> body;
+     SeqStmt body;
+   
+     explicit FunctionObj(ffi::UnsafeInit tag) : body(tag) {}
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
@@ -89,9 +91,8 @@ Program Listing for File function.h
    
    class Function : public BaseFunc {
     public:
-     TVM_TIRX_DLL Function(ffi::Array<tvm::Var> params, ffi::Optional<SeqStmt> body,
-                           Type ret_type = VoidType(), DictAttrs attrs = DictAttrs(),
-                           Location loc = UnknownLoc());
+     TVM_TIRX_DLL Function(ffi::Array<tvm::Var> params, SeqStmt body, Type ret_type = VoidType(),
+                           DictAttrs attrs = DictAttrs(), Location loc = UnknownLoc());
    
      explicit Function(ffi::ObjectPtr<FunctionObj> node) : BaseFunc(std::move(node)) {}
    

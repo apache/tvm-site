@@ -20,7 +20,7 @@ Generic attribute names that can be attached to any function.
 Detailed Description
 --------------------
 
-:ref:`namespace_tvm__tirx__attr`, tvm::relax::attr 
+:ref:`namespace_tvm__tirx__attr` 
 
 
 
@@ -35,6 +35,8 @@ Variables
 - :ref:`exhale_variable_namespacetvm_1_1attr_1a13103f392740aac64f5d74ae37af00f7`
 
 - :ref:`exhale_variable_namespacetvm_1_1attr_1ab24bbd5a0a8d439306a1a9b116971120`
+
+- :ref:`exhale_variable_namespacetvm_1_1attr_1ab056473dcd91f5dcb700309b1165b170`
 
 - :ref:`exhale_variable_namespacetvm_1_1attr_1aaf57befbaaa77f5149d5aeaea593a5ca`
 

@@ -104,6 +104,8 @@ Program Listing for File function.h
    };
    
    namespace attr {
+   inline constexpr ffi::reflection::AttrKey<bool> kDeclaration{"declaration"};
+   
    inline constexpr ffi::reflection::AttrKey<CallingConv> kCallingConv{"calling_conv"};
    
    inline constexpr ffi::reflection::AttrKey<Target> kTarget{"target"};
