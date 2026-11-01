@@ -95,7 +95,7 @@ parameter types, index expression, and bounds check:
     print(add_one.script())
 
 ``add_one.show()`` displays the same representation directly. For printing
-options, see :doc:`/ir/printing_and_parsing`.
+options, see :doc:`/ir_guides/printing_and_parsing`.
 
 The compiled executable contains a host launcher and an imported device
 module. For this single-kernel program, the first import contains the CUDA

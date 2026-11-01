@@ -15,8 +15,8 @@
     specific language governing permissions and limitations
     under the License.
 
-Writing and Debugging Passes
-============================
+Writing Passes
+==============
 
 Suppose we want a version of an add-one function for tensors of length 128.
 We will write a pass that fixes its symbolic length, then combine it with

@@ -186,7 +186,7 @@ program, while the original ``add_one`` stays unchanged.
 
 .. seealso::
 
-   :doc:`IR Overview </ir/overview>` for a more in-depth introduction to the
+   :doc:`IR Overview </ir_guides/overview>` for a more in-depth introduction to the
    main IR objects and their roles in the overall program structure.
 
 
@@ -303,7 +303,7 @@ this library, or install the CUDA 13 toolkit and add its ``lib64`` directory to
 Further Reading
 ---------------
 
-- :doc:`/ir/overview`: the IR objects in depth and how they fit together.
+- :doc:`/ir_guides/overview`: the IR objects in depth and how they fit together.
 - :doc:`Programming Guides </programming_guides/index>`: writing CUDA
   kernels with TIRx.
 - :doc:`Python API </reference/python/index>`: the full Python API reference.

@@ -128,6 +128,8 @@ Additional Structural Visit and Mutate APIs
 
 .. currentmodule:: tvm_tirx.tirx.structural
 
+.. seealso:: :doc:`ffi.structural`, the TVM-FFI utilities these variants build on.
+
 .. autosummary::
    :toctree: generated/
 

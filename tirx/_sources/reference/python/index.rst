@@ -153,6 +153,25 @@ Namespaces
    tvm_tirx.support <support>
    tvm_tirx.testing <testing>
 
+TVM-FFI APIs
+------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Page
+     - Purpose
+   * - :doc:`tvm_ffi.structural <ffi.structural>`
+     - Walk, map, visit, and mutate IR.
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
+   tvm_ffi structural utilities <ffi.structural>
+
 Classes
 -------
 

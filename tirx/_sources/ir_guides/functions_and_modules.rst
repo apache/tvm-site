@@ -28,7 +28,7 @@ can transform the whole program.
 In TVMScript, a module is written as a class marked with ``@T.ir_module``,
 with one ``@T.function`` per member:
 
-.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+.. literalinclude:: ../../examples/ir_guides/functions_and_modules.py
    :language: python
    :start-after: # [module.begin]
    :end-before: # [module.end]
@@ -40,7 +40,7 @@ module ties them together.
 .. note::
 
    The runnable code in this chapter is under
-   `examples/ir_walkthrough <https://github.com/apache/tvm-tirx/tree/main/examples/ir_walkthrough>`_
+   `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`_
    in the repository.
 
 Functions
@@ -82,7 +82,7 @@ internal to the module.
 In TVMScript, ``T.func_attr`` adds attributes in the function body, and
 the printer writes them back the same way:
 
-.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+.. literalinclude:: ../../examples/ir_guides/functions_and_modules.py
    :language: python
    :start-after: # [func_attr.begin]
    :end-before: # [func_attr.end]
@@ -91,7 +91,7 @@ the printer writes them back the same way:
 From Python, ``with_attr`` returns a new function with an attribute added
 and leaves the original unchanged:
 
-.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+.. literalinclude:: ../../examples/ir_guides/functions_and_modules.py
    :language: python
    :start-after: # [with_attr.begin]
    :end-before: # [with_attr.end]
@@ -130,7 +130,7 @@ Global Variables
 module. The module's ``functions`` map is keyed by ``GlobalVar``: we can
 get the reference by name and look up its definition:
 
-.. literalinclude:: ../../examples/ir_walkthrough/functions_and_modules.py
+.. literalinclude:: ../../examples/ir_guides/functions_and_modules.py
    :language: python
    :start-after: # [global_var.begin]
    :end-before: # [global_var.end]

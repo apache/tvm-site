@@ -27,9 +27,12 @@ TIRx represents a program as a tree of intermediate representation (IR)
 nodes, such as functions, statements, and values. The tree is similar to the
 abstract syntax tree (AST) of Python code, but in a more structured, typed
 form. A compiler pipeline analyzes and transforms this tree step by step
-to produce target code. The ``tvm_tirx.script`` interfaces print the IR as
-TVMScript, a Python-based notation for tensor programs. For example, this
-TVMScript definition describes an add-one computation on a GPU:
+to produce target code. IR objects are immutable: an analysis reads the
+tree, and a transformation builds a new tree instead of modifying the
+existing one, sharing the parts that did not change. The
+``tvm_tirx.script`` interfaces print the IR as TVMScript, a Python-based
+notation for tensor programs. For example, this TVMScript definition
+describes an add-one computation on a GPU:
 
 .. literalinclude:: ../../examples/quick_start/add_one_cuda.py
    :language: python
@@ -239,10 +242,13 @@ IR nodes can also carry source locations
 ``loc`` field records where it came from in the source, so a diagnostic
 can point back to the original code.
 
-.. _choose-a-chapter:
+How This Guide Is Organized
+---------------------------
 
-What to Read Next
------------------
+The rest of this guide has two parts: the first explains what the IR contains,
+and the second covers the tools we use to inspect and transform it.
+
+**Understanding the IR**
 
 - :doc:`types_and_expressions` explains how values, computations, and tensor
   shapes are represented.
@@ -254,5 +260,13 @@ What to Read Next
   in modules.
 - :doc:`printing_and_parsing` covers utilities for parsing and printing
   TVMScript.
-- :doc:`/compiler/structural_utilities` introduces structural walks, maps,
-  visitors, and mutators for inspecting and rewriting these objects.
+
+**Working with IR**
+
+- :doc:`structural_utilities` introduces structural walks, maps, visitors, and
+  mutators for inspecting and rewriting IR.
+- :doc:`symbolic_integer_analysis` covers symbolic analysis and simplification
+  of integer indices and bounds, which compiler analyses and transformations
+  can use.
+- :doc:`writing_passes` shows how to optionally package transformations as
+  passes, so we can compose them into a pipeline and inspect each stage.

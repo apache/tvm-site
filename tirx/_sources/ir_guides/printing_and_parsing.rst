@@ -36,7 +36,7 @@ three roles:
 .. note::
 
    The runnable code in this chapter is under
-   `examples/ir_walkthrough <https://github.com/apache/tvm-tirx/tree/main/examples/ir_walkthrough>`_
+   `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`_
    in the repository.
 
 Printing and Parsing
@@ -44,14 +44,14 @@ Printing and Parsing
 
 We will use a CPU function that adds one to each tensor element:
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-after: # [function.begin]
    :end-before: # [function.end]
 
 The ``script()`` method prints any IR object as TVMScript:
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-after: # [print.begin]
    :end-before: # [print.end]
@@ -83,7 +83,7 @@ objects. For example, ``add_one.params[0].ty.script()`` returns
 A module prints the same way, as a class marked with ``@T.ir_module`` with
 one ``@T.function`` per member:
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-after: # [print_module.begin]
    :end-before: # [print_module.end]
@@ -112,12 +112,12 @@ accept. On Python 3.12 and newer, a printed function placed in a Python
 file, here ``add_one_printed.py`` with its import enabled, builds the same
 IR again:
 
-.. literalinclude:: ../../examples/ir_walkthrough/add_one_printed.py
+.. literalinclude:: ../../examples/ir_guides/add_one_printed.py
    :language: python
    :start-after: # [printed.begin]
    :end-before: # [printed.end]
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-after: # [parse.begin]
    :end-before: # [parse.end]
@@ -140,7 +140,7 @@ function in the definition's original scope.
 
 For example, this definition:
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-at: @T.function
    :end-at: B[i] = A[i] + 1
@@ -184,7 +184,7 @@ metaprogramming out of the box. A TVMScript function can read any Python
 value from its enclosing scope, and a Python function can build a new
 TVMScript function on each call:
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-after: # [metaprogramming.begin]
    :end-before: # [metaprogramming.end]
@@ -197,7 +197,7 @@ Python name when the builder program runs.
 The builder is also a public API, so we can construct the same function
 directly, without the parser:
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-after: # [builder.begin]
    :end-before: # [builder.end]
@@ -265,7 +265,7 @@ shows it in the same syntax used to write it.
 The printer can also point at specific objects. ``obj_to_underline`` marks
 objects in the output, and ``obj_to_annotate`` attaches a message to them:
 
-.. literalinclude:: ../../examples/ir_walkthrough/printing_and_parsing.py
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
    :language: python
    :start-after: # [highlight.begin]
    :end-before: # [highlight.end]

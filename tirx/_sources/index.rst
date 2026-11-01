@@ -44,24 +44,18 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: IR Walkthrough
+   :caption: IR Guides
    :titlesonly:
 
-   ir/overview
-   ir/types_and_expressions
-   ir/statements
-   ir/operators_calls_and_regions
-   ir/functions_and_modules
-   ir/printing_and_parsing
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Working with IR
-   :titlesonly:
-
-   compiler/structural_utilities
-   compiler/symbolic_integer_analysis
-   compiler/writing_passes
+   ir_guides/overview
+   ir_guides/types_and_expressions
+   ir_guides/statements
+   ir_guides/operators_calls_and_regions
+   ir_guides/functions_and_modules
+   ir_guides/printing_and_parsing
+   ir_guides/structural_utilities
+   ir_guides/symbolic_integer_analysis
+   ir_guides/writing_passes
 
 .. toctree::
    :maxdepth: 1
