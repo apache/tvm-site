@@ -120,6 +120,8 @@ Namespaces
 
 - :ref:`namespace_tvm`
 
+- :ref:`namespace_tvm__ffi`
+
 - :ref:`namespace_tvm__prim`
 
 

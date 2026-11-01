@@ -23,6 +23,7 @@ can be a bit dense, so we recommend the following tips first:
 
 - The :ref:`cpp-key-classes` lists the key classes that are most commonly used.
 - See :ref:`cpp-header-organization` for how the modules are organized.
+- :ref:`cpp-ffi-structural` lists the TVM-FFI utilities for walking and rewriting IR.
 - You can go to the Full API Index at the bottom of this page to access the full list of APIs.
 
   - We usually group the APIs by files. You can look at the file hierarchy in the
@@ -42,6 +43,9 @@ each folder builds on those above it.
 
    * - Folder
      - Description
+   * - ``tvm/ffi/``
+     - From TVM-FFI: objects, containers, functions, and the structural utilities
+       (see :ref:`cpp-ffi-structural`).
    * - ``tvm/support/``
      - Compiler-independent common utilities.
    * - ``tvm/runtime/``
@@ -270,6 +274,84 @@ Tensor Program
    * - :cpp:class:`tvm::tirx::Function`
      - TIRx tensor-program function.
 
+.. _cpp-ffi-structural:
+
+TVM-FFI Structural Utilities
+----------------------------
+
+TIRx builds on TVM-FFI and supports it as a first-class foundation. Every
+TIRx IR node is a TVM-FFI object that is shared across languages, so TIRx
+uses the native TVM-FFI utilities for walking and rewriting IR directly. We
+list these utilities here for completeness. See the `TVM-FFI documentation
+<https://tvm.apache.org/ffi/concepts/structural_eq_hash.html>`_ for more
+details.
+
+.. seealso:: The headers ``tvm/tirx/structural_visit_with_constraint_context.h``
+   and ``tvm/tirx/structural_mutate_with_constraint_context.h`` provide
+   variants of these utilities that also track constraint information, such
+   as loop ranges and branch conditions, at each node:
+   :cpp:func:`tvm::tirx::StructuralWalkWithConstraintContext`,
+   :cpp:func:`tvm::tirx::StructuralVisitWithConstraintContext`,
+   :cpp:func:`tvm::tirx::StructuralMapWithConstraintContext`, and
+   :cpp:func:`tvm::tirx::StructuralMutateWithConstraintContext`.
+
+Functions
+^^^^^^^^^
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Function
+     - Description
+   * - :cpp:func:`tvm::ffi::StructuralWalk`
+     - Walk every occurrence in pre- or post-order with typed callbacks.
+   * - :cpp:func:`tvm::ffi::StructuralMap`
+     - Rebuild a value with typed callbacks that return replacements.
+   * - :cpp:func:`tvm::ffi::StructuralVisit`
+     - Visit a value with callbacks that own the descent into children.
+   * - :cpp:func:`tvm::ffi::StructuralMutate`
+     - Mutate a value with callbacks that own the descent into children.
+   * - :cpp:func:`tvm::ffi::StructuralEqual::Equal`
+     - Compare two values by structure.
+   * - :cpp:func:`tvm::ffi::StructuralHash::Hash`
+     - Hash a value by structure, consistently with structural equality.
+
+Each function has an ``Expected`` form, such as
+:cpp:func:`tvm::ffi::StructuralWalkExpected`, that returns errors instead
+of throwing.
+
+Classes
+^^^^^^^
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Class
+     - Description
+   * - :cpp:class:`tvm::ffi::StructuralVisitorObj`
+     - Base of structural visitors, including the visitor behind ``StructuralWalk``.
+   * - :cpp:class:`tvm::ffi::StructuralMutatorObj`
+     - Base of structural mutators, including the mutator behind ``StructuralMap``.
+   * - :cpp:class:`tvm::ffi::StructuralEqual`
+     - Structural equality comparators.
+   * - :cpp:class:`tvm::ffi::StructuralHash`
+     - Structural hash.
+   * - :cpp:class:`tvm::ffi::StructuralKey`
+     - A key that compares and hashes its value by structure.
+   * - :cpp:class:`tvm::ffi::WalkResult`
+     - Per-node control signal of a walk: advance, skip, or interrupt.
+   * - :cpp:enum:`tvm::ffi::WalkOrder`
+     - Callback order of a walk or map: pre-order or post-order.
+   * - :cpp:class:`tvm::ffi::VisitInterrupt`
+     - The interrupt that stops a traversal, with an optional payload.
+   * - :cpp:struct:`tvm::ffi::Unchanged`
+     - Tag that keeps the original value in a map or mutation.
+   * - :cpp:class:`tvm::ffi::UnchangedOr`
+     - A replacement value or ``Unchanged``.
+   * - :cpp:enum:`tvm::ffi::InplaceMode`
+     - Whether a mutation may update a value in place.
 
 .. _cpp-full-api-index:
 

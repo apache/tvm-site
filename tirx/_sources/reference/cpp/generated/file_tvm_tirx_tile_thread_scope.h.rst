@@ -68,6 +68,8 @@ Namespaces
 
 - :ref:`namespace_tvm`
 
+- :ref:`namespace_tvm__ffi`
+
 - :ref:`namespace_tvm__tirx`
 
 - :ref:`namespace_tvm__tirx__thread_scope_attr`

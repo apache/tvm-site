@@ -72,6 +72,8 @@ Namespaces
 
 - :ref:`namespace_tvm`
 
+- :ref:`namespace_tvm__ffi`
+
 
 Classes
 -------

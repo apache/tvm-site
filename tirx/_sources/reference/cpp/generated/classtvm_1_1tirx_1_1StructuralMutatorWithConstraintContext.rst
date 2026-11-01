@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public ffi::StructuralMutator``
+- ``public tvm::ffi::StructuralMutator`` (:ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMutator`)
 
 
 Class Documentation

@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public ffi::StructuralMapEngineBase``
+- ``public tvm::ffi::StructuralMapEngineBase``
 
 
 Derived Type

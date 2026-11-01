@@ -285,3 +285,5 @@ and the second covers the tools we use to inspect and transform it.
 - :doc:`symbolic_integer_analysis` covers symbolic analysis and simplification
   of integer indices and bounds, which compiler analyses and transformations
   can use.
+- :doc:`working_with_ir_in_cpp` and :doc:`working_with_ir_in_rust` show how to
+  access and transform the same IR from C++ and Rust.

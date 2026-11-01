@@ -70,6 +70,8 @@ Namespaces
 
 - :ref:`namespace_tvm`
 
+- :ref:`namespace_tvm__ffi`
+
 - :ref:`namespace_tvm__op_attr`
 
 - :ref:`namespace_tvm__type_attr`

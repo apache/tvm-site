@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public ffi::StructuralVisitorObj``
+- ``public tvm::ffi::StructuralVisitorObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1StructuralVisitorObj`)
 
 
 Derived Type

@@ -45,7 +45,7 @@ Includes
 --------
 
 
-- ``tvm/ffi/extra/structural_mutate.h``
+- ``tvm/ffi/extra/structural_mutate.h`` (:ref:`file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_mutate.h`)
 
 - ``tvm/ffi/function.h``
 

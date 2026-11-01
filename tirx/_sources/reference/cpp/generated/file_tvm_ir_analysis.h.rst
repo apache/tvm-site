@@ -35,7 +35,7 @@ Includes
 --------
 
 
-- ``tvm/ffi/extra/structural_visit.h``
+- ``tvm/ffi/extra/structural_visit.h`` (:ref:`file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_visit.h`)
 
 - ``tvm/ir/expr.h`` (:ref:`file_tvm_ir_expr.h`)
 

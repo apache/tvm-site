@@ -67,6 +67,13 @@ Generating the C++ reference takes longer and requires Doxygen:
    brew install doxygen        # macOS
    sudo apt install doxygen    # Linux
 
+The C++ reference also documents the TVM-FFI structural utilities from the
+``3rdparty/tvm-ffi`` submodule, so check it out first:
+
+.. code-block:: bash
+
+   git submodule update --init 3rdparty/tvm-ffi
+
 Set ``BUILD_CPP_DOCS=1`` on the desired build command to enable the extra step:
 
 .. code-block:: bash

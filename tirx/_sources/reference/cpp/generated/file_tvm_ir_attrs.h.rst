@@ -49,9 +49,9 @@ Includes
 
 - ``tvm/ffi/container/map.h``
 
-- ``tvm/ffi/extra/structural_equal.h``
+- ``tvm/ffi/extra/structural_equal.h`` (:ref:`file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_equal.h`)
 
-- ``tvm/ffi/extra/structural_hash.h``
+- ``tvm/ffi/extra/structural_hash.h`` (:ref:`file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_hash.h`)
 
 - ``tvm/ffi/function.h``
 

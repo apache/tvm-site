@@ -23,6 +23,8 @@ Namespaces
 
 - :ref:`namespace_tvm__codegen`
 
+- :ref:`namespace_tvm__ffi`
+
 - :ref:`namespace_tvm__op_attr`
 
 - :ref:`namespace_tvm__prim`
@@ -358,6 +360,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1TypeObj`
 
+- :ref:`exhale_class_classtvm_1_1UnchangedOr`
+
 - :ref:`exhale_class_classtvm_1_1UniqueNameSupply`
 
 - :ref:`exhale_class_classtvm_1_1UniqueNameSupplyObj`
@@ -369,6 +373,8 @@ Classes
 - :ref:`exhale_class_classtvm_1_1Var`
 
 - :ref:`exhale_class_classtvm_1_1VarObj`
+
+- :ref:`exhale_class_classtvm_1_1VisitInterrupt`
 
 - :ref:`exhale_class_classtvm_1_1While`
 
@@ -388,6 +394,8 @@ Enums
 - :ref:`exhale_enum_namespacetvm_1a85e4536ea4e1c8d3d48c61135f0a8ff0`
 
 - :ref:`exhale_enum_namespacetvm_1aa313cad946cfeff4192526a00daa9213`
+
+- :ref:`exhale_enum_namespacetvm_1a45478eb8e9652bf4c18ec5d9bfc195a2`
 
 - :ref:`exhale_enum_namespacetvm_1aee9f3322da6fdb9d0d120167beb329cc`
 
@@ -630,6 +638,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a460572123ac43346571969c7c474d9b3`
 
+- :ref:`exhale_function_namespacetvm_1a56fac2bf30a61d8dd727f7b1956dd0db`
+
 - :ref:`exhale_function_namespacetvm_1a03983cf66713724c138f9697bb8e0e97`
 
 - :ref:`exhale_function_namespacetvm_1a7d182ece0a5fe24bf0479f38063f0829`
@@ -637,8 +647,6 @@ Functions
 - :ref:`exhale_function_namespacetvm_1ab5df457f526fb099d0d8de6a51639307`
 
 - :ref:`exhale_function_namespacetvm_1af7b8be795dd2e9889636e2383c554c67`
-
-- :ref:`exhale_function_namespacetvm_1a56fac2bf30a61d8dd727f7b1956dd0db`
 
 - :ref:`exhale_function_namespacetvm_1ab25738e50b37cd07b2d171ca74ba9321`
 
@@ -760,6 +768,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a1eaa18dbddaa07d70c9279e0bcdac05a`
 
+- :ref:`exhale_function_namespacetvm_1a01a1524b95ddb4124f838526b0af1f5c`
+
 - :ref:`exhale_function_namespacetvm_1a1bd0ed1cda03a92fcc524e6191105b8d`
 
 - :ref:`exhale_function_namespacetvm_1af682776c3609284f1bc3ea436e21a67a`
@@ -769,8 +779,6 @@ Functions
 - :ref:`exhale_function_namespacetvm_1ad0449d28f23318cc5163159a58c80ba3`
 
 - :ref:`exhale_function_namespacetvm_1a7477f9c7de0148e5580333452571ad66`
-
-- :ref:`exhale_function_namespacetvm_1a01a1524b95ddb4124f838526b0af1f5c`
 
 - :ref:`exhale_function_namespacetvm_1a598f8139c469abc4066dbdd0a0a0845d`
 
@@ -790,6 +798,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1af6d0ad1d909999b19bf03a951f6c0083`
 
+- :ref:`exhale_function_namespacetvm_1ad7c45c38af02ce88083d976f9be743b4`
+
 - :ref:`exhale_function_namespacetvm_1a2ea3b45c96d3980227e418f7158ce5c3`
 
 - :ref:`exhale_function_namespacetvm_1a5bea550dd56905267e2e2b0d72a34c62`
@@ -797,8 +807,6 @@ Functions
 - :ref:`exhale_function_namespacetvm_1a81851f002c71fea8695a2e2bd29eefc7`
 
 - :ref:`exhale_function_namespacetvm_1aabc6cf9e961e38f1c2b335bd36277487`
-
-- :ref:`exhale_function_namespacetvm_1ad7c45c38af02ce88083d976f9be743b4`
 
 - :ref:`exhale_function_namespacetvm_1ad93d00f7b080dc3f905f5c34c170a041`
 
@@ -912,9 +920,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a0bec51baa8278ae90717e921472734a6`
 
-- :ref:`exhale_function_namespacetvm_1a44086a55195e22d4a22d637beb37963a`
-
 - :ref:`exhale_function_namespacetvm_1a7e76c8a0d99d28429fd531bdf9f7598e`
+
+- :ref:`exhale_function_namespacetvm_1a44086a55195e22d4a22d637beb37963a`
 
 - :ref:`exhale_function_namespacetvm_1ad6a6184a0fe49fbe528783f008bb5156`
 

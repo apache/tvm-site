@@ -39,9 +39,9 @@ Includes
 
 - ``tvm/ffi/error.h``
 
-- ``tvm/ffi/extra/structural_mutate.h``
+- ``tvm/ffi/extra/structural_mutate.h`` (:ref:`file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_mutate.h`)
 
-- ``tvm/ffi/extra/structural_visit.h``
+- ``tvm/ffi/extra/structural_visit.h`` (:ref:`file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_visit.h`)
 
 - ``tvm/runtime/base.h`` (:ref:`file_tvm_runtime_base.h`)
 
@@ -88,4 +88,15 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ObjectMutator`
 
 - :ref:`exhale_class_classtvm_1_1ObjectVisitor`
+
+- :ref:`exhale_class_classtvm_1_1UnchangedOr`
+
+- :ref:`exhale_class_classtvm_1_1VisitInterrupt`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum_namespacetvm_1a45478eb8e9652bf4c18ec5d9bfc195a2`
 

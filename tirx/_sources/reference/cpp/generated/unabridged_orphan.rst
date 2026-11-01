@@ -11,6 +11,36 @@ Directories
 .. toctree::
    :maxdepth: 5
 
+   dir__workspace_3rdparty.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir__workspace_3rdparty_tvm-ffi.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir__workspace_3rdparty_tvm-ffi_include.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir__workspace_3rdparty_tvm-ffi_include_tvm.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir__workspace_3rdparty_tvm-ffi_include_tvm_ffi.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra.rst
+
+.. toctree::
+   :maxdepth: 5
+
    dir_tvm.rst
 
 .. toctree::
@@ -500,7 +530,32 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_equal.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_hash.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_key.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_mutate.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_tirx_structural_mutate_with_constraint_context.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file__workspace_3rdparty_tvm-ffi_include_tvm_ffi_extra_structural_visit.h.rst
 
 .. toctree::
    :maxdepth: 5
