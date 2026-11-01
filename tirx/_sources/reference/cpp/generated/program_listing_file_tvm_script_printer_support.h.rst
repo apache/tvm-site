@@ -32,6 +32,7 @@ Program Listing for File support.h
    #define TVM_SCRIPT_PRINTER_SUPPORT_H_
    
    #include <tvm/ffi/extra/dataclass.h>
+   #include <tvm/ffi/extra/visit_error_context.h>
    #include <tvm/ffi/reflection/registry.h>
    #include <tvm/ir/expr.h>
    #include <tvm/script/printer/config.h>
@@ -41,13 +42,22 @@ Program Listing for File support.h
    namespace script {
    namespace printer {
    
+   TVM_TIRX_DLL ffi::String RedirectReprPrinterMethod(const ffi::ObjectRef& obj);
+   
+   TVM_TIRX_DLL ffi::Error RedirectVisitErrorEnrichMethod(const ffi::Error& error,
+                                                          const ffi::ObjectRef& root);
+   
    template <typename ObjectType>
    void RegisterScriptRepr() {
      namespace refl = ffi::reflection;
-     refl::TypeAttrDef<ObjectType>().def(ffi::type_attr::kRepr.name,
-                                         [](ffi::ObjectRef obj, ffi::Function) -> ffi::String {
-                                           return RedirectedReprPrinterMethod(obj);
-                                         });
+     refl::TypeAttrDef<ObjectType>()
+         .def(ffi::type_attr::kRepr.name,
+              [](ffi::ObjectRef obj, ffi::Function) -> ffi::String {
+                return RedirectReprPrinterMethod(obj);
+              })
+         .def(ffi::type_attr::kEnrichVisitError.name, [](ffi::Error error, ffi::ObjectRef root) {
+           return RedirectVisitErrorEnrichMethod(error, root);
+         });
    }
    
    TVM_TIRX_DLL IdDoc VarDoc(DocTranslatorObj* d, const Var& var, bool explicit_def = true);

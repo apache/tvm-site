@@ -169,6 +169,10 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1script_1_1printer_1ab075554577ecf9180771184029b82ee7`
 
+- :ref:`exhale_function_namespacetvm_1_1script_1_1printer_1a54f2ddebf745f6bf4dae91e641192d76`
+
+- :ref:`exhale_function_namespacetvm_1_1script_1_1printer_1ac26fb9a473a902ebea347754d2fef7b3`
+
 - :ref:`exhale_function_namespacetvm_1_1script_1_1printer_1a1692f5c818f85996cd7fc8d2f197719b`
 
 - :ref:`exhale_function_namespacetvm_1_1script_1_1printer_1a68d570f49867d5b4b0eda3c3764db7f9`

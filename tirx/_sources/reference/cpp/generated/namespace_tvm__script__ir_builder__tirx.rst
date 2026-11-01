@@ -26,9 +26,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_namespacetvm_1_1script_1_1ir__builder_1_1tirx_1ac307c2206e6fcacb36fe08289e5b5a31`
-
 - :ref:`exhale_function_namespacetvm_1_1script_1_1ir__builder_1_1tirx_1a74518f928669160b1414e0828eaafbb6`
+
+- :ref:`exhale_function_namespacetvm_1_1script_1_1ir__builder_1_1tirx_1ac307c2206e6fcacb36fe08289e5b5a31`
 
 - :ref:`exhale_function_namespacetvm_1_1script_1_1ir__builder_1_1tirx_1a91682000d93e5bd2f20173780c529c14`
 

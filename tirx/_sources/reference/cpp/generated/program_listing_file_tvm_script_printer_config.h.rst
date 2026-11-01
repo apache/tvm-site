@@ -101,7 +101,5 @@ Program Listing for File config.h
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PrinterConfig, ffi::ObjectRef, PrinterConfigObj);
    };
    
-   TVM_TIRX_DLL ffi::String RedirectedReprPrinterMethod(const ffi::ObjectRef& obj);
-   
    }  // namespace tvm
    #endif  // TVM_SCRIPT_PRINTER_CONFIG_H_

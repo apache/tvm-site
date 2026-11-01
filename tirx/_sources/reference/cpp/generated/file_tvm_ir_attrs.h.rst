@@ -116,7 +116,7 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a31d64ff4720a3ed13273776208ab1391`
 
-- :ref:`exhale_function_namespacetvm_1a7e2bc626db8be997b1562c79df3d9e11`
-
 - :ref:`exhale_function_namespacetvm_1a011c96fb07f51688c56daf97a96c0302`
+
+- :ref:`exhale_function_namespacetvm_1a7e2bc626db8be997b1562c79df3d9e11`
 

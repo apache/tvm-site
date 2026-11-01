@@ -32,7 +32,7 @@ Definition (``tvm/script/printer/config.h``)
 Detailed Description
 --------------------
 
-Contains PrinterConfig / PrinterConfigObj, GetBuiltinKeywords, GetExtraConfig, and RedirectedReprPrinterMethod. Translation APIs live in :ref:`file_tvm_script_printer_doc_translator.h`, and text entry points live in :ref:`file_tvm_script_printer_printer.h`. 
+Contains PrinterConfig / PrinterConfigObj, GetBuiltinKeywords, and GetExtraConfig. Translation APIs live in :ref:`file_tvm_script_printer_doc_translator.h`, registration helpers live in :ref:`file_tvm_script_printer_support.h`, and text entry points live in :ref:`file_tvm_script_printer_printer.h`. 
 
 
 
@@ -86,11 +86,4 @@ Classes
 - :ref:`exhale_class_classtvm_1_1PrinterConfig`
 
 - :ref:`exhale_class_classtvm_1_1PrinterConfigObj`
-
-
-Functions
----------
-
-
-- :ref:`exhale_function_namespacetvm_1a99ee5ed70c45bc443934608b49141503`
 
