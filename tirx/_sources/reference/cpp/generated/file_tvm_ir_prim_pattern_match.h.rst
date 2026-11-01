@@ -36,34 +36,35 @@ It helps to simplify pattern matching and rewrites. All the patterns are generat
 
 The code below shows how to use the pattern matcher.
 
-.. code-block:: cpp
-
-
-   // max(x + z, y + z) => max(x, y) + z
-   tvm::PVar<PrimExpr> x, y, z;
-
-   // The following code tries to match the declared pattern.
-   // Match will fill the result of match into PVar if successful.
-   // Note that z occurs twice in the pattern,
-   // an equality check is performed to ensure each occurance of z
-   // is equivalent to each other.
-   if (max(x + z, y + z).Match(expr)) {
-     // Eval evaluates a pattern with the current matched value.
-     // The filled value is valid until the next call to Match.
-     return (max(x, y) + z).Eval();
-   }
-
-   tvm::PrimVar tx("tx"), ty("ty");
-   tvm::PVar<IntImm> c;
-   tvm::PVar<Var> v;
-   // We can match integer and Var, both of which are
-   // special case container of Expr
-   TVM_FFI_ICHECK((v * c).Match(tx * 3));
-   TVM_FFI_ICHECK_EQ(c.Eval()->value, 3);
-   // cannot match c to ty
-   TVM_FFI_ICHECK(!(v * c).Match(tx * ty));
-
-
+embed:rst:leading-asterisk 
+* .. code-block:: cpp
+*
+*
+*    // max(x + z, y + z) => max(x, y) + z
+*    tvm::PVar<PrimExpr> x, y, z;
+*
+*    // The following code tries to match the declared pattern.
+*    // Match will fill the result of match into PVar if successful.
+*    // Note that z occurs twice in the pattern,
+*    // an equality check is performed to ensure each occurance of z
+*    // is equivalent to each other.
+*    if (max(x + z, y + z).Match(expr)) {
+*      // Eval evaluates a pattern with the current matched value.
+*      // The filled value is valid until the next call to Match.
+*      return (max(x, y) + z).Eval();
+*    }
+*
+*    tvm::PrimVar tx("tx"), ty("ty");
+*    tvm::PVar<IntImm> c;
+*    tvm::PVar<Var> v;
+*    // We can match integer and Var, both of which are
+*    // special case container of Expr
+*    TVM_FFI_ICHECK((v * c).Match(tx * 3));
+*    TVM_FFI_ICHECK_EQ(c.Eval()->value, 3);
+*    // cannot match c to ty
+*    TVM_FFI_ICHECK(!(v * c).Match(tx * ty));
+*
+* 
 
 The pattern matcher is not threadsafe, do not use the same PVar in multiple threads.
 
@@ -165,11 +166,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a2c34094a0d90d2a554336564b1fba3a2`
 
-- :ref:`exhale_function_namespacetvm_1a752f6f3c02b9ae41ce24db2d1a769105`
-
 - :ref:`exhale_function_namespacetvm_1a5eabe48483942dd9209e0f1970d92966`
 
 - :ref:`exhale_function_namespacetvm_1ac9d50c060c54980dff8f0f62736f7e1f`
+
+- :ref:`exhale_function_namespacetvm_1a752f6f3c02b9ae41ce24db2d1a769105`
 
 - :ref:`exhale_function_namespacetvm_1ac157e28ac096e2178d5af4f5ac124090`
 
@@ -193,11 +194,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a253689828377e1e885a14b913f37a1c8`
 
-- :ref:`exhale_function_namespacetvm_1a5db247e2fc116eb89596c4f2260f5fd3`
+- :ref:`exhale_function_namespacetvm_1a66abe3176c42f9cdf33fd093da102d78`
 
 - :ref:`exhale_function_namespacetvm_1a65d320780845ca2d9cabe659baf5650d`
 
-- :ref:`exhale_function_namespacetvm_1a66abe3176c42f9cdf33fd093da102d78`
+- :ref:`exhale_function_namespacetvm_1a5db247e2fc116eb89596c4f2260f5fd3`
 
 - :ref:`exhale_function_namespacetvm_1add476d29b0ca26e54e6358ccc4b1dbeb`
 
@@ -261,9 +262,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1adfe0027298faaa905130ff80023b4804`
 
-- :ref:`exhale_function_namespacetvm_1ac58e284059c962f5a96e46d98fe24e8d`
-
 - :ref:`exhale_function_namespacetvm_1ab042ef46f754a15ae6c332babcd67907`
+
+- :ref:`exhale_function_namespacetvm_1ac58e284059c962f5a96e46d98fe24e8d`
 
 - :ref:`exhale_function_namespacetvm_1aa99dbf24a4d6e8c09587296bda16ff0d`
 

@@ -32,19 +32,20 @@ Definition (``tvm/ir/pattern_match.h``)
 Detailed Description
 --------------------
 
-.. code-block:: cpp
-
-  #include <tvm/ir/prim/pattern_match.h>
-
-  void MatchMultiplyAdd(const tvm::PrimExpr& expr) {
-    tvm::PVar<tvm::PrimExpr> a, b, c;
-    if ((a * b + c).Match(expr)) {
-      tvm::PrimExpr lhs = a.Eval();
-      tvm::PrimExpr rhs = b.Eval();
-      tvm::PrimExpr addend = c.Eval();
-    }
-  }
-
+embed:rst:leading-asterisk 
+* .. code-block:: cpp
+*
+*   #include <tvm/ir/prim/pattern_match.h>
+*
+*   void MatchMultiplyAdd(const tvm::PrimExpr& expr) {
+*     tvm::PVar<tvm::PrimExpr> a, b, c;
+*     if ((a * b + c).Match(expr)) {
+*       tvm::PrimExpr lhs = a.Eval();
+*       tvm::PrimExpr rhs = b.Eval();
+*       tvm::PrimExpr addend = c.Eval();
+*     }
+*   }
+*  
 
 
 

@@ -87,7 +87,7 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1ae16c68134d0aff3b41687b4d93edadca`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a3933ee60c8b840479b577ce9a0d6bf13`
 
 
 Variables

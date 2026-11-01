@@ -253,7 +253,7 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1_1prim_1a5d4fc895222d0bd34905915e1c4257e7`
+- :ref:`exhale_typedef_namespacetvm_1_1prim_1aa29b13fdb19e4ba841e20ccca6ab63c2`
 
-- :ref:`exhale_typedef_namespacetvm_1_1prim_1aee79c6f217ec0a7c221b7a518504de36`
+- :ref:`exhale_typedef_namespacetvm_1_1prim_1a040ac5752718c34291b831464181a4e3`
 

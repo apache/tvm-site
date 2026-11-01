@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public tvm::sig::SignatureTrait``
+- ``public tvm::sig::SignatureTrait`` (:ref:`exhale_struct_structtvm_1_1sig_1_1SignatureTrait`)
 
 
 Struct Documentation

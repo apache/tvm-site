@@ -84,6 +84,7 @@ Program Listing for File function.h
      }
    
      bool HasNonzeroAttr(const std::string& attr_key) const { return attrs.HasNonzeroAttr(attr_key); }
+   
      LinkageType GetLinkageType() const;
    
      static void RegisterReflection() {

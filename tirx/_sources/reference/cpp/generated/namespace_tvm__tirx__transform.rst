@@ -13,6 +13,25 @@ Namespace tvm::tirx::transform
 
 
 
+Classes
+-------
+
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1Pass`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1PassContext`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1PassContextObj`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1PassInfo`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1PassInfoObj`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1PassObj`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1Sequential`
+
+
 Functions
 ---------
 
@@ -29,9 +48,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1a7d66c5587649e530020ba0734ab11297`
 
+- :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1abb8807af44dfc09a04d15ff231d4ef13`
+
 - :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1a38a89149c0da670e373d9c7ae6b501bf`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1abb8807af44dfc09a04d15ff231d4ef13`
+- :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1a785a8237936df439abe7e3486f110d47`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1a77f977f00ba27a8ecb05cdb5e20faf38`
 

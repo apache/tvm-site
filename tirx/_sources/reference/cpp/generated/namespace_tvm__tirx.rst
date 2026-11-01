@@ -276,9 +276,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ab12af3202a18d10aeac6fc4638148899`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1aa3bbe1b8701b2ee9930ad7e41937ae62`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1add73860040062a458ecf0f6b09573dea`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1aa3bbe1b8701b2ee9930ad7e41937ae62`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a7ad88af66366b640fe0837726074314f`
 
@@ -299,12 +299,12 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1ab50033b4d707764af007605a2a998e7f`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a10e9dabc313c5ee9d822b3b07ab4a2b1`
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1aba5840d0f677916170939a3b7a30223c`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a4684b6859921f2a35da020cf1301537d`
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a0c1f44abdaf5b9ea2bef638dcc66865a`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1ad4c99fd67b65f19e2f7a26eb4190996e`
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1ae16c68134d0aff3b41687b4d93edadca`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a3933ee60c8b840479b577ce9a0d6bf13`
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a5c143c245d2ccaac75c468e5b7ad3fdf`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a8c92103c5fe72a21c5c2c3b630667643`

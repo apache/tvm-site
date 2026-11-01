@@ -67,6 +67,15 @@ Namespaces
 - :ref:`namespace_tvm__tirx__transform`
 
 
+Classes
+-------
+
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1Pass`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1transform_1_1PassContext`
+
+
 Functions
 ---------
 

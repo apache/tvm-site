@@ -108,7 +108,7 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1a7c2095aed90b2129ba631b90103313a2`
+- :ref:`exhale_typedef_namespacetvm_1a7a6e01eaa5afc555243ec9b9614e5718`
 
 - :ref:`exhale_typedef_device__api_8h_1ab1d5f6b7945e1410602a8a057fda5757`
 

@@ -21,6 +21,12 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1script_1_1ir__builder_1_1tirx_1_1FunctionFrameObj`
 
+- :ref:`exhale_class_classtvm_1_1script_1_1ir__builder_1_1tirx_1_1TensorVar`
+
+- :ref:`exhale_class_classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ThreadScope`
+
+- :ref:`exhale_class_classtvm_1_1script_1_1ir__builder_1_1tirx_1_1Var`
+
 
 Functions
 ---------
