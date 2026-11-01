@@ -268,5 +268,3 @@ and the second covers the tools we use to inspect and transform it.
 - :doc:`symbolic_integer_analysis` covers symbolic analysis and simplification
   of integer indices and bounds, which compiler analyses and transformations
   can use.
-- :doc:`writing_passes` shows how to optionally package transformations as
-  passes, so we can compose them into a pipeline and inspect each stage.

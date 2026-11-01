@@ -86,11 +86,12 @@ The output is:
                        ├── a: TensorLoad(source=A, indices=[i])
                        └── b: FloatImm(value=1.0)
 
-Most analyses care about only a few kinds of node in this tree. To find
-the tensors that ``add_one`` writes, for example, we only need the
-``TensorStore`` nodes. ``tvm_ffi.structural_walk`` visits every node under
-a root and calls our function on the nodes that match a type, so we
-pair the store type with a callback:
+Most analyses care about only a few kinds of node in this tree. To find the
+tensors that ``add_one`` writes, for example, we only need the
+``TensorStore`` nodes.
+:py:func:`tvm_ffi.structural_walk <tvm_ffi.structural_walk>` visits every
+node under a root and calls our function on the nodes that match a type, so
+we pair the store type with a callback:
 
 .. literalinclude:: ../../examples/ir_guides/structural_utilities.py
    :language: python
@@ -207,9 +208,10 @@ Structural Map
 --------------
 
 Walks let us inspect a program; a transformation also needs to rewrite it.
-``tvm_ffi.structural_map`` takes the same callbacks as a walk, but each one
-returns a replacement for its node. The mapper rebuilds the parents of
-everything that changed and returns the new root.
+:py:func:`tvm_ffi.structural_map <tvm_ffi.structural_map>` takes the same
+callbacks as a walk, but each one returns a replacement for its node. The
+mapper rebuilds the parents of everything that changed and returns the new
+root.
 
 Suppose ``add_one`` is always called on tensors of 128 elements. Knowing
 ``n`` ahead of time, we can specialize the function by replacing ``n`` with
@@ -269,12 +271,13 @@ The output is:
    True
    True
 
-The two functions are different objects, yet ``tvm_ffi.structural_equal``
-finds them equal, and ``tvm_ffi.structural_hash`` gives them the same hash.
-Each call to ``make_add`` also creates its own ``n``, ``A``, ``B``, and
-``i``. The comparison matches each variable defined in one program with its
-counterpart in the other, so these different variable objects do not make
-the programs unequal.
+The two functions are different objects, yet
+:py:func:`tvm_ffi.structural_equal <tvm_ffi.structural_equal>` finds them
+equal, and :py:func:`tvm_ffi.structural_hash <tvm_ffi.structural_hash>`
+gives them the same hash. Each call to ``make_add`` also creates its own
+``n``, ``A``, ``B``, and ``i``. The comparison matches each variable defined
+in one program with its counterpart in the other, so these different
+variable objects do not make the programs unequal.
 
 A variable that is not defined anywhere in the compared values is free and
 has no definition to match. By default, a free variable is equal only to
@@ -293,9 +296,9 @@ The output is:
    True
 
 In a test, we usually want more than a yes-or-no answer.
-``ir.assert_structural_equal`` raises an error that shows where the
-programs differ. Let's compare ``first`` with ``make_add(2)``, its ``+ 2``
-variant:
+:py:func:`ir.assert_structural_equal <tvm_tirx.ir.assert_structural_equal>`
+raises an error that shows where the programs differ. Let's compare
+``first`` with ``make_add(2)``, its ``+ 2`` variant:
 
 .. literalinclude:: ../../examples/ir_guides/structural_utilities.py
    :language: python
@@ -321,10 +324,11 @@ The error names the access path of the first difference, the chain of
 fields from the function down to the constant, and underlines that
 constant in both programs.
 
-Equality and hashing are also useful inside the compiler itself, whenever
-we need to detect that two functions or subtrees are the same program.
-``tvm_ffi.StructuralKey`` wraps a value so that a Python set or dictionary
-compares it by structure, which lets us deduplicate equal programs:
+Equality and hashing are also useful inside the compiler itself, whenever we
+need to detect that two functions or subtrees are the same program.
+:py:class:`tvm_ffi.StructuralKey <tvm_ffi.StructuralKey>` wraps a value so
+that a Python set or dictionary compares it by structure, which lets us
+deduplicate equal programs:
 
 .. literalinclude:: ../../examples/ir_guides/structural_utilities.py
    :language: python
@@ -384,13 +388,14 @@ When we call ``add_one`` with an ``A`` of length 100, ``n`` is bound to
 100, and passing a ``B`` of length 50 raises an error.
 
 Importantly, the structural utilities are themselves aware of definitions
-and uses. When ``structural_map`` rewrites the type of a variable at its
-definition site, it creates a new variable with the new type and remaps
-every use site to it. For example, replacing ``n`` with 128 in ``add_one``
-changes the type of ``A`` from ``T.Tensor((n,), T.float32)`` to
-``T.Tensor((128,), T.float32)``, so the result has a new ``A``, and
-``A[i]`` in the body refers to that new ``A``. Our callback only replaced
-``n``; the mapper kept every definition and its uses consistent.
+and uses. When :py:func:`structural_map <tvm_ffi.structural_map>` rewrites
+the type of a variable at its definition site, it creates a new variable
+with the new type and remaps every use site to it. For example, replacing
+``n`` with 128 in ``add_one`` changes the type of ``A`` from
+``T.Tensor((n,), T.float32)`` to ``T.Tensor((128,), T.float32)``, so the
+result has a new ``A``, and ``A[i]`` in the body refers to that new ``A``.
+Our callback only replaced ``n``; the mapper kept every definition and its
+uses consistent.
 
 To receive the kind in our own function, we register it through
 ``with_def_region_kind`` instead of ``callbacks``, and the function is
@@ -452,11 +457,11 @@ Walk and map recurse for us, and that covers most tasks. Some analyses,
 however, need to know where they are in the program, not just which node
 they are looking at. To report the loops around each write, for example, a
 callback must know when the traversal enters a loop and when it leaves
-again. ``tvm_ffi.structural_visit`` and ``tvm_ffi.structural_mutate`` hand
-that control to us: a matching callback also receives the visitor or
-mutator and decides when, or whether, to process the node's children. If it
-never does, the children are skipped. Let's record the loops around each
-write:
+again. :py:func:`tvm_ffi.structural_visit <tvm_ffi.structural_visit>` and
+:py:func:`tvm_ffi.structural_mutate <tvm_ffi.structural_mutate>` hand that
+control to us: a matching callback also receives the visitor or mutator and
+decides when, or whether, to process the node's children. If it never does,
+the children are skipped. Let's record the loops around each write:
 
 .. literalinclude:: ../../examples/ir_guides/structural_utilities.py
    :language: python
@@ -469,11 +474,13 @@ The output is:
 
    [('B', ['i'])]
 
-``visit_for`` pushes the loop variable, lets ``default_visit`` visit the
-loop's children, then pops the variable, so ``loops`` always names the
-loops around the current node. ``default_visit`` processes a node's
-children with their usual traversal, without calling the node's own
-callback again; ``default_mutate`` does the same for a mutator.
+``visit_for`` pushes the loop variable, lets
+:py:meth:`default_visit <tvm_ffi.StructuralVisitor.default_visit>` visit the
+loop's children, then pops the variable, so ``loops`` always names the loops
+around the current node. ``default_visit`` processes a node's children with
+their usual traversal, without calling the node's own callback again;
+:py:meth:`default_mutate <tvm_ffi.StructuralMutator.default_mutate>` does
+the same for a mutator.
 
 Because the callback now drives the recursion, it also takes on what the
 walker used to do for us. ``visit_for`` returns the result of
@@ -506,9 +513,10 @@ The output is:
 When the mutate reaches the loop, ``reverse_loop`` records the replacement
 ``n - 1 - i`` for ``i`` in the ``reversed_index`` dictionary, then lets
 ``default_mutate`` rewrite the loop's children, so the replacement is ready
-before any use of ``i`` is reached. The loop's own ``i`` is a definition
-and must stay a variable, so ``reverse_uses`` replaces ``i`` only where
-``def_region_kind()`` is ``NONE``, that is, at uses.
+before any use of ``i`` is reached. The loop's own ``i`` is a definition and
+must stay a variable, so ``reverse_uses`` replaces ``i`` only where
+:py:meth:`def_region_kind() <tvm_ffi.StructuralMutator.def_region_kind>` is
+``NONE``, that is, at uses.
 
 These utilities cover the common ways to traverse, rewrite, and compare IR,
 but they are a convenience, not a requirement. IR objects are ordinary

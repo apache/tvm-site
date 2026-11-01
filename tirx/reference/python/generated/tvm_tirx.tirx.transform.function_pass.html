@@ -202,7 +202,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/printing_and_parsing.html">Printing and Parsing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/structural_utilities.html">Structural Traversal, Rewriting, and Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/writing_passes.html">Writing Passes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
 <ul class="nav bd-sidenav">
@@ -498,10 +497,15 @@
 <dt class="sig sig-object py" id="tvm_tirx.tirx.transform.function_pass">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.tirx.transform.</span></span><span class="sig-name descname"><span class="pre">function_pass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.tirx.transform.function_pass" title="Link to this definition">#</a></dt>
 <dd><p>Create a TIRx function pass from a callback or class.</p>
-<p>The callback receives <code class="docutils literal notranslate"><span class="pre">(function,</span> <span class="pre">module,</span> <span class="pre">context)</span></code> and returns the
-transformed Function. A decorated class instead implements
-<code class="docutils literal notranslate"><span class="pre">transform_function(self,</span> <span class="pre">function,</span> <span class="pre">module,</span> <span class="pre">context)</span></code>. With no
-<code class="docutils literal notranslate"><span class="pre">pass_func</span></code>, returns a decorator for either form.</p>
+<p>A function pass applies a transformation to each TIRx Function in a module
+and returns the module with the transformed functions. The callback
+receives <code class="docutils literal notranslate"><span class="pre">(function,</span> <span class="pre">module,</span> <span class="pre">context)</span></code>, where <code class="docutils literal notranslate"><span class="pre">module</span></code> is the input
+module and <code class="docutils literal notranslate"><span class="pre">context</span></code> is the current <a class="reference internal" href="tvm_tirx.ir.transform.PassContext.html#tvm_tirx.ir.transform.PassContext" title="tvm_tirx.ir.transform.PassContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassContext</span></code></a>,
+and returns the transformed Function; returning <code class="docutils literal notranslate"><span class="pre">None</span></code> removes the
+function from the module. A decorated class instead implements
+<code class="docutils literal notranslate"><span class="pre">transform_function(self,</span> <span class="pre">function,</span> <span class="pre">module,</span> <span class="pre">context)</span></code>, and its
+constructor arguments configure the pass. With no <code class="docutils literal notranslate"><span class="pre">pass_func</span></code>, returns
+a decorator for either form.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -518,6 +522,49 @@ when <code class="docutils literal notranslate"><span class="pre">pass_func</spa
 <dd class="field-odd"><p><em>Callable</em> | <a class="reference internal" href="tvm_tirx.tirx.transform.FunctionPass.html#tvm_tirx.tirx.transform.FunctionPass" title="tvm_tirx.tirx.transform.function_pass.FunctionPass"><em>FunctionPass</em></a></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Specialize the length <code class="docutils literal notranslate"><span class="pre">n</span></code> of a function’s tensors to a constant. The
+function form fixes the length; the class form takes it as an argument:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span> <span class="k">as</span> <span class="n">I</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Module</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">replace_n</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span> <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">else</span> <span class="n">var</span>
+
+
+<span class="nd">@tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">function_pass</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">specialize</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">replace_n</span><span class="p">))</span>
+
+
+<span class="nd">@tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">function_pass</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Specialize</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span> <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">else</span> <span class="n">var</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">replace_n</span><span class="p">))</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">specialize</span><span class="p">(</span><span class="n">Module</span><span class="p">)</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>  <span class="c1"># for i in range(64):</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Specialize</span><span class="p">(</span><span class="mi">32</span><span class="p">)(</span><span class="n">Module</span><span class="p">)</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>  <span class="c1"># for i in range(32):</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

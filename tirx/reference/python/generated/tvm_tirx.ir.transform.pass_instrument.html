@@ -202,7 +202,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/printing_and_parsing.html">Printing and Parsing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/structural_utilities.html">Structural Traversal, Rewriting, and Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/writing_passes.html">Writing Passes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
 <ul class="nav bd-sidenav">
@@ -474,12 +473,39 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm_tirx.ir.transform.pass_instrument">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.ir.transform.</span></span><span class="sig-name descname"><span class="pre">pass_instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pi_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.ir.transform.pass_instrument" title="Link to this definition">#</a></dt>
-<dd><p>Decorate a pass instrument.</p>
+<dd><p>Decorate a class as a pass instrument.</p>
+<p>The class does not need to inherit from <a class="reference internal" href="tvm_tirx.ir.transform.PassInstrument.html#tvm_tirx.ir.transform.PassInstrument" title="tvm_tirx.ir.transform.PassInstrument"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassInstrument</span></code></a>. It
+defines any of <code class="docutils literal notranslate"><span class="pre">enter_pass_ctx</span></code>, <code class="docutils literal notranslate"><span class="pre">exit_pass_ctx</span></code>, <code class="docutils literal notranslate"><span class="pre">should_run</span></code>,
+<code class="docutils literal notranslate"><span class="pre">run_before_pass</span></code>, and <code class="docutils literal notranslate"><span class="pre">run_after_pass</span></code>, with the signatures
+documented on <a class="reference internal" href="tvm_tirx.ir.transform.PassInstrument.html#tvm_tirx.ir.transform.PassInstrument" title="tvm_tirx.ir.transform.PassInstrument"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassInstrument</span></code></a>; the decorator returns a
+<a class="reference internal" href="tvm_tirx.ir.transform.PassInstrument.html#tvm_tirx.ir.transform.PassInstrument" title="tvm_tirx.ir.transform.PassInstrument"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassInstrument</span></code></a> subclass that calls them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>pi_cls</strong> (<em>class</em>) – Instrument class. See example below.</p>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> (<em>type or Callable</em>) – The instrument class, or a decorator when <code class="docutils literal notranslate"><span class="pre">pi_cls</span></code> is omitted.</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Skip a pass by name. <code class="docutils literal notranslate"><span class="pre">should_run</span></code> returns <code class="docutils literal notranslate"><span class="pre">False</span></code> for the pass to
+skip:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.ir.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">PassContext</span><span class="p">,</span> <span class="n">pass_instrument</span>
+
+<span class="nd">@pass_instrument</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SkipPass</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skipped_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skipped_name</span> <span class="o">=</span> <span class="n">skipped_name</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">info</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skipped_name</span>
+
+
+<span class="k">with</span> <span class="n">PassContext</span><span class="p">(</span><span class="n">instruments</span><span class="o">=</span><span class="p">[</span><span class="n">SkipPass</span><span class="p">(</span><span class="s2">"tirx.StmtSimplify"</span><span class="p">)]):</span>
+    <span class="n">after</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">StmtSimplify</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>  <span class="c1"># returns mod unchanged</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

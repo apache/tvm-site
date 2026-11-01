@@ -202,7 +202,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../ir_guides/printing_and_parsing.html">Printing and Parsing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ir_guides/structural_utilities.html">Structural Traversal, Rewriting, and Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ir_guides/symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../ir_guides/writing_passes.html">Writing Passes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
 <ul class="nav bd-sidenav">
@@ -474,6 +473,90 @@
   <section id="module-tvm_tirx.ir.transform">
 <span id="tvm-tirx-ir-transform"></span><h1>tvm_tirx.ir.transform<a class="headerlink" href="#module-tvm_tirx.ir.transform" title="Link to this heading">#</a></h1>
 <p>IR passes, pass contexts, sequential pipelines, and pass instrumentation.</p>
+<p>A transformation in TIRx is any function that takes a module and returns a
+new one. We can write it as an ordinary Python function and call it
+directly. Passes are an optional, thin layer on top: a pass wraps a
+transformation with a name and an optimization level, and runs it under a
+shared <a class="reference internal" href="generated/tvm_tirx.ir.transform.PassContext.html#tvm_tirx.ir.transform.PassContext" title="tvm_tirx.ir.transform.PassContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassContext</span></code></a>. This lets us compose passes into a pipeline
+with <a class="reference internal" href="generated/tvm_tirx.ir.transform.Sequential.html#tvm_tirx.ir.transform.Sequential" title="tvm_tirx.ir.transform.Sequential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></a>, select which passes run through the context’s
+options, and observe each step with pass instruments. A pass only describes
+how a transformation is invoked; inside, different passes can work in
+completely different ways.</p>
+<p>The example below wraps a function as a pass with
+<a class="reference internal" href="generated/tvm_tirx.tirx.transform.function_pass.html#tvm_tirx.tirx.transform.function_pass" title="tvm_tirx.tirx.transform.function_pass"><code class="xref py py-func docutils literal notranslate"><span class="pre">function_pass()</span></code></a>, which applies it to every
+function in the module. <code class="docutils literal notranslate"><span class="pre">specialize</span></code> assumes that the tensors have 64
+elements. A built-in simplification pass then removes the <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">100</span></code>
+check, which the specialized loop always satisfies. A
+<a class="reference internal" href="generated/tvm_tirx.ir.transform.instrument.PassPrintingInstrument.html#tvm_tirx.ir.transform.instrument.PassPrintingInstrument" title="tvm_tirx.ir.transform.instrument.PassPrintingInstrument"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassPrintingInstrument</span></code></a> prints
+the module before the first pass and after the last one:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.ir.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">PassContext</span><span class="p">,</span> <span class="n">Sequential</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.ir.transform.instrument</span><span class="w"> </span><span class="kn">import</span> <span class="n">PassPrintingInstrument</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span> <span class="k">as</span> <span class="n">I</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Module</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+                <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">replace_n</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span> <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">else</span> <span class="n">var</span>
+
+
+<span class="nd">@tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">function_pass</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">specialize</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">,</span> <span class="n">replace_n</span><span class="p">))</span>
+
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">([</span><span class="n">specialize</span><span class="p">,</span> <span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">StmtSimplify</span><span class="p">()])</span>
+<span class="n">printer</span> <span class="o">=</span> <span class="n">PassPrintingInstrument</span><span class="p">([</span><span class="s2">"specialize"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"tirx.StmtSimplify"</span><span class="p">])</span>
+<span class="k">with</span> <span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">instruments</span><span class="o">=</span><span class="p">[</span><span class="n">printer</span><span class="p">]):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="n">Module</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Print IR before: specialize
+from __future__ import annotations
+
+# from tvm_tirx.script import tirx as T
+
+n = T.dynamic("n", dtype="int32")
+@T.ir_module
+class Module:
+    @T.function
+    def add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
+        for i in range(n):
+            if i &lt; 100:
+                B[i] = A[i] + T.float32(1.0)
+
+
+Print IR after: tirx.StmtSimplify
+from __future__ import annotations
+
+# from tvm_tirx.script import tirx as T
+
+@T.ir_module
+class Module:
+    @T.function
+    def add_one(A: T.Tensor((64,), T.float32), B: T.Tensor((64,), T.float32)):
+        for i in range(64):
+            B[i] = A[i] + T.float32(1.0)
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Module</span></code> itself is unchanged, and <code class="docutils literal notranslate"><span class="pre">result</span></code> holds the transformed module.
+Inside a <a class="reference internal" href="generated/tvm_tirx.ir.transform.Sequential.html#tvm_tirx.ir.transform.Sequential" title="tvm_tirx.ir.transform.Sequential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></a>, a pass runs only when its optimization level
+is at most the context’s <code class="docutils literal notranslate"><span class="pre">opt_level</span></code> or its name is in <code class="docutils literal notranslate"><span class="pre">required_pass</span></code>,
+and never when its name is in <code class="docutils literal notranslate"><span class="pre">disabled_pass</span></code>. Calling a pass directly, as
+in <code class="docutils literal notranslate"><span class="pre">specialize(Module)</span></code>, always runs it.</p>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
@@ -488,7 +571,7 @@
 <td><p>Scope optimization levels, pass selection, instruments, and pass options.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/tvm_tirx.ir.transform.PassInfo.html#tvm_tirx.ir.transform.PassInfo" title="tvm_tirx.ir.transform.PassInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PassInfo</span></code></a>(opt_level, name)</p></td>
-<td><p>The class contains the meta data required by a pass.</p></td>
+<td><p>Metadata of a pass: its name and optimization level.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/tvm_tirx.ir.transform.PassInstrument.html#tvm_tirx.ir.transform.PassInstrument" title="tvm_tirx.ir.transform.PassInstrument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PassInstrument</span></code></a>()</p></td>
 <td><p>A pass instrument implementation.</p></td>
@@ -511,7 +594,7 @@
 <td><p>Decorate a module pass.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/tvm_tirx.ir.transform.pass_instrument.html#tvm_tirx.ir.transform.pass_instrument" title="tvm_tirx.ir.transform.pass_instrument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pass_instrument</span></code></a>([pi_cls])</p></td>
-<td><p>Decorate a pass instrument.</p></td>
+<td><p>Decorate a class as a pass instrument.</p></td>
 </tr>
 </tbody>
 </table>

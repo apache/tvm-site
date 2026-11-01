@@ -55,7 +55,6 @@ Table of Contents
    ir_guides/printing_and_parsing
    ir_guides/structural_utilities
    ir_guides/symbolic_integer_analysis
-   ir_guides/writing_passes
 
 .. toctree::
    :maxdepth: 1

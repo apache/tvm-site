@@ -202,7 +202,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/printing_and_parsing.html">Printing and Parsing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/structural_utilities.html">Structural Traversal, Rewriting, and Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/symbolic_integer_analysis.html">Symbolic Integer Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ir_guides/writing_passes.html">Writing Passes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
 <ul class="nav bd-sidenav">
@@ -482,7 +481,11 @@
 <p>A pass that works on a sequence of pass objects. Multiple passes can be
 executed sequentially using this class.</p>
 <p>Passes run in the given order, subject to the optimization level and
-the required/disabled pass controls in PassContext.</p>
+the required/disabled pass controls in PassContext. A child pass runs when
+its <code class="docutils literal notranslate"><span class="pre">info.opt_level</span></code> is at most the context’s <code class="docutils literal notranslate"><span class="pre">opt_level</span></code> or its name
+is in <code class="docutils literal notranslate"><span class="pre">required_pass</span></code>, and never when its name is in <code class="docutils literal notranslate"><span class="pre">disabled_pass</span></code>.
+A <code class="docutils literal notranslate"><span class="pre">Sequential</span></code> is itself a pass, so it can be nested in another
+<code class="docutils literal notranslate"><span class="pre">Sequential</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -494,6 +497,22 @@ Child passes use the active PassContext’s optimization level.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.ir.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">PassContext</span><span class="p">,</span> <span class="n">Sequential</span>
+
+<span class="nd">@tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">function_pass</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">expensive</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span>
+
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">([</span><span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">StmtSimplify</span><span class="p">(),</span> <span class="n">expensive</span><span class="p">])</span>
+<span class="k">with</span> <span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">after</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>  <span class="c1"># skips expensive, whose opt_level is 3</span>
+<span class="k">with</span> <span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">required_pass</span><span class="o">=</span><span class="p">[</span><span class="s2">"expensive"</span><span class="p">]):</span>
+    <span class="n">after</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>  <span class="c1"># runs both passes</span>
+</pre></div>
+</div>
 <dl class="py property">
 <dt class="sig sig-object py" id="tvm_tirx.ir.transform.Sequential.pass_info">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">pass_info</span></span><a class="headerlink" href="#tvm_tirx.ir.transform.Sequential.pass_info" title="Link to this definition">#</a></dt>
