@@ -70,10 +70,13 @@ Program Listing for File layout.h
    
      TVM_TIRX_DLL PrimExpr GetSpan(ffi::Optional<ffi::String> axis_name = std::nullopt) const;
    
-     TVM_TIRX_DLL ffi::Map<ffi::String, PrimExpr> Apply(ffi::Array<PrimExpr> coord) const;
-     TVM_TIRX_DLL ffi::Map<ffi::String, PrimExpr> Apply(PrimExpr coord) const;
+     TVM_TIRX_DLL ffi::Map<ffi::String, PrimExpr> Apply(ffi::Array<PrimExpr> coord,
+                                                        sym::AnalyzerObj* analyzer) const;
+     TVM_TIRX_DLL ffi::Map<ffi::String, PrimExpr> Apply(PrimExpr coord,
+                                                        sym::AnalyzerObj* analyzer) const;
      TVM_TIRX_DLL ffi::Map<ffi::String, PrimExpr> Apply(const ffi::Array<PrimExpr>& coord,
-                                                        const ffi::Array<PrimExpr>& shape) const;
+                                                        const ffi::Array<PrimExpr>& shape,
+                                                        sym::AnalyzerObj* analyzer) const;
    
      TVM_TIRX_DLL Layout Canonicalize() const;
    

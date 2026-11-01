@@ -335,6 +335,7 @@ Program Listing for File analyzer.h
      IntSetAnalyzer int_set;
      Z3Prover z3_prover;
      AnalyzerObj();
+     void SetZ3DefaultFallback(bool enabled);
      void SyncConstraintContext(const ConstraintContext& context);
      ConstraintContext GetConstraintContext() const;
      bool CanProveGreaterEqual(const PrimExpr& expr, int64_t lower_bound);
@@ -352,6 +353,8 @@ Program Listing for File analyzer.h
    
     private:
      friend class detail::TempConstraintScope;
+     // Policy for DEFAULT-strength queries; explicit stronger queries can still use Z3.
+     bool z3_default_fallback_{true};
      // Record a value binding after AnalyzerObj validates and orders the premises.
      void IngestBinding(const Var& var, const PrimExpr& expr);
      // Record a half-open variable range from the accepted premise prefix.
