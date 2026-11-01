@@ -70,9 +70,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1runtime_1ad986583227751a735cf890e1049949ca`
 
-- :ref:`exhale_function_namespacetvm_1_1runtime_1a350b7bea693d1368a355b8ca0229b8be`
-
 - :ref:`exhale_function_namespacetvm_1_1runtime_1ac9e8684776f3f98b6a5a13c9c343904f`
+
+- :ref:`exhale_function_namespacetvm_1_1runtime_1a350b7bea693d1368a355b8ca0229b8be`
 
 - :ref:`exhale_function_namespacetvm_1_1runtime_1a6c5c8fd2813bd3c810dd82f7b62a0cc9`
 
