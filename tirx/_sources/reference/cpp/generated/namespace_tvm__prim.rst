@@ -254,9 +254,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1a861154d298e1c8d49b97bcefcfac2a8d`
 
-- :ref:`exhale_function_namespacetvm_1_1prim_1ac7768650e1f34ec0309f701ceeb11709`
-
 - :ref:`exhale_function_namespacetvm_1_1prim_1a06df8a5c28ebfe1ac40a729ecdfde0be`
+
+- :ref:`exhale_function_namespacetvm_1_1prim_1ac7768650e1f34ec0309f701ceeb11709`
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1aa6b1cb8cc8364e3c6b003ce71f7625ac`
 

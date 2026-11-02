@@ -113,10 +113,6 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1ac56320b19588a2b78ee6af41871589fa`
 
-- :ref:`exhale_function_namespacetvm_1a0fca6e906a15aa171db096bf0914f1e0`
-
-- :ref:`exhale_function_namespacetvm_1a82fa5ae041c35999d346c4524e46f287`
-
 - :ref:`exhale_function_namespacetvm_1a2d2b548892bd9837772cd35263a9901b`
 
 - :ref:`exhale_function_namespacetvm_1af7f607f356df82f729b25251a597580d`
@@ -124,6 +120,10 @@ Functions
 - :ref:`exhale_function_namespacetvm_1ad78886b61b42488bec12a618a47bdbe9`
 
 - :ref:`exhale_function_namespacetvm_1ae034d880d0a0d5d575b101e6ed1381d6`
+
+- :ref:`exhale_function_namespacetvm_1a0fca6e906a15aa171db096bf0914f1e0`
+
+- :ref:`exhale_function_namespacetvm_1a82fa5ae041c35999d346c4524e46f287`
 
 - :ref:`exhale_function_namespacetvm_1a31e7a3e4a160a1d048e3ba741966f1a8`
 
@@ -225,6 +225,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a1288758f4fa9e132fe8688e1eba1607f`
 
+- :ref:`exhale_function_namespacetvm_1aef4392d26548de9e3f3260b062d17e0e`
+
 - :ref:`exhale_function_namespacetvm_1a3e57e76d26d3c37dfc770aa256f16f8e`
 
 - :ref:`exhale_function_namespacetvm_1aea56134dea544b7eb07130aa9bfe0a7f`
@@ -235,7 +237,7 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1ade9bbf63c5f48528f5326d1a3d93cac7`
 
-- :ref:`exhale_function_namespacetvm_1aef4392d26548de9e3f3260b062d17e0e`
+- :ref:`exhale_function_namespacetvm_1abbb06b0efec85cc1728997ff72d63d87`
 
 - :ref:`exhale_function_namespacetvm_1ad924575a3e178b130a4dda8b2256d57f`
 
@@ -246,8 +248,6 @@ Functions
 - :ref:`exhale_function_namespacetvm_1af405877e76c4f432f4469bfae9b94a1b`
 
 - :ref:`exhale_function_namespacetvm_1aba3fb8f437bfb711df42db6f72776a35`
-
-- :ref:`exhale_function_namespacetvm_1abbb06b0efec85cc1728997ff72d63d87`
 
 - :ref:`exhale_function_namespacetvm_1ac008d3cae5f8c9d2d5ed86b10c5ccc75`
 
@@ -519,9 +519,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1a861154d298e1c8d49b97bcefcfac2a8d`
 
-- :ref:`exhale_function_namespacetvm_1_1prim_1ac7768650e1f34ec0309f701ceeb11709`
-
 - :ref:`exhale_function_namespacetvm_1_1prim_1a06df8a5c28ebfe1ac40a729ecdfde0be`
+
+- :ref:`exhale_function_namespacetvm_1_1prim_1ac7768650e1f34ec0309f701ceeb11709`
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1aa6b1cb8cc8364e3c6b003ce71f7625ac`
 
