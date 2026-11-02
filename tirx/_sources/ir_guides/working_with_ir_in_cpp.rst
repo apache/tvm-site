@@ -18,37 +18,24 @@
 Working with IR in C++
 ======================
 
-The IR objects we have used from Python are TVM-FFI objects implemented in
-C++. A C++ function can receive ``add_one`` from Python, inspect or rewrite
-it, and hand the result back, with no conversion in between. This lets us
-move a hot analysis or a large transformation to C++ while keeping the rest
-of the workflow in Python.
+TIRx is implemented in C++, and a C++ function can read, build, and
+rewrite its IR directly. The function can receive a program written in
+TVMScript, inspect or rewrite it, and return the result, with no
+conversion in between, which lets us move a hot analysis or a large
+transformation to C++. This guide covers:
 
-This chapter assumes the concepts of the earlier chapters and shows their
-C++ form:
-
-- **Accessing and creating IR nodes**: read fields, check node types, and
-  build new nodes.
-- **Structural utilities**: walk, map, and compare programs, with callbacks
-  selected by their parameter types.
-- **Visitor and mutator classes**: C++ classes with one hook per node kind,
-  for passes that customize many kinds of node.
+- **TVM-FFI object system**: how IR nodes are represented and used in C++.
+- **Structural utilities**: walk, map, and compare programs.
+- **Visitor and mutator classes**: one hook per node type, for larger passes.
 
 .. note::
 
-   The runnable code in this chapter is under
+   The runnable code in this guide is under
    `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`_
    in the repository.
 
 Setting Up
 ----------
-
-Throughout this chapter, we use the ``add_one`` function from Quick Start:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
-   :language: python
-   :start-at: from tvm_tirx.script import tirx as T
-   :end-at:         B[i] = A[i] + 1
 
 The examples are packaged as ``tirx_ir_guide_examples`` under
 `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`__.
@@ -63,34 +50,38 @@ installation instead of fetching one from PyPI:
    pip install scikit-build-core
    pip install --no-build-isolation -e examples/ir_guides
 
-Each example is a C++ function that takes ``add_one`` as its argument. A
-``TVM_FFI_STATIC_INIT_BLOCK`` at the end of the source registers each one as
-a global function under ``tirx_ir_guide_examples.cpp``:
+A ``TVM_FFI_STATIC_INIT_BLOCK`` at the end of the source registers each
+example as a global function under ``tirx_ir_guide_examples.cpp``:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
    :language: cpp
    :start-at: refl::GlobalDef()
-   :end-at: .def("tirx_ir_guide_examples.cpp.inspect", Inspect)
+   :end-at: .def("tirx_ir_guide_examples.cpp.construct", Construct)
    :dedent: 2
 
 The package's ``tirx_ir_guide_examples.cpp`` module loads the library and
-exposes these functions, so Python calls them by name:
+exposes these functions, so Python calls them by name. The driver
+``working_with_ir_in_cpp.py`` calls each example this way and prints the
+result.
+
+The object system examples take no arguments: each builds its own IR in
+C++. The later sections receive the ``add_one`` function from Quick Start,
+written in TVMScript:
+
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+   :language: python
+   :start-at: from tvm_tirx.script import tirx as T
+   :end-at:         B[i] = A[i] + 1
 
 .. code-block:: python
 
    import tirx_ir_guide_examples.cpp
 
-   tirx_ir_guide_examples.cpp.inspect(add_one)
+   tirx_ir_guide_examples.cpp.construct()
+   tirx_ir_guide_examples.cpp.tensors_written(add_one)
 
-The driver ``working_with_ir_in_cpp.py`` calls each example this way and
-prints the result.
-
-Accessing and Creating IR Nodes
--------------------------------
-
-Before reading any IR, it helps to know where the classes live. The
-headers relevant to this chapter sit in five folders under ``tvm/``; see
-:ref:`cpp-header-organization` for the full list:
+The headers relevant to this guide sit in five folders under ``tvm/``;
+see :ref:`cpp-header-organization` for the full list:
 
 .. list-table::
    :header-rows: 1
@@ -107,8 +98,8 @@ headers relevant to this chapter sit in five folders under ``tvm/``; see
        ``reflection/registry.h``
    * - ``tvm/ir/``
      - Core IR nodes, such as ``Expr``, ``Var``, ``Stmt``, ``For``, and
-       ``TensorStore``, and the expression visitors in ``expr_functor.h``.
-     - (through ``tvm/tirx/function.h``)
+       ``TensorStore``, and the expression functors in ``expr_functor.h``.
+     - ``expr_functor.h``
    * - ``tvm/sym/``
      - Symbolic analysis, such as ``sym::Analyzer`` and
        ``sym::ConstraintContext``.
@@ -121,38 +112,149 @@ headers relevant to this chapter sit in five folders under ``tvm/``; see
      - The IR builder and the TVMScript printer.
      - None
 
-IR classes live in the ``tvm`` namespace, TIRx-specific ones such as
+IR classes live in the ``tvm`` namespace, primitive expressions such as
+:cpp:class:`tvm::prim::Add` in ``tvm::prim``, TIRx-specific ones such as
 :cpp:class:`tvm::tirx::Function` in ``tvm::tirx``, and the TVM-FFI classes
 in ``tvm::ffi``. The examples start with ``using namespace tvm;``, so these
-appear as ``Var``, ``tirx::Function``, and
+appear as ``Var``, ``prim::Add``, ``tirx::Function``, and
 :cpp:func:`ffi::StructuralWalk <tvm::ffi::StructuralWalk>`.
 
-**Each IR node has two C++ classes.** The node class, named with an
-``Obj`` suffix such as :cpp:class:`tvm::ForObj`, holds the fields. The
-reference class without the suffix, such as :cpp:class:`tvm::For`, is a
-reference-counted handle to a node, and is what functions take and return.
-The ``->`` operator on a reference reaches the node's fields.
+TVM-FFI Object System
+---------------------
 
-Let's read ``add_one`` from its parameters down to the store in its loop:
+Every TIRx IR node is a TVM-FFI object. TIRx is designed for **dynamic
+extension**: a library can add a new node type, for example a new
+statement for a hardware feature, and existing code keeps working on
+programs that contain it, which a fixed class hierarchy compiled into one
+library cannot offer. Generic utilities such as walking, rewriting, comparing, and
+printing work on every node through its registered fields.
+
+TVM-FFI objects also work across languages. Python, C++, and Rust share
+the same native, immutable, reference-counted objects, so a program moves
+between them without conversion.
+
+**In C++, TVM-FFI objects are ordinary C++ classes, used through a few
+key constructs:**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Construct
+     - Purpose
+   * - Constructors, ``PrimExpr`` operators
+     - Build expressions with ordinary C++ operators
+   * - ``FooObj`` / ``Foo``
+     - Underlying object and its named managed reference: read fields with
+       ``->``, copy cheaply
+   * - ``CopyOnWrite()``
+     - Change a field, copying the object only if it is shared
+   * - Implicit upcast
+     - Pass a node wherever a parent type is expected
+   * - ``as<T>()`` / ``as_or_throw<T>()``
+     - Convert to a child type, with a checked result
+   * - Typed views (``PrimExpr``, ``IntExpr``, ``PrimVar``)
+     - Require an expression of a given type, checked on conversion
+   * - ``ExprFunctor`` / ``StmtFunctor``
+     - Process each node type in its own method
+
+The subsections below introduce each construct.
+
+Constructing Objects
+~~~~~~~~~~~~~~~~~~~~
+
+**We build IR with constructors and ordinary C++ operators.** Writing
+``x * 2 + 1`` as nested constructor calls would bury the expression, so
+arithmetic operators on :cpp:class:`PrimExpr <tvm::PrimExpr>` build the
+nodes for us. Let's build it:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
    :language: cpp
-   :start-after: // [inspect.begin]
-   :end-before: // [inspect.end]
+   :start-after: // [construct.begin]
+   :end-before: // [construct.end]
 
 The output is:
 
 .. code-block:: text
 
-   param A
-   param B
-   loop over i up to n
-     store to B: A[i] + T.float32(1.0)
+   x * 2 + 1
 
-Fields have the types we know from Python, and writing an expression to a
-stream prints it in TVMScript. The elements of a ``SeqStmt`` are general
-``Stmt`` references, so we check the actual node type before reading a
-loop or a store. |ObjectRef::as|_ and its relatives offer three forms:
+:cpp:class:`PrimVar <tvm::PrimVar>` creates an integer variable ``x``, a
+variable known to have a primitive type.
+``*`` and ``+`` turn the literals ``2`` and ``1`` into constants of the
+type of ``x``, fold constants, and otherwise call the node constructors,
+such as ``prim::Add(a, b)``. Writing a node to a stream prints it as
+TVMScript; ``Print`` is our small helper that does so.
+
+We now have an expression; next, let's see what kind of C++ value it is.
+
+Objects and Managed References
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Every node type comes as a pair: an underlying object and a named
+managed reference.** The top of
+``x * 2 + 1`` is an addition, so let's view the expression as an addition,
+with a cast the next subsection explains, and read its two operands:
+
+.. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
+   :language: cpp
+   :start-after: // [objects.begin]
+   :end-before: // [objects.end]
+
+The output is:
+
+.. code-block:: text
+
+   a = x * 2
+   b = 1
+   same object: true
+
+``alias`` is the same object as ``add``: copying a managed reference copies
+only the pointer, and ``same_as`` compares identity.
+
+:cpp:class:`AddObj <tvm::prim::AddObj>` is the **underlying object**: the
+class that holds the fields. :cpp:class:`Add <tvm::prim::Add>` is a
+**named managed reference** to it: an owning, reference-counted pointer,
+like ``std::shared_ptr<AddObj>`` except that it is never null, so copying
+it is cheap and ``->`` is always safe. Functions take and return managed
+references, and ``->`` on a managed reference reaches the object's fields:
+``add->a``.
+
+We define a separate named class ``Add`` instead of using a plain pointer
+to ``AddObj`` because the named class carries the interface: constructors,
+methods, and the type information that lets it pass through TVM-FFI
+functions. It can also impose additional constraints on the underlying
+object that the object alone does not express.
+
+**Nodes are immutable once shared.** To change a field, ``CopyOnWrite()``
+returns a mutable pointer to the object, copying the object first if
+anyone else holds it:
+
+.. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
+   :language: cpp
+   :start-after: // [cow.begin]
+   :end-before: // [cow.end]
+
+The output is:
+
+.. code-block:: text
+
+   add = x * 2 + 1
+   changed = x * 2 + 3
+
+``changed`` shared its object with ``add``, so ``CopyOnWrite()`` copied it
+before the write, and ``add`` is untouched.
+
+We reached ``Add`` with a cast; next, let's look at casts on their own.
+
+Casts
+~~~~~
+
+**Casts move a managed reference up and down the class hierarchy.** A
+function that takes any expression wants an ``Expr``, while reading the
+operands needs an ``Add``. Converting up is implicit, through C++
+inheritance. Converting down checks the node's actual type, with
+|ObjectRef::as|_ and its relatives in one of three forms:
 
 .. list-table::
    :header-rows: 1
@@ -160,85 +262,179 @@ loop or a store. |ObjectRef::as|_ and its relatives offer three forms:
 
    * - Call
      - Returns
-   * - ``stmt.as<ForObj>()``
-     - A pointer to the node, or ``nullptr`` if it is not a loop.
-   * - ``stmt.as<For>()``
-     - A ``std::optional<For>`` reference.
-   * - ``stmt.as_or_throw<For>()``
-     - The ``For`` reference, or raises an error.
-
-.. note::
-
-   A function's ``body`` is always a ``SeqStmt``. The loop variable is stored
-   as a ``PrimVar``, which views a ``Var`` as a ``PrimExpr``, so we read its
-   name through ``as<VarObj>()``.
-
-To create a node, we call the constructor of its reference class, and
-arithmetic operators on ``PrimExpr`` build new expressions. Let's build a
-store that writes twice the value of the store in ``add_one``:
+   * - ``value.as<AddObj>()``
+     - A non-owning ``const AddObj*``, valid while a reference keeps the
+       object alive, or ``nullptr`` if it is not an addition.
+   * - ``value.as<Add>()``
+     - A ``std::optional<Add>``.
+   * - ``value.as_or_throw<Add>()``
+     - The ``Add``, or raises an error.
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
    :language: cpp
-   :start-after: // [create.begin]
-   :end-before: // [create.end]
+   :start-after: // [casts.begin]
+   :end-before: // [casts.end]
 
 The output is:
 
-.. code-block:: python
+.. code-block:: text
 
-   n = T.dynamic("n", dtype="int32")
-   B = T.Var("B", T.Tensor((n,), T.float32))
-   i = T.dynamic("i", dtype="int32")
-   A = T.Var("A", T.Tensor((n,), T.float32))
-   B[i] = (A[i] + T.float32(1.0)) * T.float32(2.0)
+   as<AddObj>: pointer
+   as<Add>: Add
+   as<Mul>: nullopt
+   as_or_throw<Mul>: Cannot treat type `prim.Add` as type `prim.Mul`
 
-The new store reuses the destination and indices of the old one, so the
-printer declares them as free variables first. ``store->value * 2`` turns
-the literal into a constant of the value's type, ``T.float32(2.0)``.
-Constructing nodes creates new objects; ``add_one`` itself is not modified.
+``value`` is an ``Expr``, but the node behind it is still an addition, so
+the casts to ``AddObj`` and ``Add`` succeed and the cast to ``Mul`` finds
+nothing. ``as<AddObj>()`` works like ``dynamic_cast<const AddObj*>``, and
+``as<Add>()`` and ``as_or_throw<Add>()`` do the same check but return a
+managed reference. ``as_or_throw`` turns the same mismatch into an error
+that names both type keys: the actual ``prim.Add`` and the requested
+``prim.Mul``.
+
+Casts check the class of the object; next, let's look at references that
+also check the type of the expression.
+
+Typed Views
+~~~~~~~~~~~
+
+**A typed view constrains an expression by its type, not by its object
+class.** Arithmetic needs expressions whose result is a primitive value,
+but an addition, a variable, and a call can all produce one, so no single
+object class captures "primitive". :cpp:class:`PrimExpr <tvm::PrimExpr>`
+is a named managed reference that accepts any ``Expr`` whose ``ty`` is a
+``PrimType``, and has no object class of its own.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - View
+     - Accepts
+   * - :cpp:class:`PrimExpr <tvm::PrimExpr>`
+     - Any expression whose ``ty`` is a ``PrimType``
+   * - :cpp:class:`IntExpr <tvm::IntExpr>`
+     - A scalar integer expression, signed or unsigned
+   * - :cpp:class:`PrimVar <tvm::PrimVar>`
+     - A ``Var`` whose ``ty`` is a ``PrimType``
+
+The same casts check the view. Let's try two variables, an integer and a
+float:
+
+.. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
+   :language: cpp
+   :start-after: // [views.begin]
+   :end-before: // [views.end]
+
+The output is:
+
+.. code-block:: text
+
+   i as PrimExpr: yes
+   i as IntExpr: yes
+   f as IntExpr: no
+   as_or_throw<IntExpr>: Cannot treat type `ir.Var[ty=float32]` as type `ir.IntExpr`
+
+Both variables are ``VarObj`` objects; only their ``ty`` differs, and the
+views check it. The error shows the type in brackets, ``ir.Var[ty=float32]``.
+This is why ``x`` is a ``PrimVar``: the operators take ``PrimExpr``, and a
+plain ``Var`` would first need a checked cast.
+
+.. note::
+
+   A view is not a subclass of the node's own reference class:
+   ``PrimVar`` derives from ``PrimExpr`` and converts to ``Var`` through a
+   conversion operator.
+
+A cast or a view looks at one node at a time; to process every node type
+in its own method, we dispatch.
+
+Dispatching on Node Types
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**A functor picks one of its own methods by the node's runtime type, as
+in the visitor pattern.** :cpp:class:`ExprFunctor <tvm::ExprFunctor>`
+declares a virtual ``Dispatch_`` overload for each expression class, and a
+subclass overrides the ones it cares about. ``Dispatch`` looks up the
+node's type in a table and calls the matching overload, so the nodes need
+no ``accept()`` method. Let's print an expression with
+explicit parentheses:
+
+.. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
+   :language: cpp
+   :start-after: // [describe.begin]
+   :end-before: // [describe.end]
+
+We call it on ``x * 2 + 1`` and on ``x - 1``:
+
+.. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
+   :language: cpp
+   :start-after: // [dispatch_use.begin]
+   :end-before: // [dispatch_use.end]
+
+The output is:
+
+.. code-block:: text
+
+   ((x * 2) + 1)
+   <other>
+
+The template argument chooses the signature, here ``std::string`` from an
+``Expr``. A functor does not visit children on its own: the ``Add`` and
+``Mul`` overloads recurse by calling ``Dispatch`` on the operands, and the
+``Var`` and ``IntImm`` overloads end the recursion.
+
+**Unhandled node types fall back to a default method.** They go to
+``DispatchDefault_``, which raises an error unless we override it. Our
+override returns ``<other>``, so ``x - 1`` passes through instead of
+failing.
+:cpp:class:`tirx::StmtFunctor <tvm::tirx::StmtFunctor>` does the same for
+statements.
+
+.. note::
+
+   The ``using ExprFunctor::Dispatch_;`` line keeps the overloads we did
+   not override visible, as usual for overloaded virtual functions in C++.
+
+Dispatch looks at one node and recurses by hand; the structural utilities
+below walk whole programs for us.
 
 Structural Utilities in C++
 ---------------------------
 
-The structural utilities from Python are available in C++ with the same
-behavior: :cpp:func:`ffi::StructuralWalk <tvm::ffi::StructuralWalk>`,
+The structural utilities are part of TVM-FFI and work on every node
+through its registered fields:
+:cpp:func:`ffi::StructuralWalk <tvm::ffi::StructuralWalk>`,
 :cpp:func:`ffi::StructuralMap <tvm::ffi::StructuralMap>`,
 :cpp:class:`ffi::StructuralEqual <tvm::ffi::StructuralEqual>`, and
-:cpp:class:`ffi::StructuralHash <tvm::ffi::StructuralHash>`. **What changes
-is how callbacks are written**:
+:cpp:class:`ffi::StructuralHash <tvm::ffi::StructuralHash>`. **Each piece
+takes a C++ form**:
 
 .. list-table::
    :header-rows: 1
-   :widths: 25 35 40
+   :widths: 35 65
 
-   * - Aspect
-     - Python
-     - C++
+   * - Piece
+     - C++ form
    * - Nodes a callback receives
-     - The type paired with it, such as ``(ir.TensorStore, f)``
-     - The type of the callback's first parameter
+     - Selected by the type of the callback's first parameter
    * - Walk callback result
-     - ``None``, ``WalkResult.SKIP``, or a ``VisitInterrupt``
      - ``ffi::Expected<WalkResult>``
    * - Traversal order
-     - ``order="pre"`` or the default post-order
      - A required template argument, ``WalkOrder::kPreOrder`` or
        ``kPostOrder``
    * - Keep a node in a map
-     - Return the input node
      - Return ``ffi::Unchanged()`` or the node
    * - Result of a map
-     - The new value
      - An ``ffi::Any``, cast back with ``cast<T>()``
    * - Definition region kind
-     - Pass the callback through ``with_def_region_kind``
      - A trailing ``TVMFFIDefRegionKind`` parameter
 
 Structural Walk
 ~~~~~~~~~~~~~~~
 
-As in Python, a walk calls our callback on each node of the type it asks
-for. To find the tensors that ``add_one`` writes, the callback takes a
+A walk calls our callback on each node of the type it asks for. To find
+the tensors that ``add_one`` writes, the callback takes a
 ``const TensorStore&``:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
@@ -261,11 +457,11 @@ A walk callback returns an
 the node's children in pre-order, and ``WalkResult::Interrupt(...)`` stops
 the walk.
 
-To handle several node kinds in one walk, we pass one callback per kind as
-extra arguments. They are tried in
-declaration order, and only the first one whose parameter type matches a
-node runs; a node that matches none is still traversed but not reported.
-This walk records the loops and stores in pre-order:
+To handle several node types in one walk, we pass one callback per type as
+extra arguments. They are tried in declaration order, and only the first
+one whose parameter type matches a node runs; a node that matches none is
+still traversed but not reported. This walk records the loops and stores
+in pre-order:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
    :language: cpp
@@ -307,10 +503,10 @@ Definitions and Uses
 ~~~~~~~~~~~~~~~~~~~~
 
 A callback receives the definition region kind of each site when it takes
-a ``TVMFFIDefRegionKind`` as its last parameter. The kinds match Python's:
-``kTVMFFIDefRegionKindNone`` for a use, ``kTVMFFIDefRegionKindSimple`` for
-``DEF_SIMPLE``, and ``kTVMFFIDefRegionKindPattern`` for ``DEF_PATTERN``. Let's list the definition sites in
-``add_one``:
+a ``TVMFFIDefRegionKind`` as its last parameter:
+``kTVMFFIDefRegionKindNone`` for a use, and ``kTVMFFIDefRegionKindSimple``
+and ``kTVMFFIDefRegionKindPattern`` for the two kinds of definition site.
+Let's list the definition sites in ``add_one``:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
    :language: cpp
@@ -327,8 +523,8 @@ The output is:
    n pattern
    i simple
 
-These are the same sites as in Python: the parameters define ``A``, ``B``,
-and ``n`` by pattern, and the loop defines ``i``.
+The parameters define ``A``, ``B``, and ``n`` by pattern, and the loop
+defines ``i``.
 
 Structural Map
 ~~~~~~~~~~~~~~
@@ -358,7 +554,7 @@ The output is:
 For every other variable, the callback returns
 :cpp:struct:`ffi::Unchanged <tvm::ffi::Unchanged>`\ ``()``, which keeps the
 node as it is. The constant takes its type from the variable, ``var->ty``.
-As in Python, the mapper keeps definitions and uses consistent, so the new
+The mapper keeps definitions and uses consistent, so the new
 ``A`` and ``B`` and every use of them carry the specialized shape.
 
 Equality and Hashing
@@ -367,7 +563,7 @@ Equality and Hashing
 ``ffi::StructuralEqual::Equal`` and ``ffi::StructuralHash::Hash`` compare
 and hash by structure. Let's compare two ``add_one`` functions built
 separately in Python by ``make_add(1)``, the helper from the structural
-utilities chapter:
+utilities guide:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
    :language: cpp
@@ -382,15 +578,15 @@ The output is:
 
 The functions are different objects, yet structurally equal with equal
 hashes. ``Equal`` and ``Hash`` also take an optional ``map_free_vars``
-argument, which defaults to ``false`` as in Python.
+argument, which defaults to ``false``.
 
 Visit and Mutate
 ~~~~~~~~~~~~~~~~
 
 When a callback must decide which children to visit, we use
 :cpp:func:`ffi::StructuralVisit <tvm::ffi::StructuralVisit>` and
-:cpp:func:`ffi::StructuralMutate <tvm::ffi::StructuralMutate>`, as in
-Python. Their callbacks also receive
+:cpp:func:`ffi::StructuralMutate <tvm::ffi::StructuralMutate>`. Their
+callbacks also receive
 the visitor or mutator, such as
 :cpp:class:`ffi::StructuralVisitorObj* <tvm::ffi::StructuralVisitorObj>`,
 and descend into a node's children with ``DefaultVisitExpected`` or
@@ -399,8 +595,8 @@ and descend into a node's children with ``DefaultVisitExpected`` or
 Visitor and Mutator Classes
 ---------------------------
 
-Walk and map cover most tasks. A pass that handles many kinds of node,
-however, reads better as a class with one method per kind:
+Walk and map cover most tasks. A pass that handles many node types,
+however, reads better as a class with one method per type:
 
 .. list-table::
    :header-rows: 1
@@ -411,26 +607,27 @@ however, reads better as a class with one method per kind:
      - Use it for
    * - Structural utilities
      - Any TVM-FFI object
-     - A few node kinds, written as callbacks
+     - A few node types, written as callbacks
    * - :cpp:class:`tirx::StmtExprVisitor <tvm::tirx::StmtExprVisitor>`,
        :cpp:class:`tirx::StmtExprMutator <tvm::tirx::StmtExprMutator>`
      - TIRx statements and expressions (``tvm/tirx/stmt_functor.h``)
-     - Passes that customize many node kinds
+     - Passes that customize many node types
    * - :cpp:class:`ExprVisitor <tvm::ExprVisitor>`,
        :cpp:class:`ExprMutator <tvm::ExprMutator>`
      - Expressions alone (``tvm/ir/expr_functor.h``)
      - Expression analyses and rewrites
    * - :cpp:class:`ExprFunctor <tvm::ExprFunctor>`,
        :cpp:class:`tirx::StmtFunctor <tvm::tirx::StmtFunctor>`
-     - Dispatch on the node kind with a signature we choose, such as
+     - Dispatch on the node type with a signature we choose, such as
        ``int(const Expr&)``, without traversing children
      - Computations where each hook decides which children to recurse into
 
-Each class declares a virtual hook for every node kind, named ``Visit_``
+Each class declares a virtual hook for every node type, named ``Visit_``
 for a visitor and ``Mutate_`` for a mutator, and a subclass overrides only
-the kinds it cares about.
+the types it cares about. Unlike the functors, these classes traverse
+children for us.
 
-**These classes are built on the structural utilities.** A node kind
+**These classes are built on the structural utilities.** A node type
 without a hook, such as a function, falls back to its structural traversal,
 which hands each child back to our hooks.
 
@@ -441,8 +638,7 @@ which hands each child back to our hooks.
    and ``ExprMutator`` from the mutator base behind ``StructuralMap``. Any
    hook can read the definition region kind with ``def_region_kind()``.
 
-Let's record the loops around each write, as the structural visit example
-in Python did:
+Let's record the loops around each write:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
    :language: cpp
@@ -457,7 +653,7 @@ The output is:
 
 Our ``For`` hook pushes the loop variable, calls the base class hook to
 visit the loop's bounds and body, then pops the variable. Calling the base
-hook plays the role of ``default_visit`` in Python, and returning its
+hook visits the children with their usual traversal, and returning its
 result passes an interrupt from a child up to the caller. Visitors are
 objects, so we allocate them with ``ffi::make_object``.
 
@@ -538,55 +734,53 @@ The functions are in ``tvm/tirx/structural_visit_with_constraint_context.h``
 and ``tvm/tirx/structural_mutate_with_constraint_context.h``, and the classes
 in ``tvm/tirx/stmt_functor_with_constraint_context.h``.
 
-These tools follow the same rules as in Python: IR is immutable, rewrites
-return new programs that share unchanged parts, and every utility respects
-definitions and uses. Because C++ and Python share the same objects, we can
-prototype a pass in Python and move parts of it to C++ as needed.
+Across these tools, IR is immutable, rewrites return new programs that
+share unchanged parts, and every utility respects definitions and uses.
+Because C++ and Python share the same objects, a pass can move between the
+two languages one function at a time.
 
 Quick Reference
 ---------------
 
 .. list-table::
    :header-rows: 1
-   :widths: 40 30 30
+   :widths: 45 55
 
-   * - C++
+   * - Construct
      - What it does
-     - Python equivalent
-   * - ``loop->var``, ``func->params``
-     - Reads a node's fields
-     - ``loop.var``, ``func.params``
-   * - ``stmt.as<ForObj>()``, ``stmt.as<For>()``,
-       ``stmt.as_or_throw<For>()``
-     - Checks the node type and downcasts
-     - ``isinstance(stmt, ir.For)``
-   * - ``TensorStore(dest, indices, value)``, ``store->value * 2``
+   * - ``PrimVar x("x", PrimType::Int(32))``, ``x * 2 + 1``
      - Creates a node; builds an expression with operators
-     - ``ir.TensorStore(dest, indices, value)``, ``store.value * 2``
+   * - ``add->a``, ``loop->var``
+     - Reads a node's fields
+   * - ``value.as<AddObj>()``, ``value.as<Add>()``,
+       ``value.as_or_throw<Add>()``
+     - Checks the node type and downcasts
+   * - :cpp:class:`PrimExpr <tvm::PrimExpr>`, :cpp:class:`IntExpr <tvm::IntExpr>`,
+       :cpp:class:`PrimVar <tvm::PrimVar>`
+     - Typed views that check an expression's ``ty``
+   * - ``ref.CopyOnWrite()->field = value``
+     - Changes a field, copying the object first if it is shared
+   * - :cpp:class:`ExprFunctor <tvm::ExprFunctor>`,
+       :cpp:class:`tirx::StmtFunctor <tvm::tirx::StmtFunctor>`
+     - One ``Dispatch_`` overload per node type, with explicit recursion
    * - :cpp:func:`ffi::StructuralWalk <tvm::ffi::StructuralWalk>`\ ``<ffi::WalkOrder::kPreOrder>(func, ...)``
      - Walks with typed callbacks that return
        ``ffi::Expected<ffi::WalkResult>``
-     - ``tvm_ffi.structural_walk(func, callbacks, order="pre")``
    * - :cpp:func:`ffi::StructuralMap <tvm::ffi::StructuralMap>`\ ``<order>(func, ...)``,
        ``ffi::Unchanged()``
      - Rebuilds with replacements and returns an ``ffi::Any``
-     - ``tvm_ffi.structural_map(func, callbacks)``
    * - A trailing ``TVMFFIDefRegionKind`` parameter
      - Receives the definition region kind
-     - ``with_def_region_kind=``
    * - :cpp:func:`ffi::StructuralEqual::Equal <tvm::ffi::StructuralEqual::Equal>`,
        :cpp:func:`ffi::StructuralHash::Hash <tvm::ffi::StructuralHash::Hash>`
      - Compares and hashes by structure
-     - ``tvm_ffi.structural_equal``, ``tvm_ffi.structural_hash``
    * - :cpp:class:`tirx::StmtExprVisitor <tvm::tirx::StmtExprVisitor>`,
        :cpp:class:`tirx::StmtExprMutator <tvm::tirx::StmtExprMutator>`,
        :cpp:class:`ExprVisitor <tvm::ExprVisitor>`,
        :cpp:class:`ExprMutator <tvm::ExprMutator>`
-     - One ``Visit_`` or ``Mutate_`` hook per node kind
-     - ``tvm_ffi.structural_visit``, ``tvm_ffi.structural_mutate``
+     - One ``Visit_`` or ``Mutate_`` hook per node type
    * - ``TVM_FFI_STATIC_INIT_BLOCK``, ``refl::GlobalDef().def(...)``
      - Registers C++ functions as global functions
-     - ``tvm_ffi.register_global_func``
 
 .. TVM-FFI C++ API page for ObjectRef, which the C++ reference does not include.
 

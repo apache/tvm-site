@@ -18,38 +18,23 @@
 Working with IR in Rust
 =======================
 
-The IR objects we have used so far in Python are TVM-FFI objects, and the
-same objects are available in Rust through the
-`tvm-tirx <https://crates.io/crates/tvm-tirx>`_ crate. A Rust function can
-receive a function written in TVMScript, read and rewrite it, and return
-the result to Python. Nothing is converted or copied along the way: Python
-and Rust hold references to the same native objects.
+The `tvm-tirx <https://crates.io/crates/tvm-tirx>`_ crate lets a Rust
+function read, build, and rewrite TIRx IR. The function can receive a
+program written in TVMScript and return the result, and nothing is
+converted or copied along the way. This guide covers:
 
-This chapter assumes the concepts of the earlier chapters and shows their
-Rust form:
-
-- **Accessing and creating IR nodes**: read fields, branch on node types,
-  and build new nodes.
-- **Structural utilities**: walk, map, and compare programs, with
-  callbacks selected by their Rust parameter types.
-- **Visitors and mutators**: keep state across callbacks and control the
-  traversal, with ``#[dispatch]`` structs and ``VisitCallbacks``.
+- **TVM-FFI object system**: how IR nodes are represented and used in Rust.
+- **Structural utilities**: walk, map, and compare programs.
+- **Visitors and mutators**: keep state and control the traversal.
 
 .. note::
 
-   The runnable code in this chapter is under
+   The runnable code in this guide is under
    `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`_
    in the repository.
 
 Setting Up
 ----------
-
-Throughout this chapter, we use the ``add_one`` function from Quick Start:
-
-.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
-   :language: python
-   :start-at: from tvm_tirx.script import tirx as T
-   :end-at:         B[i] = A[i] + 1
 
 The examples are packaged as ``tirx_ir_guide_examples`` under
 `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`__.
@@ -64,9 +49,8 @@ to build against that installation instead of fetching one from PyPI:
    pip install scikit-build-core
    pip install --no-build-isolation -e examples/ir_guides
 
-Each example is a Rust function that takes ``add_one`` as its argument. A
-|static_init_block!|_ at the end of the crate registers each one as a
-global function under ``tirx_ir_guide_examples.rust``:
+A |static_init_block!|_ at the end of the crate registers each example as
+a global function under ``tirx_ir_guide_examples.rust``:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -75,78 +59,284 @@ global function under ``tirx_ir_guide_examples.rust``:
    :dedent: 4
 
 The package's ``tirx_ir_guide_examples.rust`` module loads the library and
-exposes these functions, so Python calls them by name:
+exposes these functions, so Python calls them by name. The driver
+``working_with_ir_in_rust.py`` calls each example this way and prints the
+result.
+
+The object system examples take no arguments: each builds its own IR in
+Rust. The later sections receive the ``add_one`` function from Quick
+Start, written in TVMScript:
+
+.. literalinclude:: ../../examples/quick_start/add_one_cpu.py
+   :language: python
+   :start-at: from tvm_tirx.script import tirx as T
+   :end-at:         B[i] = A[i] + 1
 
 .. code-block:: python
 
    import tirx_ir_guide_examples.rust
 
-   tirx_ir_guide_examples.rust.inspect(add_one)
+   tirx_ir_guide_examples.rust.construct()
+   tirx_ir_guide_examples.rust.written_tensors(add_one)
 
-The driver ``working_with_ir_in_rust.py`` calls each example this way and
-prints the result.
+TVM-FFI Object System
+---------------------
 
-Accessing and Creating IR Nodes
--------------------------------
+Every TIRx IR node is a TVM-FFI object. Rust IRs are typically built as
+enums and matched with ``match``, which works well when every node type is
+known in advance. TIRx is designed for **dynamic extension** instead: a
+library can add a new node type, for example a new statement for a
+hardware feature, and existing code keeps working on programs that contain
+it. Generic utilities such as walking, rewriting, comparing, and printing
+work on every node through its registered fields.
 
-**Every IR node has two Rust types**: a handle such as |For|_, a
-reference-counted pointer that is cheap to clone, and the object it points
-to, such as |ForObj|_, which holds the fields. A handle dereferences to its
-object, so we read fields as ordinary struct fields.
+TVM-FFI objects also work across languages. Python, C++, and Rust share
+the same native, immutable, reference-counted objects, so a program moves
+between them without conversion.
 
-Let's read ``add_one`` from its parameters down to the store in its loop.
-The statements of a body are general ``Stmt`` handles, and |match_any!|_
-branches on their actual node type, as ``match`` does on an enum:
+**We designed the TVM-FFI object system to be ergonomic in Rust.** The
+key constructs are:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Construct
+     - Purpose
+   * - Constructors, ``ex()``
+     - Build expressions with ordinary Rust operators
+   * - ``FooObj`` / ``Foo``
+     - Underlying object and its named managed reference: read fields
+       directly, clone cheaply
+   * - ``.into()``
+     - Convert to a parent type
+   * - |try_cast|_
+     - Convert to a child type, with a checked ``Result``
+   * - |match_any!|_
+     - Branch on the node type
+   * - |dispatch|_
+     - Process each node type in its own method, with shared state
+
+The subsections below introduce each construct.
+
+Constructing Objects
+~~~~~~~~~~~~~~~~~~~~
+
+**We build IR with constructors and ordinary Rust operators.** Writing
+``x * 2 + 1`` as nested constructor calls would bury the expression, so
+the crate lets us write it as we would in Rust. Let's build it:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
-   :start-after: // [inspect.begin]
-   :end-before: // [inspect.end]
+   :start-after: // [construct.begin]
+   :end-before: // [construct.end]
 
 The output is:
 
 .. code-block:: text
 
-   param A
-   param B
-   loop over i up to n
-     store to B: A[i] + T.float32(1.0)
+   x * 2 + 1
 
-Each arm names a handle type and binds the matching node to it; the arms
-are tried in order, and ``_`` takes everything else. Fields have the types
-we know from Python: ``params`` is an ``Array<Var>``, and the body of a
-loop is a ``SeqStmt`` whose ``seq`` holds its statements. |script|_ prints
-any node as TVMScript.
+|Var::new|_ takes a name, a type, and a source location; ``UNKNOWN_LOC``
+means there is none. |ex|_ wraps ``x`` so that ``*`` and ``+`` build IR,
+and the literals ``2`` and ``1`` become constants of the type of ``x``.
 
-.. note::
+An operator can fail, for example on mismatched types, so ``ex`` carries
+the first error along, much like a chain of ``Result``\ s. ``.expr()``
+takes the result out and ``?`` passes an error on. |script|_ prints the
+node as TVMScript.
 
-   A function's ``body`` is always a ``SeqStmt``. ``get`` on an array returns
-   an error for an index out of range, and ``?`` passes it on.
+We now have an expression; next, let's see what kind of Rust value it is.
 
-To create a node, we call the constructor of its handle type, such as
-|TensorStore::new|_. |ex|_ wraps an expression so that the usual Rust
-operators build IR; constructors accept the result directly. Let's build a store
-that writes twice the value of the store in ``add_one``:
+Objects and Managed References
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Every node type comes as a pair: an underlying object and a named
+managed reference.** The top of
+``x * 2 + 1`` is an addition, so let's convert the expression to ``Add``
+with ``try_cast``, which the next subsection explains, and read its two
+operands:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
-   :start-after: // [create.begin]
-   :end-before: // [create.end]
+   :start-after: // [objects.begin]
+   :end-before: // [objects.end]
 
 The output is:
 
-.. code-block:: python
+.. code-block:: text
 
-   n = T.dynamic("n", dtype="int32")
-   B = T.Var("B", T.Tensor((n,), T.float32))
-   i = T.dynamic("i", dtype="int32")
-   A = T.Var("A", T.Tensor((n,), T.float32))
-   B[i] = (A[i] + T.float32(1.0)) * T.float32(2.0)
+   a = x * 2
+   b = 1
+   same object: true
 
-The new store reuses the destination and indices of the old one, so the
-printer declares them as free variables first. Constructing nodes creates
-new objects; ``add_one`` itself is not modified. Here |try_cast|_ downcasts
-to a single known type instead of branching.
+``alias`` is the same object as ``add``: ``clone`` copies only the managed
+reference, and ``same_as`` compares identity, like ``Arc::ptr_eq``.
+
+|AddObj|_ is the **underlying object**: the struct that holds the fields. |Add|_ is a **named managed reference**
+to it: an owning, reference-counted smart pointer, like ``Arc<AddObj>``,
+so cloning it is cheap. Functions take and return managed references, and
+a managed reference dereferences to its object, so fields read as ordinary
+struct fields: ``add.a``.
+
+We define a separate named type ``Add`` instead of using a plain pointer
+to ``AddObj`` because the named type carries the interface: constructors,
+methods, conversions to parent types, and the traits that let it pass
+through TVM-FFI functions. It can also impose additional constraints on
+the underlying object that the object alone does not express.
+
+This is the newtype pattern. Simplified from the crate, the pair is:
+
+.. code-block:: rust
+
+   #[repr(C)]
+   #[derive(Object)]
+   #[type_key = "prim.Add"]
+   pub struct AddObj {
+       base: ExprObj,
+       pub a: Expr,
+       pub b: Expr,
+   }
+
+   #[repr(C)]
+   #[derive(ObjectRef, Clone)]
+   pub struct Add {
+       base: ObjectArc<AddObj>,
+   }
+
+Rust has no inheritance; instead, ``#[repr(C)]`` puts the parent's object,
+``ExprObj``, first in ``AddObj``, so every addition is also an expression.
+``Add`` implements ``Deref`` to ``AddObj``, which is why ``add.a`` works.
+
+**Nodes are immutable.** As with data behind an ``Arc``, a managed
+reference gives read access only; to change a node, we build a new one.
+
+We reached ``Add`` with a cast; next, let's look at casts on their own.
+
+Casts
+~~~~~
+
+**Casts move a managed reference up and down the type hierarchy.** A
+function that takes any expression wants an ``Expr``, while reading the
+operands needs an ``Add``. ``.into()`` converts to a parent type through
+``From``/``Into`` and cannot fail. ``.try_cast()`` converts to a child
+type: like ``TryFrom``, it checks the node's actual type and returns a
+``Result``.
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [casts.begin]
+   :end-before: // [casts.end]
+
+The output is:
+
+.. code-block:: text
+
+   back to Add: x * 2 + 1
+   as Mul: Cannot convert from type `prim.Add` to `prim.Mul`
+
+``value`` is an ``Expr`` again, but the node behind it is still an
+addition, so the cast back to ``Add`` succeeds.
+
+What if we guess wrong? The cast to ``Mul`` returns an ``Err``, and its
+message names both type keys: the actual type ``prim.Add`` and the
+requested ``prim.Mul``.
+
+.. note::
+
+   ``try_cast`` consumes the managed reference it converts, so we clone
+   ``value`` before the first cast; the clone costs one reference-count
+   increment.
+
+Casting to one type at a time gets tedious when a node can be one of
+many; that is what matching is for.
+
+Matching Node Types
+~~~~~~~~~~~~~~~~~~~
+
+|match_any!|_ **branches on the actual type of a node**, as ``match`` does
+on an enum. Let's print an expression with explicit parentheses by
+matching each node and recursing into its operands:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [describe.begin]
+   :end-before: // [describe.end]
+
+We call it on ``x * 2 + 1`` and on ``x - 1``:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [matching.begin]
+   :end-before: // [matching.end]
+
+The output is:
+
+.. code-block:: text
+
+   ((x * 2) + 1)
+   <other>
+
+Each arm names a managed reference type and binds the matching node to it,
+and the first matching arm runs. The ``Add`` and ``Mul`` arms recurse into
+the operands, the ``Var`` and ``IntImm`` arms end the recursion, and
+``x - 1`` falls to the ``_`` arm because ``describe`` has no arm for
+subtraction.
+
+**The catch-all arm keeps existing code working as node types are added.**
+The set of node types is open, like a ``#[non_exhaustive]`` enum from
+another crate, so the match needs a ``_`` arm. A function handles the
+types it knows, and ``_`` lets programs with new types pass through.
+
+.. note::
+
+   Like ``try_cast``, ``match_any!`` consumes what it matches, so
+   ``describe`` passes it ``expr.clone()``. ``match_any!`` works on any
+   TVM-FFI object, such as tensors, shapes, and typed arrays, and on
+   ``Any`` values. Plain values such as integers take the ``_`` arm.
+
+A match looks at one node at a time; to process every node in a program
+while keeping state, we dispatch.
+
+Dispatching on Node Types
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|dispatch|_ **lets one struct process each node type in its own method,
+with shared state.** A compiler pass often needs one piece of logic per
+node type and state shared across them; ``#[dispatch]`` puts both on one
+struct. It works like a trait whose methods all have default bodies: we
+write methods for the node types we care about, and every other type gets
+the default behavior.
+
+``#[dispatch(walk)]`` on an ``impl`` block turns its ``walk_*`` methods
+into callbacks for |structural_walk|_, which visits every node. Each
+method borrows the nodes of its parameter type, and the methods are tried
+in source order. Let's count the variables and additions:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [counter.begin]
+   :end-before: // [counter.end]
+
+We walk ``x * 2 + 1`` with it. ``WalkResult::Advance`` continues into
+the node's children, and ``WalkOrder::PreOrder`` visits a node before its
+children:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [count.begin]
+   :end-before: // [count.end]
+
+The output is:
+
+.. code-block:: text
+
+   variables: 1, additions: 1
+
+**Node types without a method fall back to the default traversal**: the
+walk continues into their children, so new types pass through. Here the
+multiplication and the constants have no method, and the walk still
+reaches ``x`` inside the multiplication.
 
 Structural Utilities
 --------------------
@@ -154,44 +344,36 @@ Structural Utilities
 The structural utilities are part of TVM-FFI, and the ``tvm_ffi`` crate,
 re-exported as ``tvm_tirx::tvm_ffi``, provides them in Rust:
 |structural_walk|_, |structural_map|_, |structural_visit|_, and
-|structural_mutate|_. They run on the same structural hooks as in Python,
-so they reach the same nodes and keep definitions and uses consistent in
-the same way. **What changes is the Rust form of each piece**:
+|structural_mutate|_. They work on every node through its registered
+fields and keep definitions and uses consistent. **Each piece takes a Rust
+form**:
 
 .. list-table::
    :header-rows: 1
-   :widths: 25 35 40
+   :widths: 35 65
 
-   * - Aspect
-     - Python
-     - Rust
+   * - Piece
+     - Rust form
    * - Nodes a callback receives
-     - The type paired with it, such as ``(ir.TensorStore, f)``
-     - The type of the callback's parameter
+     - Selected by the type of the callback's parameter
    * - Walk callback result
-     - ``None``, ``WalkResult.SKIP``, or a ``VisitInterrupt``
      - ``WalkResult``, or ``Result<WalkResult>`` to use ``?``
    * - Traversal order
-     - ``order="pre"`` or the default post-order
      - A required argument, ``WalkOrder::PreOrder`` or ``PostOrder``
    * - Result of a map
-     - The new value
      - An ``Any``, converted back with ``try_into``
    * - Definition region kind
-     - Pass the callback through ``with_def_region_kind``
      - A trailing ``DefRegionKind`` parameter
    * - Errors
-     - Exceptions
      - ``Result`` values
    * - Structural equality
-     - ``structural_equal``
      - The global function ``ffi.StructuralEqual``
 
 Structural Walk
 ~~~~~~~~~~~~~~~
 
-As in Python, a walk calls our callback on each node of the type it asks
-for. Let's find the tensors that ``add_one`` writes:
+A walk calls our callback on each node of the type it asks for. Let's find
+the tensors that ``add_one`` writes:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -220,7 +402,7 @@ The parameter list of a callback decides what it receives:
    * - Callback
      - Receives
    * - ``|store: TensorStore|``
-     - Each write, as a handle.
+     - Each write, as a managed reference.
    * - ``|store: &TensorStoreObj|``
      - Each write, as a borrowed object, without changing its reference
        count.
@@ -272,9 +454,8 @@ The output is:
    n Pattern
    i Simple
 
-The kinds are the ones we saw in Python, under Rust names:
-``DefRegionKind::None`` for a use site, ``Pattern`` for ``DEF_PATTERN``,
-and ``Simple`` for ``DEF_SIMPLE``. ``structural_map`` callbacks take the
+``DefRegionKind::None`` marks a use site; ``Pattern`` and ``Simple`` are
+the two kinds of definition site. ``structural_map`` callbacks take the
 same trailing parameter.
 
 Structural Map
@@ -301,18 +482,16 @@ The output is:
        for i in range(128):
            B[i] = A[i] + T.float32(1.0)
 
-This is the same result as in Python. |make_const|_ builds the constant
-``128`` with the type of ``n``, and every other variable is returned as it
-is. ``structural_map`` takes ownership of the handle we pass and returns
-the new root as an ``Any``; Python still holds ``add_one``, which is
-unchanged.
+|make_const|_ builds the constant ``128`` with the type of ``n``, and
+every other variable is returned as it is. ``structural_map`` takes
+ownership of the managed reference we pass and returns the new root as an
+``Any``; Python still holds ``add_one``, which is unchanged.
 
 Structural Equality
 ~~~~~~~~~~~~~~~~~~~
 
 The crate has no Rust function for structural equality yet, so we call the
-global function that Python's ``structural_equal`` uses,
-``ffi.StructuralEqual``, with its four arguments: the two values,
+global function ``ffi.StructuralEqual`` with its four arguments: the two values,
 ``map_free_vars``, and ``skip_tensor_content``. Let's specialize
 ``add_one`` twice and compare the results:
 
@@ -333,48 +512,17 @@ are structurally equal.
 Visitors and Mutators in Rust
 -----------------------------
 
-Rust has no separate layer of visitor and mutator classes. Stateful and
-typed traversals use the same four structural utilities, and the crate
-provides two conveniences to build them: |dispatch|_ turns the methods
-of a struct into typed callbacks, and |VisitCallbacks|_ and
-|MutateCallbacks|_ attach state to a tuple of callbacks.
+Stateful traversals use the same four structural utilities. The state
+lives either on a |dispatch|_ struct, as in Dispatching on Node Types, or
+in |VisitCallbacks|_ and |MutateCallbacks|_, which attach it to a tuple of
+callbacks. ``#[dispatch(map)]``, ``#[dispatch(visit)]``, and
+``#[dispatch(mutate)]`` work like ``#[dispatch(walk)]`` for ``map_*``,
+``visit_*``, and ``mutate_*`` methods.
 
-Typed Dispatch on a Struct
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The closures in a callback tuple cannot borrow the same state mutably at
-the same time, so callbacks that share state are written as methods
-instead. ``#[dispatch(walk)]`` on an ``impl`` block turns its ``walk_*``
-methods into callbacks: each method receives the nodes of its parameter
-type, and the methods are tried in source order. The struct holds the
-state. Let's record the loops and writes of ``add_one`` in the order the
-walk reaches them:
-
-.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
-   :language: rust
-   :start-after: // [dispatch_walk.begin]
-   :end-before: // [dispatch_walk.end]
-
-Called with ``pre_order`` true and then false, the output is:
-
-.. code-block:: text
-
-   ['loop i', 'write B']
-   ['write B', 'loop i']
-
-Pre-order reports the loop before the write inside it, and post-order the
-reverse. A method may also take a trailing ``DefRegionKind``, as a closure
-can. ``#[dispatch(map)]``, ``#[dispatch(visit)]``, and
-``#[dispatch(mutate)]`` work the same way for ``map_*``, ``visit_*``, and
-``mutate_*`` methods.
-
-Visit and Mutate
-~~~~~~~~~~~~~~~~
-
-A visit or mutate callback takes control of its node's children, as in
-Python. Let's record the loops around each write. With ``VisitCallbacks``,
-each callback receives the node and a ``VisitContext``, which holds the
-shared state:
+**A visit or mutate callback takes control of its node's children.**
+Let's record the loops around each write. With ``VisitCallbacks``, each
+callback receives the node and a ``VisitContext``, which holds the shared
+state:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -427,8 +575,7 @@ replacement before any use of ``i``.
 
    ``mutate_var`` replaces ``i`` only where ``def_region_kind()`` is
    ``None``, so the loop's own ``i`` stays a variable. |ObjectIdentity|_
-   keys the map by object identity, as the Python version keys its
-   dictionary by variable.
+   keys the map by object identity, so only this loop's ``i`` matches.
 
 .. note::
 
@@ -447,88 +594,79 @@ Quick Reference
 
 .. list-table::
    :header-rows: 1
-   :widths: 40 30 30
+   :widths: 45 55
 
-   * - Rust
+   * - Construct
      - What it does
-     - Python equivalent
    * - |match_any!|_
      - Branches on the node type; the first matching arm runs
-     - ``isinstance`` checks
    * - |try_cast|_, |as_node|_
-     - Downcasts to one type, as a ``Result`` handle or a borrowed
-       ``Option``
-     - ``isinstance(stmt, ir.For)``
-   * - |TensorStore::new|_, |ex|_\ ``(...)``, ``.expr()``
+     - Downcasts to one type, as a managed reference in a ``Result`` or a
+       borrowed object in an ``Option``
+   * - ``.into()``
+     - Upcasts a managed reference to a parent type
+   * - |Var::new|_, |ex|_\ ``(...)``, ``.expr()``
      - Creates a node; builds an expression with operators
-     - ``ir.TensorStore(dest, indices, value)``, ``store.value * 2``
    * - |structural_walk|_\ ``(&func, callbacks, WalkOrder::PreOrder)``
      - Walks with typed callbacks that return ``WalkResult``
-     - ``tvm_ffi.structural_walk(func, callbacks, order="pre")``
    * - |structural_map|_\ ``(func, callbacks, order)``
      - Rebuilds with replacements and returns an ``Any``
-     - ``tvm_ffi.structural_map(func, callbacks)``
    * - A trailing |DefRegionKind|_ parameter
      - Receives the definition region kind
-     - ``with_def_region_kind=``
    * - ``Function::get_global("ffi.StructuralEqual")``
      - Compares by structure
-     - ``tvm_ffi.structural_equal``
    * - |dispatch|_\ ``(walk)``, ``(map)``, ``(visit)``, ``(mutate)``
      - Turns the methods of a struct into typed callbacks
-     - A list of ``(type, callback)`` pairs
    * - |VisitCallbacks|_, |MutateCallbacks|_
      - Attach state to a tuple of visit or mutate callbacks
-     - ``tvm_ffi.structural_visit``, ``tvm_ffi.structural_mutate``
    * - |static_init_block!|_, |register_global_typed|_
      - Registers Rust functions as global functions
-     - ``tvm_ffi.register_global_func``
 
 .. API pages of the tvm-tirx and tvm-ffi crates for the names above.
 
 .. |static_init_block!| replace:: ``static_init_block!``
-.. _static_init_block!: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/macro.static_init_block.html
-.. |For| replace:: ``For``
-.. _For: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/stmt/struct.For.html
-.. |ForObj| replace:: ``ForObj``
-.. _ForObj: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/stmt/struct.ForObj.html
+.. _static_init_block!: ../reference/rust/generated/tvm_ffi/macro.static_init_block.html
+.. |AddObj| replace:: ``AddObj``
+.. _AddObj: ../reference/rust/generated/tvm_tirx/ir/prim/expr/struct.AddObj.html
+.. |Add| replace:: ``Add``
+.. _Add: ../reference/rust/generated/tvm_tirx/ir/prim/expr/struct.Add.html
 .. |script| replace:: ``script``
-.. _script: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/script/fn.script.html
-.. |try_cast| replace:: ``try_cast``
-.. _try_cast: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/object/trait.ObjectRefCast.html
+.. _script: ../reference/rust/generated/tvm_tirx/script/fn.script.html
+.. |try_cast| replace:: ``.try_cast()``
+.. _try_cast: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCast.html
 .. |structural_walk| replace:: ``structural_walk``
-.. _structural_walk: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/fn.structural_walk.html
+.. _structural_walk: ../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_walk.html
 .. |structural_map| replace:: ``structural_map``
-.. _structural_map: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/fn.structural_map.html
+.. _structural_map: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_map.html
 .. |structural_visit| replace:: ``structural_visit``
-.. _structural_visit: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/fn.structural_visit.html
+.. _structural_visit: ../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_visit.html
 .. |structural_mutate| replace:: ``structural_mutate``
-.. _structural_mutate: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html
+.. _structural_mutate: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html
 .. |WalkResult| replace:: ``WalkResult``
-.. _WalkResult: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/enum.WalkResult.html
+.. _WalkResult: ../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.WalkResult.html
 .. |DefRegionKind| replace:: ``DefRegionKind``
-.. _DefRegionKind: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html
+.. _DefRegionKind: ../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html
 .. |make_const| replace:: ``make_const``
-.. _make_const: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/prim/op/fn.make_const.html
+.. _make_const: ../reference/rust/generated/tvm_tirx/ir/prim/op/fn.make_const.html
 .. |dispatch| replace:: ``#[dispatch]``
-.. _dispatch: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/attr.dispatch.html
+.. _dispatch: ../reference/rust/generated/tvm_ffi/attr.dispatch.html
 .. |VisitCallbacks| replace:: ``VisitCallbacks``
-.. _VisitCallbacks: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html
+.. _VisitCallbacks: ../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html
 .. |MutateCallbacks| replace:: ``MutateCallbacks``
-.. _MutateCallbacks: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html
+.. _MutateCallbacks: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html
 .. |ex| replace:: ``ex``
-.. _ex: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/prim/op/fn.ex.html
+.. _ex: ../reference/rust/generated/tvm_tirx/ir/prim/op/fn.ex.html
 .. |ObjectIdentity| replace:: ``ObjectIdentity``
-.. _ObjectIdentity: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/object/struct.ObjectIdentity.html
+.. _ObjectIdentity: ../reference/rust/generated/tvm_ffi/object/struct.ObjectIdentity.html
 .. |StructuralVisitorWithConstraintContext| replace:: ``StructuralVisitorWithConstraintContext``
-.. _StructuralVisitorWithConstraintContext: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/tirx/struct.StructuralVisitorWithConstraintContext.html
+.. _StructuralVisitorWithConstraintContext: ../reference/rust/generated/tvm_tirx/tirx/struct.StructuralVisitorWithConstraintContext.html
 .. |StructuralMutatorWithConstraintContext| replace:: ``StructuralMutatorWithConstraintContext``
-.. _StructuralMutatorWithConstraintContext: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/tirx/struct.StructuralMutatorWithConstraintContext.html
+.. _StructuralMutatorWithConstraintContext: ../reference/rust/generated/tvm_tirx/tirx/struct.StructuralMutatorWithConstraintContext.html
 .. |match_any!| replace:: ``match_any!``
-.. _match_any!: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/macro.match_any.html
-.. |TensorStore::new| replace:: ``TensorStore::new``
-.. _TensorStore::new: https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/stmt/struct.TensorStore.html#method.new
+.. _match_any!: ../reference/rust/generated/tvm_ffi/macro.match_any.html
+.. |Var::new| replace:: ``Var::new``
+.. _Var::new: ../reference/rust/generated/tvm_tirx/ir/expr/struct.Var.html#method.new
 .. |as_node| replace:: ``as_node``
-.. _as_node: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/object/trait.ObjectRefCore.html#method.as_node
+.. _as_node: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.as_node
 .. |register_global_typed| replace:: ``Function::register_global_typed``
-.. _register_global_typed: https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/function/struct.Function.html#method.register_global_typed
+.. _register_global_typed: ../reference/rust/generated/tvm_ffi/function/struct.Function.html#method.register_global_typed

@@ -405,7 +405,14 @@
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up">Setting Up</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-and-creating-ir-nodes">Accessing and Creating IR Nodes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-ffi-object-system">TVM-FFI Object System</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#constructing-objects">Constructing Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#objects-and-managed-references">Objects and Managed References</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#casts">Casts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matching-node-types">Matching Node Types</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dispatching-on-node-types">Dispatching on Node Types</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-utilities">Structural Utilities</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-walk">Structural Walk</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions-and-uses">Definitions and Uses</a></li>
@@ -413,11 +420,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-equality">Structural Equality</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visitors-and-mutators-in-rust">Visitors and Mutators in Rust</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typed-dispatch-on-a-struct">Typed Dispatch on a Struct</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visit-and-mutate">Visit and Mutate</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visitors-and-mutators-in-rust">Visitors and Mutators in Rust</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-reference">Quick Reference</a></li>
 </ul>
             </nav>
@@ -432,42 +435,23 @@
                   
   <section id="working-with-ir-in-rust">
 <h1>Working with IR in Rust<a class="headerlink" href="#working-with-ir-in-rust" title="Link to this heading">#</a></h1>
-<p>The IR objects we have used so far in Python are TVM-FFI objects, and the
-same objects are available in Rust through the
-<a class="reference external" href="https://crates.io/crates/tvm-tirx">tvm-tirx</a> crate. A Rust function can
-receive a function written in TVMScript, read and rewrite it, and return
-the result to Python. Nothing is converted or copied along the way: Python
-and Rust hold references to the same native objects.</p>
-<p>This chapter assumes the concepts of the earlier chapters and shows their
-Rust form:</p>
+<p>The <a class="reference external" href="https://crates.io/crates/tvm-tirx">tvm-tirx</a> crate lets a Rust
+function read, build, and rewrite TIRx IR. The function can receive a
+program written in TVMScript and return the result, and nothing is
+converted or copied along the way. This guide covers:</p>
 <ul class="simple">
-<li><p><strong>Accessing and creating IR nodes</strong>: read fields, branch on node types,
-and build new nodes.</p></li>
-<li><p><strong>Structural utilities</strong>: walk, map, and compare programs, with
-callbacks selected by their Rust parameter types.</p></li>
-<li><p><strong>Visitors and mutators</strong>: keep state across callbacks and control the
-traversal, with <code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code> structs and <code class="docutils literal notranslate"><span class="pre">VisitCallbacks</span></code>.</p></li>
+<li><p><strong>TVM-FFI object system</strong>: how IR nodes are represented and used in Rust.</p></li>
+<li><p><strong>Structural utilities</strong>: walk, map, and compare programs.</p></li>
+<li><p><strong>Visitors and mutators</strong>: keep state and control the traversal.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The runnable code in this chapter is under
+<p>The runnable code in this guide is under
 <a class="reference external" href="https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides">examples/ir_guides</a>
 in the repository.</p>
 </div>
 <section id="setting-up">
 <h2>Setting Up<a class="headerlink" href="#setting-up" title="Link to this heading">#</a></h2>
-<p>Throughout this chapter, we use the <code class="docutils literal notranslate"><span class="pre">add_one</span></code> function from Quick Start:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
-
-<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
-
-
-<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
 <p>The examples are packaged as <code class="docutils literal notranslate"><span class="pre">tirx_ir_guide_examples</span></code> under
 <a class="reference external" href="https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides">examples/ir_guides</a>.
 When cargo is available, installing the package builds the Rust crate in
@@ -479,158 +463,361 @@ to build against that installation instead of fetching one from PyPI:</p>
 pip<span class="w"> </span>install<span class="w"> </span>--no-build-isolation<span class="w"> </span>-e<span class="w"> </span>examples/ir_guides
 </pre></div>
 </div>
-<p>Each example is a Rust function that takes <code class="docutils literal notranslate"><span class="pre">add_one</span></code> as its argument. A
-<a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/macro.static_init_block.html"><code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code></a> at the end of the crate registers each one as a
-global function under <code class="docutils literal notranslate"><span class="pre">tirx_ir_guide_examples.rust</span></code>:</p>
+<p>A <a class="reference external" href="../reference/rust/generated/tvm_ffi/macro.static_init_block.html"><code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code></a> at the end of the crate registers each example as
+a global function under <code class="docutils literal notranslate"><span class="pre">tirx_ir_guide_examples.rust</span></code>:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">Function</span><span class="p">::</span><span class="n">register_global_typed</span><span class="p">(</span>
-<span class="w">    </span><span class="s">"tirx_ir_guide_examples.rust.inspect"</span><span class="p">,</span>
-<span class="w">    </span><span class="n">inspect</span><span class="p">,</span>
-<span class="w">    </span><span class="s">"Read the fields of a function."</span><span class="p">,</span>
+<span class="w">    </span><span class="s">"tirx_ir_guide_examples.rust.construct"</span><span class="p">,</span>
+<span class="w">    </span><span class="n">construct</span><span class="p">,</span>
+<span class="w">    </span><span class="s">"Build x * 2 + 1."</span><span class="p">,</span>
 <span class="p">)</span><span class="o">?</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>The package’s <code class="docutils literal notranslate"><span class="pre">tirx_ir_guide_examples.rust</span></code> module loads the library and
-exposes these functions, so Python calls them by name:</p>
+exposes these functions, so Python calls them by name. The driver
+<code class="docutils literal notranslate"><span class="pre">working_with_ir_in_rust.py</span></code> calls each example this way and prints the
+result.</p>
+<p>The object system examples take no arguments: each builds its own IR in
+Rust. The later sections receive the <code class="docutils literal notranslate"><span class="pre">add_one</span></code> function from Quick
+Start, written in TVMScript:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
+
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tirx_ir_guide_examples.rust</span>
 
-<span class="n">tirx_ir_guide_examples</span><span class="o">.</span><span class="n">rust</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span>
+<span class="n">tirx_ir_guide_examples</span><span class="o">.</span><span class="n">rust</span><span class="o">.</span><span class="n">construct</span><span class="p">()</span>
+<span class="n">tirx_ir_guide_examples</span><span class="o">.</span><span class="n">rust</span><span class="o">.</span><span class="n">written_tensors</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The driver <code class="docutils literal notranslate"><span class="pre">working_with_ir_in_rust.py</span></code> calls each example this way and
-prints the result.</p>
 </section>
-<section id="accessing-and-creating-ir-nodes">
-<h2>Accessing and Creating IR Nodes<a class="headerlink" href="#accessing-and-creating-ir-nodes" title="Link to this heading">#</a></h2>
-<p><strong>Every IR node has two Rust types</strong>: a handle such as <a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/stmt/struct.For.html"><code class="docutils literal notranslate"><span class="pre">For</span></code></a>, a
-reference-counted pointer that is cheap to clone, and the object it points
-to, such as <a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/stmt/struct.ForObj.html"><code class="docutils literal notranslate"><span class="pre">ForObj</span></code></a>, which holds the fields. A handle dereferences to its
-object, so we read fields as ordinary struct fields.</p>
-<p>Let’s read <code class="docutils literal notranslate"><span class="pre">add_one</span></code> from its parameters down to the store in its loop.
-The statements of a body are general <code class="docutils literal notranslate"><span class="pre">Stmt</span></code> handles, and <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/macro.match_any.html"><code class="docutils literal notranslate"><span class="pre">match_any!</span></code></a>
-branches on their actual node type, as <code class="docutils literal notranslate"><span class="pre">match</span></code> does on an enum:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
-<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">param</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">func</span><span class="p">.</span><span class="n">params</span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">lines</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"param {}"</span><span class="p">,</span><span class="w"> </span><span class="n">param</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">as_str</span><span class="p">()));</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">func</span><span class="p">.</span><span class="n">body</span><span class="p">;</span>
-<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">stmt</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">body</span><span class="p">.</span><span class="n">seq</span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">describe</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">lines</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">lines</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">).</span><span class="n">into</span><span class="p">())</span>
+<section id="tvm-ffi-object-system">
+<h2>TVM-FFI Object System<a class="headerlink" href="#tvm-ffi-object-system" title="Link to this heading">#</a></h2>
+<p>Every TIRx IR node is a TVM-FFI object. Rust IRs are typically built as
+enums and matched with <code class="docutils literal notranslate"><span class="pre">match</span></code>, which works well when every node type is
+known in advance. TIRx is designed for <strong>dynamic extension</strong> instead: a
+library can add a new node type, for example a new statement for a
+hardware feature, and existing code keeps working on programs that contain
+it. Generic utilities such as walking, rewriting, comparing, and printing
+work on every node through its registered fields.</p>
+<p>TVM-FFI objects also work across languages. Python, C++, and Rust share
+the same native, immutable, reference-counted objects, so a program moves
+between them without conversion.</p>
+<p><strong>We designed the TVM-FFI object system to be ergonomic in Rust.</strong> The
+key constructs are:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Construct</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Constructors, <code class="docutils literal notranslate"><span class="pre">ex()</span></code></p></td>
+<td><p>Build expressions with ordinary Rust operators</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">FooObj</span></code> / <code class="docutils literal notranslate"><span class="pre">Foo</span></code></p></td>
+<td><p>Underlying object and its named managed reference: read fields
+directly, clone cheaply</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">.into()</span></code></p></td>
+<td><p>Convert to a parent type</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCast.html"><code class="docutils literal notranslate"><span class="pre">.try_cast()</span></code></a></p></td>
+<td><p>Convert to a child type, with a checked <code class="docutils literal notranslate"><span class="pre">Result</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/macro.match_any.html"><code class="docutils literal notranslate"><span class="pre">match_any!</span></code></a></p></td>
+<td><p>Branch on the node type</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a></p></td>
+<td><p>Process each node type in its own method, with shared state</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The subsections below introduce each construct.</p>
+<section id="constructing-objects">
+<h3>Constructing Objects<a class="headerlink" href="#constructing-objects" title="Link to this heading">#</a></h3>
+<p><strong>We build IR with constructors and ordinary Rust operators.</strong> Writing
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">+</span> <span class="pre">1</span></code> as nested constructor calls would bury the expression, so
+the crate lets us write it as we would in Rust. Let’s build it:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">x_times_2_plus_1</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="n">Var</span><span class="p">,</span><span class="w"> </span><span class="n">Expr</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">"x"</span><span class="p">,</span><span class="w"> </span><span class="n">PrimType</span><span class="p">::</span><span class="n">int</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">UNKNOWN_LOC</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ex</span><span class="p">(</span><span class="o">&amp;</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">expr</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">))</span>
 <span class="p">}</span>
 
-<span class="k">fn</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="n">stmt</span><span class="p">:</span><span class="w"> </span><span class="nc">Stmt</span><span class="p">,</span><span class="w"> </span><span class="n">indent</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="kt">str</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">match_any</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">stmt</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">For</span><span class="p">(</span><span class="n">loop_</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="w"> </span><span class="n">end</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">loop_</span><span class="p">.</span><span class="n">var</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">as_str</span><span class="p">(),</span><span class="w"> </span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">loop_</span><span class="p">.</span><span class="n">end</span><span class="p">)</span><span class="o">?</span><span class="p">);</span>
-<span class="w">                </span><span class="n">lines</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"{indent}loop over {var} up to {}"</span><span class="p">,</span><span class="w"> </span><span class="n">end</span><span class="p">.</span><span class="n">as_str</span><span class="p">()));</span>
-<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">loop_</span><span class="p">.</span><span class="n">body</span><span class="p">.</span><span class="n">seq</span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                    </span><span class="n">describe</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="fm">format!</span><span class="p">(</span><span class="s">"{indent}  "</span><span class="p">),</span><span class="w"> </span><span class="n">lines</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">                </span><span class="p">}</span>
-<span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="n">TensorStore</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">dest</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">store</span><span class="p">.</span><span class="n">dest</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">store</span><span class="p">.</span><span class="n">value</span><span class="p">)</span><span class="o">?</span><span class="p">);</span>
-<span class="w">                </span><span class="n">lines</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"{indent}store to {}: {}"</span><span class="p">,</span><span class="w"> </span><span class="n">dest</span><span class="p">.</span><span class="n">as_str</span><span class="p">(),</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="n">as_str</span><span class="p">()));</span>
-<span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="n">_</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">lines</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"{indent}other statement"</span><span class="p">)),</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">construct</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x_times_2_plus_1</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">expr</span><span class="p">)</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>param A
-param B
-loop over i up to n
-  store to B: A[i] + T.float32(1.0)
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x * 2 + 1
 </pre></div>
 </div>
-<p>Each arm names a handle type and binds the matching node to it; the arms
-are tried in order, and <code class="docutils literal notranslate"><span class="pre">_</span></code> takes everything else. Fields have the types
-we know from Python: <code class="docutils literal notranslate"><span class="pre">params</span></code> is an <code class="docutils literal notranslate"><span class="pre">Array&lt;Var&gt;</span></code>, and the body of a
-loop is a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> whose <code class="docutils literal notranslate"><span class="pre">seq</span></code> holds its statements. <a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/script/fn.script.html"><code class="docutils literal notranslate"><span class="pre">script</span></code></a> prints
-any node as TVMScript.</p>
+<p><a class="reference external" href="../reference/rust/generated/tvm_tirx/ir/expr/struct.Var.html#method.new"><code class="docutils literal notranslate"><span class="pre">Var::new</span></code></a> takes a name, a type, and a source location; <code class="docutils literal notranslate"><span class="pre">UNKNOWN_LOC</span></code>
+means there is none. <a class="reference external" href="../reference/rust/generated/tvm_tirx/ir/prim/op/fn.ex.html"><code class="docutils literal notranslate"><span class="pre">ex</span></code></a> wraps <code class="docutils literal notranslate"><span class="pre">x</span></code> so that <code class="docutils literal notranslate"><span class="pre">*</span></code> and <code class="docutils literal notranslate"><span class="pre">+</span></code> build IR,
+and the literals <code class="docutils literal notranslate"><span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">1</span></code> become constants of the type of <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
+<p>An operator can fail, for example on mismatched types, so <code class="docutils literal notranslate"><span class="pre">ex</span></code> carries
+the first error along, much like a chain of <code class="docutils literal notranslate"><span class="pre">Result</span></code>s. <code class="docutils literal notranslate"><span class="pre">.expr()</span></code>
+takes the result out and <code class="docutils literal notranslate"><span class="pre">?</span></code> passes an error on. <a class="reference external" href="../reference/rust/generated/tvm_tirx/script/fn.script.html"><code class="docutils literal notranslate"><span class="pre">script</span></code></a> prints the
+node as TVMScript.</p>
+<p>We now have an expression; next, let’s see what kind of Rust value it is.</p>
+</section>
+<section id="objects-and-managed-references">
+<h3>Objects and Managed References<a class="headerlink" href="#objects-and-managed-references" title="Link to this heading">#</a></h3>
+<p><strong>Every node type comes as a pair: an underlying object and a named
+managed reference.</strong> The top of
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">+</span> <span class="pre">1</span></code> is an addition, so let’s convert the expression to <code class="docutils literal notranslate"><span class="pre">Add</span></code>
+with <code class="docutils literal notranslate"><span class="pre">try_cast</span></code>, which the next subsection explains, and read its two
+operands:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">objects</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Strings</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x_times_2_plus_1</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">add</span><span class="p">:</span><span class="w"> </span><span class="nc">Add</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expr</span><span class="p">.</span><span class="n">try_cast</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">alias</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">add</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">lines</span><span class="p">([</span>
+<span class="w">        </span><span class="fm">format!</span><span class="p">(</span><span class="s">"a = {}"</span><span class="p">,</span><span class="w"> </span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">a</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">as_str</span><span class="p">()),</span>
+<span class="w">        </span><span class="fm">format!</span><span class="p">(</span><span class="s">"b = {}"</span><span class="p">,</span><span class="w"> </span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">as_str</span><span class="p">()),</span>
+<span class="w">        </span><span class="fm">format!</span><span class="p">(</span><span class="s">"same object: {}"</span><span class="p">,</span><span class="w"> </span><span class="n">alias</span><span class="p">.</span><span class="n">same_as</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">)),</span>
+<span class="w">    </span><span class="p">]))</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>a = x * 2
+b = 1
+same object: true
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">alias</span></code> is the same object as <code class="docutils literal notranslate"><span class="pre">add</span></code>: <code class="docutils literal notranslate"><span class="pre">clone</span></code> copies only the managed
+reference, and <code class="docutils literal notranslate"><span class="pre">same_as</span></code> compares identity, like <code class="docutils literal notranslate"><span class="pre">Arc::ptr_eq</span></code>.</p>
+<p><a class="reference external" href="../reference/rust/generated/tvm_tirx/ir/prim/expr/struct.AddObj.html"><code class="docutils literal notranslate"><span class="pre">AddObj</span></code></a> is the <strong>underlying object</strong>: the struct that holds the fields. <a class="reference external" href="../reference/rust/generated/tvm_tirx/ir/prim/expr/struct.Add.html"><code class="docutils literal notranslate"><span class="pre">Add</span></code></a> is a <strong>named managed reference</strong>
+to it: an owning, reference-counted smart pointer, like <code class="docutils literal notranslate"><span class="pre">Arc&lt;AddObj&gt;</span></code>,
+so cloning it is cheap. Functions take and return managed references, and
+a managed reference dereferences to its object, so fields read as ordinary
+struct fields: <code class="docutils literal notranslate"><span class="pre">add.a</span></code>.</p>
+<p>We define a separate named type <code class="docutils literal notranslate"><span class="pre">Add</span></code> instead of using a plain pointer
+to <code class="docutils literal notranslate"><span class="pre">AddObj</span></code> because the named type carries the interface: constructors,
+methods, conversions to parent types, and the traits that let it pass
+through TVM-FFI functions. It can also impose additional constraints on
+the underlying object that the object alone does not express.</p>
+<p>This is the newtype pattern. Simplified from the crate, the pair is:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[repr(C)]</span>
+<span class="cp">#[derive(Object)]</span>
+<span class="cp">#[type_key = </span><span class="s">"prim.Add"</span><span class="cp">]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">AddObj</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">base</span><span class="p">:</span><span class="w"> </span><span class="nc">ExprObj</span><span class="p">,</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="nc">Expr</span><span class="p">,</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="nc">Expr</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="cp">#[repr(C)]</span>
+<span class="cp">#[derive(ObjectRef, Clone)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Add</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">base</span><span class="p">:</span><span class="w"> </span><span class="nc">ObjectArc</span><span class="o">&lt;</span><span class="n">AddObj</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Rust has no inheritance; instead, <code class="docutils literal notranslate"><span class="pre">#[repr(C)]</span></code> puts the parent’s object,
+<code class="docutils literal notranslate"><span class="pre">ExprObj</span></code>, first in <code class="docutils literal notranslate"><span class="pre">AddObj</span></code>, so every addition is also an expression.
+<code class="docutils literal notranslate"><span class="pre">Add</span></code> implements <code class="docutils literal notranslate"><span class="pre">Deref</span></code> to <code class="docutils literal notranslate"><span class="pre">AddObj</span></code>, which is why <code class="docutils literal notranslate"><span class="pre">add.a</span></code> works.</p>
+<p><strong>Nodes are immutable.</strong> As with data behind an <code class="docutils literal notranslate"><span class="pre">Arc</span></code>, a managed
+reference gives read access only; to change a node, we build a new one.</p>
+<p>We reached <code class="docutils literal notranslate"><span class="pre">Add</span></code> with a cast; next, let’s look at casts on their own.</p>
+</section>
+<section id="casts">
+<h3>Casts<a class="headerlink" href="#casts" title="Link to this heading">#</a></h3>
+<p><strong>Casts move a managed reference up and down the type hierarchy.</strong> A
+function that takes any expression wants an <code class="docutils literal notranslate"><span class="pre">Expr</span></code>, while reading the
+operands needs an <code class="docutils literal notranslate"><span class="pre">Add</span></code>. <code class="docutils literal notranslate"><span class="pre">.into()</span></code> converts to a parent type through
+<code class="docutils literal notranslate"><span class="pre">From</span></code>/<code class="docutils literal notranslate"><span class="pre">Into</span></code> and cannot fail. <code class="docutils literal notranslate"><span class="pre">.try_cast()</span></code> converts to a child
+type: like <code class="docutils literal notranslate"><span class="pre">TryFrom</span></code>, it checks the node’s actual type and returns a
+<code class="docutils literal notranslate"><span class="pre">Result</span></code>.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">casts</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Strings</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x_times_2_plus_1</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">add</span><span class="p">:</span><span class="w"> </span><span class="nc">Add</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expr</span><span class="p">.</span><span class="n">try_cast</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nc">Expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">add</span><span class="p">.</span><span class="n">into</span><span class="p">();</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">again</span><span class="p">:</span><span class="w"> </span><span class="nc">Add</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="n">clone</span><span class="p">().</span><span class="n">try_cast</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[</span><span class="fm">format!</span><span class="p">(</span><span class="s">"back to Add: {}"</span><span class="p">,</span><span class="w"> </span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">again</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">as_str</span><span class="p">())];</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="n">try_cast</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Mul</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">out</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"as Mul: {}"</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">.</span><span class="n">message</span><span class="p">()));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">lines</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>back to Add: x * 2 + 1
+as Mul: Cannot convert from type `prim.Add` to `prim.Mul`
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">value</span></code> is an <code class="docutils literal notranslate"><span class="pre">Expr</span></code> again, but the node behind it is still an
+addition, so the cast back to <code class="docutils literal notranslate"><span class="pre">Add</span></code> succeeds.</p>
+<p>What if we guess wrong? The cast to <code class="docutils literal notranslate"><span class="pre">Mul</span></code> returns an <code class="docutils literal notranslate"><span class="pre">Err</span></code>, and its
+message names both type keys: the actual type <code class="docutils literal notranslate"><span class="pre">prim.Add</span></code> and the
+requested <code class="docutils literal notranslate"><span class="pre">prim.Mul</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>A function’s <code class="docutils literal notranslate"><span class="pre">body</span></code> is always a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code>. <code class="docutils literal notranslate"><span class="pre">get</span></code> on an array returns
-an error for an index out of range, and <code class="docutils literal notranslate"><span class="pre">?</span></code> passes it on.</p>
+<p><code class="docutils literal notranslate"><span class="pre">try_cast</span></code> consumes the managed reference it converts, so we clone
+<code class="docutils literal notranslate"><span class="pre">value</span></code> before the first cast; the clone costs one reference-count
+increment.</p>
 </div>
-<p>To create a node, we call the constructor of its handle type, such as
-<a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/stmt/struct.TensorStore.html#method.new"><code class="docutils literal notranslate"><span class="pre">TensorStore::new</span></code></a>. <a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/prim/op/fn.ex.html"><code class="docutils literal notranslate"><span class="pre">ex</span></code></a> wraps an expression so that the usual Rust
-operators build IR; constructors accept the result directly. Let’s build a store
-that writes twice the value of the store in <code class="docutils literal notranslate"><span class="pre">add_one</span></code>:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">double_store</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">TensorStore</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">func</span><span class="p">.</span><span class="n">body</span><span class="p">;</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">loop_</span><span class="p">:</span><span class="w"> </span><span class="nc">For</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">body</span><span class="p">.</span><span class="n">seq</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">try_cast</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">store</span><span class="p">:</span><span class="w"> </span><span class="nc">TensorStore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loop_</span><span class="p">.</span><span class="n">body</span><span class="p">.</span><span class="n">seq</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">try_cast</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">doubled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ex</span><span class="p">(</span><span class="o">&amp;</span><span class="n">store</span><span class="p">.</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
-<span class="w">    </span><span class="n">TensorStore</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="o">&amp;</span><span class="n">store</span><span class="p">.</span><span class="n">dest</span><span class="p">,</span><span class="w"> </span><span class="n">store</span><span class="p">.</span><span class="n">indices</span><span class="p">.</span><span class="n">iter</span><span class="p">(),</span><span class="w"> </span><span class="n">doubled</span><span class="p">,</span><span class="w"> </span><span class="n">UNKNOWN_LOC</span><span class="p">)</span>
+<p>Casting to one type at a time gets tedious when a node can be one of
+many; that is what matching is for.</p>
+</section>
+<section id="matching-node-types">
+<h3>Matching Node Types<a class="headerlink" href="#matching-node-types" title="Link to this heading">#</a></h3>
+<p><a class="reference external" href="../reference/rust/generated/tvm_ffi/macro.match_any.html"><code class="docutils literal notranslate"><span class="pre">match_any!</span></code></a> <strong>branches on the actual type of a node</strong>, as <code class="docutils literal notranslate"><span class="pre">match</span></code> does
+on an enum. Let’s print an expression with explicit parentheses by
+matching each node and recursing into its operands:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Expr</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">match_any</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">expr</span><span class="p">.</span><span class="n">clone</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Add</span><span class="p">(</span><span class="n">add</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">format!</span><span class="p">(</span><span class="s">"({} + {})"</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Mul</span><span class="p">(</span><span class="n">mul</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">format!</span><span class="p">(</span><span class="s">"({} * {})"</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="p">.</span><span class="n">a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Var</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">var</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">as_str</span><span class="p">().</span><span class="n">to_owned</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">IntImm</span><span class="p">(</span><span class="n">imm</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">imm</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">to_string</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">_</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">"&lt;other&gt;"</span><span class="p">.</span><span class="n">to_owned</span><span class="p">(),</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We call it on <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">+</span> <span class="pre">1</span></code> and on <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">1</span></code>:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">matching</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Strings</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x_times_2_plus_1</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">difference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ex</span><span class="p">(</span><span class="o">&amp;</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">expr</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">lines</span><span class="p">([</span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">expr</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">difference</span><span class="p">)</span><span class="o">?</span><span class="p">]))</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The output is:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"int32"</span><span class="p">)</span>
-<span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"B"</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
-<span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"i"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"int32"</span><span class="p">)</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"A"</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
-<span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span> <span class="o">*</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>((x * 2) + 1)
+&lt;other&gt;
 </pre></div>
 </div>
-<p>The new store reuses the destination and indices of the old one, so the
-printer declares them as free variables first. Constructing nodes creates
-new objects; <code class="docutils literal notranslate"><span class="pre">add_one</span></code> itself is not modified. Here <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/object/trait.ObjectRefCast.html"><code class="docutils literal notranslate"><span class="pre">try_cast</span></code></a> downcasts
-to a single known type instead of branching.</p>
+<p>Each arm names a managed reference type and binds the matching node to it,
+and the first matching arm runs. The <code class="docutils literal notranslate"><span class="pre">Add</span></code> and <code class="docutils literal notranslate"><span class="pre">Mul</span></code> arms recurse into
+the operands, the <code class="docutils literal notranslate"><span class="pre">Var</span></code> and <code class="docutils literal notranslate"><span class="pre">IntImm</span></code> arms end the recursion, and
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">1</span></code> falls to the <code class="docutils literal notranslate"><span class="pre">_</span></code> arm because <code class="docutils literal notranslate"><span class="pre">describe</span></code> has no arm for
+subtraction.</p>
+<p><strong>The catch-all arm keeps existing code working as node types are added.</strong>
+The set of node types is open, like a <code class="docutils literal notranslate"><span class="pre">#[non_exhaustive]</span></code> enum from
+another crate, so the match needs a <code class="docutils literal notranslate"><span class="pre">_</span></code> arm. A function handles the
+types it knows, and <code class="docutils literal notranslate"><span class="pre">_</span></code> lets programs with new types pass through.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Like <code class="docutils literal notranslate"><span class="pre">try_cast</span></code>, <code class="docutils literal notranslate"><span class="pre">match_any!</span></code> consumes what it matches, so
+<code class="docutils literal notranslate"><span class="pre">describe</span></code> passes it <code class="docutils literal notranslate"><span class="pre">expr.clone()</span></code>. <code class="docutils literal notranslate"><span class="pre">match_any!</span></code> works on any
+TVM-FFI object, such as tensors, shapes, and typed arrays, and on
+<code class="docutils literal notranslate"><span class="pre">Any</span></code> values. Plain values such as integers take the <code class="docutils literal notranslate"><span class="pre">_</span></code> arm.</p>
+</div>
+<p>A match looks at one node at a time; to process every node in a program
+while keeping state, we dispatch.</p>
+</section>
+<section id="dispatching-on-node-types">
+<h3>Dispatching on Node Types<a class="headerlink" href="#dispatching-on-node-types" title="Link to this heading">#</a></h3>
+<p><a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> <strong>lets one struct process each node type in its own method,
+with shared state.</strong> A compiler pass often needs one piece of logic per
+node type and state shared across them; <code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code> puts both on one
+struct. It works like a trait whose methods all have default bodies: we
+write methods for the node types we care about, and every other type gets
+the default behavior.</p>
+<p><code class="docutils literal notranslate"><span class="pre">#[dispatch(walk)]</span></code> on an <code class="docutils literal notranslate"><span class="pre">impl</span></code> block turns its <code class="docutils literal notranslate"><span class="pre">walk_*</span></code> methods
+into callbacks for <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_walk.html"><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code></a>, which visits every node. Each
+method borrows the nodes of its parameter type, and the methods are tried
+in source order. Let’s count the variables and additions:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">vars</span><span class="p">:</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span>
+<span class="w">    </span><span class="n">adds</span><span class="p">:</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="cp">#[dispatch(walk)]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_var</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">_var</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">VarObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">WalkResult</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">vars</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">_add</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">AddObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">WalkResult</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">adds</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We walk <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">+</span> <span class="pre">1</span></code> with it. <code class="docutils literal notranslate"><span class="pre">WalkResult::Advance</span></code> continues into
+the node’s children, and <code class="docutils literal notranslate"><span class="pre">WalkOrder::PreOrder</span></code> visits a node before its
+children:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">count</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x_times_2_plus_1</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">counter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Counter</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
+<span class="w">    </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">structural_walk</span><span class="p">(</span><span class="o">&amp;</span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">counter</span><span class="p">,</span><span class="w"> </span><span class="n">WalkOrder</span><span class="p">::</span><span class="n">PreOrder</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"variables: {}, additions: {}"</span><span class="p">,</span><span class="w"> </span><span class="n">counter</span><span class="p">.</span><span class="n">vars</span><span class="p">,</span><span class="w"> </span><span class="n">counter</span><span class="p">.</span><span class="n">adds</span><span class="p">).</span><span class="n">into</span><span class="p">())</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>variables: 1, additions: 1
+</pre></div>
+</div>
+<p><strong>Node types without a method fall back to the default traversal</strong>: the
+walk continues into their children, so new types pass through. Here the
+multiplication and the constants have no method, and the walk still
+reaches <code class="docutils literal notranslate"><span class="pre">x</span></code> inside the multiplication.</p>
+</section>
 </section>
 <section id="structural-utilities">
 <h2>Structural Utilities<a class="headerlink" href="#structural-utilities" title="Link to this heading">#</a></h2>
 <p>The structural utilities are part of TVM-FFI, and the <code class="docutils literal notranslate"><span class="pre">tvm_ffi</span></code> crate,
 re-exported as <code class="docutils literal notranslate"><span class="pre">tvm_tirx::tvm_ffi</span></code>, provides them in Rust:
-<a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/fn.structural_walk.html"><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code></a>, <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/fn.structural_map.html"><code class="docutils literal notranslate"><span class="pre">structural_map</span></code></a>, <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/fn.structural_visit.html"><code class="docutils literal notranslate"><span class="pre">structural_visit</span></code></a>, and
-<a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html"><code class="docutils literal notranslate"><span class="pre">structural_mutate</span></code></a>. They run on the same structural hooks as in Python,
-so they reach the same nodes and keep definitions and uses consistent in
-the same way. <strong>What changes is the Rust form of each piece</strong>:</p>
+<a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_walk.html"><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_map.html"><code class="docutils literal notranslate"><span class="pre">structural_map</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_visit.html"><code class="docutils literal notranslate"><span class="pre">structural_visit</span></code></a>, and
+<a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html"><code class="docutils literal notranslate"><span class="pre">structural_mutate</span></code></a>. They work on every node through its registered
+fields and keep definitions and uses consistent. <strong>Each piece takes a Rust
+form</strong>:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 25.0%" />
 <col style="width: 35.0%" />
-<col style="width: 40.0%" />
+<col style="width: 65.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Aspect</p></th>
-<th class="head"><p>Python</p></th>
-<th class="head"><p>Rust</p></th>
+<tr class="row-odd"><th class="head"><p>Piece</p></th>
+<th class="head"><p>Rust form</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Nodes a callback receives</p></td>
-<td><p>The type paired with it, such as <code class="docutils literal notranslate"><span class="pre">(ir.TensorStore,</span> <span class="pre">f)</span></code></p></td>
-<td><p>The type of the callback’s parameter</p></td>
+<td><p>Selected by the type of the callback’s parameter</p></td>
 </tr>
 <tr class="row-odd"><td><p>Walk callback result</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">WalkResult.SKIP</span></code>, or a <code class="docutils literal notranslate"><span class="pre">VisitInterrupt</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">WalkResult</span></code>, or <code class="docutils literal notranslate"><span class="pre">Result&lt;WalkResult&gt;</span></code> to use <code class="docutils literal notranslate"><span class="pre">?</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Traversal order</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">order=&quot;pre&quot;</span></code> or the default post-order</p></td>
 <td><p>A required argument, <code class="docutils literal notranslate"><span class="pre">WalkOrder::PreOrder</span></code> or <code class="docutils literal notranslate"><span class="pre">PostOrder</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Result of a map</p></td>
-<td><p>The new value</p></td>
 <td><p>An <code class="docutils literal notranslate"><span class="pre">Any</span></code>, converted back with <code class="docutils literal notranslate"><span class="pre">try_into</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Definition region kind</p></td>
-<td><p>Pass the callback through <code class="docutils literal notranslate"><span class="pre">with_def_region_kind</span></code></p></td>
 <td><p>A trailing <code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code> parameter</p></td>
 </tr>
 <tr class="row-odd"><td><p>Errors</p></td>
-<td><p>Exceptions</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">Result</span></code> values</p></td>
 </tr>
 <tr class="row-even"><td><p>Structural equality</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">structural_equal</span></code></p></td>
 <td><p>The global function <code class="docutils literal notranslate"><span class="pre">ffi.StructuralEqual</span></code></p></td>
 </tr>
 </tbody>
@@ -638,8 +825,8 @@ the same way. <strong>What changes is the Rust form of each piece</strong>:</p>
 </div>
 <section id="structural-walk">
 <h3>Structural Walk<a class="headerlink" href="#structural-walk" title="Link to this heading">#</a></h3>
-<p>As in Python, a walk calls our callback on each node of the type it asks
-for. Let’s find the tensors that <code class="docutils literal notranslate"><span class="pre">add_one</span></code> writes:</p>
+<p>A walk calls our callback on each node of the type it asks for. Let’s find
+the tensors that <code class="docutils literal notranslate"><span class="pre">add_one</span></code> writes:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">written_tensors</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Strings</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">writes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">on_store</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">|</span><span class="n">store</span><span class="p">:</span><span class="w"> </span><span class="nc">TensorStore</span><span class="o">|</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
@@ -659,7 +846,7 @@ for. Let’s find the tensors that <code class="docutils literal notranslate"><s
 <p><code class="docutils literal notranslate"><span class="pre">on_store</span></code> takes a <code class="docutils literal notranslate"><span class="pre">TensorStore</span></code>, so the walk calls it only on
 stores. <code class="docutils literal notranslate"><span class="pre">Strings</span></code> is our alias for <code class="docutils literal notranslate"><span class="pre">Array&lt;tvm_ffi::String&gt;</span></code>, which
 Python receives as a list of strings.</p>
-<p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/enum.WalkResult.html"><code class="docutils literal notranslate"><span class="pre">WalkResult</span></code></a><code class="docutils literal notranslate"><span class="pre">::Advance</span></code> continues into the node’s children, <code class="docutils literal notranslate"><span class="pre">Skip</span></code>
+<p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.WalkResult.html"><code class="docutils literal notranslate"><span class="pre">WalkResult</span></code></a><code class="docutils literal notranslate"><span class="pre">::Advance</span></code> continues into the node’s children, <code class="docutils literal notranslate"><span class="pre">Skip</span></code>
 does not descend into them, and <code class="docutils literal notranslate"><span class="pre">Interrupt</span></code> stops the whole walk.</p>
 <p>The parameter list of a callback decides what it receives:</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -674,7 +861,7 @@ does not descend into them, and <code class="docutils literal notranslate"><span
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">|store:</span> <span class="pre">TensorStore|</span></code></p></td>
-<td><p>Each write, as a handle.</p></td>
+<td><p>Each write, as a managed reference.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">|store:</span> <span class="pre">&amp;TensorStoreObj|</span></code></p></td>
 <td><p>Each write, as a borrowed object, without changing its reference
@@ -716,7 +903,7 @@ it, with the payload in <code class="docutils literal notranslate"><span class="
 <section id="definitions-and-uses">
 <h3>Definitions and Uses<a class="headerlink" href="#definitions-and-uses" title="Link to this heading">#</a></h3>
 <p>A callback receives the definition region kind when it takes a
-<a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html"><code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code></a> as its last parameter. This walk lists the definition
+<a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html"><code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code></a> as its last parameter. This walk lists the definition
 sites of <code class="docutils literal notranslate"><span class="pre">add_one</span></code>:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">definitions</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Strings</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">sites</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
@@ -739,9 +926,8 @@ n Pattern
 i Simple
 </pre></div>
 </div>
-<p>The kinds are the ones we saw in Python, under Rust names:
-<code class="docutils literal notranslate"><span class="pre">DefRegionKind::None</span></code> for a use site, <code class="docutils literal notranslate"><span class="pre">Pattern</span></code> for <code class="docutils literal notranslate"><span class="pre">DEF_PATTERN</span></code>,
-and <code class="docutils literal notranslate"><span class="pre">Simple</span></code> for <code class="docutils literal notranslate"><span class="pre">DEF_SIMPLE</span></code>. <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> callbacks take the
+<p><code class="docutils literal notranslate"><span class="pre">DefRegionKind::None</span></code> marks a use site; <code class="docutils literal notranslate"><span class="pre">Pattern</span></code> and <code class="docutils literal notranslate"><span class="pre">Simple</span></code> are
+the two kinds of definition site. <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> callbacks take the
 same trailing parameter.</p>
 </section>
 <section id="structural-map">
@@ -771,17 +957,15 @@ same trailing parameter.</p>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This is the same result as in Python. <a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/prim/op/fn.make_const.html"><code class="docutils literal notranslate"><span class="pre">make_const</span></code></a> builds the constant
-<code class="docutils literal notranslate"><span class="pre">128</span></code> with the type of <code class="docutils literal notranslate"><span class="pre">n</span></code>, and every other variable is returned as it
-is. <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> takes ownership of the handle we pass and returns
-the new root as an <code class="docutils literal notranslate"><span class="pre">Any</span></code>; Python still holds <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, which is
-unchanged.</p>
+<p><a class="reference external" href="../reference/rust/generated/tvm_tirx/ir/prim/op/fn.make_const.html"><code class="docutils literal notranslate"><span class="pre">make_const</span></code></a> builds the constant <code class="docutils literal notranslate"><span class="pre">128</span></code> with the type of <code class="docutils literal notranslate"><span class="pre">n</span></code>, and
+every other variable is returned as it is. <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> takes
+ownership of the managed reference we pass and returns the new root as an
+<code class="docutils literal notranslate"><span class="pre">Any</span></code>; Python still holds <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, which is unchanged.</p>
 </section>
 <section id="structural-equality">
 <h3>Structural Equality<a class="headerlink" href="#structural-equality" title="Link to this heading">#</a></h3>
 <p>The crate has no Rust function for structural equality yet, so we call the
-global function that Python’s <code class="docutils literal notranslate"><span class="pre">structural_equal</span></code> uses,
-<code class="docutils literal notranslate"><span class="pre">ffi.StructuralEqual</span></code>, with its four arguments: the two values,
+global function <code class="docutils literal notranslate"><span class="pre">ffi.StructuralEqual</span></code> with its four arguments: the two values,
 <code class="docutils literal notranslate"><span class="pre">map_free_vars</span></code>, and <code class="docutils literal notranslate"><span class="pre">skip_tensor_content</span></code>. Let’s specialize
 <code class="docutils literal notranslate"><span class="pre">add_one</span></code> twice and compare the results:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">compare_specialized</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">:</span><span class="w"> </span><span class="nc">Var</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Array</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
@@ -805,63 +989,16 @@ are structurally equal.</p>
 </section>
 <section id="visitors-and-mutators-in-rust">
 <h2>Visitors and Mutators in Rust<a class="headerlink" href="#visitors-and-mutators-in-rust" title="Link to this heading">#</a></h2>
-<p>Rust has no separate layer of visitor and mutator classes. Stateful and
-typed traversals use the same four structural utilities, and the crate
-provides two conveniences to build them: <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> turns the methods
-of a struct into typed callbacks, and <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html"><code class="docutils literal notranslate"><span class="pre">VisitCallbacks</span></code></a> and
-<a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html"><code class="docutils literal notranslate"><span class="pre">MutateCallbacks</span></code></a> attach state to a tuple of callbacks.</p>
-<section id="typed-dispatch-on-a-struct">
-<h3>Typed Dispatch on a Struct<a class="headerlink" href="#typed-dispatch-on-a-struct" title="Link to this heading">#</a></h3>
-<p>The closures in a callback tuple cannot borrow the same state mutably at
-the same time, so callbacks that share state are written as methods
-instead. <code class="docutils literal notranslate"><span class="pre">#[dispatch(walk)]</span></code> on an <code class="docutils literal notranslate"><span class="pre">impl</span></code> block turns its <code class="docutils literal notranslate"><span class="pre">walk_*</span></code>
-methods into callbacks: each method receives the nodes of its parameter
-type, and the methods are tried in source order. The struct holds the
-state. Let’s record the loops and writes of <code class="docutils literal notranslate"><span class="pre">add_one</span></code> in the order the
-walk reaches them:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
-<span class="k">struct</span><span class="w"> </span><span class="nc">StatementTrace</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">events</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="cp">#[dispatch(walk)]</span>
-<span class="k">impl</span><span class="w"> </span><span class="n">StatementTrace</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_for</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">loop_</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">ForObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">WalkResult</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">events</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"loop {}"</span><span class="p">,</span><span class="w"> </span><span class="n">loop_</span><span class="p">.</span><span class="n">var</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">as_str</span><span class="p">()));</span>
-<span class="w">        </span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span>
-<span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_store</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">store</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">TensorStoreObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">events</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"write {}"</span><span class="p">,</span><span class="w"> </span><span class="n">script</span><span class="p">(</span><span class="o">&amp;</span><span class="n">store</span><span class="p">.</span><span class="n">dest</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">as_str</span><span class="p">()));</span>
-<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
-
-<span class="k">fn</span><span class="w"> </span><span class="nf">trace_statements</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">,</span><span class="w"> </span><span class="n">pre_order</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Strings</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">pre_order</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">WalkOrder</span><span class="p">::</span><span class="n">PreOrder</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">WalkOrder</span><span class="p">::</span><span class="n">PostOrder</span><span class="w"> </span><span class="p">};</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">trace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StatementTrace</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
-<span class="w">    </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">structural_walk</span><span class="p">(</span><span class="o">&amp;</span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">trace</span><span class="p">,</span><span class="w"> </span><span class="n">order</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">trace</span><span class="p">.</span><span class="n">events</span><span class="p">.</span><span class="n">iter</span><span class="p">().</span><span class="n">map</span><span class="p">(</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="p">::</span><span class="n">from</span><span class="p">).</span><span class="n">collect</span><span class="p">())</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Called with <code class="docutils literal notranslate"><span class="pre">pre_order</span></code> true and then false, the output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['loop i', 'write B']
-['write B', 'loop i']
-</pre></div>
-</div>
-<p>Pre-order reports the loop before the write inside it, and post-order the
-reverse. A method may also take a trailing <code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code>, as a closure
-can. <code class="docutils literal notranslate"><span class="pre">#[dispatch(map)]</span></code>, <code class="docutils literal notranslate"><span class="pre">#[dispatch(visit)]</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">#[dispatch(mutate)]</span></code> work the same way for <code class="docutils literal notranslate"><span class="pre">map_*</span></code>, <code class="docutils literal notranslate"><span class="pre">visit_*</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">mutate_*</span></code> methods.</p>
-</section>
-<section id="visit-and-mutate">
-<h3>Visit and Mutate<a class="headerlink" href="#visit-and-mutate" title="Link to this heading">#</a></h3>
-<p>A visit or mutate callback takes control of its node’s children, as in
-Python. Let’s record the loops around each write. With <code class="docutils literal notranslate"><span class="pre">VisitCallbacks</span></code>,
-each callback receives the node and a <code class="docutils literal notranslate"><span class="pre">VisitContext</span></code>, which holds the
-shared state:</p>
+<p>Stateful traversals use the same four structural utilities. The state
+lives either on a <a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> struct, as in Dispatching on Node Types, or
+in <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html"><code class="docutils literal notranslate"><span class="pre">VisitCallbacks</span></code></a> and <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html"><code class="docutils literal notranslate"><span class="pre">MutateCallbacks</span></code></a>, which attach it to a tuple of
+callbacks. <code class="docutils literal notranslate"><span class="pre">#[dispatch(map)]</span></code>, <code class="docutils literal notranslate"><span class="pre">#[dispatch(visit)]</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">#[dispatch(mutate)]</span></code> work like <code class="docutils literal notranslate"><span class="pre">#[dispatch(walk)]</span></code> for <code class="docutils literal notranslate"><span class="pre">map_*</span></code>,
+<code class="docutils literal notranslate"><span class="pre">visit_*</span></code>, and <code class="docutils literal notranslate"><span class="pre">mutate_*</span></code> methods.</p>
+<p><strong>A visit or mutate callback takes control of its node’s children.</strong>
+Let’s record the loops around each write. With <code class="docutils literal notranslate"><span class="pre">VisitCallbacks</span></code>, each
+callback receives the node and a <code class="docutils literal notranslate"><span class="pre">VisitContext</span></code>, which holds the shared
+state:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
 <span class="k">struct</span><span class="w"> </span><span class="nc">LoopNest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">loops</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
@@ -954,78 +1091,67 @@ replacement before any use of <code class="docutils literal notranslate"><span c
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">mutate_var</span></code> replaces <code class="docutils literal notranslate"><span class="pre">i</span></code> only where <code class="docutils literal notranslate"><span class="pre">def_region_kind()</span></code> is
-<code class="docutils literal notranslate"><span class="pre">None</span></code>, so the loop’s own <code class="docutils literal notranslate"><span class="pre">i</span></code> stays a variable. <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/object/struct.ObjectIdentity.html"><code class="docutils literal notranslate"><span class="pre">ObjectIdentity</span></code></a>
-keys the map by object identity, as the Python version keys its
-dictionary by variable.</p>
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, so the loop’s own <code class="docutils literal notranslate"><span class="pre">i</span></code> stays a variable. <a class="reference external" href="../reference/rust/generated/tvm_ffi/object/struct.ObjectIdentity.html"><code class="docutils literal notranslate"><span class="pre">ObjectIdentity</span></code></a>
+keys the map by object identity, so only this loop’s <code class="docutils literal notranslate"><span class="pre">i</span></code> matches.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>TIRx also has traversals that track the facts valid at each node, such
 as loop ranges and branch conditions. In Rust they are
-<a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/tirx/struct.StructuralVisitorWithConstraintContext.html"><code class="docutils literal notranslate"><span class="pre">StructuralVisitorWithConstraintContext</span></code></a> and
-<a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/tirx/struct.StructuralMutatorWithConstraintContext.html"><code class="docutils literal notranslate"><span class="pre">StructuralMutatorWithConstraintContext</span></code></a>; <code class="docutils literal notranslate"><span class="pre">constraints()</span></code> returns the
+<a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/struct.StructuralVisitorWithConstraintContext.html"><code class="docutils literal notranslate"><span class="pre">StructuralVisitorWithConstraintContext</span></code></a> and
+<a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/struct.StructuralMutatorWithConstraintContext.html"><code class="docutils literal notranslate"><span class="pre">StructuralMutatorWithConstraintContext</span></code></a>; <code class="docutils literal notranslate"><span class="pre">constraints()</span></code> returns the
 current facts.</p>
 </div>
 <p>With fields, typed callbacks, and the structural utilities, a Rust function
 works with the same IR that Python builds and prints, so an analysis or a
 transformation can move between the two languages one function at a time.</p>
 </section>
-</section>
 <section id="quick-reference">
 <h2>Quick Reference<a class="headerlink" href="#quick-reference" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 40.0%" />
-<col style="width: 30.0%" />
-<col style="width: 30.0%" />
+<col style="width: 45.0%" />
+<col style="width: 55.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Rust</p></th>
+<tr class="row-odd"><th class="head"><p>Construct</p></th>
 <th class="head"><p>What it does</p></th>
-<th class="head"><p>Python equivalent</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/macro.match_any.html"><code class="docutils literal notranslate"><span class="pre">match_any!</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/macro.match_any.html"><code class="docutils literal notranslate"><span class="pre">match_any!</span></code></a></p></td>
 <td><p>Branches on the node type; the first matching arm runs</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">isinstance</span></code> checks</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/object/trait.ObjectRefCast.html"><code class="docutils literal notranslate"><span class="pre">try_cast</span></code></a>, <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/object/trait.ObjectRefCore.html#method.as_node"><code class="docutils literal notranslate"><span class="pre">as_node</span></code></a></p></td>
-<td><p>Downcasts to one type, as a <code class="docutils literal notranslate"><span class="pre">Result</span></code> handle or a borrowed
-<code class="docutils literal notranslate"><span class="pre">Option</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">isinstance(stmt,</span> <span class="pre">ir.For)</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCast.html"><code class="docutils literal notranslate"><span class="pre">.try_cast()</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.as_node"><code class="docutils literal notranslate"><span class="pre">as_node</span></code></a></p></td>
+<td><p>Downcasts to one type, as a managed reference in a <code class="docutils literal notranslate"><span class="pre">Result</span></code> or a
+borrowed object in an <code class="docutils literal notranslate"><span class="pre">Option</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/stmt/struct.TensorStore.html#method.new"><code class="docutils literal notranslate"><span class="pre">TensorStore::new</span></code></a>, <a class="reference external" href="https://docs.rs/tvm-tirx/0.1.0-alpha.5/tvm_tirx/ir/prim/op/fn.ex.html"><code class="docutils literal notranslate"><span class="pre">ex</span></code></a><code class="docutils literal notranslate"><span class="pre">(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">.expr()</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">.into()</span></code></p></td>
+<td><p>Upcasts a managed reference to a parent type</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_tirx/ir/expr/struct.Var.html#method.new"><code class="docutils literal notranslate"><span class="pre">Var::new</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_tirx/ir/prim/op/fn.ex.html"><code class="docutils literal notranslate"><span class="pre">ex</span></code></a><code class="docutils literal notranslate"><span class="pre">(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">.expr()</span></code></p></td>
 <td><p>Creates a node; builds an expression with operators</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">ir.TensorStore(dest,</span> <span class="pre">indices,</span> <span class="pre">value)</span></code>, <code class="docutils literal notranslate"><span class="pre">store.value</span> <span class="pre">*</span> <span class="pre">2</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/fn.structural_walk.html"><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code></a><code class="docutils literal notranslate"><span class="pre">(&amp;func,</span> <span class="pre">callbacks,</span> <span class="pre">WalkOrder::PreOrder)</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_walk.html"><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code></a><code class="docutils literal notranslate"><span class="pre">(&amp;func,</span> <span class="pre">callbacks,</span> <span class="pre">WalkOrder::PreOrder)</span></code></p></td>
 <td><p>Walks with typed callbacks that return <code class="docutils literal notranslate"><span class="pre">WalkResult</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_walk(func,</span> <span class="pre">callbacks,</span> <span class="pre">order=&quot;pre&quot;)</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/fn.structural_map.html"><code class="docutils literal notranslate"><span class="pre">structural_map</span></code></a><code class="docutils literal notranslate"><span class="pre">(func,</span> <span class="pre">callbacks,</span> <span class="pre">order)</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_map.html"><code class="docutils literal notranslate"><span class="pre">structural_map</span></code></a><code class="docutils literal notranslate"><span class="pre">(func,</span> <span class="pre">callbacks,</span> <span class="pre">order)</span></code></p></td>
 <td><p>Rebuilds with replacements and returns an <code class="docutils literal notranslate"><span class="pre">Any</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_map(func,</span> <span class="pre">callbacks)</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>A trailing <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html"><code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code></a> parameter</p></td>
+<tr class="row-even"><td><p>A trailing <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html"><code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code></a> parameter</p></td>
 <td><p>Receives the definition region kind</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">with_def_region_kind=</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Function::get_global(&quot;ffi.StructuralEqual&quot;)</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Function::get_global(&quot;ffi.StructuralEqual&quot;)</span></code></p></td>
 <td><p>Compares by structure</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_equal</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a><code class="docutils literal notranslate"><span class="pre">(walk)</span></code>, <code class="docutils literal notranslate"><span class="pre">(map)</span></code>, <code class="docutils literal notranslate"><span class="pre">(visit)</span></code>, <code class="docutils literal notranslate"><span class="pre">(mutate)</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a><code class="docutils literal notranslate"><span class="pre">(walk)</span></code>, <code class="docutils literal notranslate"><span class="pre">(map)</span></code>, <code class="docutils literal notranslate"><span class="pre">(visit)</span></code>, <code class="docutils literal notranslate"><span class="pre">(mutate)</span></code></p></td>
 <td><p>Turns the methods of a struct into typed callbacks</p></td>
-<td><p>A list of <code class="docutils literal notranslate"><span class="pre">(type,</span> <span class="pre">callback)</span></code> pairs</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html"><code class="docutils literal notranslate"><span class="pre">VisitCallbacks</span></code></a>, <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html"><code class="docutils literal notranslate"><span class="pre">MutateCallbacks</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html"><code class="docutils literal notranslate"><span class="pre">VisitCallbacks</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html"><code class="docutils literal notranslate"><span class="pre">MutateCallbacks</span></code></a></p></td>
 <td><p>Attach state to a tuple of visit or mutate callbacks</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_visit</span></code>, <code class="docutils literal notranslate"><span class="pre">tvm_ffi.structural_mutate</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/macro.static_init_block.html"><code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code></a>, <a class="reference external" href="https://docs.rs/tvm-ffi/0.1.15-post2/tvm_ffi/function/struct.Function.html#method.register_global_typed"><code class="docutils literal notranslate"><span class="pre">Function::register_global_typed</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/macro.static_init_block.html"><code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/function/struct.Function.html#method.register_global_typed"><code class="docutils literal notranslate"><span class="pre">Function::register_global_typed</span></code></a></p></td>
 <td><p>Registers Rust functions as global functions</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.register_global_func</span></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -1081,7 +1207,14 @@ transformation can move between the two languages one function at a time.</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up">Setting Up</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-and-creating-ir-nodes">Accessing and Creating IR Nodes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-ffi-object-system">TVM-FFI Object System</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#constructing-objects">Constructing Objects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#objects-and-managed-references">Objects and Managed References</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#casts">Casts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matching-node-types">Matching Node Types</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dispatching-on-node-types">Dispatching on Node Types</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-utilities">Structural Utilities</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-walk">Structural Walk</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions-and-uses">Definitions and Uses</a></li>
@@ -1089,11 +1222,7 @@ transformation can move between the two languages one function at a time.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-equality">Structural Equality</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visitors-and-mutators-in-rust">Visitors and Mutators in Rust</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typed-dispatch-on-a-struct">Typed Dispatch on a Struct</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visit-and-mutate">Visit and Mutate</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visitors-and-mutators-in-rust">Visitors and Mutators in Rust</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-reference">Quick Reference</a></li>
 </ul>
   </nav></div>
