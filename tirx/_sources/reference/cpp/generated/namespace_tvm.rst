@@ -464,6 +464,10 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1ac6943662fcd2a9eddf7e0ebb67bd068f`
 
+- :ref:`exhale_function_namespacetvm_1ad6f2b9d9c6ac80579866e62f53756e25`
+
+- :ref:`exhale_function_namespacetvm_1a9376cf5684d043ff86fdd43767deaa59`
+
 - :ref:`exhale_function_namespacetvm_1ad66f2a5dfa59deed74528735c8b06057`
 
 - :ref:`exhale_function_namespacetvm_1a5d7e30492c9e3488badccf9175ffe12c`
@@ -472,21 +476,17 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1aba7b9587003dda3fe9f353c80c2f5dfd`
 
-- :ref:`exhale_function_namespacetvm_1a9376cf5684d043ff86fdd43767deaa59`
+- :ref:`exhale_function_namespacetvm_1a66ed8401a553ad5d4f444283cd619e85`
 
-- :ref:`exhale_function_namespacetvm_1ad6f2b9d9c6ac80579866e62f53756e25`
+- :ref:`exhale_function_namespacetvm_1a6d6a1c629c51224ea66b141ff966b93f`
+
+- :ref:`exhale_function_namespacetvm_1aaa57296cf5633ae36e8f6c1685db5d63`
 
 - :ref:`exhale_function_namespacetvm_1ac61810f050d2bf1b8e0f6a9b81ebfa8e`
 
 - :ref:`exhale_function_namespacetvm_1acaec2512a547971e75dbd99f624e7c5c`
 
 - :ref:`exhale_function_namespacetvm_1a5e7d2093417e92997774363760ee3632`
-
-- :ref:`exhale_function_namespacetvm_1a66ed8401a553ad5d4f444283cd619e85`
-
-- :ref:`exhale_function_namespacetvm_1a6d6a1c629c51224ea66b141ff966b93f`
-
-- :ref:`exhale_function_namespacetvm_1aaa57296cf5633ae36e8f6c1685db5d63`
 
 - :ref:`exhale_function_namespacetvm_1a9a25946825952db35e05fecf60b06be9`
 
@@ -768,6 +768,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a0854363590c38f5479b1da5e70c4f002`
 
+- :ref:`exhale_function_namespacetvm_1a7477f9c7de0148e5580333452571ad66`
+
 - :ref:`exhale_function_namespacetvm_1a01a1524b95ddb4124f838526b0af1f5c`
 
 - :ref:`exhale_function_namespacetvm_1a1bd0ed1cda03a92fcc524e6191105b8d`
@@ -777,8 +779,6 @@ Functions
 - :ref:`exhale_function_namespacetvm_1a9d8412e5f401f59f5ca85ed556d70810`
 
 - :ref:`exhale_function_namespacetvm_1ad0449d28f23318cc5163159a58c80ba3`
-
-- :ref:`exhale_function_namespacetvm_1a7477f9c7de0148e5580333452571ad66`
 
 - :ref:`exhale_function_namespacetvm_1afd9566424968e15c462fb9bc2326c568`
 
@@ -844,13 +844,13 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1aae1dcfef78728c5490d3c107b4abac5a`
 
+- :ref:`exhale_function_namespacetvm_1a8c7a3555362a34c57e7eda751b699d6a`
+
 - :ref:`exhale_function_namespacetvm_1a1ce1eb32fc9d76ebe5a6b8d185024d41`
 
 - :ref:`exhale_function_namespacetvm_1abccc3d3e96ee608022b148ffa05034eb`
 
 - :ref:`exhale_function_namespacetvm_1a550c2a251b2a6fd2a72172fe3db75d40`
-
-- :ref:`exhale_function_namespacetvm_1a8c7a3555362a34c57e7eda751b699d6a`
 
 - :ref:`exhale_function_namespacetvm_1a7fdc1742f400de487cb807737b16aacb`
 

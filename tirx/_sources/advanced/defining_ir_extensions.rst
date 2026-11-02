@@ -153,25 +153,26 @@ that pair. This lets the rules apply to the step-by-step function from
    R[i] = product_re
    Im[i] = product_im
 
-Only scalar arithmetic remains. The pass refers to the four operators through
-handles:
+Only scalar arithmetic remains. The pass looks up the four operators by name,
+as C++ does with ``Op::Get``:
 
 .. literalinclude:: ../../examples/extension/src/lib.rs
    :language: rust
-   :start-after: // begin handles
-   :end-before: // end handles
+   :start-after: // begin operators
+   :end-before: // end operators
 
-A handle names a registered operator and looks it up on first use.
-``CMUL.is(&call.op)`` tests whether a call's ``op`` is ``my_ext.cmul``, and
-``COMPLEX.get()?`` returns ``my_ext.complex`` to build a new call. ``Lowering``
-implements these rewrites with them:
+The operators are registered when the library loads, and ``Op::get`` returns
+the registry's single object for a name. ``call.op.same_as(&ops.cmul)``
+therefore tests whether a call's ``op`` is ``my_ext.cmul`` by comparing
+pointers. A lookup goes through the registry, so the pass fetches the operators
+once per run and keeps them. ``Lowering`` implements the rewrites with them:
 
 .. literalinclude:: ../../examples/extension/src/lib.rs
    :language: rust
    :start-after: // begin lowering
    :end-before: // end lowering
-   :prepend: #[derive(Default)]
-      struct Lowering {
+   :prepend: struct Lowering {
+          ops: ComplexOps,
           bindings: Vec<(Var, Var, Var)>,
       }
       impl Lowering {
@@ -182,13 +183,13 @@ implements these rewrites with them:
           fn map_sequence(&mut self, seq: SeqStmt) -> SeqStmt { ... }
    :append: }
 
-``bindings`` records each complex variable with its two scalar replacements,
-and ``parts`` reads the real and imaginary parts of an operand, either a
-``complex(re, im)`` call or a variable already split. ``#[dispatch(map)]``
-sends each node to the ``map_`` method of its type, and leaves other nodes
-unchanged: ``map_call`` applies the three rules, ``map_bind`` splits a complex
-binding, and ``map_sequence`` flattens the sequence that a split binding leaves
-inside another.
+``ops`` holds the four operators, ``bindings`` records each complex variable
+with its two scalar replacements, and ``parts`` reads the real and imaginary
+parts of an operand, either a ``complex(re, im)`` call or a variable already
+split. ``#[dispatch(map)]`` sends each node to the ``map_`` method of its type,
+and leaves other nodes unchanged: ``map_call`` applies the three rules,
+``map_bind`` splits a complex binding, and ``map_sequence`` flattens the
+sequence that a split binding leaves inside another.
 
 The pass is built from an ordinary named function:
 
@@ -202,7 +203,8 @@ rewritten function; ``Some`` replaces the original. The first ``structural_map``
 walks the function with ``Lowering``. ``PostOrder`` visits children before their
 parent, so the operands of ``cmul`` are lowered before ``cmul`` itself. The
 second ``structural_map`` only checks the result. It takes a tuple of three
-functions, and calls each on the nodes of its parameter type:
+functions, and calls each on the nodes of its parameter type; the closure
+passes the operators to ``check_call_lowered``:
 
 .. code-block:: rust
 
@@ -213,7 +215,7 @@ functions, and calls each on the nodes of its parameter type:
    fn check_expr(expr: Expr) -> Result<Expr> { ... }
 
    /// Reject a call to one of the four complex operators that the rewrite did not consume.
-   fn check_call_lowered(call: Call) -> Result<Call> { ... }
+   fn check_call_lowered(ops: &ComplexOps, call: Call) -> Result<Call> { ... }
 
 Each returns its node unchanged and raises a ``ValueError`` on an unsupported
 use, such as a complex function parameter, so the pass reports such a use
