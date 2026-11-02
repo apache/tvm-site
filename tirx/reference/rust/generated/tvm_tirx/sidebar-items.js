@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["backend","codegen","ir","runtime","script","sym","target","tirx"]};
+window.SIDEBAR_ITEMS = {"macro":["def_expr_op_over_loads"],"mod":["backend","codegen","ir","runtime","script","sym","target","tirx"]};

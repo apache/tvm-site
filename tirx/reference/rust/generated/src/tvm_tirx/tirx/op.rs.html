@@ -354,8 +354,7 @@
 <a href="#353" id="353">353</a>
 <a href="#354" id="354">354</a>
 <a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#356" id="356">356</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -392,10 +391,9 @@
 // tvm-ffi-stubgen(import-object): crate::ir::expr::FloatImm
 // tvm-ffi-stubgen(import-object): crate::ir::expr::StringImmObj
 // tvm-ffi-stubgen(import-object): crate::ir::location::UNKNOWN_LOC
-// tvm-ffi-stubgen(import-object): crate::ir::prim::op::Ex
+// tvm-ffi-stubgen(import-object): crate::ir::prim::op::ExprResult
 // tvm-ffi-stubgen(import-object): crate::ir::prim::op::PrimOps
 // tvm-ffi-stubgen(import-object): crate::ir::prim::op::add
-// tvm-ffi-stubgen(import-object): crate::ir::prim::op::ex
 // tvm-ffi-stubgen(import-object): crate::ir::prim::op::exp
 // tvm-ffi-stubgen(import-object): crate::ir::prim::op::log
 // tvm-ffi-stubgen(import-object): crate::ir::prim::op::match_types_at
@@ -420,10 +418,9 @@
 <span class="kw">use </span><span class="kw">crate</span>::ir::expr::StringImmObj;
 <span class="kw">use </span><span class="kw">crate</span>::ir::location::Location;
 <span class="kw">use </span><span class="kw">crate</span>::ir::location::UNKNOWN_LOC;
-<span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::Ex;
+<span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::ExprResult;
 <span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::PrimOps;
 <span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::add;
-<span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::ex;
 <span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::exp;
 <span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::log;
 <span class="kw">use </span><span class="kw">crate</span>::ir::prim::op::match_types_at;
@@ -665,8 +662,9 @@
 </span><span class="kw">pub fn </span>fast_erf_float_expr(arg: <span class="kw">impl </span>IntoExpr, bits: u8) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
     <span class="kw">let </span>dtype = PrimType::float(bits).dtype;
     <span class="comment">// The C++ coefficients are `float` literals.
-    </span><span class="kw">let </span>constant =
-        |value: f32| -&gt; Ex { FloatImm::from_dtype(dtype, f64::from(value), UNKNOWN_LOC).into() };
+    </span><span class="kw">let </span>constant = |value: f32| -&gt; ExprResult {
+        FloatImm::from_dtype(dtype, f64::from(value), UNKNOWN_LOC).into()
+    };
     <span class="comment">// alpha_1, alpha_3, ..., alpha_13: the odd coefficients of the numerator.
     </span><span class="attr">#[allow(clippy::excessive_precision)]
     </span><span class="kw">let </span>alpha: [f32; <span class="number">7</span>] = [
@@ -687,7 +685,7 @@
         -<span class="number">2.13374055278905e-04</span>,
         -<span class="number">1.45660718464996e-05</span>,
     ];
-    <span class="kw">let </span>x = ex(arg.into_expr()<span class="question-mark">?</span>).min(constant(<span class="number">4.0</span>)).max(constant(-<span class="number">4.0</span>));
+    <span class="kw">let </span>x = arg.into_expr()<span class="question-mark">?</span>.min(constant(<span class="number">4.0</span>)).max(constant(-<span class="number">4.0</span>));
     <span class="kw">let </span>x2 = <span class="kw-2">&amp;</span>x * <span class="kw-2">&amp;</span>x;
     <span class="comment">// Horner's rule from the highest coefficient down, as C++ writes it out.
     </span><span class="kw">let </span><span class="kw-2">mut </span>p = <span class="kw-2">&amp;</span>x2 * constant(alpha[<span class="number">6</span>]) + constant(alpha[<span class="number">5</span>]);
@@ -699,7 +697,7 @@
     <span class="kw">for </span>coefficient <span class="kw">in </span>beta[..<span class="number">3</span>].iter().rev() {
         q = <span class="kw-2">&amp;</span>x2 * q + constant(<span class="kw-2">*</span>coefficient);
     }
-    p.div(q).expr()
+    p.div(q).try_into()
 }
 
 <span class="doccomment">/// A return from the current GPU thread, without a value (`tirx.gpu_thread_return`).

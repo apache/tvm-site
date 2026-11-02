@@ -21,7 +21,6 @@
 //! See docs/advanced/extending_ir_in_rust.rst; the my_ext Python package loads this library.
 
 use tvm_tirx::ir::op_attr::CALL_EFFECT_KIND;
-use tvm_tirx::ir::prim::ex;
 use tvm_tirx::ir::sig::{self, PrimExpr};
 use tvm_tirx::ir::transform::{Pass, PassContext, PassInfo};
 use tvm_tirx::ir::{
@@ -207,8 +206,8 @@ impl Lowering {
             let (a, b) = self.parts(&call.args.get(0)?)?;
             let (c, d) = self.parts(&call.args.get(1)?)?;
             // (a + bi)(c + di) = (ac - bd) + (ad + bc)i
-            let re = ex(&a) * ex(&c) - ex(&b) * ex(&d);
-            let im = ex(&a) * ex(&d) + ex(&b) * ex(&c);
+            let re = &a * &c - &b * &d;
+            let im = &a * &d + &b * &c;
             return Ok(Call::new(
                 None,
                 COMPLEX.get()?,

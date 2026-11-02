@@ -103,7 +103,7 @@ key constructs are:
 
    * - Construct
      - Purpose
-   * - Constructors, ``ex()``
+   * - Constructors, expression operators
      - Build expressions with ordinary Rust operators
    * - ``FooObj`` / ``Foo``
      - Underlying object and its named managed reference: read fields
@@ -138,13 +138,13 @@ The output is:
    x * 2 + 1
 
 |Var::new|_ takes a name, a type, and a source location; ``UNKNOWN_LOC``
-means there is none. |ex|_ wraps ``x`` so that ``*`` and ``+`` build IR,
-and the literals ``2`` and ``1`` become constants of the type of ``x``.
+means there is none. The operators ``*`` and ``+`` build IR directly
+from ``x``, and the literals ``2`` and ``1`` become constants of its type.
 
-An operator can fail, for example on mismatched types, so ``ex`` carries
-the first error along, much like a chain of ``Result``\ s. ``.expr()``
-takes the result out and ``?`` passes an error on. |script|_ prints the
-node as TVMScript.
+An operator can fail, for example on mismatched types, so ``ExprResult``
+carries the first error along, much like a chain of ``Result``\ s. The
+standard ``.try_into()`` conversion extracts an ``Expr``, and ``?`` passes
+an error on. |script|_ prints the node as TVMScript.
 
 We now have an expression; next, let's see what kind of Rust value it is.
 
@@ -546,8 +546,8 @@ both visits and mutations. A ``#[dispatch(mutate)]`` method that takes a
 trailing ``&mut Mutator`` gets the mutation counterpart of
 ``VisitContext``, with ``default_mutate`` for the children and
 ``def_region_kind()``. Let's reverse the loop
-by replacing each use of ``i`` with ``n - 1 - i``, built with ``ex`` as
-before:
+by replacing each use of ``i`` with ``n - 1 - i``. As before,
+``.try_into()?`` extracts the built expression or returns its error:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -605,7 +605,7 @@ Quick Reference
        borrowed object in an ``Option``
    * - ``.into()``
      - Upcasts a managed reference to a parent type
-   * - |Var::new|_, |ex|_\ ``(...)``, ``.expr()``
+   * - |Var::new|_, expression operators, ``.try_into()?``
      - Creates a node; builds an expression with operators
    * - |structural_walk|_\ ``(&func, callbacks, WalkOrder::PreOrder)``
      - Walks with typed callbacks that return ``WalkResult``
@@ -654,8 +654,6 @@ Quick Reference
 .. _VisitCallbacks: ../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html
 .. |MutateCallbacks| replace:: ``MutateCallbacks``
 .. _MutateCallbacks: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html
-.. |ex| replace:: ``ex``
-.. _ex: ../reference/rust/generated/tvm_tirx/ir/prim/op/fn.ex.html
 .. |ObjectIdentity| replace:: ``ObjectIdentity``
 .. _ObjectIdentity: ../reference/rust/generated/tvm_ffi/object/struct.ObjectIdentity.html
 .. |StructuralVisitorWithConstraintContext| replace:: ``StructuralVisitorWithConstraintContext``

@@ -2124,35 +2124,7 @@
 <a href="#2123" id="2123">2123</a>
 <a href="#2124" id="2124">2124</a>
 <a href="#2125" id="2125">2125</a>
-<a href="#2126" id="2126">2126</a>
-<a href="#2127" id="2127">2127</a>
-<a href="#2128" id="2128">2128</a>
-<a href="#2129" id="2129">2129</a>
-<a href="#2130" id="2130">2130</a>
-<a href="#2131" id="2131">2131</a>
-<a href="#2132" id="2132">2132</a>
-<a href="#2133" id="2133">2133</a>
-<a href="#2134" id="2134">2134</a>
-<a href="#2135" id="2135">2135</a>
-<a href="#2136" id="2136">2136</a>
-<a href="#2137" id="2137">2137</a>
-<a href="#2138" id="2138">2138</a>
-<a href="#2139" id="2139">2139</a>
-<a href="#2140" id="2140">2140</a>
-<a href="#2141" id="2141">2141</a>
-<a href="#2142" id="2142">2142</a>
-<a href="#2143" id="2143">2143</a>
-<a href="#2144" id="2144">2144</a>
-<a href="#2145" id="2145">2145</a>
-<a href="#2146" id="2146">2146</a>
-<a href="#2147" id="2147">2147</a>
-<a href="#2148" id="2148">2148</a>
-<a href="#2149" id="2149">2149</a>
-<a href="#2150" id="2150">2150</a>
-<a href="#2151" id="2151">2151</a>
-<a href="#2152" id="2152">2152</a>
-<a href="#2153" id="2153">2153</a>
-<a href="#2154" id="2154">2154</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#2126" id="2126">2126</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -2184,7 +2156,7 @@
 //!
 //! Each function builds at the unknown location, as the C++ default argument does; the `_at`
 //! variant takes a location. An operand is an expression, an expression under construction (an
-//! [`Ex`], see below) or a literal, typed as C++ types it: an integer next to an expression is
+//! [`ExprResult`], see below) or a literal, typed as C++ types it: an integer next to an expression is
 //! `MakeConst(other.ty(), v)`, an `f32` a float32 constant, an `f64` a float64 one, and a literal
 //! on its own the constant [`From`] makes of it (an `i32` is an `int32`):
 //!
@@ -2198,10 +2170,10 @@
 //! # Ok::&lt;(), tvm_tirx::tvm_ffi::Error&gt;(())
 //! ```
 //!
-//! `&amp;x + 1` is the operator syntax of [`Ex`]: the C++ operators on an expression, a `Var` or an
-//! `Ex`, with literals typed the same way. An `Ex` holds the expression under construction or the
+//! `&amp;x + 1` builds an [`ExprResult`]: the C++ operators on expression handles, with literals
+//! typed the same way. An `ExprResult` holds the expression under construction or the
 //! first error any step raised; it passes into any function or constructor that takes
-//! `impl IntoExpr`, whose `?` then reports that error, and [`Ex::expr`] takes the expression out.
+//! `impl IntoExpr`, whose `?` then reports that error, and `Expr::try_from` takes the expression out.
 //! The operations Rust has no operator for are the [`PrimOps`] methods (`x.floordiv(4)`,
 //! `x.less(y)`, `x.cast(ty)`).
 
@@ -2456,7 +2428,7 @@
 <span class="comment">// ---------------------------------------------------------------------------------------------
 // Operands
 
-</span><span class="doccomment">/// An operand of an operator: an expression, an expression under construction ([`Ex`]) or a
+</span><span class="doccomment">/// An operand of an operator: an expression, an expression under construction ([`ExprResult`]) or a
 /// literal, which is typed after the expression it meets (C++
 /// `TVM_DEFINE_BINOP_CONST_VAL_OVERLOAD` and friends): an `i32` or `i64` is
 /// `MakeConst(other.ty(), v)`, an `f32` a float32 constant, an `f64` a float64 one. A literal
@@ -2469,14 +2441,14 @@
 <span class="doccomment">/// What an [`Operand`] is.
 </span><span class="attr">#[doc(hidden)]
 </span><span class="kw">pub enum </span>OperandKind {
-    Expr(Ex),
+    Expr(ExprResult),
     Int32(i32),
     Int64(i64),
     Float32(f32),
     Float64(f64),
 }
 
-<span class="kw">impl</span>&lt;T: Into&lt;Ex&gt;&gt; Operand <span class="kw">for </span>T {
+<span class="kw">impl</span>&lt;T: Into&lt;ExprResult&gt;&gt; Operand <span class="kw">for </span>T {
     <span class="kw">fn </span>classify(<span class="self">self</span>) -&gt; OperandKind {
         OperandKind::Expr(<span class="self">self</span>.into())
     }
@@ -2510,27 +2482,27 @@
 }
 
 <span class="doccomment">/// An operand next to `peer`: a literal is typed after it.
-</span><span class="kw">fn </span>typed_after(operand: OperandKind, peer: <span class="kw-2">&amp;</span>Ex) -&gt; Ex {
+</span><span class="kw">fn </span>typed_after(operand: OperandKind, peer: <span class="kw-2">&amp;</span>ExprResult) -&gt; ExprResult {
     <span class="kw">let </span>constant = |value: i64| {
-        Ex(peer.dtype().and_then(|dtype| make_const(PrimType::from_dtype(dtype)<span class="question-mark">?</span>, value)))
+        ExprResult(peer.dtype().and_then(|dtype| make_const(PrimType::from_dtype(dtype)<span class="question-mark">?</span>, value)))
     };
     <span class="kw">match </span>operand {
-        OperandKind::Expr(ex) =&gt; ex,
+        OperandKind::Expr(expr) =&gt; expr,
         OperandKind::Int32(value) =&gt; constant(i64::from(value)),
         OperandKind::Int64(value) =&gt; constant(value),
-        OperandKind::Float32(value) =&gt; Ex(<span class="prelude-val">Ok</span>(FloatImm::float32(value).into())),
-        OperandKind::Float64(value) =&gt; Ex(<span class="prelude-val">Ok</span>(FloatImm::float64(value).into())),
+        OperandKind::Float32(value) =&gt; ExprResult(<span class="prelude-val">Ok</span>(FloatImm::float32(value).into())),
+        OperandKind::Float64(value) =&gt; ExprResult(<span class="prelude-val">Ok</span>(FloatImm::float64(value).into())),
     }
 }
 
 <span class="doccomment">/// An operand on its own: a literal is the constant [`From`] makes of it.
-</span><span class="kw">fn </span>on_its_own(operand: OperandKind) -&gt; Ex {
+</span><span class="kw">fn </span>on_its_own(operand: OperandKind) -&gt; ExprResult {
     <span class="kw">match </span>operand {
-        OperandKind::Expr(ex) =&gt; ex,
-        OperandKind::Int32(value) =&gt; Ex(<span class="prelude-val">Ok</span>(IntImm::int32(value).into())),
-        OperandKind::Int64(value) =&gt; Ex(<span class="prelude-val">Ok</span>(IntImm::int64(value).into())),
-        OperandKind::Float32(value) =&gt; Ex(<span class="prelude-val">Ok</span>(FloatImm::float32(value).into())),
-        OperandKind::Float64(value) =&gt; Ex(<span class="prelude-val">Ok</span>(FloatImm::float64(value).into())),
+        OperandKind::Expr(expr) =&gt; expr,
+        OperandKind::Int32(value) =&gt; ExprResult(<span class="prelude-val">Ok</span>(IntImm::int32(value).into())),
+        OperandKind::Int64(value) =&gt; ExprResult(<span class="prelude-val">Ok</span>(IntImm::int64(value).into())),
+        OperandKind::Float32(value) =&gt; ExprResult(<span class="prelude-val">Ok</span>(FloatImm::float32(value).into())),
+        OperandKind::Float64(value) =&gt; ExprResult(<span class="prelude-val">Ok</span>(FloatImm::float64(value).into())),
     }
 }
 
@@ -2548,7 +2520,7 @@
         }
         (a, b) =&gt; (on_its_own(a), on_its_own(b)),
     };
-    <span class="prelude-val">Ok</span>((a.expr()<span class="question-mark">?</span>, b.expr()<span class="question-mark">?</span>))
+    <span class="prelude-val">Ok</span>((a.into_expr()<span class="question-mark">?</span>, b.into_expr()<span class="question-mark">?</span>))
 }
 
 <span class="doccomment">/// The functions without a location: each builds at the unknown location through its `_at`
@@ -3879,14 +3851,14 @@
 }
 
 <span class="comment">// ---------------------------------------------------------------------------------------------
-// `Ex`: expressions under construction
+// `ExprResult`: expressions under construction
 
 </span><span class="doccomment">/// An expression being built by operators: either the expression, or the first error any step
-/// raised. Later steps pass an error through untouched. An `Ex` is an [`IntoExpr`], so it passes
+/// raised. Later steps pass an error through untouched. An `ExprResult` is an [`IntoExpr`], so it passes
 /// into any function or constructor that takes one, whose `?` then reports the error;
-/// [`Ex::expr`] takes the expression out.
+/// `Expr::try_from` takes the expression out.
 ///
-/// Any expression node converts into an `Ex`, as it converts into a C++ `PrimExpr`. The operators
+/// Registered expression wrappers convert into an `ExprResult`. The operators
 /// `+`, `-`, `*`, `&amp;`, `|`, `^`, `&lt;&lt;`, `&gt;&gt;`, unary `-` and `!` are the C++ ones, typed after C++:
 /// an integer literal on either side is `MakeConst(other.ty(), v)`, an `f32` a float32 constant,
 /// an `f64` a float64 one. `/` and `%` are not defined: name the division
@@ -3895,15 +3867,19 @@
 /// Comparisons, `&amp;&amp;` and `||` are [`PrimOps`] methods too, because Rust's comparison traits
 /// return `bool`.
 </span><span class="attr">#[derive(Clone)]
-#[must_use = <span class="string">"an `Ex` holds the result; pass it on, or take it with `.expr()`"</span>]
-</span><span class="kw">pub struct </span>Ex(<span class="prelude-ty">Result</span>&lt;Expr&gt;);
+#[must_use = <span class="string">"an `ExprResult` holds the result; pass it on, or convert it with `Expr::try_from`"</span>]
+</span><span class="kw">pub struct </span>ExprResult(<span class="prelude-ty">Result</span>&lt;Expr&gt;);
 
-<span class="kw">impl </span>Ex {
-    <span class="doccomment">/// The built expression, or the first error.
-    </span><span class="kw">pub fn </span>expr(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
-        <span class="self">self</span>.<span class="number">0
+<span class="kw">impl </span>TryFrom&lt;ExprResult&gt; <span class="kw">for </span>Expr {
+    <span class="kw">type </span>Error = Error;
+
+    <span class="doccomment">/// The built expression, or the first error raised while constructing it.
+    </span><span class="kw">fn </span>try_from(value: ExprResult) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        value.<span class="number">0
     </span>}
+}
 
+<span class="kw">impl </span>ExprResult {
     <span class="doccomment">/// The dtype a literal next to this expression takes (`MakeConst(this.ty(), v)`).
     </span><span class="kw">fn </span>dtype(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;DLDataType&gt; {
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0 </span>{
@@ -3913,100 +3889,80 @@
     }
 }
 
-<span class="kw">impl </span>IntoExpr <span class="kw">for </span>Ex {
+<span class="kw">impl </span>IntoExpr <span class="kw">for </span>ExprResult {
     <span class="kw">fn </span>into_expr(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
         <span class="self">self</span>.<span class="number">0
     </span>}
 }
 
-<span class="kw">impl </span>IntoExpr <span class="kw">for </span><span class="kw-2">&amp;</span>Ex {
+<span class="kw">impl </span>IntoExpr <span class="kw">for </span><span class="kw-2">&amp;</span>ExprResult {
     <span class="kw">fn </span>into_expr(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
         <span class="self">self</span>.<span class="number">0</span>.clone()
     }
 }
 
-<span class="doccomment">/// `value` as an [`Ex`], to start an expression from something that is not one yet.
-</span><span class="kw">pub fn </span>ex(value: <span class="kw">impl </span>Into&lt;Ex&gt;) -&gt; Ex {
-    value.into()
-}
-
-<span class="kw">impl</span>&lt;T: Into&lt;Expr&gt;&gt; From&lt;<span class="prelude-ty">Result</span>&lt;T&gt;&gt; <span class="kw">for </span>Ex {
+<span class="kw">impl</span>&lt;T: Into&lt;Expr&gt;&gt; From&lt;<span class="prelude-ty">Result</span>&lt;T&gt;&gt; <span class="kw">for </span>ExprResult {
     <span class="kw">fn </span>from(value: <span class="prelude-ty">Result</span>&lt;T&gt;) -&gt; <span class="self">Self </span>{
-        Ex(value.map(Into::into))
+        ExprResult(value.map(Into::into))
     }
 }
 
-<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>Ex&gt; <span class="kw">for </span>Ex {
-    <span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span>Ex) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>ExprResult&gt; <span class="kw">for </span>ExprResult {
+    <span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span>ExprResult) -&gt; <span class="self">Self </span>{
         value.clone()
     }
 }
 
-<span class="macro">macro_rules!</span> ex_from_nodes {
-    ($(<span class="macro-nonterminal">$ty</span>:ty),+ $(,)<span class="question-mark">?</span>) =&gt; {
-        $(
-            <span class="kw">impl </span>From&lt;<span class="macro-nonterminal">$ty</span>&gt; <span class="kw">for </span>Ex {
-                <span class="kw">fn </span>from(value: <span class="macro-nonterminal">$ty</span>) -&gt; <span class="self">Self </span>{
-                    Ex(<span class="prelude-val">Ok</span>(value.into()))
-                }
-            }
-            <span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span><span class="macro-nonterminal">$ty</span>&gt; <span class="kw">for </span>Ex {
-                <span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span><span class="macro-nonterminal">$ty</span>) -&gt; <span class="self">Self </span>{
-                    Ex(<span class="prelude-val">Ok</span>(value.clone().into()))
-                }
-            }
-        )+
-    };
-}
-
-<span class="macro">ex_from_nodes!</span>(
-    Expr, Var, IntImm, FloatImm, Call, TensorLoad, Add, And, BitwiseAnd, BitwiseNot, BitwiseOr,
-    BitwiseXor, Broadcast, Cast, Div, EQ, FloorDiv, FloorMod, GE, GT, LE, LShift, LT, Let, Max,
-    Min, Mod, Mul, NE, Not, Or, RShift, Ramp, Select, Shuffle, Sub,
-);
-
 <span class="doccomment">/// `lhs &lt;op&gt; rhs`; a literal `rhs` is typed after `lhs`.
-</span><span class="kw">fn </span>binary(lhs: Ex, rhs: <span class="kw">impl </span>Operand, op: <span class="kw">impl </span>FnOnce(Expr, Expr) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt;) -&gt; Ex {
+</span><span class="kw">fn </span>binary(
+    lhs: ExprResult,
+    rhs: <span class="kw">impl </span>Operand,
+    op: <span class="kw">impl </span>FnOnce(Expr, Expr) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt;,
+) -&gt; ExprResult {
     <span class="kw">let </span>rhs = typed_after(rhs.classify(), <span class="kw-2">&amp;</span>lhs);
     <span class="kw">match </span>(lhs.<span class="number">0</span>, rhs.<span class="number">0</span>) {
-        (<span class="prelude-val">Ok</span>(a), <span class="prelude-val">Ok</span>(b)) =&gt; Ex(op(a, b)),
-        (<span class="prelude-val">Err</span>(error), <span class="kw">_</span>) | (<span class="kw">_</span>, <span class="prelude-val">Err</span>(error)) =&gt; Ex(<span class="prelude-val">Err</span>(error)),
+        (<span class="prelude-val">Ok</span>(a), <span class="prelude-val">Ok</span>(b)) =&gt; ExprResult(op(a, b)),
+        (<span class="prelude-val">Err</span>(error), <span class="kw">_</span>) | (<span class="kw">_</span>, <span class="prelude-val">Err</span>(error)) =&gt; ExprResult(<span class="prelude-val">Err</span>(error)),
     }
 }
 
 <span class="doccomment">/// `lhs &lt;op&gt; rhs` for a literal `lhs`, typed after `rhs`.
-</span><span class="kw">fn </span>binary_literal(lhs: <span class="kw">impl </span>Operand, rhs: Ex, op: <span class="kw">impl </span>FnOnce(Expr, Expr) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt;) -&gt; Ex {
+</span><span class="kw">fn </span>binary_literal(
+    lhs: <span class="kw">impl </span>Operand,
+    rhs: ExprResult,
+    op: <span class="kw">impl </span>FnOnce(Expr, Expr) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt;,
+) -&gt; ExprResult {
     <span class="kw">let </span>lhs = typed_after(lhs.classify(), <span class="kw-2">&amp;</span>rhs);
     binary(lhs, rhs, op)
 }
 
 <span class="kw">mod </span>operators {
-    <span class="doccomment">//! The operator traits of [`Ex`], and of the expressions and literals that start one.
+    <span class="doccomment">//! The operator traits of [`ExprResult`], and of the expressions and literals that start one.
 
     </span><span class="kw">use </span>std::ops::{
         Add, AddAssign, BitAnd, BitOr, BitXor, Mul, MulAssign, Neg, Not, Shl, Shr, Sub, SubAssign,
     };
 
-    <span class="kw">use super</span>::{binary, binary_literal, Ex, Expr, Operand, Var};
+    <span class="kw">use super</span>::{binary, binary_literal, ExprResult, Operand};
 
     <span class="macro">macro_rules!</span> binary_operators {
         ($(<span class="macro-nonterminal">$Trait</span>:ident::<span class="macro-nonterminal">$method</span>:ident =&gt; <span class="macro-nonterminal">$op</span>:ident),+ $(,)<span class="question-mark">?</span>) =&gt; {
             $(
-                <span class="kw">impl</span>&lt;R: Operand&gt; <span class="macro-nonterminal">$Trait</span>&lt;R&gt; <span class="kw">for </span>Ex {
-                    <span class="kw">type </span>Output = Ex;
-                    <span class="kw">fn </span><span class="macro-nonterminal">$method</span>(<span class="self">self</span>, rhs: R) -&gt; Ex {
+                <span class="kw">impl</span>&lt;R: Operand&gt; <span class="macro-nonterminal">$Trait</span>&lt;R&gt; <span class="kw">for </span>ExprResult {
+                    <span class="kw">type </span>Output = ExprResult;
+                    <span class="kw">fn </span><span class="macro-nonterminal">$method</span>(<span class="self">self</span>, rhs: R) -&gt; ExprResult {
                         binary(<span class="self">self</span>, rhs, <span class="kw">super</span>::<span class="macro-nonterminal">$op</span>)
                     }
                 }
-                <span class="macro">binary_operators!</span>(@lhs <span class="macro-nonterminal">$Trait</span>::<span class="macro-nonterminal">$method </span>=&gt; <span class="macro-nonterminal">$op</span>; <span class="kw-2">&amp;</span>Ex, Expr, <span class="kw-2">&amp;</span>Expr, Var, <span class="kw-2">&amp;</span>Var);
+                <span class="macro">binary_operators!</span>(@lhs <span class="macro-nonterminal">$Trait</span>::<span class="macro-nonterminal">$method </span>=&gt; <span class="macro-nonterminal">$op</span>; <span class="kw-2">&amp;</span>ExprResult);
                 <span class="macro">binary_operators!</span>(@literal <span class="macro-nonterminal">$Trait</span>::<span class="macro-nonterminal">$method </span>=&gt; <span class="macro-nonterminal">$op</span>; i32, i64, f32, f64);
             )+
         };
         (@lhs <span class="macro-nonterminal">$Trait</span>:ident::<span class="macro-nonterminal">$method</span>:ident =&gt; <span class="macro-nonterminal">$op</span>:ident; $(<span class="macro-nonterminal">$lhs</span>:ty),+) =&gt; {
             $(
                 <span class="kw">impl</span>&lt;R: Operand&gt; <span class="macro-nonterminal">$Trait</span>&lt;R&gt; <span class="kw">for </span><span class="macro-nonterminal">$lhs </span>{
-                    <span class="kw">type </span>Output = Ex;
-                    <span class="kw">fn </span><span class="macro-nonterminal">$method</span>(<span class="self">self</span>, rhs: R) -&gt; Ex {
+                    <span class="kw">type </span>Output = ExprResult;
+                    <span class="kw">fn </span><span class="macro-nonterminal">$method</span>(<span class="self">self</span>, rhs: R) -&gt; ExprResult {
                         binary(<span class="self">self</span>.into(), rhs, <span class="kw">super</span>::<span class="macro-nonterminal">$op</span>)
                     }
                 }
@@ -4014,14 +3970,14 @@
         };
         (@literal <span class="macro-nonterminal">$Trait</span>:ident::<span class="macro-nonterminal">$method</span>:ident =&gt; <span class="macro-nonterminal">$op</span>:ident; $(<span class="macro-nonterminal">$lit</span>:ty),+) =&gt; {
             $(
-                <span class="macro">binary_operators!</span>(@literal_rhs <span class="macro-nonterminal">$Trait</span>::<span class="macro-nonterminal">$method </span>=&gt; <span class="macro-nonterminal">$op</span>; <span class="macro-nonterminal">$lit</span>; Ex, <span class="kw-2">&amp;</span>Ex, Expr, <span class="kw-2">&amp;</span>Expr, Var, <span class="kw-2">&amp;</span>Var);
+                <span class="macro">binary_operators!</span>(@literal_rhs <span class="macro-nonterminal">$Trait</span>::<span class="macro-nonterminal">$method </span>=&gt; <span class="macro-nonterminal">$op</span>; <span class="macro-nonterminal">$lit</span>; ExprResult, <span class="kw-2">&amp;</span>ExprResult);
             )+
         };
         (@literal_rhs <span class="macro-nonterminal">$Trait</span>:ident::<span class="macro-nonterminal">$method</span>:ident =&gt; <span class="macro-nonterminal">$op</span>:ident; <span class="macro-nonterminal">$lit</span>:ty; $(<span class="macro-nonterminal">$rhs</span>:ty),+) =&gt; {
             $(
                 <span class="kw">impl </span><span class="macro-nonterminal">$Trait</span>&lt;<span class="macro-nonterminal">$rhs</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$lit </span>{
-                    <span class="kw">type </span>Output = Ex;
-                    <span class="kw">fn </span><span class="macro-nonterminal">$method</span>(<span class="self">self</span>, rhs: <span class="macro-nonterminal">$rhs</span>) -&gt; Ex {
+                    <span class="kw">type </span>Output = ExprResult;
+                    <span class="kw">fn </span><span class="macro-nonterminal">$method</span>(<span class="self">self</span>, rhs: <span class="macro-nonterminal">$rhs</span>) -&gt; ExprResult {
                         binary_literal(<span class="self">self</span>, rhs.into(), <span class="kw">super</span>::<span class="macro-nonterminal">$op</span>)
                     }
                 }
@@ -4043,7 +3999,7 @@
     <span class="macro">macro_rules!</span> assign_operators {
         ($(<span class="macro-nonterminal">$Trait</span>:ident::<span class="macro-nonterminal">$method</span>:ident =&gt; <span class="macro-nonterminal">$op</span>:ident),+ $(,)<span class="question-mark">?</span>) =&gt; {
             $(
-                <span class="kw">impl</span>&lt;R: Operand&gt; <span class="macro-nonterminal">$Trait</span>&lt;R&gt; <span class="kw">for </span>Ex {
+                <span class="kw">impl</span>&lt;R: Operand&gt; <span class="macro-nonterminal">$Trait</span>&lt;R&gt; <span class="kw">for </span>ExprResult {
                     <span class="kw">fn </span><span class="macro-nonterminal">$method</span>(<span class="kw-2">&amp;mut </span><span class="self">self</span>, rhs: R) {
                         <span class="kw-2">*</span><span class="self">self </span>= binary(<span class="self">self</span>.clone(), rhs, <span class="kw">super</span>::<span class="macro-nonterminal">$op</span>);
                     }
@@ -4059,23 +4015,23 @@
             $(
                 <span class="doccomment">/// C++ unary `-` (`neg`).
                 </span><span class="kw">impl </span>Neg <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
-                    <span class="kw">type </span>Output = Ex;
-                    <span class="kw">fn </span>neg(<span class="self">self</span>) -&gt; Ex {
-                        Ex(<span class="kw">super</span>::neg(Ex::from(<span class="self">self</span>)))
+                    <span class="kw">type </span>Output = ExprResult;
+                    <span class="kw">fn </span>neg(<span class="self">self</span>) -&gt; ExprResult {
+                        ExprResult(<span class="kw">super</span>::neg(ExprResult::from(<span class="self">self</span>)))
                     }
                 }
                 <span class="doccomment">/// C++ `!` (`logical_not`).
                 </span><span class="kw">impl </span>Not <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
-                    <span class="kw">type </span>Output = Ex;
-                    <span class="kw">fn </span>not(<span class="self">self</span>) -&gt; Ex {
-                        Ex(<span class="kw">super</span>::logical_not(Ex::from(<span class="self">self</span>)))
+                    <span class="kw">type </span>Output = ExprResult;
+                    <span class="kw">fn </span>not(<span class="self">self</span>) -&gt; ExprResult {
+                        ExprResult(<span class="kw">super</span>::logical_not(ExprResult::from(<span class="self">self</span>)))
                     }
                 }
             )+
         };
     }
 
-    <span class="macro">unary_operators!</span>(Ex, <span class="kw-2">&amp;</span>Ex, Expr, <span class="kw-2">&amp;</span>Expr, Var, <span class="kw-2">&amp;</span>Var);
+    <span class="macro">unary_operators!</span>(ExprResult, <span class="kw-2">&amp;</span>ExprResult);
 }
 
 <span class="doccomment">/// [`PrimOps`] methods that are a function of one expression.
@@ -4083,8 +4039,8 @@
     ($($(<span class="attr">#[<span class="macro-nonterminal">$doc</span>:meta]</span>)* <span class="macro-nonterminal">$name</span>:ident;)+) =&gt; {
         $(
             $(<span class="attr">#[<span class="macro-nonterminal">$doc</span>]</span>)*
-            <span class="kw">fn </span><span class="macro-nonterminal">$name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ex {
-                Ex(<span class="macro-nonterminal">$name</span>(<span class="self">self</span>.to_ex()))
+            <span class="kw">fn </span><span class="macro-nonterminal">$name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ExprResult {
+                ExprResult(<span class="macro-nonterminal">$name</span>(<span class="self">self</span>.to_expr_result()))
             }
         )+
     };
@@ -4096,52 +4052,52 @@
     ($($(<span class="attr">#[<span class="macro-nonterminal">$doc</span>:meta]</span>)* <span class="macro-nonterminal">$name</span>:ident;)+) =&gt; {
         $(
             $(<span class="attr">#[<span class="macro-nonterminal">$doc</span>]</span>)*
-            <span class="kw">fn </span><span class="macro-nonterminal">$name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; Ex {
-                binary(<span class="self">self</span>.to_ex(), rhs, <span class="macro-nonterminal">$name</span>)
+            <span class="kw">fn </span><span class="macro-nonterminal">$name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; ExprResult {
+                binary(<span class="self">self</span>.to_expr_result(), rhs, <span class="macro-nonterminal">$name</span>)
             }
         )+
     };
 }
 
 <span class="doccomment">/// The C++ `PrimExpr` operations that are functions rather than Rust operators, as methods of
-/// an [`Ex`], an [`Expr`] or a [`Var`]. Each takes an expression or a literal on the right, typed
+/// an [`ExprResult`] or an expression handle. Each takes an expression or a literal on the right, typed
 /// as for the operators, and leaves `self` usable; the comparisons are named after the C++
 /// functions (`less`, `equal`), since Rust's `eq` and `lt` return a `bool`.
 </span><span class="kw">pub trait </span>PrimOps {
-    <span class="doccomment">/// This expression as an [`Ex`] (a reference-count increment).
-    </span><span class="kw">fn </span>to_ex(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ex;
+    <span class="doccomment">/// This expression as an [`ExprResult`] (a reference-count increment).
+    </span><span class="kw">fn </span>to_expr_result(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ExprResult;
 
     <span class="doccomment">/// C++ `a &lt; b` ([`lt`]).
-    </span><span class="kw">fn </span>less(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; Ex {
-        binary(<span class="self">self</span>.to_ex(), rhs, lt)
+    </span><span class="kw">fn </span>less(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; ExprResult {
+        binary(<span class="self">self</span>.to_expr_result(), rhs, lt)
     }
     <span class="doccomment">/// C++ `a &lt;= b` ([`le`]).
-    </span><span class="kw">fn </span>less_equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; Ex {
-        binary(<span class="self">self</span>.to_ex(), rhs, le)
+    </span><span class="kw">fn </span>less_equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; ExprResult {
+        binary(<span class="self">self</span>.to_expr_result(), rhs, le)
     }
     <span class="doccomment">/// C++ `a &gt; b` ([`gt`]).
-    </span><span class="kw">fn </span>greater(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; Ex {
-        binary(<span class="self">self</span>.to_ex(), rhs, gt)
+    </span><span class="kw">fn </span>greater(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; ExprResult {
+        binary(<span class="self">self</span>.to_expr_result(), rhs, gt)
     }
     <span class="doccomment">/// C++ `a &gt;= b` ([`ge`]).
-    </span><span class="kw">fn </span>greater_equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; Ex {
-        binary(<span class="self">self</span>.to_ex(), rhs, ge)
+    </span><span class="kw">fn </span>greater_equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; ExprResult {
+        binary(<span class="self">self</span>.to_expr_result(), rhs, ge)
     }
     <span class="doccomment">/// C++ `a == b` ([`eq`]).
-    </span><span class="kw">fn </span>equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; Ex {
-        binary(<span class="self">self</span>.to_ex(), rhs, eq)
+    </span><span class="kw">fn </span>equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; ExprResult {
+        binary(<span class="self">self</span>.to_expr_result(), rhs, eq)
     }
     <span class="doccomment">/// C++ `a != b` ([`ne`]).
-    </span><span class="kw">fn </span>not_equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; Ex {
-        binary(<span class="self">self</span>.to_ex(), rhs, ne)
+    </span><span class="kw">fn </span>not_equal(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>Operand) -&gt; ExprResult {
+        binary(<span class="self">self</span>.to_expr_result(), rhs, ne)
     }
     <span class="doccomment">/// C++ `a &amp;&amp; b` ([`logical_and`]).
-    </span><span class="kw">fn </span>logical_and(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(logical_and(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>logical_and(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(logical_and(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `a || b` ([`logical_or`]).
-    </span><span class="kw">fn </span>logical_or(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(logical_or(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>logical_or(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(logical_or(<span class="self">self</span>.to_expr_result(), rhs))
     }
 
     <span class="macro">binary_methods!</span> {
@@ -4168,32 +4124,32 @@
     }
 
     <span class="doccomment">/// C++ `pow(a, b)` ([`pow`]).
-    </span><span class="kw">fn </span>pow(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(pow(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>pow(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(pow(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `fmod(a, b)` ([`fmod`]).
-    </span><span class="kw">fn </span>fmod(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(fmod(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>fmod(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(fmod(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `atan2(a, b)` ([`atan2`]).
-    </span><span class="kw">fn </span>atan2(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(atan2(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>atan2(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(atan2(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `nextafter(a, b)` ([`nextafter`]).
-    </span><span class="kw">fn </span>nextafter(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(nextafter(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>nextafter(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(nextafter(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `copysign(a, b)` ([`copysign`]).
-    </span><span class="kw">fn </span>copysign(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(copysign(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>copysign(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(copysign(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `hypot(a, b)` ([`hypot`]).
-    </span><span class="kw">fn </span>hypot(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(hypot(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>hypot(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(hypot(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `ldexp(a, b)` ([`ldexp`]).
-    </span><span class="kw">fn </span>ldexp(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(ldexp(<span class="self">self</span>.to_ex(), rhs))
+    </span><span class="kw">fn </span>ldexp(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(ldexp(<span class="self">self</span>.to_expr_result(), rhs))
     }
 
     <span class="macro">unary_methods!</span> {
@@ -4274,36 +4230,24 @@
     }
 
     <span class="doccomment">/// C++ `cast(a, t)` ([`cast`]).
-    </span><span class="kw">fn </span>cast(<span class="kw-2">&amp;</span><span class="self">self</span>, ty: <span class="kw">impl </span>Into&lt;PrimType&gt;) -&gt; Ex {
-        Ex(cast(<span class="self">self</span>.to_ex(), ty))
+    </span><span class="kw">fn </span>cast(<span class="kw-2">&amp;</span><span class="self">self</span>, ty: <span class="kw">impl </span>Into&lt;PrimType&gt;) -&gt; ExprResult {
+        ExprResult(cast(<span class="self">self</span>.to_expr_result(), ty))
     }
 
     <span class="doccomment">/// C++ `if_then_else(self, t, f)` ([`if_then_else`]), with `self` the condition.
-    </span><span class="kw">fn </span>if_then_else(<span class="kw-2">&amp;</span><span class="self">self</span>, t: <span class="kw">impl </span>IntoExpr, f: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(if_then_else(<span class="self">self</span>.to_ex(), t, f))
+    </span><span class="kw">fn </span>if_then_else(<span class="kw-2">&amp;</span><span class="self">self</span>, t: <span class="kw">impl </span>IntoExpr, f: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(if_then_else(<span class="self">self</span>.to_expr_result(), t, f))
     }
 
     <span class="doccomment">/// The raw `Select(self, t, f)` ([`Select::new`]), with `self` the condition.
-    </span><span class="kw">fn </span>select(<span class="kw-2">&amp;</span><span class="self">self</span>, t: <span class="kw">impl </span>IntoExpr, f: <span class="kw">impl </span>IntoExpr) -&gt; Ex {
-        Ex(Select::new(<span class="self">self</span>.to_ex(), t, f, UNKNOWN_LOC).map(Into::into))
+    </span><span class="kw">fn </span>select(<span class="kw-2">&amp;</span><span class="self">self</span>, t: <span class="kw">impl </span>IntoExpr, f: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
+        ExprResult(Select::new(<span class="self">self</span>.to_expr_result(), t, f, UNKNOWN_LOC).map(Into::into))
     }
 }
 
-<span class="kw">impl </span>PrimOps <span class="kw">for </span>Ex {
-    <span class="kw">fn </span>to_ex(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ex {
+<span class="kw">impl </span>PrimOps <span class="kw">for </span>ExprResult {
+    <span class="kw">fn </span>to_expr_result(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ExprResult {
         <span class="self">self</span>.clone()
-    }
-}
-
-<span class="kw">impl </span>PrimOps <span class="kw">for </span>Expr {
-    <span class="kw">fn </span>to_ex(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ex {
-        <span class="self">self</span>.into()
-    }
-}
-
-<span class="kw">impl </span>PrimOps <span class="kw">for </span>Var {
-    <span class="kw">fn </span>to_ex(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ex {
-        <span class="self">self</span>.into()
     }
 }
 </code></pre></div></section></main></body></html>
