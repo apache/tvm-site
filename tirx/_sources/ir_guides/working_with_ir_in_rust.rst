@@ -207,6 +207,8 @@ This is the newtype pattern. Simplified from the crate, the pair is:
 Rust has no inheritance; instead, ``#[repr(C)]`` puts the parent's object,
 ``ExprObj``, first in ``AddObj``, so every addition is also an expression.
 ``Add`` implements ``Deref`` to ``AddObj``, which is why ``add.a`` works.
+``AddObj`` has the same memory layout as its C++ counterpart, so
+``add.a`` is a direct field read, as efficient as in C++.
 
 **Nodes are immutable.** As with data behind an ``Arc``, a managed
 reference gives read access only; to change a node, we build a new one.
