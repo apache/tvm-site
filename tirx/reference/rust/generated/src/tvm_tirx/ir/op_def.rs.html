@@ -1416,7 +1416,7 @@
     <span class="doccomment">/// Whether `value` is a `Var`, not a subclass, whose type is an `N`.
     </span><span class="kw">pub fn </span>var_of_type&lt;N: ObjectCore&gt;(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
         value.type_index == <span class="kw">crate</span>::ir::expr::VarObj::type_index()
-            &amp;&amp; expr(value).is_some_and(|var| var.ty.as_node::&lt;N&gt;().is_some())
+            &amp;&amp; expr(value).is_some_and(|var| var.ty.downcast_ref::&lt;N&gt;().is_some())
     }
 
     <span class="doccomment">/// The expression `value` holds, if it holds one.
@@ -1430,13 +1430,13 @@
     }
 
     <span class="kw">fn </span>prim_dtype(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="prelude-ty">Option</span>&lt;tvm_ffi::DLDataType&gt; {
-        <span class="prelude-val">Some</span>(expr(value)<span class="question-mark">?</span>.ty.as_node::&lt;PrimTypeObj&gt;()<span class="question-mark">?</span>.dtype)
+        <span class="prelude-val">Some</span>(expr(value)<span class="question-mark">?</span>.ty.downcast_ref::&lt;PrimTypeObj&gt;()<span class="question-mark">?</span>.dtype)
     }
 
     <span class="doccomment">/// C++ `TypeTraits&lt;TypedExpr&lt;T&gt;&gt;::GetMismatchTypeInfo`: an expression with its type.
     </span><span class="kw">fn </span>typed_expr_mismatch(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::string::String {
         <span class="kw">let </span><span class="prelude-val">Some</span>(expr) = expr(value) <span class="kw">else </span>{ <span class="kw">return </span>support::type_key(value.type_index) };
-        <span class="kw">let </span>ty = <span class="kw">match </span>expr.ty.as_node::&lt;PrimTypeObj&gt;() {
+        <span class="kw">let </span>ty = <span class="kw">match </span>expr.ty.downcast_ref::&lt;PrimTypeObj&gt;() {
             <span class="prelude-val">Some</span>(prim) =&gt; support::dtype_name(prim.dtype),
             <span class="prelude-val">None </span>=&gt; support::type_key(AnyView::from(<span class="kw-2">&amp;</span>expr.ty).type_index()),
         };
@@ -1620,7 +1620,7 @@
 
         <span class="kw">fn </span>check(call: <span class="kw-2">&amp;</span>CallObj, op: <span class="kw-2">&amp;</span>OpObj, <span class="kw">_</span>: (usize, usize), <span class="kw">_</span>: (usize, usize)) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
             <span class="kw">let </span>actual = <span class="kw">match </span><span class="kw-2">&amp;</span>call.attrs {
-                <span class="prelude-val">Some</span>(attrs) <span class="kw">if </span>attrs.as_node::&lt;T::ContainerType&gt;().is_some() =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
+                <span class="prelude-val">Some</span>(attrs) <span class="kw">if </span>attrs.downcast_ref::&lt;T::ContainerType&gt;().is_some() =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
                 <span class="prelude-val">Some</span>(attrs) =&gt; {
                     <span class="macro">format!</span>(<span class="string">"`{}`"</span>, support::type_key(AnyView::from(attrs).type_index()))
                 }
@@ -1748,7 +1748,7 @@
                 <span class="string">"a signature has at most one variadic tail of each kind and one call_attrs"
             </span>)
         };
-        <span class="kw">let </span><span class="prelude-val">Some</span>(op) = call.op.as_node::&lt;OpObj&gt;() <span class="kw">else </span>{
+        <span class="kw">let </span><span class="prelude-val">Some</span>(op) = call.op.downcast_ref::&lt;OpObj&gt;() <span class="kw">else </span>{
             <span class="kw">return </span><span class="prelude-val">Err</span>(Error::new(TYPE_ERROR, <span class="string">"Invalid Op Call"</span>, <span class="string">""</span>));
         };
         <span class="kw">let </span>count = |label: <span class="kw-2">&amp;</span>str, expected: usize, tail: bool, unit: <span class="kw-2">&amp;</span>str, got: usize| {

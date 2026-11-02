@@ -802,7 +802,7 @@
 <span class="doccomment">/// The vector type of `element` elements over `lanes`, and the lanes a `Ramp` or `Broadcast` keeps:
 /// a constant count as an `int32` constant, or a scalable count as `vscale * factor`.
 </span><span class="kw">fn </span>vector_lanes(element: DLDataType, lanes: Expr) -&gt; <span class="prelude-ty">Result</span>&lt;(DLDataType, Expr)&gt; {
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = lanes.as_node::&lt;IntImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = lanes.downcast_ref::&lt;IntImmObj&gt;() {
         <span class="kw">let </span><span class="prelude-val">Some</span>(count) = imm.value.to_i64().and_then(|count| i32::try_from(count).ok()) <span class="kw">else </span>{
             <span class="kw">return </span><span class="prelude-val">Err</span>(tvm_ffi::Error::new(tvm_ffi::INTERNAL_ERROR, <span class="string">"bad optional access"</span>, <span class="string">""</span>));
         };
@@ -841,17 +841,17 @@
 
 <span class="doccomment">/// `factor` when `lanes` is `factor * vscale` or `vscale * factor` (C++ `ExtractVscaleFactor`).
 </span><span class="kw">fn </span>vscale_factor(lanes: <span class="kw-2">&amp;</span>Expr) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;i32&gt;&gt; {
-    <span class="kw">let </span><span class="prelude-val">Some</span>(mul) = lanes.as_node::&lt;MulObj&gt;() <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) };
+    <span class="kw">let </span><span class="prelude-val">Some</span>(mul) = lanes.downcast_ref::&lt;MulObj&gt;() <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) };
     <span class="kw">let </span>vscale = support::cached_op(<span class="string">"prim.vscale"</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>is_vscale =
-        |expr: <span class="kw-2">&amp;</span>Expr| expr.as_node::&lt;CallObj&gt;().is_some_and(|call| call.op.same_as(<span class="kw-2">&amp;</span>vscale));
+        |expr: <span class="kw-2">&amp;</span>Expr| expr.downcast_ref::&lt;CallObj&gt;().is_some_and(|call| call.op.same_as(<span class="kw-2">&amp;</span>vscale));
     <span class="kw">let </span>factor = |imm: <span class="kw-2">&amp;</span>IntImmObj| imm.value.to_i64().and_then(|value| i32::try_from(value).ok());
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = mul.a.as_node::&lt;IntImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = mul.a.downcast_ref::&lt;IntImmObj&gt;() {
         <span class="kw">if </span>is_vscale(<span class="kw-2">&amp;</span>mul.b) {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(factor(imm));
         }
     }
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = mul.b.as_node::&lt;IntImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = mul.b.downcast_ref::&lt;IntImmObj&gt;() {
         <span class="kw">if </span>is_vscale(<span class="kw-2">&amp;</span>mul.a) {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(factor(imm));
         }

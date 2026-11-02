@@ -194,7 +194,7 @@ struct Lowering {
 
 impl Lowering {
     fn parts(&self, expr: &Expr) -> Result<(Expr, Expr)> {
-        if let Some(call) = expr.as_node::<CallObj>() {
+        if let Some(call) = expr.downcast_ref::<CallObj>() {
             if call.op.same_as(&self.ops.complex) {
                 return Ok((call.args.get(0)?, call.args.get(1)?));
             }
@@ -244,7 +244,7 @@ impl Lowering {
     }
 
     fn map_bind(&mut self, bind: Bind) -> Result<Stmt> {
-        if let Some(ty) = bind.var.ty.as_node::<ComplexTypeObj>() {
+        if let Some(ty) = bind.var.ty.downcast_ref::<ComplexTypeObj>() {
             let (re, im) = self.parts(&bind.value)?;
             let name = bind.var.name.as_str();
             let re_var = Var::new(&format!("{name}_re"), ty.elem.clone(), bind.var.loc.clone());
@@ -263,7 +263,7 @@ impl Lowering {
 
 /// Reject a complex type, wherever it appears: on a variable, a parameter or an expression.
 fn check_type(ty: Type) -> Result<Type> {
-    if ty.as_node::<ComplexTypeObj>().is_some() {
+    if ty.downcast_ref::<ComplexTypeObj>().is_some() {
         return Err(Error::new(
             tvm_ffi::VALUE_ERROR,
             "LowerComplex left an unsupported complex type",

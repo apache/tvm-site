@@ -75,15 +75,18 @@ re-exports TVM FFI as ``tvm_tirx::tvm_ffi``:
    :language: toml
    :start-at: [lib]
 
-With Rust 1.84 or newer, build and install the package from the TIRx
-repository root:
+First build and install TIRx from this checkout. With Rust 1.84 or newer,
+install the extension from the repository root in the same Python environment:
 
 .. code-block:: bash
 
-   pip install ./examples/extension
+   uv pip install scikit-build-core
+   uv pip install --no-build-isolation --no-deps ./examples/extension
 
-The package depends on ``apache-tvm-tirx``, and the build links the library
-against the TIRx native libraries that this package provides.
+The example uses this checkout's Rust crate and pinned TVM FFI sources.
+The package depends on ``apache-tvm-tirx`` at run time; disabling build
+isolation keeps its native build aligned with these sources instead of
+installing a released package in a temporary build environment.
 
 Case Study: Complex Numbers
 ---------------------------

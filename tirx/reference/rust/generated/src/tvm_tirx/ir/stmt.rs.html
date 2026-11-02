@@ -1298,7 +1298,8 @@
 <a href="#1297" id="1297">1297</a>
 <a href="#1298" id="1298">1298</a>
 <a href="#1299" id="1299">1299</a>
-<a href="#1300" id="1300">1300</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#1300" id="1300">1300</a>
+<a href="#1301" id="1301">1301</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1770,7 +1771,7 @@
             <span class="kw">if </span>ty.dtype == var_ty.dtype {
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(expr);
             }
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = expr.as_node::&lt;IntImmObj&gt;() {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = expr.downcast_ref::&lt;IntImmObj&gt;() {
                 <span class="kw">if </span>!int_imm_value_fits(<span class="kw-2">&amp;</span>imm.value, var_ty.dtype)<span class="question-mark">? </span>{
                     <span class="kw">let </span>message = <span class="macro">format!</span>(
                         <span class="string">"Literal value {} is not representable in the loop variable's dtype ({})"</span>,
@@ -2165,7 +2166,7 @@
     <span class="kw">let </span>params: Array&lt;Var&gt; = get_body_params.call_as(<span class="kw-2">&amp;</span>signature)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>definitions = std::collections::HashSet::new();
     <span class="kw">for </span>param <span class="kw">in </span>params.iter() {
-        <span class="kw">if </span>param.ty.as_node::&lt;MissingTypeObj&gt;().is_some() {
+        <span class="kw">if </span>param.ty.downcast_ref::&lt;MissingTypeObj&gt;().is_some() {
             <span class="kw">let </span>condition = <span class="string">"!param-&gt;ty.as&lt;MissingType&gt;().has_value()"</span>;
             <span class="kw">let </span>message = <span class="macro">format!</span>(<span class="string">"FRegionGetBodyParams for {name} must return typed variables"</span>);
             <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::VALUE_ERROR, condition, <span class="kw-2">&amp;</span>message));
@@ -2251,12 +2252,13 @@
 
 <span class="doccomment">/// `seq` with each nested sequence replaced by its statements and the no-ops removed.
 </span><span class="kw">fn </span>flatten(seq: Array&lt;Stmt&gt;) -&gt; Array&lt;Stmt&gt; {
-    <span class="kw">let </span>nested_or_no_op = |stmt: <span class="kw-2">&amp;</span>Stmt| stmt.as_node::&lt;SeqStmtObj&gt;().is_some() || is_no_op(stmt);
+    <span class="kw">let </span>nested_or_no_op =
+        |stmt: <span class="kw-2">&amp;</span>Stmt| stmt.downcast_ref::&lt;SeqStmtObj&gt;().is_some() || is_no_op(stmt);
     <span class="kw">if </span>!seq.iter().any(|stmt| nested_or_no_op(<span class="kw-2">&amp;</span>stmt)) {
         <span class="kw">return </span>seq;
     }
     <span class="kw">fn </span>append(stmt: Stmt, flattened: <span class="kw-2">&amp;mut </span>Vec&lt;Stmt&gt;) {
-        <span class="kw">match </span>stmt.as_node::&lt;SeqStmtObj&gt;() {
+        <span class="kw">match </span>stmt.downcast_ref::&lt;SeqStmtObj&gt;() {
             <span class="prelude-val">Some</span>(nested) =&gt; nested.seq.iter().for_each(|child| append(child, flattened)),
             <span class="prelude-val">None </span><span class="kw">if </span>is_no_op(<span class="kw-2">&amp;</span>stmt) =&gt; {}
             <span class="prelude-val">None </span>=&gt; flattened.push(stmt),
@@ -2269,15 +2271,15 @@
 
 <span class="doccomment">/// Whether `stmt` is `Evaluate(0)`, the no-op a sequence drops (C++ `IsSeqStmtNoOp`).
 </span><span class="kw">fn </span>is_no_op(stmt: <span class="kw-2">&amp;</span>Stmt) -&gt; bool {
-    stmt.as_node::&lt;EvaluateObj&gt;()
-        .and_then(|evaluate| evaluate.value.as_node::&lt;IntImmObj&gt;())
+    stmt.downcast_ref::&lt;EvaluateObj&gt;()
+        .and_then(|evaluate| evaluate.value.downcast_ref::&lt;IntImmObj&gt;())
         .is_some_and(|imm| imm.value == BigInt::from(<span class="number">0i64</span>))
 }
 
 <span class="doccomment">/// A statement as a body, as C++ converts a `Stmt` to a `SeqStmt`: a sequence as it is, any other
 /// statement as the sequence of it at its location (C++ `SeqStmt(stmt)`).
 </span><span class="kw">fn </span>into_body(stmt: Stmt) -&gt; <span class="prelude-ty">Result</span>&lt;SeqStmt&gt; {
-    <span class="kw">if </span>stmt.as_node::&lt;SeqStmtObj&gt;().is_some() {
+    <span class="kw">if </span>stmt.downcast_ref::&lt;SeqStmtObj&gt;().is_some() {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(tvm_ffi::ObjectRefCast::try_cast(stmt).expect(<span class="string">"a SeqStmt"</span>));
     }
     <span class="kw">let </span>loc = stmt.loc.clone();

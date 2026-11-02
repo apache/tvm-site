@@ -2368,7 +2368,7 @@
 
 <span class="doccomment">/// Whether `expr` is a call of `prim.vscale`.
 </span><span class="kw">fn </span>is_vscale_call(expr: <span class="kw-2">&amp;</span>Expr) -&gt; <span class="prelude-ty">Result</span>&lt;bool&gt; {
-    <span class="kw">let </span><span class="prelude-val">Some</span>(call) = expr.as_node::&lt;CallObj&gt;() <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">false</span>) };
+    <span class="kw">let </span><span class="prelude-val">Some</span>(call) = expr.downcast_ref::&lt;CallObj&gt;() <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">false</span>) };
     <span class="prelude-val">Ok</span>(call.op.same_as(<span class="kw-2">&amp;</span>support::cached_op(<span class="string">"prim.vscale"</span>)<span class="question-mark">?</span>))
 }
 
@@ -2699,7 +2699,7 @@
     <span class="kw">let </span>float = |value: f64, loc: <span class="kw-2">&amp;</span>Location| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Expr&gt;&gt; {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(FloatImm::from_dtype(to, value, loc.clone())<span class="question-mark">?</span>.into()))
     };
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = value.as_node::&lt;IntImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = value.downcast_ref::&lt;IntImmObj&gt;() {
         <span class="kw">if </span>integer {
             <span class="kw">if </span>const_fold::is_representable(<span class="kw-2">&amp;</span>imm.value, to) {
                 <span class="kw">return </span>int(imm.value.clone(), <span class="kw-2">&amp;</span>imm.loc);
@@ -2720,7 +2720,7 @@
                 <span class="kw">return </span>float(source, <span class="kw-2">&amp;</span>imm.loc);
             }
         }
-    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(imm) = value.as_node::&lt;FloatImmObj&gt;() {
+    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(imm) = value.downcast_ref::&lt;FloatImmObj&gt;() {
         <span class="kw">let </span>from = support::prim_dtype(value)<span class="question-mark">?</span>;
         <span class="kw">if </span>imm.value.is_finite() &amp;&amp; from.bits == <span class="number">16 </span>{
             <span class="kw">let </span>bfloat = <span class="kw">match </span>from.code {
@@ -2816,11 +2816,11 @@
     <span class="kw">if </span>!lanes_match {
         <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(INTERNAL_ERROR, <span class="string">"lanes_match"</span>, <span class="string">""</span>));
     }
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(broadcast) = value.as_node::&lt;BroadcastObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(broadcast) = value.downcast_ref::&lt;BroadcastObj&gt;() {
         <span class="kw">let </span>value = cast_at(broadcast.value.clone(), element, loc.clone())<span class="question-mark">?</span>;
         <span class="kw">return </span><span class="prelude-val">Ok</span>(Broadcast::new(value, broadcast.lanes.clone(), loc)<span class="question-mark">?</span>.into());
     }
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(ramp) = value.as_node::&lt;RampObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(ramp) = value.downcast_ref::&lt;RampObj&gt;() {
         <span class="comment">// Casting the base and the stride is valid only when every lane is the same integer in
         // both types: widening must not remove an overflow of the source, and a floating-point
         // cast need not be affine.
@@ -3063,13 +3063,13 @@
 </span><span class="kw">pub fn </span>neg_at(a: <span class="kw">impl </span>IntoExpr, loc: <span class="kw">impl </span>Into&lt;Location&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
     <span class="kw">let </span>(a, loc) = (a.into_expr()<span class="question-mark">?</span>, loc.into());
     <span class="kw">let </span>dtype = support::prim_dtype(<span class="kw-2">&amp;</span>a)<span class="question-mark">?</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = a.as_node::&lt;IntImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = a.downcast_ref::&lt;IntImmObj&gt;() {
         <span class="kw">let </span>value = -imm.value.clone();
         <span class="kw">if </span>const_fold::is_representable(<span class="kw-2">&amp;</span>value, dtype) {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(IntImm::from_dtype(dtype, value, loc)<span class="question-mark">?</span>.into());
         }
     }
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = a.as_node::&lt;FloatImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = a.downcast_ref::&lt;FloatImmObj&gt;() {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(FloatImm::from_dtype(dtype, -imm.value, loc)<span class="question-mark">?</span>.into());
     }
     sub(make_const_at(PrimType::from_dtype(dtype)<span class="question-mark">?</span>, <span class="number">0</span>, loc)<span class="question-mark">?</span>, a)
@@ -3289,7 +3289,7 @@
         <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(INTERNAL_ERROR, condition, message));
     }
     <span class="kw">let </span>(true_value, false_value) = match_types_at(true_value, false_value, loc.clone())<span class="question-mark">?</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = cond.as_node::&lt;IntImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = cond.downcast_ref::&lt;IntImmObj&gt;() {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="kw">if </span>imm.value.is_zero() { false_value } <span class="kw">else </span>{ true_value });
     }
     <span class="kw">let </span>ty = true_value.ty.clone();
@@ -3437,7 +3437,7 @@
     <span class="kw">if </span><span class="macro">matches!</span>(dtype.code, support::INT | support::UINT | support::BOOL) {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(x);
     }
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = x.as_node::&lt;FloatImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = x.downcast_ref::&lt;FloatImmObj&gt;() {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(FloatImm::from_dtype(dtype, fold(imm.value), imm.loc.clone())<span class="question-mark">?</span>.into());
     }
     <span class="kw">let </span>ty = x.ty.clone();
@@ -3505,7 +3505,7 @@
     <span class="kw">let </span>dtype = support::prim_dtype(<span class="kw-2">&amp;</span>x)<span class="question-mark">?</span>;
     <span class="kw">match </span>dtype.code {
         support::INT =&gt; integer_abs(x, loc),
-        support::FLOAT | support::BFLOAT =&gt; <span class="kw">match </span>x.as_node::&lt;FloatImmObj&gt;() {
+        support::FLOAT | support::BFLOAT =&gt; <span class="kw">match </span>x.downcast_ref::&lt;FloatImmObj&gt;() {
             <span class="prelude-val">Some</span>(imm) =&gt; <span class="prelude-val">Ok</span>(FloatImm::from_dtype(dtype, imm.value.abs(), imm.loc.clone())<span class="question-mark">?</span>.into()),
             <span class="prelude-val">None </span>=&gt; {
                 <span class="kw">let </span>ty = x.ty.clone();
@@ -3527,7 +3527,7 @@
 /// value of its type; anything else is `select(x &gt;= 0, x, -x)`.
 </span><span class="kw">fn </span>integer_abs(x: Expr, loc: Location) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
     <span class="kw">let </span>dtype = support::prim_dtype(<span class="kw-2">&amp;</span>x)<span class="question-mark">?</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = x.as_node::&lt;IntImmObj&gt;() {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(imm) = x.downcast_ref::&lt;IntImmObj&gt;() {
         <span class="kw">let </span>value = <span class="kw">match </span>imm.value.is_negative() {
             <span class="bool-val">true </span>=&gt; -imm.value.clone(),
             <span class="bool-val">false </span>=&gt; imm.value.clone(),
@@ -3570,7 +3570,7 @@
 }
 
 <span class="kw">fn </span>likely_hint(cond: Expr, loc: Location) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
-    <span class="kw">if </span>cond.as_node::&lt;IntImmObj&gt;().is_some() {
+    <span class="kw">if </span>cond.downcast_ref::&lt;IntImmObj&gt;().is_some() {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(cond);
     }
     <span class="kw">let </span>ty = cond.ty.clone();

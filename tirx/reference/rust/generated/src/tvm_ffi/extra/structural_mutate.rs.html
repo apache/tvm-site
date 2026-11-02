@@ -3423,9 +3423,7 @@
 <a href="#3422" id="3422">3422</a>
 <a href="#3423" id="3423">3423</a>
 <a href="#3424" id="3424">3424</a>
-<a href="#3425" id="3425">3425</a>
-<a href="#3426" id="3426">3426</a>
-<a href="#3427" id="3427">3427</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#3425" id="3425">3425</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -3453,7 +3451,7 @@
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::ffi::c_void;
 <span class="kw">use </span>std::marker::PhantomData;
-<span class="kw">use </span>std::ops::{ControlFlow, Deref};
+<span class="kw">use </span>std::ops::ControlFlow;
 <span class="kw">use </span>std::panic::{catch_unwind, resume_unwind, AssertUnwindSafe};
 <span class="kw">use </span>std::ptr::NonNull;
 <span class="kw">use </span>std::rc::Rc;
@@ -3476,7 +3474,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::tvm_ffi_sys::{TVMFFIObjectHandle, TVMFFISEqHashKind};
 
 <span class="kw">use </span><span class="kw">super</span>::structural_common::{
-    impl_callback_chain_tuple_arities, is_plain_inline, same_shallow,
+    borrowed_view, impl_callback_chain_tuple_arities, is_plain_inline, raw_of, same_shallow,
     try_to_owned_without_normalization, with_structural_error_context, with_visit_error_context,
 };
 <span class="kw">use </span><span class="kw">super</span>::structural_visit::{
@@ -3492,11 +3490,8 @@
 <span class="kw">const </span>FLAG_SEQ_HASH_IGNORE: i64 = kTVMFFIFieldFlagBitMaskSEqHashIgnore <span class="kw">as </span>i64;
 <span class="kw">const </span>FLAG_SETTER_IS_FUNCTION: i64 = kTVMFFIFieldFlagBitSetterIsFunctionObj <span class="kw">as </span>i64;
 
-<span class="doccomment">/// Borrowed value passed to structural map and mutation callbacks.
-</span><span class="kw">pub use </span><span class="kw">super</span>::StructuralView;
-
 <span class="kw">mod </span>policy;
-<span class="kw">pub use </span>policy::{DefaultMutContextPolicy, MapWithContextPolicy, MutContextPolicy};
+<span class="kw">pub use </span>policy::{DefaultMutationContextPolicy, MapWithContextPolicy, MutationContextPolicy};
 
 <span class="kw">mod </span>callback_result_sealed {
     <span class="kw">use super</span>::{Any, <span class="prelude-ty">Result</span>};
@@ -3536,7 +3531,7 @@
 ///
 /// `Allow` still requires unique ownership; it does not grant permission to
 /// modify a borrowed value. Use an owned value or an engine-issued
-/// [`InplaceValue`] with the mode-aware mutation helpers.
+/// [`MutationView`] with the mode-aware mutation helpers.
 </span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>InplaceMode {
     <span class="doccomment">/// Use ordinary mutation, including for uniquely owned values.
@@ -3553,17 +3548,12 @@
             <span class="self">Self</span>::Allow =&gt; Permit::MaybeInPlace,
         }
     }
-
-    <span class="kw">fn </span>permit_if_unique(<span class="self">self</span>, raw: TVMFFIAny) -&gt; Permit {
-        <span class="kw">if </span><span class="self">self </span>== <span class="self">Self</span>::Allow &amp;&amp; object_is_unique(raw) {
-            Permit::MaybeInPlace
-        } <span class="kw">else </span>{
-            Permit::Copy
-        }
-    }
 }
 
-<span class="doccomment">/// A callback value carrying the engine's in-place permission.
+<span class="doccomment">/// A non-owning, move-only view carrying the engine's in-place permission.
+///
+/// This view cannot be copied or cloned. Consuming it transfers the same
+/// permission; narrowing its matched type does not acquire ownership.
 ///
 /// Unlike an owning typed argument, this handle does not increment the reference
 /// count. Borrow through it to inspect the node, then consume it in
@@ -3571,42 +3561,58 @@
 /// still forces copying. Node borrows come from this handle, not from the
 /// callback context, so the handle can safely be passed to another context.
 /// `T` selects the callback's matched FFI type; `Any` matches every value.
+/// The same handle is used by low-level [`StructuralMutator`] hooks. A publicly
+/// borrowed handle always disallows reuse; only the engine can issue permission.
 ///
-/// A node borrow cannot survive consumption of the handle:
-/// ```compile_fail
-/// use tvm_ffi::{MutateContext, MutateValue};
-/// fn invalid(value: MutateValue&lt;'_&gt;, ctx: &amp;mut MutateContext&lt;'_&gt;) {
-///     let node = value.as_node::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
+/// A node borrowed through a copied view cannot survive consumption of the handle:
+/// ```compile_fail,E0505
+/// use tvm_ffi::{MutationContext, MutationView};
+/// fn invalid(value: MutationView&lt;'_&gt;, ctx: &amp;mut MutationContext&lt;'_&gt;) {
+///     let view = value.as_any_view();
+///     let copy = view;
+///     let node = copy.downcast_ref::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
 ///     ctx.default_maybe_inplace_mutate(value).unwrap();
 ///     println!("{}", node.size);
 /// }
 /// ```
 ///
 /// Moving the handle into a nested callback cannot bypass that borrow:
-/// ```compile_fail
+/// ```compile_fail,E0505
 /// use std::cell::RefCell;
-/// use tvm_ffi::{structural_mutate, MutateContext, MutateValue};
-/// fn invalid(value: MutateValue&lt;'_&gt;) {
-///     let node = value.as_node::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
+/// use tvm_ffi::{structural_mutate, MutationContext, MutationView};
+/// fn invalid(value: MutationView&lt;'_&gt;) {
+///     let view = value.as_any_view();
+///     let node = view.downcast_ref::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
 ///     let pending = RefCell::new(Some(value));
-///     structural_mutate(true, |_: bool, inner: &amp;mut MutateContext&lt;'_&gt;| {
+///     structural_mutate(true, |_: bool, inner: &amp;mut MutationContext&lt;'_&gt;| {
 ///         inner.default_maybe_inplace_mutate(pending.borrow_mut().take().unwrap())
 ///     }).unwrap();
 ///     println!("{}", node.size);
 /// }
 /// ```
-</span><span class="kw">pub struct </span>MutateValue&lt;<span class="lifetime">'a</span>, T = Any&gt; {
-    value: StructuralView,
+///
+/// A copied inspection view also cannot survive low-level default mutation:
+/// ```compile_fail,E0505
+/// use tvm_ffi::{DefRegionKind, MutationView, StructuralMutator};
+/// fn invalid&lt;M: StructuralMutator&gt;(value: MutationView&lt;'_&gt;, mutator: &amp;mut M) {
+///     let view = value.as_any_view();
+///     let copy = view;
+///     mutator.default_maybe_inplace_mutate(value, DefRegionKind::None).unwrap();
+///     println!("{}", copy.type_index());
+/// }
+/// ```
+</span><span class="kw">pub struct </span>MutationView&lt;<span class="lifetime">'a</span>, T = Any&gt; {
+    value: TVMFFIAny,
     mode: InplaceMode,
-    _scope: PhantomData&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView&gt;,
+    _scope: PhantomData&lt;AnyView&lt;<span class="lifetime">'a</span>&gt;&gt;,
     _type: PhantomData&lt;<span class="kw">fn</span>() -&gt; T&gt;,
     _not_send_sync: PhantomData&lt;Rc&lt;()&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; MutateValue&lt;<span class="lifetime">'a</span>&gt; {
-    <span class="kw">fn </span>new(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView, mode: InplaceMode) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; MutationView&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">fn </span>new(value: AnyView&lt;<span class="lifetime">'a</span>&gt;, mode: InplaceMode) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            value: StructuralView::from_raw(value.raw()),
+            value: raw_of(value),
             mode,
             _scope: PhantomData,
             _type: PhantomData,
@@ -3615,30 +3621,33 @@
     }
 
     <span class="doccomment">/// Wrap a borrowed value without granting in-place permission.
-    </span><span class="kw">pub fn </span>borrowed(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>borrowed(value: AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::new(value, InplaceMode::Disallow)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; MutateValue&lt;<span class="lifetime">'a</span>, T&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; MutationView&lt;<span class="lifetime">'a</span>, T&gt; {
     <span class="doccomment">/// Permission established before callback arguments acquire ownership.
     </span><span class="kw">pub fn </span>inplace_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; InplaceMode {
         <span class="self">self</span>.mode
     }
 
-    <span class="doccomment">/// Borrow the current value. The borrow must end before default mutation.
-    </span><span class="kw">pub fn </span>as_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>StructuralView {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.value
+    <span class="doccomment">/// Borrow the current value. The view and its copies borrow this handle,
+    /// so their last use must precede consuming it for default mutation.
+    </span><span class="kw">pub fn </span>as_any_view(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AnyView&lt;<span class="lifetime">'_</span>&gt; {
+        <span class="comment">// SAFETY: the engine keeps this payload live while the capability is
+        // borrowed. The returned lifetime is bounded by self, not by 'a.
+        </span><span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span><span class="self">self</span>.value) }
     }
 
     <span class="doccomment">/// Narrow the matched type without acquiring an owning reference.
     </span><span class="kw">pub fn </span>try_cast&lt;U: <span class="kw">crate</span>::type_traits::ContainerElement&gt;(
         <span class="self">self</span>,
-    ) -&gt; std::result::Result&lt;MutateValue&lt;<span class="lifetime">'a</span>, U&gt;, <span class="self">Self</span>&gt; {
+    ) -&gt; std::result::Result&lt;MutationView&lt;<span class="lifetime">'a</span>, U&gt;, <span class="self">Self</span>&gt; {
         <span class="comment">// SAFETY: the engine keeps the borrowed value live for this handle's
         // lifetime. This only checks its type and does not acquire ownership.
-        </span><span class="kw">if unsafe </span>{ U::container_check_any_strict(<span class="kw-2">&amp;</span><span class="self">self</span>.value.raw()) } {
-            <span class="prelude-val">Ok</span>(MutateValue {
+        </span><span class="kw">if unsafe </span>{ U::container_check_any_strict(<span class="kw-2">&amp;</span><span class="self">self</span>.value) } {
+            <span class="prelude-val">Ok</span>(MutationView {
                 value: <span class="self">self</span>.value,
                 mode: <span class="self">self</span>.mode,
                 _scope: PhantomData,
@@ -3651,8 +3660,8 @@
     }
 
     <span class="doccomment">/// Erase the matched type while preserving the engine-issued permission.
-    </span><span class="kw">pub fn </span>into_untyped(<span class="self">self</span>) -&gt; MutateValue&lt;<span class="lifetime">'a</span>&gt; {
-        MutateValue {
+    </span><span class="kw">pub fn </span>into_untyped(<span class="self">self</span>) -&gt; MutationView&lt;<span class="lifetime">'a</span>&gt; {
+        MutationView {
             value: <span class="self">self</span>.value,
             mode: <span class="self">self</span>.mode,
             _scope: PhantomData,
@@ -3671,20 +3680,13 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T&gt; Deref <span class="kw">for </span>MutateValue&lt;<span class="lifetime">'_</span>, T&gt; {
-    <span class="kw">type </span>Target = StructuralView;
-    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
-        <span class="self">self</span>.as_value()
-    }
-}
-
 <span class="doccomment">/// State and recursive operations shared by mutation callbacks and context policies.
 ///
 /// A matched callback owns mutation of its value. Recursive operations
 /// reborrow the mutator, so mutable state cannot remain borrowed across them.
 /// The context does not store a node: inspect the callback argument and pass
 /// it explicitly to default recursion.
-</span><span class="kw">pub struct </span>MutateContext&lt;<span class="lifetime">'a</span>, State = ()&gt; {
+</span><span class="kw">pub struct </span>MutationContext&lt;<span class="lifetime">'a</span>, State = ()&gt; {
     driver: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span><span class="kw">dyn </span>MutateContextDriver&lt;State&gt;,
     def_region_kind: DefRegionKind,
     inplace_mode: InplaceMode,
@@ -3707,7 +3709,7 @@
     <span class="doccomment">/// Engine-established permission for this callback's current value.
     ///
     /// This is not authority to modify a borrow: default in-place descent also
-    /// requires consuming a [`MutateValue`].
+    /// requires consuming a [`MutationView`].
     </span><span class="kw">pub fn </span>inplace_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; InplaceMode {
         <span class="self">self</span>.inplace_mode
     }
@@ -3720,25 +3722,25 @@
 
     <span class="doccomment">/// Mutate a borrowed child through the same typed dispatch object.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>mutate&lt;D, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dispatch: <span class="kw-2">&amp;mut </span>D, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+    </span><span class="kw">pub fn </span>mutate&lt;<span class="lifetime">'input</span>, D, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dispatch: <span class="kw-2">&amp;mut </span>D, value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
         </span>D: MutateDispatch,
-        <span class="kw">for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         StructuralMutator::mutate(dispatch, value, <span class="self">self</span>.def_region_kind)
     }
 
     <span class="doccomment">/// Mutate a borrowed child under an explicit definition-region state.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>mutate_with&lt;D, T&gt;(
+    </span><span class="kw">pub fn </span>mutate_with&lt;<span class="lifetime">'input</span>, D, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        value: <span class="kw-2">&amp;</span>T,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
         </span>D: MutateDispatch,
-        <span class="kw">for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         StructuralMutator::mutate(dispatch, value, def_region_kind)
     }
@@ -3788,49 +3790,57 @@
 
     <span class="doccomment">/// Apply default copy-only mutation to an explicitly borrowed value.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>default_mutate&lt;D, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dispatch: <span class="kw-2">&amp;mut </span>D, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+    </span><span class="kw">pub fn </span>default_mutate&lt;<span class="lifetime">'input</span>, D, T&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        dispatch: <span class="kw-2">&amp;mut </span>D,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
         </span>D: MutateDispatch,
-        <span class="kw">for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         StructuralMutator::default_mutate(dispatch, value, <span class="self">self</span>.def_region_kind)
     }
 
     <span class="doccomment">/// Mutate a borrowed child while preserving an unchanged result.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>mutate_result&lt;D, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dispatch: <span class="kw-2">&amp;mut </span>D, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
+    </span><span class="kw">pub fn </span>mutate_result&lt;<span class="lifetime">'input</span>, D, T&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        dispatch: <span class="kw-2">&amp;mut </span>D,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
         </span>D: MutateDispatch,
-        <span class="kw">for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="self">self</span>.mutate_with_result(dispatch, value, <span class="self">self</span>.def_region_kind)
     }
 
     <span class="doccomment">/// Mutate a borrowed child under an explicit region, preserving unchanged.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>mutate_with_result&lt;D, T&gt;(
+    </span><span class="kw">pub fn </span>mutate_with_result&lt;<span class="lifetime">'input</span>, D, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        value: <span class="kw-2">&amp;</span>T,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
         kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
         </span>D: MutateDispatch,
-        <span class="kw">for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         StructuralMutator::mutate_result(dispatch, value, kind)
     }
 
     <span class="doccomment">/// Apply default mutation without materializing an unchanged original.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>default_mutate_result&lt;D, T&gt;(
+    </span><span class="kw">pub fn </span>default_mutate_result&lt;<span class="lifetime">'input</span>, D, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        value: <span class="kw-2">&amp;</span>T,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
         </span>D: MutateDispatch,
-        <span class="kw">for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         StructuralMutator::default_mutate_result(dispatch, value, <span class="self">self</span>.def_region_kind)
     }
@@ -3840,7 +3850,7 @@
     </span><span class="kw">pub fn </span>default_maybe_inplace_mutate&lt;D: MutateDispatch, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         <span class="kw">let </span>mode = value.inplace_mode();
         <span class="self">self</span>.default_mutate_with_mode(dispatch, value, mode)
@@ -3851,7 +3861,7 @@
     </span><span class="kw">pub fn </span>default_maybe_inplace_mutate_result&lt;D: MutateDispatch, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
         <span class="kw">let </span>mode = value.inplace_mode();
         <span class="self">self</span>.default_mutate_with_mode_result(dispatch, value, mode)
@@ -3864,10 +3874,10 @@
     </span><span class="kw">pub fn </span>default_mutate_with_mode&lt;D: MutateDispatch, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="kw">let </span>raw = value.value.raw();
+        <span class="kw">let </span>raw = value.value;
         <span class="kw">let </span>permit = value.permit(mode);
         user_default_mutate(dispatch, raw, <span class="self">self</span>.def_region_kind, permit)
             .and_then(|result| resolve_result(result, raw))
@@ -3877,11 +3887,11 @@
     </span><span class="kw">pub fn </span>default_mutate_with_mode_result&lt;D: MutateDispatch, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
         <span class="kw">let </span>permit = value.permit(mode);
-        user_default_mutate(dispatch, value.value.raw(), <span class="self">self</span>.def_region_kind, permit)
+        user_default_mutate(dispatch, value.value, <span class="self">self</span>.def_region_kind, permit)
             .and_then(UnchangedOr::from_carrier)
     }
 
@@ -3890,7 +3900,7 @@
     </span><span class="kw">pub fn </span>var_remap_get&lt;D: MutateDispatch&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        var: <span class="kw-2">&amp;</span>StructuralView,
+        var: AnyView&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
         StructuralMutator::var_remap_get(dispatch, var)
     }
@@ -3900,14 +3910,14 @@
     </span><span class="kw">pub fn </span>var_remap_set&lt;D: MutateDispatch&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dispatch: <span class="kw-2">&amp;mut </span>D,
-        var: <span class="kw-2">&amp;</span>StructuralView,
+        var: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         mutated_value: <span class="kw-2">&amp;</span>Any,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         StructuralMutator::var_remap_set(dispatch, var, mutated_value)
     }
 }
 
-<span class="doccomment">/// Internal operations used by [`MutateContext`].
+<span class="doccomment">/// Internal operations used by [`MutationContext`].
 ///
 /// Borrowed inputs carry a lifetime; in-place entry requires an owned
 /// value or a consumed capability, never a bare ABI value plus permission.
@@ -3920,17 +3930,17 @@
     <span class="doccomment">/// Consume the handle to exclude node borrows before default descent.
     </span><span class="kw">fn </span>default_mutate_value(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         kind: DefRegionKind,
         _mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="self">self</span>.default_mutate_borrowed(AnyView::from(value.as_value()), kind)
+        <span class="self">self</span>.default_mutate_borrowed(value.as_any_view(), kind)
     }
-    <span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt;;
-    <span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
+    <span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt;;
+    <span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
 }
 
-<span class="kw">impl</span>&lt;State&gt; MutateContext&lt;<span class="lifetime">'_</span>, State&gt; {
+<span class="kw">impl</span>&lt;State&gt; MutationContext&lt;<span class="lifetime">'_</span>, State&gt; {
     <span class="doccomment">/// User state shared by every callback in this mutation.
     </span><span class="attr">#[inline(always)]
     </span><span class="kw">pub fn </span>state(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>State {
@@ -3946,7 +3956,7 @@
     <span class="doccomment">/// Engine-established permission for this callback's current value.
     ///
     /// This is not authority to modify a borrow: default in-place descent also
-    /// requires consuming a [`MutateValue`].
+    /// requires consuming a [`MutationView`].
     </span><span class="kw">pub fn </span>inplace_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; InplaceMode {
         <span class="self">self</span>.inplace_mode
     }
@@ -3962,10 +3972,10 @@
     </span><span class="kw">pub fn </span>with_def_region_kind&lt;T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         kind: DefRegionKind,
-        callback: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;T&gt;,
+        callback: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;T&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;T&gt; {
         with_mutation_region(kind, |kind| {
-            callback(<span class="kw-2">&amp;mut </span>MutateContext {
+            callback(<span class="kw-2">&amp;mut </span>MutationContext {
                 driver: <span class="kw-2">&amp;mut *</span><span class="self">self</span>.driver,
                 def_region_kind: kind,
                 inplace_mode: <span class="self">self</span>.inplace_mode,
@@ -3977,18 +3987,22 @@
     <span class="doccomment">/// Mutate a borrowed value through the same callback chain. The value and
     /// its descendants begin on the non-in-place path.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>mutate&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+    </span><span class="kw">pub fn </span>mutate&lt;<span class="lifetime">'input</span>, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="self">self</span>.mutate_with(value, <span class="self">self</span>.def_region_kind)
     }
 
     <span class="doccomment">/// Mutate a borrowed value under an explicit definition-region state.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>mutate_with&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T, def_region_kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+    </span><span class="kw">pub fn </span>mutate_with&lt;<span class="lifetime">'input</span>, T&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
+        def_region_kind: DefRegionKind,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         <span class="self">self</span>.driver
@@ -4032,9 +4046,9 @@
     /// This may be called repeatedly while holding node borrows. The value's
     /// children re-enter callback dispatch, but the value itself does not.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>default_mutate&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+    </span><span class="kw">pub fn </span>default_mutate&lt;<span class="lifetime">'input</span>, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         <span class="kw">let </span>raw = <span class="kw-2">*</span>view.as_raw_ffi_any();
@@ -4045,22 +4059,22 @@
 
     <span class="doccomment">/// Mutate a borrowed child while preserving an unchanged result.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>mutate_result&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
+    </span><span class="kw">pub fn </span>mutate_result&lt;<span class="lifetime">'input</span>, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="self">self</span>.mutate_with_result(value, <span class="self">self</span>.def_region_kind)
     }
 
     <span class="doccomment">/// Mutate a borrowed child under an explicit region, preserving unchanged.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>mutate_with_result&lt;T&gt;(
+    </span><span class="kw">pub fn </span>mutate_with_result&lt;<span class="lifetime">'input</span>, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>T,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
         kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         <span class="self">self</span>.driver
@@ -4070,9 +4084,9 @@
 
     <span class="doccomment">/// Apply default mutation without materializing an unchanged original.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>default_mutate_result&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
+    </span><span class="kw">pub fn </span>default_mutate_result&lt;<span class="lifetime">'input</span>, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         <span class="self">self</span>.driver
@@ -4082,7 +4096,7 @@
 
     <span class="doccomment">/// Consume the handle for default descent with its existing permission.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>default_maybe_inplace_mutate&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+    </span><span class="kw">pub fn </span>default_maybe_inplace_mutate&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         <span class="kw">let </span>mode = value.inplace_mode();
         <span class="self">self</span>.default_mutate_with_mode(value, mode)
     }
@@ -4091,7 +4105,7 @@
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>default_maybe_inplace_mutate_result&lt;T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
         <span class="kw">let </span>mode = value.inplace_mode();
         <span class="self">self</span>.default_mutate_with_mode_result(value, mode)
@@ -4104,10 +4118,10 @@
     /// before this call to preserve reuse of the current value.
     </span><span class="kw">pub fn </span>default_mutate_with_mode&lt;T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="kw">let </span>raw = value.value.raw();
+        <span class="kw">let </span>raw = value.value;
         <span class="self">self</span>.driver
             .default_mutate_value(value.into_untyped(), <span class="self">self</span>.def_region_kind, mode)
             .and_then(|result| resolve_result(result, raw))
@@ -4116,7 +4130,7 @@
     <span class="doccomment">/// Consume the callback value for default descent, preserving `Unchanged`.
     </span><span class="kw">pub fn </span>default_mutate_with_mode_result&lt;T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>, T&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>, T&gt;,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
         <span class="self">self</span>.driver
@@ -4126,13 +4140,13 @@
 
     <span class="doccomment">/// Look up an invocation-local identity substitution.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
+    </span><span class="kw">pub fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
         <span class="self">self</span>.driver.var_remap_get(var)
     }
 
     <span class="doccomment">/// Store an invocation-local identity substitution.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    </span><span class="kw">pub fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="self">self</span>.driver.var_remap_set(var, mutated_value)
     }
 }
@@ -4145,7 +4159,7 @@
 /// remains available for closure callback chains with separate state.
 </span><span class="attr">#[diagnostic::on_unimplemented(
     message = <span class="string">"`{Self}` is not a supported `structural_mutate` mutator"</span>,
-    note = <span class="string">"accepted mutators: `&amp;mut U` where `U: StructuralMutator`; a generated `MutateDispatch`; an `Fn` callback over an FFI value type `T`, `&amp;N` of an object node type, or `&amp;StructuralView`, or a consuming `MutateValue&lt;T&gt;`, followed by `&amp;mut MutateContext&lt;'_, State&gt;`; or a tuple of up to 12 such callbacks (tuples may nest)"</span>,
+    note = <span class="string">"accepted mutators: `&amp;mut U` where `U: StructuralMutator`; a generated `MutateDispatch`; an `Fn` callback over an FFI value type `T`, `&amp;N` of an object node type, or `AnyView&lt;'_&gt;`, or a consuming `MutationView&lt;T&gt;`, followed by `&amp;mut MutationContext&lt;'_, State&gt;`; or a tuple of up to 12 such callbacks (tuples may nest)"</span>,
     note = <span class="string">"callback arguments need explicit type annotations; use `MutateCallbacks::new(state, callbacks)` for ordinary mutable callback state"
 </span>)]
 </span><span class="kw">pub trait </span>IntoMutator&lt;Marker&gt; {
@@ -4164,8 +4178,8 @@
     <span class="attr">#[doc(hidden)]
     </span><span class="kw">fn </span>try_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutateValue&lt;<span class="lifetime">'_</span>&gt;&gt;,
-        mutator: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutationView&lt;<span class="lifetime">'_</span>&gt;&gt;,
+        mutator: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt;;
 }
 
@@ -4176,33 +4190,25 @@
 /// `mutate_*` methods in source order and passes the same [`Mutator`] to the
 /// first match. The implementation owns its pass state and receives `&amp;mut
 /// self`, while [`Mutator`] controls recursion, the definition region, and
-/// in-place permission. Handlers can consume [`MutateValue`] and take an
+/// in-place permission. Handlers can consume [`MutationView`] and take an
 /// optional `&amp;mut Mutator` to inspect the region and in-place permission.
 </span><span class="kw">pub trait </span>MutateDispatch: Sized {
-    <span class="kw">fn </span>dispatch_mutate(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
-        mutator: <span class="kw-2">&amp;mut </span>Mutator,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt;;
+    <span class="kw">fn </span>dispatch_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;, mutator: <span class="kw-2">&amp;mut </span>Mutator)
+        -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt;;
 
     <span class="doccomment">/// Dispatch an engine-issued value. Existing borrowed dispatchers retain
     /// their copy-only default recursion; generated dispatch supports consuming it.
     </span><span class="kw">fn </span>dispatch_mutate_value(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         mutator: <span class="kw-2">&amp;mut </span>Mutator,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
-        <span class="self">self</span>.dispatch_mutate(value.as_value(), mutator)
+        <span class="self">self</span>.dispatch_mutate(value.as_any_view(), mutator)
     }
 
     <span class="attr">#[doc(hidden)]
-    </span><span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutateValue&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        default_mutate_driver(
-            <span class="self">self</span>,
-            value.value.raw(),
-            kind,
-            value.permit(value.inplace_mode()),
-        )
+    </span><span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutationView&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+        default_mutate_driver(<span class="self">self</span>, value.value, kind, value.permit(value.inplace_mode()))
     }
 }
 
@@ -4214,15 +4220,15 @@
 }
 
 <span class="kw">mod </span>mutate_sealed {
-    <span class="kw">use super</span>::{IntoMutateResult, MutateContext, MutateValue, ObjectCore, StructuralView};
+    <span class="kw">use super</span>::{AnyView, IntoMutateResult, MutationContext, MutationView, ObjectCore};
 
     <span class="kw">pub trait </span>SealedLink&lt;State, Marker&gt; {}
 
     <span class="kw">impl</span>&lt;F, State, T, O&gt; SealedLink&lt;State, <span class="kw">super</span>::ByMutateValue&lt;T&gt;&gt; <span class="kw">for </span>F
     <span class="kw">where
         </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(
-            MutateValue&lt;<span class="lifetime">'value</span>, T&gt;,
-            <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;,
+            MutationView&lt;<span class="lifetime">'value</span>, T&gt;,
+            <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;,
         ) -&gt; O,
         O: IntoMutateResult,
     {
@@ -4230,7 +4236,7 @@
 
     <span class="kw">impl</span>&lt;F, State, T, O&gt; SealedLink&lt;State, <span class="kw">super</span>::ByMutateOwned&lt;T&gt;&gt; <span class="kw">for </span>F
     <span class="kw">where
-        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(T, <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;) -&gt; O,
+        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(T, <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;) -&gt; O,
         O: IntoMutateResult,
     {
     }
@@ -4239,7 +4245,7 @@
     <span class="kw">where
         </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(
             <span class="kw-2">&amp;</span><span class="lifetime">'value </span>N,
-            <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;,
+            <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;,
         ) -&gt; O,
         O: IntoMutateResult,
     {
@@ -4248,8 +4254,8 @@
     <span class="kw">impl</span>&lt;F, State, O&gt; SealedLink&lt;State, <span class="kw">super</span>::ByMutateCatchAll&gt; <span class="kw">for </span>F
     <span class="kw">where
         </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(
-            <span class="kw-2">&amp;</span><span class="lifetime">'value </span>StructuralView,
-            <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;,
+            AnyView&lt;<span class="lifetime">'value</span>&gt;,
+            <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;,
         ) -&gt; O,
         O: IntoMutateResult,
     {
@@ -4265,16 +4271,16 @@
 <span class="kw">impl</span>&lt;F, State, T, O&gt; MutateChainLink&lt;State, ByMutateValue&lt;T&gt;&gt; <span class="kw">for </span>F
 <span class="kw">where
     </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(
-        MutateValue&lt;<span class="lifetime">'value</span>, T&gt;,
-        <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;,
+        MutationView&lt;<span class="lifetime">'value</span>, T&gt;,
+        <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;,
     ) -&gt; O,
     T: <span class="kw">crate</span>::type_traits::ContainerElement,
     O: IntoMutateResult,
 {
     <span class="kw">fn </span>try_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutateValue&lt;<span class="lifetime">'_</span>&gt;&gt;,
-        mutator: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutationView&lt;<span class="lifetime">'_</span>&gt;&gt;,
+        mutator: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         <span class="kw">match </span>value
             .take()
@@ -4295,19 +4301,20 @@
 
 <span class="kw">impl</span>&lt;F, State, T, O&gt; MutateChainLink&lt;State, ByMutateOwned&lt;T&gt;&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(T, <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(T, <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;) -&gt; O,
     T: <span class="kw">crate</span>::type_traits::AnyCompatible,
     O: IntoMutateResult,
 {
     <span class="kw">fn </span>try_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutateValue&lt;<span class="lifetime">'_</span>&gt;&gt;,
-        mutator: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutationView&lt;<span class="lifetime">'_</span>&gt;&gt;,
+        mutator: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         value
             .as_ref()
             .expect(<span class="string">"unconsumed callback value"</span>)
-            .cast::&lt;T&gt;()
+            .as_any_view()
+            .try_as::&lt;T&gt;()
             .map(|typed| <span class="self">self</span>(typed, mutator).into_mutate_result())
     }
 }
@@ -4319,20 +4326,21 @@
 <span class="kw">where
     </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(
         <span class="kw-2">&amp;</span><span class="lifetime">'value </span>N,
-        <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;,
+        <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;,
     ) -&gt; O,
     N: ObjectCore,
     O: IntoMutateResult,
 {
     <span class="kw">fn </span>try_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutateValue&lt;<span class="lifetime">'_</span>&gt;&gt;,
-        mutator: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutationView&lt;<span class="lifetime">'_</span>&gt;&gt;,
+        mutator: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         value
             .as_ref()
             .expect(<span class="string">"unconsumed callback value"</span>)
-            .as_node::&lt;N&gt;()
+            .as_any_view()
+            .downcast_ref::&lt;N&gt;()
             .map(|node| <span class="self">self</span>(node, mutator).into_mutate_result())
     }
 }
@@ -4343,22 +4351,22 @@
 <span class="kw">impl</span>&lt;F, State, O&gt; MutateChainLink&lt;State, ByMutateCatchAll&gt; <span class="kw">for </span>F
 <span class="kw">where
     </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'mutator</span>, <span class="lifetime">'driver</span>&gt; Fn(
-        <span class="kw-2">&amp;</span><span class="lifetime">'value </span>StructuralView,
-        <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutateContext&lt;<span class="lifetime">'driver</span>, State&gt;,
+        AnyView&lt;<span class="lifetime">'value</span>&gt;,
+        <span class="kw-2">&amp;</span><span class="lifetime">'mutator </span><span class="kw-2">mut </span>MutationContext&lt;<span class="lifetime">'driver</span>, State&gt;,
     ) -&gt; O,
     O: IntoMutateResult,
 {
     <span class="kw">fn </span>try_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutateValue&lt;<span class="lifetime">'_</span>&gt;&gt;,
-        mutator: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutationView&lt;<span class="lifetime">'_</span>&gt;&gt;,
+        mutator: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         <span class="prelude-val">Some</span>(
             <span class="self">self</span>(
                 value
                     .as_ref()
                     .expect(<span class="string">"unconsumed callback value"</span>)
-                    .as_value(),
+                    .as_any_view(),
                 mutator,
             )
             .into_mutate_result(),
@@ -4385,8 +4393,8 @@
         {
             <span class="kw">fn </span>try_mutate(
                 <span class="kw-2">&amp;</span><span class="self">self</span>,
-                value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutateValue&lt;<span class="lifetime">'_</span>&gt;&gt;,
-                mutator: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+                value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutationView&lt;<span class="lifetime">'_</span>&gt;&gt;,
+                mutator: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
             ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
                 $(
                     <span class="kw">if let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.<span class="macro-nonterminal">$idx</span>.try_mutate(value, mutator) {
@@ -4402,7 +4410,7 @@
 <span class="macro">impl_callback_chain_tuple_arities!</span>(impl_mutate_chain_link);
 
 <span class="doccomment">/// A reusable typed-dispatch or callback mutator with shared user state.
-</span><span class="kw">pub struct </span>MutateCallbacks&lt;State, Link, Marker, Policy = DefaultMutContextPolicy&gt; {
+</span><span class="kw">pub struct </span>MutateCallbacks&lt;State, Link, Marker, Policy = DefaultMutationContextPolicy&gt; {
     policy: <span class="prelude-ty">Option</span>&lt;Rc&lt;Policy&gt;&gt;,
     state: State,
     callbacks: Rc&lt;Link&gt;,
@@ -4426,7 +4434,7 @@
 
 <span class="kw">impl</span>&lt;State, Link, Marker, Policy&gt; MutateCallbacks&lt;State, Link, Marker, Policy&gt; {
     <span class="doccomment">/// Customize default descent while sharing the callback state.
-    </span><span class="kw">pub fn </span>with_policy&lt;P: MutContextPolicy&lt;State&gt;&gt;(
+    </span><span class="kw">pub fn </span>with_policy&lt;P: MutationContextPolicy&lt;State&gt;&gt;(
         <span class="self">self</span>,
         policy: P,
     ) -&gt; MutateCallbacks&lt;State, Link, Marker, P&gt; {
@@ -4514,7 +4522,7 @@
 </span><span class="kw">pub trait </span>MapDispatch: Sized {
     <span class="kw">fn </span>dispatch_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt;;
 }
@@ -4527,7 +4535,7 @@
 
 <span class="kw">impl</span>&lt;D: MapDispatch&gt; NativeMap <span class="kw">for </span>D {
     <span class="kw">fn </span>map_root(<span class="kw-2">&amp;mut </span><span class="self">self</span>, root: Any, order: WalkOrder) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        run_native_mapper::&lt;<span class="kw">_</span>, DefaultMutContextPolicy&gt;(root, <span class="self">self</span>, <span class="prelude-val">None</span>, order)
+        run_native_mapper::&lt;<span class="kw">_</span>, DefaultMutationContextPolicy&gt;(root, <span class="self">self</span>, <span class="prelude-val">None</span>, order)
     }
 }
 
@@ -4535,7 +4543,7 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>dispatch_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         (<span class="kw-2">**</span><span class="self">self</span>).dispatch_map(value, def_region_kind)
@@ -4568,18 +4576,18 @@
 <span class="doccomment">/// One typed callback in a structural-map tuple.
 ///
 /// Links use first-match order and may receive an owned FFI value, borrowed
-/// object node, or `&amp;StructuralView`, optionally followed by [`DefRegionKind`].
+/// object node, or `AnyView&lt;'_&gt;`, optionally followed by [`DefRegionKind`].
 </span><span class="kw">pub trait </span>MapChainLink&lt;Marker&gt;: sealed_map::SealedMapLink&lt;Marker&gt; {
     <span class="attr">#[doc(hidden)]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt;;
 }
 
 <span class="kw">mod </span>sealed_map {
-    <span class="kw">use super</span>::{DefRegionKind, IntoMutateResult, MapDispatch, ObjectCore, StructuralView};
+    <span class="kw">use super</span>::{AnyView, DefRegionKind, IntoMutateResult, MapDispatch, ObjectCore};
 
     <span class="kw">pub trait </span>SealedMapLink&lt;Marker&gt; {}
 
@@ -4613,14 +4621,14 @@
 
     <span class="kw">impl</span>&lt;F, O&gt; SealedMapLink&lt;<span class="kw">super</span>::ByMapCatchAll&gt; <span class="kw">for </span>F
     <span class="kw">where
-        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView) -&gt; O,
+        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; O,
         O: IntoMutateResult,
     {
     }
 
     <span class="kw">impl</span>&lt;F, O&gt; SealedMapLink&lt;<span class="kw">super</span>::ByMapCatchAllKind&gt; <span class="kw">for </span>F
     <span class="kw">where
-        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView, DefRegionKind) -&gt; O,
+        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;, DefRegionKind) -&gt; O,
         O: IntoMutateResult,
     {
     }
@@ -4640,11 +4648,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         _def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         value
-            .cast::&lt;T&gt;()
+            .try_as::&lt;T&gt;()
             .map(|typed| <span class="self">self</span>(typed).into_mutate_result())
     }
 }
@@ -4661,11 +4669,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         value
-            .cast::&lt;T&gt;()
+            .try_as::&lt;T&gt;()
             .map(|typed| <span class="self">self</span>(typed, def_region_kind).into_mutate_result())
     }
 }
@@ -4682,11 +4690,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         _def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         value
-            .as_node::&lt;N&gt;()
+            .downcast_ref::&lt;N&gt;()
             .map(|node| <span class="self">self</span>(node).into_mutate_result())
     }
 }
@@ -4703,11 +4711,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         value
-            .as_node::&lt;N&gt;()
+            .downcast_ref::&lt;N&gt;()
             .map(|node| <span class="self">self</span>(node, def_region_kind).into_mutate_result())
     }
 }
@@ -4717,13 +4725,13 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; MapChainLink&lt;ByMapCatchAll&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; O,
     O: IntoMutateResult,
 {
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         _def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>(value).into_mutate_result())
@@ -4735,13 +4743,13 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; MapChainLink&lt;ByMapCatchAllKind&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView, DefRegionKind) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;, DefRegionKind) -&gt; O,
     O: IntoMutateResult,
 {
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>(value, def_region_kind).into_mutate_result())
@@ -4758,7 +4766,7 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         <span class="self">self</span>.dispatch_map(value, def_region_kind)
@@ -4789,7 +4797,7 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>dispatch_map(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
         <span class="self">self</span>.link.try_map(value, def_region_kind)
@@ -4811,7 +4819,7 @@
             <span class="attr">#[inline]
             </span><span class="kw">fn </span>try_map(
                 <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-                value: <span class="kw-2">&amp;</span>StructuralView,
+                value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
                 def_region_kind: DefRegionKind,
             ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt; {
                 $(
@@ -4868,7 +4876,7 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; IntoMapper&lt;ByMapCatchAll&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; O,
     O: IntoMutateResult,
 {
     <span class="kw">type </span>Mapper = MapChain&lt;F, ByMapCatchAll&gt;;
@@ -4881,7 +4889,7 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; IntoMapper&lt;ByMapCatchAllKind&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView, DefRegionKind) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;, DefRegionKind) -&gt; O,
     O: IntoMutateResult,
 {
     <span class="kw">type </span>Mapper = MapChain&lt;F, ByMapCatchAllKind&gt;;
@@ -4889,48 +4897,6 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>into_mapper(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Mapper {
         MapChain::new(<span class="self">self</span>)
-    }
-}
-
-<span class="doccomment">/// Engine-issued permission to attempt in-place mutation of one value.
-///
-/// The engine issues it only when the current ownership path permits reuse.
-</span><span class="kw">pub struct </span>InplaceValue&lt;<span class="lifetime">'a</span>&gt; {
-    value: StructuralView,
-    _scope: PhantomData&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>TVMFFIAny&gt;,
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; InplaceValue&lt;<span class="lifetime">'a</span>&gt; {
-    <span class="attr">#[inline]
-    </span><span class="kw">fn </span>from_raw(raw: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>TVMFFIAny) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            value: StructuralView::from_raw(<span class="kw-2">*</span>raw),
-            _scope: PhantomData,
-        }
-    }
-
-    <span class="doccomment">/// Borrow the value without its in-place capability.
-    </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>as_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>StructuralView {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.value
-    }
-
-    <span class="doccomment">/// Retain an owning copy of the value.
-    ///
-    /// Retaining an object creates an alias. The default in-place helper
-    /// rechecks uniqueness and automatically falls back to copying.
-    </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>to_owned(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Any {
-        <span class="self">self</span>.value.to_owned()
-    }
-}
-
-<span class="kw">impl </span>Deref <span class="kw">for </span>InplaceValue&lt;<span class="lifetime">'_</span>&gt; {
-    <span class="kw">type </span>Target = StructuralView;
-
-    <span class="attr">#[inline]
-    </span><span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
-        <span class="self">self</span>.as_value()
     }
 }
 
@@ -4944,18 +4910,18 @@
 
 <span class="kw">impl </span>StructuralVarRemap {
     <span class="doccomment">/// Look up an identity replacement previously stored for `var`.
-    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
-        <span class="kw">let </span>key = object_identity_key(var.raw())<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
+        <span class="kw">let </span>key = object_identity_key(raw_of(var))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.entries.get(<span class="kw-2">&amp;</span>key).map(|entry| entry.result.clone()))
     }
 
     <span class="doccomment">/// Store a descent result or an [`Unchanged`] marker for `var`.
-    </span><span class="kw">pub fn </span>set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>key = object_identity_key(var.raw())<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>key = object_identity_key(raw_of(var))<span class="question-mark">?</span>;
         <span class="self">self</span>.entries.insert(
             key,
             MemoEntry {
-                _original: var.to_owned(),
+                _original: Any::from(var),
                 result: mutated_value.clone(),
             },
         );
@@ -4979,38 +4945,35 @@
     /// The structural-mutation engine calls this hook for each value.
     </span><span class="kw">fn </span>dispatch_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;;
 
-    <span class="doccomment">/// Dispatch one value for which the engine permits an in-place attempt.
+    <span class="doccomment">/// Dispatch one value with its stored in-place permission.
     ///
+    /// The engine uses this hook when reuse is permitted, but callers may also
+    /// pass a borrowed handle with `Disallow`. Overrides must preserve that mode.
     /// The default delegates to [`Self::dispatch_mutate`] and therefore remains
     /// non-in-place. Override this method to opt into the default container
     /// reuse path.
     </span><span class="kw">fn </span>dispatch_maybe_inplace_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="self">self</span>.dispatch_mutate(value.as_value(), def_region_kind)
+        <span class="self">self</span>.dispatch_mutate(value.as_any_view(), def_region_kind)
     }
 
     <span class="attr">#[doc(hidden)]
-    </span><span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutateValue&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        default_mutate_driver(
-            <span class="self">self</span>,
-            value.value.raw(),
-            kind,
-            value.permit(value.inplace_mode()),
-        )
+    </span><span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutationView&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+        default_mutate_driver(<span class="self">self</span>, value.value, kind, value.permit(value.inplace_mode()))
     }
 
     <span class="doccomment">/// Re-enter this mutator for a borrowed value. The value and all of its
     /// descendants use the non-in-place path.
-    </span><span class="kw">fn </span>mutate&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T, def_region_kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+    </span><span class="kw">fn </span>mutate&lt;<span class="lifetime">'input</span>, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T, def_region_kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         dispatch_user_raw(<span class="self">self</span>, <span class="kw-2">*</span>view.as_raw_ffi_any(), def_region_kind, Permit::Copy)
@@ -5056,50 +5019,59 @@
     /// itself while its children still re-enter this mutator. This lets a
     /// typed structural-mutate handler recurse through its current node
     /// before applying a post-order rewrite.
-    </span><span class="kw">fn </span>default_mutate&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T, def_region_kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+    </span><span class="kw">fn </span>default_mutate&lt;<span class="lifetime">'input</span>, T&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
+        def_region_kind: DefRegionKind,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         user_default_mutate(<span class="self">self</span>, <span class="kw-2">*</span>view.as_raw_ffi_any(), def_region_kind, Permit::Copy)
             .and_then(|result| resolve_result(result, <span class="kw-2">*</span>view.as_raw_ffi_any()))
     }
 
-    <span class="doccomment">/// Apply the default mutation under an engine-issued in-place capability.
+    <span class="doccomment">/// Apply default mutation with the handle's existing in-place permission.
     ///
     /// Uniqueness is checked again here because user code may have retained
     /// an owning alias after the capability was issued.
     </span><span class="kw">fn </span>default_maybe_inplace_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="self">self</span>.default_maybe_inplace_mutate_with_mode(value, def_region_kind, InplaceMode::Allow)
+        <span class="kw">let </span>mode = value.inplace_mode();
+        <span class="self">self</span>.default_maybe_inplace_mutate_with_mode(value, def_region_kind, mode)
     }
 
     <span class="doccomment">/// Apply default mutation with a capability and an explicit permission.
     ///
-    /// `Disallow` overrides the capability and uses the copy path. `Allow`
-    /// rechecks uniqueness because the handler may have retained an owning
+    /// The requested mode can restrict, but cannot upgrade, the capability.
+    /// `Allow` rechecks uniqueness because the handler may have retained an owning
     /// alias. Consuming the capability prevents a borrow from it surviving this
     /// call. Unlike the C++ default-descent API, safe Rust cannot simply trust
     /// the earlier uniqueness check after arbitrary user code has run.
     </span><span class="kw">fn </span>default_maybe_inplace_mutate_with_mode(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="kw">let </span>raw = value.raw();
-        <span class="kw">let </span>permit = mode.permit_if_unique(raw);
+        <span class="kw">let </span>raw = value.value;
+        <span class="kw">let </span>permit = value.permit(mode);
         user_default_mutate(<span class="self">self</span>, raw, def_region_kind, permit)
             .and_then(|result| resolve_result(result, raw))
     }
 
     <span class="doccomment">/// Re-enter this mutator for a borrowed value, preserving unchanged.
-    </span><span class="kw">fn </span>mutate_result&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>T, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
+    </span><span class="kw">fn </span>mutate_result&lt;<span class="lifetime">'input</span>, T&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
+        kind: DefRegionKind,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         dispatch_user_raw(<span class="self">self</span>, <span class="kw-2">*</span>view.as_raw_ffi_any(), kind, Permit::Copy)
@@ -5107,26 +5079,27 @@
     }
 
     <span class="doccomment">/// Default mutation of a borrowed typed value, preserving unchanged.
-    </span><span class="kw">fn </span>default_mutate_result&lt;T&gt;(
+    </span><span class="kw">fn </span>default_mutate_result&lt;<span class="lifetime">'input</span>, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>T,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
         kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>view = AnyView::from(value);
         user_default_mutate(<span class="self">self</span>, <span class="kw-2">*</span>view.as_raw_ffi_any(), kind, Permit::Copy)
             .and_then(UnchangedOr::from_carrier)
     }
 
-    <span class="doccomment">/// Default mutation under an engine-issued capability, preserving unchanged.
+    <span class="doccomment">/// Default mutation with the handle's existing permission, preserving unchanged.
     </span><span class="kw">fn </span>default_maybe_inplace_mutate_result(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
-        <span class="self">self</span>.default_maybe_inplace_mutate_with_mode_result(value, kind, InplaceMode::Allow)
+        <span class="kw">let </span>mode = value.inplace_mode();
+        <span class="self">self</span>.default_maybe_inplace_mutate_with_mode_result(value, kind, mode)
     }
 
     <span class="doccomment">/// Default mutation with a capability and permission, preserving unchanged.
@@ -5134,35 +5107,35 @@
     /// Uses the same ownership checks as [`Self::default_maybe_inplace_mutate_with_mode`].
     </span><span class="kw">fn </span>default_maybe_inplace_mutate_with_mode_result(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         kind: DefRegionKind,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
-        <span class="kw">let </span>raw = value.raw();
-        <span class="kw">let </span>permit = mode.permit_if_unique(raw);
+        <span class="kw">let </span>raw = value.value;
+        <span class="kw">let </span>permit = value.permit(mode);
         user_default_mutate(<span class="self">self</span>, raw, kind, permit).and_then(UnchangedOr::from_carrier)
     }
 
     <span class="doccomment">/// Look up a FreeVar or DAG-node substitution from the active mutation.
-    </span><span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
+    </span><span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
         invocation_var_remap_get(<span class="self">self</span>, var)
     }
 
     <span class="doccomment">/// Store a FreeVar or DAG-node substitution for the active mutation.
-    </span><span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    </span><span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         invocation_var_remap_set(<span class="self">self</span>, var, mutated_value)
     }
 }
 
 <span class="kw">impl</span>&lt;D: MutateDispatch&gt; StructuralMutator <span class="kw">for </span>D {
-    <span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutateValue&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+    <span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutationView&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         MutateDispatch::on_default_mutate(<span class="self">self</span>, value, kind)
     }
 
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>dispatch_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>mutator = Mutator {
@@ -5172,40 +5145,32 @@
         };
         <span class="kw">match </span>MutateDispatch::dispatch_mutate_value(
             <span class="self">self</span>,
-            MutateValue::borrowed(value),
+            MutationView::borrowed(value),
             <span class="kw-2">&amp;mut </span>mutator,
         ) {
             <span class="prelude-val">Some</span>(result) =&gt; result,
-            <span class="prelude-val">None </span>=&gt; user_default_mutate(<span class="self">self</span>, value.raw(), def_region_kind, Permit::Copy),
+            <span class="prelude-val">None </span>=&gt; user_default_mutate(<span class="self">self</span>, raw_of(value), def_region_kind, Permit::Copy),
         }
     }
 
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>dispatch_maybe_inplace_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+        <span class="kw">let </span>raw = value.value;
+        <span class="kw">let </span>mode = value.inplace_mode();
         <span class="kw">let </span><span class="kw-2">mut </span>mutator = Mutator {
             def_region_kind,
-            inplace_mode: InplaceMode::Allow,
+            inplace_mode: mode,
             _not_send_sync: PhantomData,
         };
-        <span class="kw">match </span>MutateDispatch::dispatch_mutate_value(
-            <span class="self">self</span>,
-            MutateValue::new(value.as_value(), InplaceMode::Allow),
-            <span class="kw-2">&amp;mut </span>mutator,
-        ) {
+        <span class="kw">match </span>MutateDispatch::dispatch_mutate_value(<span class="self">self</span>, value, <span class="kw-2">&amp;mut </span>mutator) {
             <span class="prelude-val">Some</span>(result) =&gt; result,
-            <span class="prelude-val">None </span>=&gt; {
-                <span class="kw">let </span>raw = value.raw();
-                <span class="kw">let </span>permit = <span class="kw">if </span>object_is_unique(raw) {
-                    Permit::MaybeInPlace
-                } <span class="kw">else </span>{
-                    Permit::Copy
-                };
-                user_default_mutate(<span class="self">self</span>, raw, def_region_kind, permit)
-            }
+            <span class="comment">// The engine keeps the input live through dispatch. Default descent
+            // rechecks ownership because a callback may have retained an alias.
+            </span><span class="prelude-val">None </span>=&gt; user_default_mutate(<span class="self">self</span>, raw, def_region_kind, mode.permit()),
         }
     }
 }
@@ -5213,8 +5178,8 @@
 <span class="attr">#[doc(hidden)]
 </span><span class="kw">pub fn </span>default_mutate_with_policy&lt;D: MutateDispatch + MutateCallbackState&lt;D&gt;&gt;(
     dispatch: <span class="kw-2">&amp;mut </span>D,
-    policy: <span class="kw-2">&amp;</span><span class="kw">impl </span>MutContextPolicy&lt;D&gt;,
-    value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
+    policy: <span class="kw-2">&amp;</span><span class="kw">impl </span>MutationContextPolicy&lt;D&gt;,
+    value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
     kind: DefRegionKind,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
     policy::mutate_with_policy(
@@ -5231,76 +5196,66 @@
 </span><span class="kw">fn </span>try_mutate_callbacks&lt;State, Link, Marker, Driver&gt;(
     driver: <span class="kw-2">&amp;mut </span>Driver,
     callback_ptr: <span class="kw-2">*const </span>Link,
-    value: <span class="kw-2">&amp;</span>StructuralView,
+    value: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;MutationView&lt;<span class="lifetime">'_</span>&gt;&gt;,
     def_region_kind: DefRegionKind,
-    inplace_mode: InplaceMode,
 ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Any&gt;&gt;
 <span class="kw">where
     </span>Link: MutateChainLink&lt;State, Marker&gt;,
     Driver: MutateContextDriver&lt;State&gt;,
 {
-    <span class="kw">let </span><span class="kw-2">mut </span>mutator = MutateContext {
+    <span class="kw">let </span><span class="kw-2">mut </span>mutator = MutationContext {
         driver,
         def_region_kind,
-        inplace_mode,
+        inplace_mode: value
+            .as_ref()
+            .expect(<span class="string">"unconsumed callback value"</span>)
+            .inplace_mode(),
         _not_send_sync: PhantomData,
     };
     <span class="comment">// SAFETY: The owning `Rc` or the direct callback's stack slot remains live
     // and is never modified through the driver during recursive reentry.
-    </span><span class="kw">unsafe </span>{
-        (<span class="kw-2">&amp;*</span>callback_ptr).try_mutate(
-            <span class="kw-2">&amp;mut </span><span class="prelude-val">Some</span>(MutateValue::new(value, inplace_mode)),
-            <span class="kw-2">&amp;mut </span>mutator,
-        )
-    }
+    </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span>callback_ptr).try_mutate(value, <span class="kw-2">&amp;mut </span>mutator) }
 }
 
 <span class="kw">impl</span>&lt;State, Link, Marker, Policy&gt; StructuralMutator <span class="kw">for </span>MutateCallbacks&lt;State, Link, Marker, Policy&gt;
 <span class="kw">where
-    </span>Policy: MutContextPolicy&lt;State&gt;,
+    </span>Policy: MutationContextPolicy&lt;State&gt;,
     Link: MutateChainLink&lt;State, Marker&gt;,
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>dispatch_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="kw">let </span>callback_ptr = Rc::as_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>.callbacks);
-        <span class="kw">match </span>try_mutate_callbacks::&lt;State, Link, Marker, <span class="kw">_</span>&gt;(
-            <span class="self">self</span>,
-            callback_ptr,
-            value,
-            def_region_kind,
-            InplaceMode::Disallow,
-        ) {
-            <span class="prelude-val">Some</span>(result) =&gt; result,
-            <span class="prelude-val">None </span>=&gt; user_default_mutate(<span class="self">self</span>, value.raw(), def_region_kind, Permit::Copy),
-        }
+        <span class="self">self</span>.dispatch_maybe_inplace_mutate(MutationView::borrowed(value), def_region_kind)
     }
 
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>dispatch_maybe_inplace_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>value = <span class="prelude-val">Some</span>(value);
         <span class="kw">let </span>callback_ptr = Rc::as_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>.callbacks);
         <span class="kw">match </span>try_mutate_callbacks::&lt;State, Link, Marker, <span class="kw">_</span>&gt;(
             <span class="self">self</span>,
             callback_ptr,
-            value.as_value(),
+            <span class="kw-2">&amp;mut </span>value,
             def_region_kind,
-            InplaceMode::Allow,
         ) {
             <span class="prelude-val">Some</span>(result) =&gt; result,
             <span class="prelude-val">None </span>=&gt; <span class="self">self
-                </span>.default_maybe_inplace_mutate_result(value, def_region_kind)
+                </span>.default_maybe_inplace_mutate_result(
+                    value.expect(<span class="string">"unmatched callback value"</span>),
+                    def_region_kind,
+                )
                 .map(Any::from),
         }
     }
 
-    <span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutateValue&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+    <span class="kw">fn </span>on_default_mutate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: MutationView&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         <span class="kw">match </span><span class="self">self</span>.policy.clone() {
             <span class="prelude-val">Some</span>(policy) =&gt; policy::mutate_with_policy(
                 <span class="kw-2">&amp;mut </span>policy::MutationDescent { driver: <span class="self">self </span>},
@@ -5308,12 +5263,9 @@
                 value,
                 kind,
             ),
-            <span class="prelude-val">None </span>=&gt; default_mutate_driver(
-                <span class="self">self</span>,
-                value.value.raw(),
-                kind,
-                value.permit(value.inplace_mode()),
-            ),
+            <span class="prelude-val">None </span>=&gt; {
+                default_mutate_driver(<span class="self">self</span>, value.value, kind, value.permit(value.inplace_mode()))
+            }
         }
     }
 }
@@ -5325,39 +5277,32 @@
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>dispatch_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="kw">let </span>callback_ptr = std::ptr::from_ref(<span class="self">self</span>.callbacks);
-        <span class="kw">match </span>try_mutate_callbacks::&lt;(), Link, Marker, <span class="kw">_</span>&gt;(
-            <span class="self">self</span>,
-            callback_ptr,
-            value,
-            def_region_kind,
-            InplaceMode::Disallow,
-        ) {
-            <span class="prelude-val">Some</span>(result) =&gt; result,
-            <span class="prelude-val">None </span>=&gt; user_default_mutate(<span class="self">self</span>, value.raw(), def_region_kind, Permit::Copy),
-        }
+        <span class="self">self</span>.dispatch_maybe_inplace_mutate(MutationView::borrowed(value), def_region_kind)
     }
 
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>dispatch_maybe_inplace_mutate(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: InplaceValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>value = <span class="prelude-val">Some</span>(value);
         <span class="kw">let </span>callback_ptr = std::ptr::from_ref(<span class="self">self</span>.callbacks);
         <span class="kw">match </span>try_mutate_callbacks::&lt;(), Link, Marker, <span class="kw">_</span>&gt;(
             <span class="self">self</span>,
             callback_ptr,
-            value.as_value(),
+            <span class="kw-2">&amp;mut </span>value,
             def_region_kind,
-            InplaceMode::Allow,
         ) {
             <span class="prelude-val">Some</span>(result) =&gt; result,
             <span class="prelude-val">None </span>=&gt; <span class="self">self
-                </span>.default_maybe_inplace_mutate_result(value, def_region_kind)
+                </span>.default_maybe_inplace_mutate_result(
+                    value.expect(<span class="string">"unmatched callback value"</span>),
+                    def_region_kind,
+                )
                 .map(Any::from),
         }
     }
@@ -5394,21 +5339,21 @@
 
     <span class="kw">fn </span>default_mutate_value(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         kind: DefRegionKind,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         <span class="kw">let </span>permit = value.permit(mode);
-        user_default_mutate(<span class="self">self</span>, value.value.raw(), kind, permit)
+        user_default_mutate(<span class="self">self</span>, value.value, kind, permit)
     }
 
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
+    </span><span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
         &lt;<span class="self">Self </span><span class="kw">as </span>StructuralMutator&gt;::var_remap_get(<span class="self">self</span>, var)
     }
 
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    </span><span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;, mutated_value: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         &lt;<span class="self">Self </span><span class="kw">as </span>StructuralMutator&gt;::var_remap_set(<span class="self">self</span>, var, mutated_value)
     }
 }
@@ -5420,7 +5365,8 @@
 }
 
 <span class="kw">impl </span>Permit {
-    <span class="kw">fn </span>inplace_mode(<span class="self">self</span>, raw: TVMFFIAny) -&gt; InplaceMode {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>inplace_mode(<span class="self">self</span>, raw: TVMFFIAny) -&gt; InplaceMode {
         <span class="kw">if </span><span class="self">self </span>== <span class="self">Self</span>::MaybeInPlace &amp;&amp; object_is_unique(raw) {
             InplaceMode::Allow
         } <span class="kw">else </span>{
@@ -5442,7 +5388,7 @@
     remap: StructuralVarRemap,
 }
 
-<span class="kw">fn </span>run_native_mapper&lt;D: MapDispatch, Policy: MutContextPolicy&lt;D&gt;&gt;(
+<span class="kw">fn </span>run_native_mapper&lt;D: MapDispatch, Policy: MutationContextPolicy&lt;D&gt;&gt;(
     root: Any,
     dispatch: <span class="kw-2">&amp;mut </span>D,
     policy: <span class="prelude-ty">Option</span>&lt;Rc&lt;Policy&gt;&gt;,
@@ -5454,7 +5400,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;D: MapDispatch, Policy: MutContextPolicy&lt;D&gt;, <span class="kw">const </span>PRE_ORDER: bool&gt;
+<span class="kw">impl</span>&lt;D: MapDispatch, Policy: MutationContextPolicy&lt;D&gt;, <span class="kw">const </span>PRE_ORDER: bool&gt;
     NativeMapper&lt;<span class="lifetime">'_</span>, D, Policy, PRE_ORDER&gt;
 {
     <span class="kw">fn </span>run(root: Any, dispatch: <span class="kw-2">&amp;mut </span>D, policy: <span class="prelude-ty">Option</span>&lt;Rc&lt;Policy&gt;&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
@@ -5482,8 +5428,8 @@
         // excluded because converting those borrowed special values into an
         // Any performs normalization rather than a bitwise copy.
         </span><span class="kw">if </span><span class="self">self</span>.policy.is_none() &amp;&amp; is_plain_inline(raw.type_index) {
-            <span class="kw">let </span>value = StructuralView::from_raw(raw);
-            <span class="kw">return match </span><span class="self">self</span>.dispatch.dispatch_map(<span class="kw-2">&amp;</span>value, def_region_kind) {
+            <span class="kw">let </span>value = <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) };
+            <span class="kw">return match </span><span class="self">self</span>.dispatch.dispatch_map(value, def_region_kind) {
                 <span class="prelude-val">Some</span>(result) =&gt; {
                     <span class="kw">let </span>mapped = result<span class="question-mark">?</span>;
                     <span class="comment">// A pre-order callback may replace an inline leaf with a subtree.
@@ -5521,8 +5467,8 @@
                 <span class="comment">// A replacement inherits the input's permission, established
                 // before the callback can acquire or release ownership.
                 </span><span class="kw">let </span>permit = permit.inplace_mode(raw).permit();
-                <span class="kw">let </span>value = StructuralView::from_raw(raw);
-                <span class="kw">let </span><span class="prelude-val">Some</span>(callback_result) = <span class="self">self</span>.dispatch.dispatch_map(<span class="kw-2">&amp;</span>value, def_region_kind)
+                <span class="kw">let </span>value = <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) };
+                <span class="kw">let </span><span class="prelude-val">Some</span>(callback_result) = <span class="self">self</span>.dispatch.dispatch_map(value, def_region_kind)
                 <span class="kw">else </span>{
                     <span class="kw">return </span><span class="self">self</span>.default_map_current_raw(raw, def_region_kind, permit);
                 };
@@ -5544,16 +5490,18 @@
             }
             <span class="bool-val">false </span>=&gt; {
                 <span class="kw">let </span>mapped = <span class="self">self</span>.default_map_current_raw(raw, def_region_kind, permit)<span class="question-mark">?</span>;
-                <span class="kw">let </span>original = StructuralView::from_raw(raw);
+                <span class="kw">let </span>original = <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) };
                 <span class="kw">let </span>value = <span class="kw">if </span>is_unchanged(<span class="kw-2">&amp;</span>mapped) {
-                    <span class="kw-2">&amp;</span>original
+                    original
                 } <span class="kw">else </span>{
-                    StructuralView::from_any(<span class="kw-2">&amp;</span>mapped)
+                    AnyView::from(<span class="kw-2">&amp;</span>mapped)
                 };
                 <span class="comment">// Keep child rewrites when the callback leaves its input unchanged.
                 </span><span class="kw">match </span><span class="self">self</span>.dispatch.dispatch_map(value, def_region_kind) {
                     <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(result)) <span class="kw">if </span>is_unchanged(<span class="kw-2">&amp;</span>result) =&gt; <span class="prelude-val">Ok</span>(mapped),
-                    <span class="prelude-val">Some</span>(result) =&gt; result.map_err(|error| with_value_context(error, value.raw())),
+                    <span class="prelude-val">Some</span>(result) =&gt; {
+                        result.map_err(|error| with_value_context(error, raw_of(value)))
+                    }
                     <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(mapped),
                 }
             }
@@ -6025,10 +5973,7 @@
     })
 }
 
-<span class="kw">fn </span>invocation_var_remap_get&lt;U: Sized&gt;(
-    mutator: <span class="kw-2">&amp;mut </span>U,
-    var: <span class="kw-2">&amp;</span>StructuralView,
-) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
+<span class="kw">fn </span>invocation_var_remap_get&lt;U: Sized&gt;(mutator: <span class="kw-2">&amp;mut </span>U, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
     <span class="kw">let </span>active = active_mutator()<span class="question-mark">?</span>;
     <span class="kw">let </span>context = std::ptr::from_mut(mutator).cast::&lt;c_void&gt;();
     <span class="kw">unsafe </span>{
@@ -6043,7 +5988,7 @@
 
 <span class="kw">fn </span>invocation_var_remap_set&lt;U: Sized&gt;(
     mutator: <span class="kw-2">&amp;mut </span>U,
-    var: <span class="kw-2">&amp;</span>StructuralView,
+    var: AnyView&lt;<span class="lifetime">'_</span>&gt;,
     mutated_value: <span class="kw-2">&amp;</span>Any,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>active = active_mutator()<span class="question-mark">?</span>;
@@ -6141,7 +6086,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;D: MapDispatch, Policy: MutContextPolicy&lt;D&gt;, <span class="kw">const </span>PRE_ORDER: bool&gt; MutationDriver
+<span class="kw">impl</span>&lt;D: MapDispatch, Policy: MutationContextPolicy&lt;D&gt;, <span class="kw">const </span>PRE_ORDER: bool&gt; MutationDriver
     <span class="kw">for </span>NativeMapper&lt;<span class="lifetime">'_</span>, D, Policy, PRE_ORDER&gt;
 {
     <span class="kw">fn </span>dispatch_raw(
@@ -6176,11 +6121,11 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         <span class="kw">match </span><span class="self">self</span>.policy.clone() {
             <span class="prelude-val">Some</span>(policy) =&gt; {
-                <span class="kw">let </span>view = StructuralView::from_raw(raw);
+                <span class="kw">let </span>view = <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) };
                 policy::mutate_with_policy(
                     <span class="kw-2">&amp;mut </span>policy::MutationDescent { driver: <span class="self">self </span>},
                     policy.as_ref(),
-                    MutateValue::new(<span class="kw-2">&amp;</span>view, permit.inplace_mode(raw)),
+                    MutationView::new(view, permit.inplace_mode(raw)),
                     kind,
                 )
             }
@@ -6189,11 +6134,11 @@
     }
 
     <span class="kw">fn </span>var_remap_get_raw(<span class="kw-2">&amp;mut </span><span class="self">self</span>, raw: TVMFFIAny) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
-        <span class="self">self</span>.remap.get(<span class="kw-2">&amp;</span>StructuralView::from_raw(raw))
+        <span class="self">self</span>.remap.get(<span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) })
     }
 
     <span class="kw">fn </span>var_remap_set_raw(<span class="kw-2">&amp;mut </span><span class="self">self</span>, raw: TVMFFIAny, replacement: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.remap.set(<span class="kw-2">&amp;</span>StructuralView::from_raw(raw), replacement)
+        <span class="self">self</span>.remap.set(<span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) }, replacement)
     }
 }
 
@@ -6216,7 +6161,7 @@
     ) -&gt; TVMFFIAny {
         <span class="kw">if </span>INPLACE &amp;&amp; raw.type_index &lt; TVMFFITypeIndex::kTVMFFIStaticObjectBegin <span class="kw">as </span>i32 {
             <span class="kw">return </span>result_into_raw(
-                <span class="self">self</span>.dispatch_mutate(<span class="kw-2">&amp;</span>StructuralView::from_raw(raw), kind)
+                <span class="self">self</span>.dispatch_mutate(<span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) }, kind)
                     .map_err(|error| with_value_context(error, raw)),
             );
         }
@@ -6229,11 +6174,11 @@
     }
 
     <span class="kw">fn </span>var_remap_get_raw(<span class="kw-2">&amp;mut </span><span class="self">self</span>, raw: TVMFFIAny) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
-        <span class="self">self</span>.var_remap_get(<span class="kw-2">&amp;</span>StructuralView::from_raw(raw))
+        <span class="self">self</span>.var_remap_get(<span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) })
     }
 
     <span class="kw">fn </span>var_remap_set_raw(<span class="kw-2">&amp;mut </span><span class="self">self</span>, raw: TVMFFIAny, replacement: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.var_remap_set(<span class="kw-2">&amp;</span>StructuralView::from_raw(raw), replacement)
+        <span class="self">self</span>.var_remap_set(<span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) }, replacement)
     }
 }
 
@@ -6527,10 +6472,12 @@
     permit: Permit,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
     <span class="kw">let </span>result = <span class="kw">if </span>permit == Permit::MaybeInPlace &amp;&amp; object_is_unique(raw) {
-        <span class="kw">let </span><span class="kw-2">mut </span>scoped_raw = raw;
-        mutator.dispatch_maybe_inplace_mutate(InplaceValue::from_raw(<span class="kw-2">&amp;mut </span>scoped_raw), kind)
+        <span class="comment">// The engine keeps the input live for this call; the capability's
+        // inspection borrows remain bounded by the handle itself.
+        </span><span class="kw">let </span>view = <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) };
+        mutator.dispatch_maybe_inplace_mutate(MutationView::new(view, InplaceMode::Allow), kind)
     } <span class="kw">else </span>{
-        mutator.dispatch_mutate(<span class="kw-2">&amp;</span>StructuralView::from_raw(raw), kind)
+        mutator.dispatch_mutate(<span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) }, kind)
     };
     result.map_err(|error| with_value_context(error, raw))
 }
@@ -6542,8 +6489,8 @@
     permit: Permit,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
     with_mutation_region(def_region_kind, |kind| {
-        <span class="kw">let </span>value = StructuralView::from_raw(raw);
-        mutator.on_default_mutate(MutateValue::new(<span class="kw-2">&amp;</span>value, permit.inplace_mode(raw)), kind)
+        <span class="kw">let </span>value = <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) };
+        mutator.on_default_mutate(MutationView::new(value, permit.inplace_mode(raw)), kind)
     })
     .map_err(|error| with_value_context(error, raw))
 }
@@ -6851,5 +6798,54 @@
 
 <span class="kw">fn </span>shallow_copy_column() -&gt; <span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt; {
     cached_column(<span class="kw-2">&amp;</span>SHALLOW_COPY_COLUMN, SHALLOW_COPY_ATTR)
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>borrowed_abi_ownership_normalizes_views_and_rejects_null_objects() {
+        <span class="kw">let </span>text = std::ffi::CString::new(<span class="string">"borrowed traversal string"</span>).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>raw = TVMFFIAny::new();
+        raw.type_index = TVMFFITypeIndex::kTVMFFIRawStr <span class="kw">as </span>i32;
+        raw.data_union.v_c_str = text.as_ptr().cast();
+        <span class="kw">let </span>owned = owned_from_raw(raw).unwrap();
+        drop(text);
+        <span class="macro">assert_eq!</span>(
+            owned.try_as::&lt;<span class="kw">crate</span>::String&gt;().unwrap().as_str(),
+            <span class="string">"borrowed traversal string"
+        </span>);
+
+        <span class="kw">let </span>bytes = <span class="macro">vec!</span>[<span class="number">1_u8</span>, <span class="number">0</span>, <span class="number">255</span>];
+        <span class="kw">let </span>data = TVMFFIByteArray::new(bytes.as_ptr(), bytes.len());
+        raw.type_index = TVMFFITypeIndex::kTVMFFIByteArrayPtr <span class="kw">as </span>i32;
+        raw.data_union.v_ptr = std::ptr::from_ref(<span class="kw-2">&amp;</span>data).cast_mut().cast();
+        <span class="kw">let </span>owned = owned_from_raw(raw).unwrap();
+        drop(bytes);
+        <span class="macro">assert_eq!</span>(
+            owned.try_as::&lt;<span class="kw">crate</span>::Bytes&gt;().unwrap().as_slice(),
+            <span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">0</span>, <span class="number">255</span>]
+        );
+
+        <span class="kw">let </span>owner = Any::from(<span class="kw">crate</span>::Array::new(<span class="macro">vec!</span>[<span class="number">1_i64</span>]));
+        <span class="kw">let </span><span class="kw-2">mut </span>slot = <span class="kw">unsafe </span>{ Any::into_raw_ffi_any(owner).data_union.v_obj };
+        raw.type_index = TVMFFITypeIndex::kTVMFFIObjectRValueRef <span class="kw">as </span>i32;
+        raw.data_union.v_ptr = std::ptr::from_mut(<span class="kw-2">&amp;mut </span>slot).cast();
+        <span class="kw">let </span>moved = owned_from_raw(raw).unwrap();
+        <span class="macro">assert!</span>(slot.is_null());
+        <span class="macro">assert_eq!</span>(moved.debug_strong_count(), <span class="prelude-val">Some</span>(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(
+            moved.try_as::&lt;<span class="kw">crate</span>::Array&lt;i64&gt;&gt;().unwrap().get(<span class="number">0</span>).unwrap(),
+            <span class="number">1
+        </span>);
+
+        raw.type_index = TVMFFITypeIndex::kTVMFFIArray <span class="kw">as </span>i32;
+        raw.data_union.v_obj = std::ptr::null_mut();
+        <span class="kw">let </span>error = owned_from_raw(raw)
+            .err()
+            .expect(<span class="string">"null objects must be rejected"</span>);
+        <span class="macro">assert!</span>(error.message().contains(<span class="string">"null pointer"</span>));
+    }
 }
 </code></pre></div></section></main></body></html>

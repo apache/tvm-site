@@ -2340,7 +2340,7 @@
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>fields = fields.into_iter().map(Into::into).collect::&lt;Array&lt;Expr&gt;&gt;();
         <span class="kw">let </span>ty: Type =
-            <span class="kw">match </span>fields.iter().any(|field| field.ty.as_node::&lt;MissingTypeObj&gt;().is_some()) {
+            <span class="kw">match </span>fields.iter().any(|field| field.ty.downcast_ref::&lt;MissingTypeObj&gt;().is_some()) {
                 <span class="bool-val">true </span>=&gt; MissingType::new().into(),
                 <span class="bool-val">false </span>=&gt; {
                     <span class="kw">let </span>field_types = fields.iter().map(|field| field.ty.clone());
@@ -2433,7 +2433,7 @@
                 <span class="kw-2">&amp;</span>message,
             ));
         }
-        <span class="kw">let </span>ty: Type = <span class="kw">match </span>tuple_value.ty.as_node::&lt;TupleTypeObj&gt;() {
+        <span class="kw">let </span>ty: Type = <span class="kw">match </span>tuple_value.ty.downcast_ref::&lt;TupleTypeObj&gt;() {
             <span class="prelude-val">Some</span>(tuple_type) =&gt; {
                 <span class="kw">let </span>size = tuple_type.fields.len();
                 <span class="kw">if </span>index <span class="kw">as </span>usize &gt;= size {
@@ -3090,7 +3090,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">use </span>TVMFFITypeIndex::<span class="kw-2">*</span>;
         <span class="kw">let </span>(ty, value) = (ty.into(), value.into());
-        <span class="kw">if </span>ty.as_node::&lt;MissingTypeObj&gt;().is_some() {
+        <span class="kw">if </span>ty.downcast_ref::&lt;MissingTypeObj&gt;().is_some() {
             <span class="kw">let </span>condition = <span class="string">"!ty.as&lt;MissingType&gt;().has_value()"</span>;
             <span class="kw">let </span>message = <span class="string">"GenericConst requires an expression type"</span>;
             <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::TYPE_ERROR, condition, message));
@@ -3354,7 +3354,7 @@
     <span class="doccomment">/// Check the call against the contract its operator registered: the operator's validator, if
     /// it has one (C++ `Call::Validate`).
     </span><span class="kw">pub fn </span>validate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(op) = <span class="self">self</span>.op.as_node::&lt;OpObj&gt;() <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(()) };
+        <span class="kw">let </span><span class="prelude-val">Some</span>(op) = <span class="self">self</span>.op.downcast_ref::&lt;OpObj&gt;() <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(()) };
         <span class="kw">if </span>op.validator().type_index() == TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32 {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
@@ -3365,8 +3365,8 @@
     /// `TFixedReturnType`, else what its `FInferType` infers; the return type of a callee of a
     /// function type; otherwise a missing type (C++ `Call::ReinferType`).
     </span><span class="kw">pub fn </span>reinfer_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Type&gt; {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(op) = <span class="self">self</span>.op.as_node::&lt;OpObj&gt;() <span class="kw">else </span>{
-            <span class="kw">return match </span><span class="self">self</span>.op.ty.as_node::&lt;FuncTypeObj&gt;() {
+        <span class="kw">let </span><span class="prelude-val">Some</span>(op) = <span class="self">self</span>.op.downcast_ref::&lt;OpObj&gt;() <span class="kw">else </span>{
+            <span class="kw">return match </span><span class="self">self</span>.op.ty.downcast_ref::&lt;FuncTypeObj&gt;() {
                 <span class="prelude-val">Some</span>(func_type) =&gt; <span class="prelude-val">Ok</span>(func_type.ret_type.clone()),
                 <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(MissingType::new().into()),
             };
@@ -3686,7 +3686,7 @@
         <span class="kw">let </span>(begin, end) = (begin.into_expr()<span class="question-mark">?</span>, end.into_expr()<span class="question-mark">?</span>);
         support::prim_dtype(<span class="kw-2">&amp;</span>begin)<span class="question-mark">?</span>;
         support::prim_dtype(<span class="kw-2">&amp;</span>end)<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(add) = end.as_node::&lt;AddObj&gt;() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(add) = end.downcast_ref::&lt;AddObj&gt;() {
             <span class="kw">if </span><span class="kw">crate</span>::ir::prim::expr_deep_equal(add.a.clone(), begin.clone())<span class="question-mark">? </span>{
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(add.b.clone());
             }
@@ -3695,7 +3695,7 @@
             }
         }
         <span class="kw">let </span>is_zero =
-            begin.as_node::&lt;IntImmObj&gt;().is_some_and(|imm| imm.value == BigInt::from(<span class="number">0i64</span>));
+            begin.downcast_ref::&lt;IntImmObj&gt;().is_some_and(|imm| imm.value == BigInt::from(<span class="number">0i64</span>));
         <span class="kw">match </span>is_zero {
             <span class="bool-val">true </span>=&gt; <span class="prelude-val">Ok</span>(end),
             <span class="bool-val">false </span>=&gt; <span class="kw">crate</span>::ir::prim::op::sub(end, begin),

@@ -2126,24 +2126,7 @@
 <a href="#2125" id="2125">2125</a>
 <a href="#2126" id="2126">2126</a>
 <a href="#2127" id="2127">2127</a>
-<a href="#2128" id="2128">2128</a>
-<a href="#2129" id="2129">2129</a>
-<a href="#2130" id="2130">2130</a>
-<a href="#2131" id="2131">2131</a>
-<a href="#2132" id="2132">2132</a>
-<a href="#2133" id="2133">2133</a>
-<a href="#2134" id="2134">2134</a>
-<a href="#2135" id="2135">2135</a>
-<a href="#2136" id="2136">2136</a>
-<a href="#2137" id="2137">2137</a>
-<a href="#2138" id="2138">2138</a>
-<a href="#2139" id="2139">2139</a>
-<a href="#2140" id="2140">2140</a>
-<a href="#2141" id="2141">2141</a>
-<a href="#2142" id="2142">2142</a>
-<a href="#2143" id="2143">2143</a>
-<a href="#2144" id="2144">2144</a>
-<a href="#2145" id="2145">2145</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#2128" id="2128">2128</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -2180,7 +2163,7 @@
 //! opt in with a trailing [`DefRegionKind`] argument, and a visitor receives
 //! and forwards it when descending.
 //!
-//! Underneath both, [`StructuralView`] provides borrowed matching for typed Rust
+//! Underneath both, [`AnyView`] provides borrowed matching for typed Rust
 //! dispatch. Rust supplies a temporary `ffi.StructuralVisitor` ABI object so
 //! every type's registered `__s_visit__` hook can enumerate its children and
 //! call back into the active Rust visitor. Types without a hook fall back to
@@ -2211,7 +2194,8 @@
 };
 
 <span class="kw">use </span><span class="kw">super</span>::structural_common::{
-    impl_callback_chain_tuple_arities, with_structural_error_context, with_visit_error_context,
+    borrowed_view, impl_callback_chain_tuple_arities, raw_of, with_structural_error_context,
+    with_visit_error_context,
 };
 
 <span class="kw">const </span>STRUCTURAL_VISIT_ATTR: <span class="kw-2">&amp;</span>str = <span class="string">"__s_visit__"</span>;
@@ -2347,8 +2331,6 @@
     </span>}
 }
 
-<span class="kw">pub use </span><span class="kw">super</span>::StructuralView;
-
 <span class="kw">enum </span>NativeHalt {
     Interrupt(Any),
     Error(Error),
@@ -2371,7 +2353,7 @@
 /// reborrow the visitor, so mutable state cannot remain borrowed across them.
 </span><span class="kw">pub struct </span>VisitContext&lt;<span class="lifetime">'a</span>, State&gt; {
     driver: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span><span class="kw">dyn </span>VisitContextDriver&lt;State&gt;,
-    current: StructuralView,
+    current: TVMFFIAny,
     def_region_kind: DefRegionKind,
     _not_send_sync: PhantomData&lt;Rc&lt;()&gt;&gt;,
 }
@@ -2403,8 +2385,10 @@
     }
 
     <span class="doccomment">/// Complete borrowed value active at this callback.
-    </span><span class="kw">pub fn </span>current(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>StructuralView {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.current
+    </span><span class="kw">pub fn </span>current(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AnyView&lt;<span class="lifetime">'_</span>&gt; {
+        <span class="comment">// SAFETY: the driver keeps the current value alive throughout this
+        // callback; the view is further bounded by this context borrow.
+        </span><span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span><span class="self">self</span>.current) }
     }
 
     <span class="doccomment">/// Definition-region state active at the callback's current value.
@@ -2413,21 +2397,21 @@
     }
 
     <span class="doccomment">/// Visit `child` using the current definition-region state.
-    </span><span class="kw">pub fn </span>visit&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, child: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
+    </span><span class="kw">pub fn </span>visit&lt;<span class="lifetime">'input</span>, T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, child: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="self">self</span>.visit_with(child, <span class="self">self</span>.def_region_kind)
     }
 
     <span class="doccomment">/// Visit `child` using an explicit definition-region state.
-    </span><span class="kw">pub fn </span>visit_with&lt;T&gt;(
+    </span><span class="kw">pub fn </span>visit_with&lt;<span class="lifetime">'input</span>, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        child: <span class="kw-2">&amp;</span>T,
+        child: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>raw = raw_of(AnyView::from(child));
         <span class="kw">if </span>raw.type_index == TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32 {
@@ -2440,7 +2424,7 @@
     /// A callback enters its configured policy; within a policy this continues
     /// with the next policy, then registered hooks or reflected fields.
     </span><span class="kw">pub fn </span>visit_children(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
-        <span class="self">self</span>.default_visit_children_raw(<span class="self">self</span>.current.raw(), <span class="self">self</span>.def_region_kind)
+        <span class="self">self</span>.default_visit_children_raw(<span class="self">self</span>.current, <span class="self">self</span>.def_region_kind)
     }
 
     <span class="doccomment">/// Apply default descent to `value` under an explicit definition region.
@@ -2453,13 +2437,13 @@
     /// An enclosing [`DefRegionKind::Pattern`] cannot be downgraded. The current
     /// value and region of this context are unchanged after the call, including
     /// when descent returns an error or interrupt.
-    </span><span class="kw">pub fn </span>default_visit_children&lt;T&gt;(
+    </span><span class="kw">pub fn </span>default_visit_children&lt;<span class="lifetime">'input</span>, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>T,
+        value: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="self">self</span>.default_visit_children_raw(raw_of(AnyView::from(value)), def_region_kind)
     }
@@ -2490,7 +2474,7 @@
 /// Use [`VisitCallbacks`] when the chain needs mutable state.
 </span><span class="attr">#[diagnostic::on_unimplemented(
     message = <span class="string">"`{Self}` is not a supported `structural_visit` visitor"</span>,
-    note = <span class="string">"accepted visitors: `&amp;mut V` where `V: StructuralVisitor`; an `Fn` callback over an FFI value type `T`, `&amp;N` of an object node type, or `&amp;StructuralView`, followed by `&amp;mut VisitContext&lt;'_, ()&gt;`; or a tuple of up to 12 such callbacks (tuples may nest)"</span>,
+    note = <span class="string">"accepted visitors: `&amp;mut V` where `V: StructuralVisitor`; an `Fn` callback over an FFI value type `T`, `&amp;N` of an object node type, or `AnyView&lt;'_&gt;`, followed by `&amp;mut VisitContext&lt;'_, ()&gt;`; or a tuple of up to 12 such callbacks (tuples may nest)"</span>,
     note = <span class="string">"callback arguments need explicit type annotations; use `VisitCallbacks::new(state, callbacks)` for ordinary mutable callback state"
 </span>)]
 </span><span class="kw">pub trait </span>IntoVisitor&lt;Marker&gt; {
@@ -2513,13 +2497,13 @@
     <span class="attr">#[doc(hidden)]
     </span><span class="kw">fn </span>try_visit(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt;;
 }
 
 <span class="kw">mod </span>visit_sealed {
-    <span class="kw">use super</span>::{IntoVisitResult, ObjectCore, StructuralView, VisitContext};
+    <span class="kw">use super</span>::{AnyView, IntoVisitResult, ObjectCore, VisitContext};
 
     <span class="kw">pub trait </span>SealedLink&lt;State, Marker&gt; {}
 
@@ -2543,7 +2527,7 @@
     <span class="kw">impl</span>&lt;F, State, O&gt; SealedLink&lt;State, <span class="kw">super</span>::ByVisitCatchAllLink&gt; <span class="kw">for </span>F
     <span class="kw">where
         </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'visitor</span>, <span class="lifetime">'driver</span>&gt; Fn(
-            <span class="kw-2">&amp;</span><span class="lifetime">'value </span>StructuralView,
+            AnyView&lt;<span class="lifetime">'value</span>&gt;,
             <span class="kw-2">&amp;</span><span class="lifetime">'visitor </span><span class="kw-2">mut </span>VisitContext&lt;<span class="lifetime">'driver</span>, State&gt;,
         ) -&gt; O,
         O: IntoVisitResult,
@@ -2562,11 +2546,11 @@
 {
     <span class="kw">fn </span>try_visit(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt; {
         value
-            .cast::&lt;T&gt;()
+            .try_as::&lt;T&gt;()
             .map(|typed| <span class="self">self</span>(typed, visitor).into_visit_result())
     }
 }
@@ -2585,11 +2569,11 @@
 {
     <span class="kw">fn </span>try_visit(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt; {
         value
-            .as_node::&lt;N&gt;()
+            .downcast_ref::&lt;N&gt;()
             .map(|node| <span class="self">self</span>(node, visitor).into_visit_result())
     }
 }
@@ -2600,14 +2584,14 @@
 <span class="kw">impl</span>&lt;F, State, O&gt; VisitChainLink&lt;State, ByVisitCatchAllLink&gt; <span class="kw">for </span>F
 <span class="kw">where
     </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'visitor</span>, <span class="lifetime">'driver</span>&gt; Fn(
-        <span class="kw-2">&amp;</span><span class="lifetime">'value </span>StructuralView,
+        AnyView&lt;<span class="lifetime">'value</span>&gt;,
         <span class="kw-2">&amp;</span><span class="lifetime">'visitor </span><span class="kw-2">mut </span>VisitContext&lt;<span class="lifetime">'driver</span>, State&gt;,
     ) -&gt; O,
     O: IntoVisitResult,
 {
     <span class="kw">fn </span>try_visit(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>(value, visitor).into_visit_result())
@@ -2633,7 +2617,7 @@
         {
             <span class="kw">fn </span>try_visit(
                 <span class="kw-2">&amp;</span><span class="self">self</span>,
-                value: <span class="kw-2">&amp;</span>StructuralView,
+                value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
                 visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
             ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt; {
                 $(
@@ -2769,7 +2753,7 @@
 /// `Marker` distinguishes the supported callback shapes.
 </span><span class="attr">#[diagnostic::on_unimplemented(
     message = <span class="string">"`{Self}` is not a supported `structural_walk` walker"</span>,
-    note = <span class="string">"accepted walkers: `&amp;mut V` where `V: WalkDispatch`; a closure over `&amp;StructuralView`, \
+    note = <span class="string">"accepted walkers: `&amp;mut V` where `V: WalkDispatch`; a closure over `AnyView&lt;'_&gt;`, \
             an FFI value type `T`, or `&amp;N` of an object node type (`N: ObjectCore`, e.g. \
             `&amp;Object`), optionally with a trailing `DefRegionKind` argument; or a tuple of \
             up to 12 such links (tuples nest, so `(a, (b, c))` chains more); \
@@ -2786,7 +2770,7 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; IntoWalker&lt;ByCatchAllLink&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; O,
     O: IntoWalkResult,
 {
     <span class="kw">type </span>Walker = ChainWalker&lt;F, ByCatchAllLink&gt;;
@@ -2797,7 +2781,7 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; IntoWalker&lt;ByCatchAllKindLink&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView, DefRegionKind) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;, DefRegionKind) -&gt; O,
     O: IntoWalkResult,
 {
     <span class="kw">type </span>Walker = ChainWalker&lt;F, ByCatchAllKindLink&gt;;
@@ -2808,7 +2792,7 @@
 
 <span class="doccomment">/// One link in a first-match [`structural_walk`] callback chain.
 ///
-/// Supported links are typed values, borrowed object nodes, `&amp;StructuralView`,
+/// Supported links are typed values, borrowed object nodes, `AnyView&lt;'_&gt;`,
 /// and mutable [`WalkDispatch`] implementations, optionally followed by
 /// [`DefRegionKind`]. Tuples hold up to 12 links and may be nested.
 </span><span class="kw">pub trait </span>WalkChainLink&lt;Marker&gt;: sealed::SealedLink&lt;Marker&gt; {
@@ -2817,13 +2801,13 @@
     </span><span class="attr">#[doc(hidden)]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt;;
 }
 
 <span class="kw">mod </span>sealed {
-    <span class="kw">use super</span>::{DefRegionKind, IntoWalkResult, ObjectCore, StructuralView, WalkDispatch};
+    <span class="kw">use super</span>::{AnyView, DefRegionKind, IntoWalkResult, ObjectCore, WalkDispatch};
 
     <span class="kw">pub trait </span>SealedLink&lt;Marker&gt; {}
 
@@ -2853,13 +2837,13 @@
     }
     <span class="kw">impl</span>&lt;F, O&gt; SealedLink&lt;<span class="kw">super</span>::ByCatchAllLink&gt; <span class="kw">for </span>F
     <span class="kw">where
-        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView) -&gt; O,
+        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; O,
         O: IntoWalkResult,
     {
     }
     <span class="kw">impl</span>&lt;F, O&gt; SealedLink&lt;<span class="kw">super</span>::ByCatchAllKindLink&gt; <span class="kw">for </span>F
     <span class="kw">where
-        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView, DefRegionKind) -&gt; O,
+        </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;, DefRegionKind) -&gt; O,
         O: IntoWalkResult,
     {
     }
@@ -2878,11 +2862,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         _def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
         value
-            .cast::&lt;T&gt;()
+            .try_as::&lt;T&gt;()
             .map(|typed| <span class="self">self</span>(typed).into_walk_result())
     }
 }
@@ -2899,11 +2883,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
         value
-            .cast::&lt;T&gt;()
+            .try_as::&lt;T&gt;()
             .map(|typed| <span class="self">self</span>(typed, def_region_kind).into_walk_result())
     }
 }
@@ -2920,11 +2904,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         _def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
         value
-            .as_node::&lt;N&gt;()
+            .downcast_ref::&lt;N&gt;()
             .map(|node| <span class="self">self</span>(node).into_walk_result())
     }
 }
@@ -2941,11 +2925,11 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
         value
-            .as_node::&lt;N&gt;()
+            .downcast_ref::&lt;N&gt;()
             .map(|node| <span class="self">self</span>(node, def_region_kind).into_walk_result())
     }
 }
@@ -2955,13 +2939,13 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; WalkChainLink&lt;ByCatchAllLink&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; O,
     O: IntoWalkResult,
 {
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         _def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>(value).into_walk_result())
@@ -2973,13 +2957,13 @@
 
 <span class="kw">impl</span>&lt;F, O&gt; WalkChainLink&lt;ByCatchAllKindLink&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>StructuralView, DefRegionKind) -&gt; O,
+    </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; FnMut(AnyView&lt;<span class="lifetime">'a</span>&gt;, DefRegionKind) -&gt; O,
     O: IntoWalkResult,
 {
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>(value, def_region_kind).into_walk_result())
@@ -2996,7 +2980,7 @@
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>try_call(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
         <span class="self">self</span>.dispatch_walk(value, def_region_kind)
@@ -3025,11 +3009,7 @@
     </span>Link: WalkChainLink&lt;Marker&gt;,
 {
     <span class="attr">#[inline]
-    </span><span class="kw">fn </span>visit(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
-        def_region_kind: DefRegionKind,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt; {
+    </span><span class="kw">fn </span>visit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;, def_region_kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt; {
         <span class="self">self</span>.link
             .try_call(value, def_region_kind)
             .unwrap_or_else(|| <span class="prelude-val">Ok</span>(WalkResult::Advance))
@@ -3051,7 +3031,7 @@
             <span class="attr">#[inline]
             </span><span class="kw">fn </span>try_call(
                 <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-                value: <span class="kw-2">&amp;</span>StructuralView,
+                value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
                 def_region_kind: DefRegionKind,
             ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt; {
                 $(
@@ -3111,19 +3091,19 @@
     <span class="doccomment">/// Visit one value under the definition-region state active at it.
     </span><span class="kw">fn </span>visit(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;;
 
     <span class="doccomment">/// Visit `child` under `def_region_kind`.
     </span><span class="attr">#[inline]
-    </span><span class="kw">fn </span>visit_child&lt;T&gt;(
+    </span><span class="kw">fn </span>visit_child&lt;<span class="lifetime">'input</span>, T&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        child: <span class="kw-2">&amp;</span>T,
+        child: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>T,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
     <span class="kw">where
-        for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>T&gt;,
+        </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>T&gt;,
     {
         <span class="kw">let </span>raw = raw_of(AnyView::from(child));
         <span class="kw">if </span>raw.type_index == TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32 {
@@ -3140,7 +3120,7 @@
     </span><span class="attr">#[inline]
     </span><span class="kw">fn </span>default_visit_children(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         default_user_visit_children(<span class="self">self</span>, value, def_region_kind)
@@ -3149,10 +3129,10 @@
 
 <span class="kw">fn </span>default_user_visit_children&lt;V: StructuralVisitor&gt;(
     visitor: <span class="kw-2">&amp;mut </span>V,
-    value: <span class="kw-2">&amp;</span>StructuralView,
+    value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
     def_region_kind: DefRegionKind,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
-    <span class="kw">let </span>raw = value.raw();
+    <span class="kw">let </span>raw = raw_of(value);
     <span class="kw">let </span>context = std::ptr::from_mut(<span class="kw-2">&amp;mut *</span>visitor).cast::&lt;c_void&gt;();
     finish(
         visit_children_raw(raw, <span class="kw-2">&amp;mut </span>UserChildren { visitor }, context, def_region_kind)
@@ -3164,7 +3144,7 @@
 </span><span class="kw">pub fn </span>default_visit_with_policy&lt;V: StructuralVisitor + VisitCallbackState&lt;V&gt;&gt;(
     visitor: <span class="kw-2">&amp;mut </span>V,
     policy: <span class="kw-2">&amp;</span><span class="kw">impl </span>ContextPolicy&lt;V&gt;,
-    value: <span class="kw-2">&amp;</span>StructuralView,
+    value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
     kind: DefRegionKind,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
     policy::visit_with_policy(<span class="kw-2">&amp;mut </span>policy::VisitDescent { visitor }, policy, value, kind)
@@ -3173,7 +3153,7 @@
 <span class="kw">fn </span>try_visit_callbacks&lt;State, Link, Marker&gt;(
     driver: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>VisitContextDriver&lt;State&gt;,
     callback_ptr: <span class="kw-2">*const </span>Link,
-    value: <span class="kw-2">&amp;</span>StructuralView,
+    value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
     def_region_kind: DefRegionKind,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
 <span class="kw">where
@@ -3181,7 +3161,7 @@
 {
     <span class="kw">let </span><span class="kw-2">mut </span>visitor = VisitContext {
         driver,
-        current: StructuralView::from_raw(value.raw()),
+        current: raw_of(value),
         def_region_kind,
         _not_send_sync: PhantomData,
     };
@@ -3200,7 +3180,7 @@
 {
     <span class="kw">fn </span>visit(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         <span class="kw">let </span>callback_ptr = Rc::as_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>.callbacks);
@@ -3209,7 +3189,7 @@
 
     <span class="kw">fn </span>default_visit_children(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         <span class="kw">let </span><span class="prelude-val">Some</span>(policy) = <span class="self">self</span>.policy.as_ref().map(Rc::clone) <span class="kw">else </span>{
@@ -3230,7 +3210,7 @@
 {
     <span class="kw">fn </span>visit(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         <span class="kw">let </span>callback_ptr = std::ptr::from_ref(<span class="self">self</span>.callbacks);
@@ -3272,7 +3252,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         &lt;<span class="self">Self </span><span class="kw">as </span>StructuralVisitor&gt;::default_visit_children(
             <span class="self">self</span>,
-            <span class="kw-2">&amp;</span>StructuralView::from_raw(raw),
+            <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) },
             def_region_kind,
         )
     }
@@ -3295,15 +3275,11 @@
         })
     }
 
-    <span class="kw">fn </span>visit(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
-        def_region_kind: DefRegionKind,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt;;
+    <span class="kw">fn </span>visit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;, def_region_kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt;;
 
     <span class="kw">fn </span>default_visit_children&lt;<span class="kw">const </span>PRE_ORDER: bool&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         default_walk_children::&lt;<span class="self">Self</span>, PRE_ORDER&gt;(<span class="self">self</span>, value, def_region_kind)
@@ -3319,17 +3295,13 @@
         </span>(<span class="kw-2">**</span><span class="self">self</span>).walk_root(root, order)
     }
 
-    <span class="kw">fn </span>visit(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
-        def_region_kind: DefRegionKind,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt; {
+    <span class="kw">fn </span>visit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;, def_region_kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt; {
         (<span class="kw-2">**</span><span class="self">self</span>).visit(value, def_region_kind)
     }
 
     <span class="kw">fn </span>default_visit_children&lt;<span class="kw">const </span>PRE_ORDER: bool&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         def_region_kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         (<span class="kw-2">**</span><span class="self">self</span>).default_visit_children::&lt;PRE_ORDER&gt;(value, def_region_kind)
@@ -3338,12 +3310,12 @@
 
 <span class="kw">fn </span>default_walk_children&lt;V: NativeVisit, <span class="kw">const </span>PRE_ORDER: bool&gt;(
     visitor: <span class="kw-2">&amp;mut </span>V,
-    value: <span class="kw-2">&amp;</span>StructuralView,
+    value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
     def_region_kind: DefRegionKind,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
     <span class="kw">let </span>context = std::ptr::from_mut(<span class="kw-2">&amp;mut *</span>visitor).cast::&lt;c_void&gt;();
     finish(visit_children_raw(
-        value.raw(),
+        raw_of(value),
         <span class="kw-2">&amp;mut </span>WalkChildren::&lt;V, PRE_ORDER&gt; { visitor },
         context,
         def_region_kind,
@@ -3352,11 +3324,7 @@
 
 <span class="doccomment">/// Action applied to each child found by the shared traversal.
 </span><span class="kw">trait </span>ChildVisit {
-    <span class="kw">fn </span>visit_child(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        child: <span class="kw-2">&amp;</span>StructuralView,
-        def_region_kind: DefRegionKind,
-    ) -&gt; NativeResult;
+    <span class="kw">fn </span>visit_child(<span class="kw-2">&amp;mut </span><span class="self">self</span>, child: AnyView&lt;<span class="lifetime">'_</span>&gt;, def_region_kind: DefRegionKind) -&gt; NativeResult;
 }
 
 <span class="kw">struct </span>WalkChildren&lt;<span class="lifetime">'a</span>, V, <span class="kw">const </span>PRE_ORDER: bool&gt; {
@@ -3365,12 +3333,8 @@
 
 <span class="kw">impl</span>&lt;V: NativeVisit, <span class="kw">const </span>PRE_ORDER: bool&gt; ChildVisit <span class="kw">for </span>WalkChildren&lt;<span class="lifetime">'_</span>, V, PRE_ORDER&gt; {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>visit_child(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        child: <span class="kw-2">&amp;</span>StructuralView,
-        def_region_kind: DefRegionKind,
-    ) -&gt; NativeResult {
-        visit_raw::&lt;V, PRE_ORDER&gt;(child.raw(), <span class="self">self</span>.visitor, def_region_kind)
+    </span><span class="kw">fn </span>visit_child(<span class="kw-2">&amp;mut </span><span class="self">self</span>, child: AnyView&lt;<span class="lifetime">'_</span>&gt;, def_region_kind: DefRegionKind) -&gt; NativeResult {
+        visit_raw::&lt;V, PRE_ORDER&gt;(raw_of(child), <span class="self">self</span>.visitor, def_region_kind)
     }
 }
 
@@ -3380,18 +3344,14 @@
 
 <span class="kw">impl</span>&lt;V: StructuralVisitor&gt; ChildVisit <span class="kw">for </span>UserChildren&lt;<span class="lifetime">'_</span>, V&gt; {
     <span class="attr">#[inline]
-    </span><span class="kw">fn </span>visit_child(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        child: <span class="kw-2">&amp;</span>StructuralView,
-        def_region_kind: DefRegionKind,
-    ) -&gt; NativeResult {
+    </span><span class="kw">fn </span>visit_child(<span class="kw-2">&amp;mut </span><span class="self">self</span>, child: AnyView&lt;<span class="lifetime">'_</span>&gt;, def_region_kind: DefRegionKind) -&gt; NativeResult {
         <span class="kw">if </span>child.type_index() == TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32 {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
         <span class="kw">match </span>with_visit_region(def_region_kind, |kind| <span class="self">self</span>.visitor.visit(child, kind)) {
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(interrupt)) =&gt; <span class="prelude-val">Err</span>(NativeHalt::Interrupt(interrupt.value)),
-            <span class="prelude-val">Err</span>(error) =&gt; <span class="prelude-val">Err</span>(with_value_context(NativeHalt::Error(error), child.raw())),
+            <span class="prelude-val">Err</span>(error) =&gt; <span class="prelude-val">Err</span>(with_value_context(NativeHalt::Error(error), raw_of(child))),
         }
     }
 }
@@ -3406,10 +3366,10 @@
     <span class="kw">if </span>value.type_index == TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32 {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());
     }
-    <span class="kw">let </span>visit_value = StructuralView::from_raw(value);
+    <span class="kw">let </span>visit_value = <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>value) };
     <span class="kw">if </span>PRE_ORDER {
         <span class="kw">let </span>action = visitor
-            .visit(<span class="kw-2">&amp;</span>visit_value, def_region_kind)
+            .visit(visit_value, def_region_kind)
             .map_err(|error| with_value_context(error.into(), value))<span class="question-mark">?</span>;
         <span class="kw">match </span>action {
             WalkResult::Advance =&gt; {}
@@ -3420,7 +3380,7 @@
     }
 
     <span class="kw">if </span>V::CUSTOM_DESCENT {
-        <span class="kw">match </span>visitor.default_visit_children::&lt;PRE_ORDER&gt;(<span class="kw-2">&amp;</span>visit_value, def_region_kind) {
+        <span class="kw">match </span>visitor.default_visit_children::&lt;PRE_ORDER&gt;(visit_value, def_region_kind) {
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; {}
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(interrupt)) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(NativeHalt::Interrupt(interrupt.value)),
             <span class="prelude-val">Err</span>(error) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(with_value_context(error.into(), value)),
@@ -3439,7 +3399,7 @@
     <span class="kw">if </span>PRE_ORDER {
         <span class="prelude-val">Ok</span>(())
     } <span class="kw">else </span>{
-        <span class="kw">match </span>visitor.visit(<span class="kw-2">&amp;</span>visit_value, def_region_kind) {
+        <span class="kw">match </span>visitor.visit(visit_value, def_region_kind) {
             <span class="prelude-val">Ok</span>(WalkResult::Advance | WalkResult::Skip) =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="prelude-val">Ok</span>(WalkResult::Interrupt) =&gt; <span class="prelude-val">Err</span>(NativeHalt::Interrupt(Any::new())),
             <span class="prelude-val">Ok</span>(WalkResult::InterruptWith(payload)) =&gt; <span class="prelude-val">Err</span>(NativeHalt::Interrupt(payload)),
@@ -3537,7 +3497,7 @@
         ));
     }
 
-    <span class="kw">let </span>borrowed = StructuralView::from_any(<span class="kw-2">&amp;</span>child);
+    <span class="kw">let </span>borrowed = AnyView::from(<span class="kw-2">&amp;</span>child);
     <span class="kw">let </span>child_region = field_def_region(field, inherited_region);
     visitor
         .visit_child(borrowed, child_region)
@@ -3879,7 +3839,7 @@
     <span class="kw">if </span>raw.type_index == TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32 {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());
     }
-    <span class="kw">match </span>(<span class="kw-2">&amp;mut *</span>context.cast::&lt;V&gt;()).visit(<span class="kw-2">&amp;</span>StructuralView::from_raw(raw), def_region_kind) {
+    <span class="kw">match </span>(<span class="kw-2">&amp;mut *</span>context.cast::&lt;V&gt;()).visit(<span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) }, def_region_kind) {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; <span class="prelude-val">Ok</span>(()),
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(interrupt)) =&gt; <span class="prelude-val">Err</span>(NativeHalt::Interrupt(interrupt.value)),
         <span class="prelude-val">Err</span>(error) =&gt; <span class="prelude-val">Err</span>(with_value_context(NativeHalt::Error(error), raw)),
@@ -4111,12 +4071,12 @@
 ///
 /// A matching callback owns recursion; unmatched values use default child
 /// traversal. Use [`VisitCallbacks`] to attach mutable state to the chain.
-</span><span class="kw">pub fn </span>structural_visit&lt;R, M&gt;(
-    root: <span class="kw-2">&amp;</span>R,
+</span><span class="kw">pub fn </span>structural_visit&lt;<span class="lifetime">'input</span>, R, M&gt;(
+    root: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>R,
     visitor: <span class="kw">impl </span>IntoVisitor&lt;M&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
 <span class="kw">where
-    for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>R&gt;,
+    </span>AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>R&gt;,
 {
     visitor.visit_root(raw_of(AnyView::from(root)))
 }
@@ -4126,21 +4086,32 @@
 ///
 /// `walker` is anything implementing [`IntoWalker`]: a `&amp;mut` reference to a
 /// stateful [`WalkDispatch`] walker (`#[dispatch(walk)]`), a bare closure
-/// in any [`WalkChainLink`] shape (catch-all `&amp;StructuralView`, typed, or node,
+/// in any [`WalkChainLink`] shape (catch-all `AnyView&lt;'_&gt;`, typed, or node,
 /// with an optional trailing [`DefRegionKind`]), or a tuple of such
 /// callbacks tried in order — the C++ callback overloads and variadic
 /// chain. A [`WalkWithContextPolicy`] may be passed by value or mutable reference.
+/// Callback views cannot escape their invocation; retain an [`Any`] explicitly
+/// when a value must outlive the callback:
+/// ```compile_fail,E0521
+/// use tvm_ffi::{structural_walk, AnyView, WalkOrder, WalkResult};
+/// let mut retained: Option&lt;AnyView&lt;'static&gt;&gt; = None;
+/// structural_walk(&amp;1_i64, |value: AnyView&lt;'_&gt;| {
+///     retained = Some(value);
+///     WalkResult::Advance
+/// }, WalkOrder::PreOrder).unwrap();
+/// ```
+///
 /// The walker owns recursion: the handler runs once per value,
 /// before or after the value's children according to `order`, and steers
 /// traversal through the returned [`WalkResult`].
-</span><span class="kw">pub fn </span>structural_walk&lt;R, M, H&gt;(
-    root: <span class="kw-2">&amp;</span>R,
+</span><span class="kw">pub fn </span>structural_walk&lt;<span class="lifetime">'input</span>, R, M, H&gt;(
+    root: <span class="kw-2">&amp;</span><span class="lifetime">'input </span>R,
     walker: H,
     order: WalkOrder,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
 <span class="kw">where
     </span>H: IntoWalker&lt;M&gt;,
-    <span class="kw">for</span>&lt;<span class="lifetime">'x</span>&gt; AnyView&lt;<span class="lifetime">'x</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'x </span>R&gt;,
+    AnyView&lt;<span class="lifetime">'input</span>&gt;: From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'input </span>R&gt;,
 {
     walker.into_walker().walk_root(AnyView::from(root), order)
 }
@@ -4283,9 +4254,4 @@
     }
     <span class="prelude-val">None
 </span>}
-
-<span class="attr">#[inline]
-</span><span class="kw">fn </span>raw_of(view: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; TVMFFIAny {
-    <span class="kw-2">*</span>view.as_raw_ffi_any()
-}
 </code></pre></div></section></main></body></html>

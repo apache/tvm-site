@@ -309,7 +309,7 @@
     /// or when a matched callback requests default descent.
     </span><span class="kw">fn </span>default_visit(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;;
 }
@@ -320,7 +320,7 @@
 <span class="kw">impl</span>&lt;State&gt; ContextPolicy&lt;State&gt; <span class="kw">for </span>DefaultContextPolicy {
     <span class="kw">fn </span>default_visit(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        _value: <span class="kw-2">&amp;</span>StructuralView,
+        _value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         visitor.visit_children()
@@ -332,7 +332,7 @@
 {
     <span class="kw">fn </span>default_visit(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         visitor: <span class="kw-2">&amp;mut </span>VisitContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         <span class="kw">let </span>kind = visitor.def_region_kind();
@@ -352,7 +352,7 @@
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>visit_with_policy&lt;State&gt;(
     driver: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>VisitContextDriver&lt;State&gt;,
     policy: <span class="kw-2">&amp;</span><span class="kw">impl </span>ContextPolicy&lt;State&gt;,
-    value: <span class="kw-2">&amp;</span>StructuralView,
+    value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
     def_region_kind: DefRegionKind,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
     with_visit_region(
@@ -363,7 +363,7 @@
                 value,
                 <span class="kw-2">&amp;mut </span>VisitContext {
                     driver,
-                    current: StructuralView::from_raw(value.raw()),
+                    current: raw_of(value),
                     def_region_kind,
                     _not_send_sync: PhantomData,
                 },
@@ -397,7 +397,7 @@
         visit_with_policy(
             <span class="self">self</span>.driver,
             <span class="self">self</span>.policy,
-            <span class="kw-2">&amp;</span>StructuralView::from_raw(raw),
+            <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) },
             kind,
         )
     }
@@ -425,7 +425,7 @@
         kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         <span class="comment">// Bypass the current policy; children still re-enter the complete visitor.
-        </span>default_user_visit_children(<span class="self">self</span>.visitor, <span class="kw-2">&amp;</span>StructuralView::from_raw(raw), kind)
+        </span>default_user_visit_children(<span class="self">self</span>.visitor, <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) }, kind)
     }
 }
 
@@ -490,7 +490,7 @@
 {
     <span class="kw">const </span>CUSTOM_DESCENT: bool = <span class="bool-val">true</span>;
 
-    <span class="kw">fn </span>visit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>StructuralView, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt; {
+    <span class="kw">fn </span>visit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;WalkResult&gt; {
         <span class="self">self</span>.walker
             .dispatch_walk(value, kind)
             .unwrap_or_else(|| <span class="prelude-val">Ok</span>(WalkResult::Advance))
@@ -498,7 +498,7 @@
 
     <span class="kw">fn </span>default_visit_children&lt;<span class="kw">const </span>PRE_ORDER: bool&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: <span class="kw-2">&amp;</span>StructuralView,
+        value: AnyView&lt;<span class="lifetime">'_</span>&gt;,
         kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
         <span class="kw">let </span>policy = Rc::clone(<span class="kw-2">&amp;</span><span class="self">self</span>.policy);
@@ -539,7 +539,7 @@
         raw: TVMFFIAny,
         kind: DefRegionKind,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt; {
-        default_walk_children::&lt;<span class="kw">_</span>, PRE_ORDER&gt;(<span class="self">self</span>.visitor, <span class="kw-2">&amp;</span>StructuralView::from_raw(raw), kind)
+        default_walk_children::&lt;<span class="kw">_</span>, PRE_ORDER&gt;(<span class="self">self</span>.visitor, <span class="kw">unsafe </span>{ borrowed_view(<span class="kw-2">&amp;</span>raw) }, kind)
     }
 }
 </code></pre></div></section></main></body></html>

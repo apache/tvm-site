@@ -263,7 +263,9 @@
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
 <a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -292,36 +294,36 @@
 /// then hooks or reflected fields; children re-enter callback dispatch.
 /// Policies share callback state and compose as `(outer, inner)`.
 /// Restore user state before returning, including on errors; use
-/// [`MutateContext::with_def_region_kind`] for scoped definition regions.
-</span><span class="kw">pub trait </span>MutContextPolicy&lt;State&gt; {
+/// [`MutationContext::with_def_region_kind`] for scoped definition regions.
+</span><span class="kw">pub trait </span>MutationContextPolicy&lt;State&gt; {
     <span class="doccomment">/// Customize default descent, preserving the input permission and result marker.
     </span><span class="kw">fn </span>default_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
-        ctx: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
+        ctx: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;;
 }
 
 <span class="doccomment">/// Default descent through registered hooks or reflected structural fields.
-</span><span class="kw">pub struct </span>DefaultMutContextPolicy;
+</span><span class="kw">pub struct </span>DefaultMutationContextPolicy;
 
-<span class="kw">impl</span>&lt;State&gt; MutContextPolicy&lt;State&gt; <span class="kw">for </span>DefaultMutContextPolicy {
+<span class="kw">impl</span>&lt;State&gt; MutationContextPolicy&lt;State&gt; <span class="kw">for </span>DefaultMutationContextPolicy {
     <span class="kw">fn </span>default_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
-        ctx: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
+        ctx: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
         ctx.default_maybe_inplace_mutate_result(value)
     }
 }
 
-<span class="kw">impl</span>&lt;State, Outer: MutContextPolicy&lt;State&gt;, Inner: MutContextPolicy&lt;State&gt;&gt; MutContextPolicy&lt;State&gt;
-    <span class="kw">for </span>(Outer, Inner)
+<span class="kw">impl</span>&lt;State, Outer: MutationContextPolicy&lt;State&gt;, Inner: MutationContextPolicy&lt;State&gt;&gt;
+    MutationContextPolicy&lt;State&gt; <span class="kw">for </span>(Outer, Inner)
 {
     <span class="kw">fn </span>default_mutate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
-        ctx: <span class="kw-2">&amp;mut </span>MutateContext&lt;<span class="lifetime">'_</span>, State&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
+        ctx: <span class="kw-2">&amp;mut </span>MutationContext&lt;<span class="lifetime">'_</span>, State&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt; {
         <span class="kw">let </span>kind = ctx.def_region_kind();
         mutate_with_policy(
@@ -340,16 +342,16 @@
 <span class="attr">#[inline(always)]
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>mutate_with_policy&lt;State&gt;(
     driver: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MutateContextDriver&lt;State&gt;,
-    policy: <span class="kw-2">&amp;</span><span class="kw">impl </span>MutContextPolicy&lt;State&gt;,
-    value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
+    policy: <span class="kw-2">&amp;</span><span class="kw">impl </span>MutationContextPolicy&lt;State&gt;,
+    value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
     kind: DefRegionKind,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-    <span class="kw">let </span>raw = value.value.raw();
+    <span class="kw">let </span>raw = value.value;
     with_mutation_region(
         kind,
         <span class="attr">#[inline(always)]
         </span>|kind| {
-            <span class="kw">let </span><span class="kw-2">mut </span>ctx = MutateContext {
+            <span class="kw">let </span><span class="kw-2">mut </span>ctx = MutationContext {
                 driver,
                 def_region_kind: kind,
                 inplace_mode: value.inplace_mode(),
@@ -366,7 +368,7 @@
     policy: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Policy,
 }
 
-<span class="kw">impl</span>&lt;State, Policy: MutContextPolicy&lt;State&gt;&gt; MutateContextDriver&lt;State&gt;
+<span class="kw">impl</span>&lt;State, Policy: MutationContextPolicy&lt;State&gt;&gt; MutateContextDriver&lt;State&gt;
     <span class="kw">for </span>NextPolicy&lt;<span class="lifetime">'_</span>, State, Policy&gt;
 {
     <span class="kw">fn </span>state(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>State {
@@ -382,22 +384,22 @@
         <span class="self">self</span>.driver.mutate_owned(value, kind, mode)
     }
     <span class="kw">fn </span>default_mutate_borrowed(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;, kind: DefRegionKind) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        <span class="kw">let </span>view = StructuralView::from_raw(<span class="kw-2">*</span>value.as_raw_ffi_any());
-        mutate_with_policy(<span class="self">self</span>.driver, <span class="self">self</span>.policy, MutateValue::borrowed(<span class="kw-2">&amp;</span>view), kind)
+        <span class="kw">let </span>view = value;
+        mutate_with_policy(<span class="self">self</span>.driver, <span class="self">self</span>.policy, MutationView::borrowed(view), kind)
     }
     <span class="kw">fn </span>default_mutate_value(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        <span class="kw-2">mut </span>value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
+        <span class="kw-2">mut </span>value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         kind: DefRegionKind,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
-        value.mode = value.permit(mode).inplace_mode(value.value.raw());
+        value.mode = value.permit(mode).inplace_mode(value.value);
         mutate_with_policy(<span class="self">self</span>.driver, <span class="self">self</span>.policy, value, kind)
     }
-    <span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
+    <span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
         <span class="self">self</span>.driver.var_remap_get(var)
     }
-    <span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView, replacement: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;, replacement: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="self">self</span>.driver.var_remap_set(var, replacement)
     }
 }
@@ -430,18 +432,18 @@
     }
     <span class="kw">fn </span>default_mutate_value(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        value: MutateValue&lt;<span class="lifetime">'_</span>&gt;,
+        value: MutationView&lt;<span class="lifetime">'_</span>&gt;,
         kind: DefRegionKind,
         mode: InplaceMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
         <span class="kw">let </span>permit = value.permit(mode);
-        default_mutate_driver(<span class="self">self</span>.driver, value.value.raw(), kind, permit)
+        default_mutate_driver(<span class="self">self</span>.driver, value.value, kind, permit)
     }
-    <span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
-        <span class="self">self</span>.driver.var_remap_get_raw(var.raw())
+    <span class="kw">fn </span>var_remap_get(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Any&gt;&gt; {
+        <span class="self">self</span>.driver.var_remap_get_raw(raw_of(var))
     }
-    <span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: <span class="kw-2">&amp;</span>StructuralView, replacement: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.driver.var_remap_set_raw(var.raw(), replacement)
+    <span class="kw">fn </span>var_remap_set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, var: AnyView&lt;<span class="lifetime">'_</span>&gt;, replacement: <span class="kw-2">&amp;</span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.driver.var_remap_set_raw(raw_of(var), replacement)
     }
 }
 
@@ -456,7 +458,7 @@
     }
 }
 
-<span class="doccomment">/// A [`MapDispatch`] with a [`MutContextPolicy`], sharing the dispatcher's state.
+<span class="doccomment">/// A [`MapDispatch`] with a [`MutationContextPolicy`], sharing the dispatcher's state.
 ///
 /// Pass this value or a mutable reference to [`structural_map`]. Each node's
 /// map callback runs outside its policy scope; its children run inside.
@@ -467,7 +469,9 @@
     policy: Rc&lt;Policy&gt;,
 }
 
-<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutContextPolicy&lt;Mapper&gt;&gt; MapWithContextPolicy&lt;Mapper, Policy&gt; {
+<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutationContextPolicy&lt;Mapper&gt;&gt;
+    MapWithContextPolicy&lt;Mapper, Policy&gt;
+{
     <span class="doccomment">/// Combine a dispatcher and a default-recursion policy.
     </span><span class="kw">pub fn </span>new(mapper: Mapper, policy: Policy) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -492,7 +496,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutContextPolicy&lt;Mapper&gt;&gt; NativeMap
+<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutationContextPolicy&lt;Mapper&gt;&gt; NativeMap
     <span class="kw">for </span>MapWithContextPolicy&lt;Mapper, Policy&gt;
 {
     <span class="kw">fn </span>map_root(<span class="kw-2">&amp;mut </span><span class="self">self</span>, root: Any, order: WalkOrder) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
@@ -500,7 +504,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutContextPolicy&lt;Mapper&gt;&gt; NativeMap
+<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutationContextPolicy&lt;Mapper&gt;&gt; NativeMap
     <span class="kw">for </span><span class="kw-2">&amp;mut </span>MapWithContextPolicy&lt;Mapper, Policy&gt;
 {
     <span class="kw">fn </span>map_root(<span class="kw-2">&amp;mut </span><span class="self">self</span>, root: Any, order: WalkOrder) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt; {
@@ -511,7 +515,7 @@
 <span class="attr">#[doc(hidden)]
 </span><span class="kw">pub enum </span>ByPolicyMap {}
 
-<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutContextPolicy&lt;Mapper&gt;&gt; IntoMapper&lt;ByPolicyMap&gt;
+<span class="kw">impl</span>&lt;Mapper: MapDispatch, Policy: MutationContextPolicy&lt;Mapper&gt;&gt; IntoMapper&lt;ByPolicyMap&gt;
     <span class="kw">for </span>MapWithContextPolicy&lt;Mapper, Policy&gt;
 {
     <span class="kw">type </span>Mapper = <span class="self">Self</span>;
@@ -520,7 +524,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, Mapper: MapDispatch, Policy: MutContextPolicy&lt;Mapper&gt;&gt; IntoMapper&lt;ByPolicyMap&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, Mapper: MapDispatch, Policy: MutationContextPolicy&lt;Mapper&gt;&gt; IntoMapper&lt;ByPolicyMap&gt;
     <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>MapWithContextPolicy&lt;Mapper, Policy&gt;
 {
     <span class="kw">type </span>Mapper = <span class="self">Self</span>;

@@ -32,6 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/tabs_theme.css?v=2f226b7f" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
@@ -673,7 +674,9 @@ requested <code class="docutils literal notranslate"><span class="pre">prim.Mul<
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">try_cast</span></code> consumes the managed reference it converts, so we clone
 <code class="docutils literal notranslate"><span class="pre">value</span></code> before the first cast; the clone costs one reference-count
-increment.</p>
+increment. For read-only inspection, <code class="docutils literal notranslate"><span class="pre">value.downcast_ref::&lt;AddObj&gt;()</span></code>
+returns <code class="docutils literal notranslate"><span class="pre">Option&lt;&amp;AddObj&gt;</span></code> without consuming or cloning the reference.
+<code class="docutils literal notranslate"><span class="pre">Any</span></code> and <code class="docutils literal notranslate"><span class="pre">AnyView</span></code> provide the same borrowed downcast.</p>
 </div>
 <p>Casting to one type at a time gets tedious when a node can be one of
 many; that is what matching is for.</p>
@@ -685,11 +688,11 @@ on an enum. Let’s print an expression with explicit parentheses by
 matching each node and recursing into its operands:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Expr</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">match_any</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">expr</span><span class="p">.</span><span class="n">clone</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">Add</span><span class="p">(</span><span class="n">add</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">format!</span><span class="p">(</span><span class="s">"({} + {})"</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
-<span class="w">            </span><span class="n">Mul</span><span class="p">(</span><span class="n">mul</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">format!</span><span class="p">(</span><span class="s">"({} * {})"</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="p">.</span><span class="n">a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
-<span class="w">            </span><span class="n">Var</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">var</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">as_str</span><span class="p">().</span><span class="n">to_owned</span><span class="p">(),</span>
-<span class="w">            </span><span class="n">IntImm</span><span class="p">(</span><span class="n">imm</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">imm</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">to_string</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">AnyView</span><span class="p">::</span><span class="n">from</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">AddObj</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">add</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">format!</span><span class="p">(</span><span class="s">"({} + {})"</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
+<span class="w">            </span><span class="n">MulObj</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">mul</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">format!</span><span class="p">(</span><span class="s">"({} * {})"</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="p">.</span><span class="n">a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
+<span class="w">            </span><span class="n">VarObj</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">var</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">var</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">as_str</span><span class="p">().</span><span class="n">to_owned</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">IntImmObj</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">imm</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">imm</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">to_string</span><span class="p">(),</span>
 <span class="w">            </span><span class="n">_</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">"&lt;other&gt;"</span><span class="p">.</span><span class="n">to_owned</span><span class="p">(),</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">};</span>
@@ -710,9 +713,9 @@ matching each node and recursing into its operands:</p>
 &lt;other&gt;
 </pre></div>
 </div>
-<p>Each arm names a managed reference type and binds the matching node to it,
-and the first matching arm runs. The <code class="docutils literal notranslate"><span class="pre">Add</span></code> and <code class="docutils literal notranslate"><span class="pre">Mul</span></code> arms recurse into
-the operands, the <code class="docutils literal notranslate"><span class="pre">Var</span></code> and <code class="docutils literal notranslate"><span class="pre">IntImm</span></code> arms end the recursion, and
+<p>Each arm names an object type and borrows the matching node with <code class="docutils literal notranslate"><span class="pre">ref</span></code>;
+the first matching arm runs. The <code class="docutils literal notranslate"><span class="pre">AddObj</span></code> and <code class="docutils literal notranslate"><span class="pre">MulObj</span></code> arms recurse into
+the operands, the <code class="docutils literal notranslate"><span class="pre">VarObj</span></code> and <code class="docutils literal notranslate"><span class="pre">IntImmObj</span></code> arms end the recursion, and
 <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">1</span></code> falls to the <code class="docutils literal notranslate"><span class="pre">_</span></code> arm because <code class="docutils literal notranslate"><span class="pre">describe</span></code> has no arm for
 subtraction.</p>
 <p><strong>The catch-all arm keeps existing code working as node types are added.</strong>
@@ -721,10 +724,12 @@ another crate, so the match needs a <code class="docutils literal notranslate"><
 types it knows, and <code class="docutils literal notranslate"><span class="pre">_</span></code> lets programs with new types pass through.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Like <code class="docutils literal notranslate"><span class="pre">try_cast</span></code>, <code class="docutils literal notranslate"><span class="pre">match_any!</span></code> consumes what it matches, so
-<code class="docutils literal notranslate"><span class="pre">describe</span></code> passes it <code class="docutils literal notranslate"><span class="pre">expr.clone()</span></code>. <code class="docutils literal notranslate"><span class="pre">match_any!</span></code> works on any
-TVM-FFI object, such as tensors, shapes, and typed arrays, and on
-<code class="docutils literal notranslate"><span class="pre">Any</span></code> values. Plain values such as integers take the <code class="docutils literal notranslate"><span class="pre">_</span></code> arm.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Obj(ref</span> <span class="pre">node)</span></code> borrows the underlying object without incrementing its
+reference count. <code class="docutils literal notranslate"><span class="pre">describe</span></code> converts <code class="docutils literal notranslate"><span class="pre">expr</span></code> to an <code class="docutils literal notranslate"><span class="pre">AnyView</span></code>. An
+owning arm such as <code class="docutils literal notranslate"><span class="pre">Add(add)</span></code> still produces a managed reference.
+<code class="docutils literal notranslate"><span class="pre">match_any!</span></code> also works on <code class="docutils literal notranslate"><span class="pre">Any</span></code> and <code class="docutils literal notranslate"><span class="pre">AnyView</span></code> values, including
+tensors, shapes, and typed arrays. Plain values such as integers take
+the <code class="docutils literal notranslate"><span class="pre">_</span></code> arm in this example.</p>
 </div>
 <p>A match looks at one node at a time; to process every node in a program
 while keeping state, we dispatch.</p>
@@ -869,7 +874,7 @@ does not descend into them, and <code class="docutils literal notranslate"><span
 <td><p>Each write, as a borrowed object, without changing its reference
 count.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">|value:</span> <span class="pre">&amp;StructuralView|</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">|value:</span> <span class="pre">AnyView&lt;'_&gt;|</span></code></p></td>
 <td><p>Every value the walk reaches.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">|var:</span> <span class="pre">Var,</span> <span class="pre">kind:</span> <span class="pre">DefRegionKind|</span></code></p></td>
@@ -1045,8 +1050,12 @@ child and <code class="docutils literal notranslate"><span class="pre">def_regio
 <p>For the mutation we use the struct form instead; either form works for
 both visits and mutations. A <code class="docutils literal notranslate"><span class="pre">#[dispatch(mutate)]</span></code> method that takes a
 trailing <code class="docutils literal notranslate"><span class="pre">&amp;mut</span> <span class="pre">Mutator</span></code> gets the mutation counterpart of
-<code class="docutils literal notranslate"><span class="pre">VisitContext</span></code>, with <code class="docutils literal notranslate"><span class="pre">default_mutate</span></code> for the children and
-<code class="docutils literal notranslate"><span class="pre">def_region_kind()</span></code>. Let’s reverse the loop
+<code class="docutils literal notranslate"><span class="pre">VisitContext</span></code>, with <code class="docutils literal notranslate"><span class="pre">def_region_kind()</span></code> and child-mutation methods. A
+<code class="docutils literal notranslate"><span class="pre">MutationView&lt;'_,</span> <span class="pre">For&gt;</span></code> carries the current loop and the engine’s
+permission to reuse it. <code class="docutils literal notranslate"><span class="pre">as_any_view()</span></code> borrows it for inspection; after
+that borrow ends, <code class="docutils literal notranslate"><span class="pre">default_maybe_inplace_mutate</span></code> consumes the handle to
+recurse with the same permission. Reuse still requires unique ownership,
+so an alias held by Python remains unchanged. Let’s reverse the loop
 by replacing each use of <code class="docutils literal notranslate"><span class="pre">i</span></code> with <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">-</span> <span class="pre">1</span> <span class="pre">-</span> <span class="pre">i</span></code>. As before,
 <code class="docutils literal notranslate"><span class="pre">.try_into()?</span></code> extracts the built expression or returns its error:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
@@ -1056,10 +1065,12 @@ by replacing each use of <code class="docutils literal notranslate"><span class=
 
 <span class="cp">#[dispatch(mutate)]</span>
 <span class="k">impl</span><span class="w"> </span><span class="n">ReverseLoops</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">mutate_for</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">loop_</span><span class="p">:</span><span class="w"> </span><span class="nc">For</span><span class="p">,</span><span class="w"> </span><span class="n">mutator</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Mutator</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">mutate_for</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nc">MutationView</span><span class="o">&lt;'</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="n">For</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">mutator</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Mutator</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="n">as_any_view</span><span class="p">();</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">loop_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="n">downcast_ref</span><span class="p">::</span><span class="o">&lt;</span><span class="n">ForObj</span><span class="o">&gt;</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span>
 <span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">loop_</span><span class="p">.</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">&amp;</span><span class="n">loop_</span><span class="p">.</span><span class="n">var</span><span class="p">).</span><span class="n">try_into</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
 <span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">reversed_index</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">::</span><span class="n">of</span><span class="p">(</span><span class="o">&amp;</span><span class="n">loop_</span><span class="p">.</span><span class="n">var</span><span class="p">),</span><span class="w"> </span><span class="n">index</span><span class="p">);</span>
-<span class="w">        </span><span class="n">mutator</span><span class="p">.</span><span class="n">default_mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">loop_</span><span class="p">)</span>
+<span class="w">        </span><span class="n">mutator</span><span class="p">.</span><span class="n">default_maybe_inplace_mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
 <span class="w">    </span><span class="p">}</span>
 
 <span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">mutate_var</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">var</span><span class="p">:</span><span class="w"> </span><span class="nc">Var</span><span class="p">,</span><span class="w"> </span><span class="n">mutator</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Mutator</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Expr</span><span class="w"> </span><span class="p">{</span>
@@ -1087,8 +1098,9 @@ by replacing each use of <code class="docutils literal notranslate"><span class=
         <span class="n">B</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">mutate_for</span></code> records the replacement, then <code class="docutils literal notranslate"><span class="pre">default_mutate</span></code> rewrites
-the loop’s children through the same struct, so <code class="docutils literal notranslate"><span class="pre">mutate_var</span></code> sees the
+<p><code class="docutils literal notranslate"><span class="pre">mutate_for</span></code> records the replacement, then
+<code class="docutils literal notranslate"><span class="pre">default_maybe_inplace_mutate</span></code> rewrites the loop’s children through the
+same struct, so <code class="docutils literal notranslate"><span class="pre">mutate_var</span></code> sees the
 replacement before any use of <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1124,7 +1136,7 @@ transformation can move between the two languages one function at a time.</p>
 <tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/macro.match_any.html"><code class="docutils literal notranslate"><span class="pre">match_any!</span></code></a></p></td>
 <td><p>Branches on the node type; the first matching arm runs</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCast.html"><code class="docutils literal notranslate"><span class="pre">.try_cast()</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.as_node"><code class="docutils literal notranslate"><span class="pre">as_node</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCast.html"><code class="docutils literal notranslate"><span class="pre">.try_cast()</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.downcast_ref"><code class="docutils literal notranslate"><span class="pre">downcast_ref</span></code></a></p></td>
 <td><p>Downcasts to one type, as a managed reference in a <code class="docutils literal notranslate"><span class="pre">Result</span></code> or a
 borrowed object in an <code class="docutils literal notranslate"><span class="pre">Option</span></code></p></td>
 </tr>

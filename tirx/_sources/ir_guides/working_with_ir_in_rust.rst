@@ -248,7 +248,9 @@ requested ``prim.Mul``.
 
    ``try_cast`` consumes the managed reference it converts, so we clone
    ``value`` before the first cast; the clone costs one reference-count
-   increment.
+   increment. For read-only inspection, ``value.downcast_ref::<AddObj>()``
+   returns ``Option<&AddObj>`` without consuming or cloning the reference.
+   ``Any`` and ``AnyView`` provide the same borrowed downcast.
 
 Casting to one type at a time gets tedious when a node can be one of
 many; that is what matching is for.
@@ -279,9 +281,9 @@ The output is:
    ((x * 2) + 1)
    <other>
 
-Each arm names a managed reference type and binds the matching node to it,
-and the first matching arm runs. The ``Add`` and ``Mul`` arms recurse into
-the operands, the ``Var`` and ``IntImm`` arms end the recursion, and
+Each arm names an object type and borrows the matching node with ``ref``;
+the first matching arm runs. The ``AddObj`` and ``MulObj`` arms recurse into
+the operands, the ``VarObj`` and ``IntImmObj`` arms end the recursion, and
 ``x - 1`` falls to the ``_`` arm because ``describe`` has no arm for
 subtraction.
 
@@ -292,10 +294,12 @@ types it knows, and ``_`` lets programs with new types pass through.
 
 .. note::
 
-   Like ``try_cast``, ``match_any!`` consumes what it matches, so
-   ``describe`` passes it ``expr.clone()``. ``match_any!`` works on any
-   TVM-FFI object, such as tensors, shapes, and typed arrays, and on
-   ``Any`` values. Plain values such as integers take the ``_`` arm.
+   ``Obj(ref node)`` borrows the underlying object without incrementing its
+   reference count. ``describe`` converts ``expr`` to an ``AnyView``. An
+   owning arm such as ``Add(add)`` still produces a managed reference.
+   ``match_any!`` also works on ``Any`` and ``AnyView`` values, including
+   tensors, shapes, and typed arrays. Plain values such as integers take
+   the ``_`` arm in this example.
 
 A match looks at one node at a time; to process every node in a program
 while keeping state, we dispatch.
@@ -408,7 +412,7 @@ The parameter list of a callback decides what it receives:
    * - ``|store: &TensorStoreObj|``
      - Each write, as a borrowed object, without changing its reference
        count.
-   * - ``|value: &StructuralView|``
+   * - ``|value: AnyView<'_>|``
      - Every value the walk reaches.
    * - ``|var: Var, kind: DefRegionKind|``
      - Each variable, with its definition region kind.
@@ -546,8 +550,12 @@ child and ``def_region_kind`` for the current node.
 For the mutation we use the struct form instead; either form works for
 both visits and mutations. A ``#[dispatch(mutate)]`` method that takes a
 trailing ``&mut Mutator`` gets the mutation counterpart of
-``VisitContext``, with ``default_mutate`` for the children and
-``def_region_kind()``. Let's reverse the loop
+``VisitContext``, with ``def_region_kind()`` and child-mutation methods. A
+``MutationView<'_, For>`` carries the current loop and the engine's
+permission to reuse it. ``as_any_view()`` borrows it for inspection; after
+that borrow ends, ``default_maybe_inplace_mutate`` consumes the handle to
+recurse with the same permission. Reuse still requires unique ownership,
+so an alias held by Python remains unchanged. Let's reverse the loop
 by replacing each use of ``i`` with ``n - 1 - i``. As before,
 ``.try_into()?`` extracts the built expression or returns its error:
 
@@ -569,8 +577,9 @@ The output is:
        for i in range(n):
            B[n - 1 - i] = A[n - 1 - i] + T.float32(1.0)
 
-``mutate_for`` records the replacement, then ``default_mutate`` rewrites
-the loop's children through the same struct, so ``mutate_var`` sees the
+``mutate_for`` records the replacement, then
+``default_maybe_inplace_mutate`` rewrites the loop's children through the
+same struct, so ``mutate_var`` sees the
 replacement before any use of ``i``.
 
 .. note::
@@ -602,7 +611,7 @@ Quick Reference
      - What it does
    * - |match_any!|_
      - Branches on the node type; the first matching arm runs
-   * - |try_cast|_, |as_node|_
+   * - |try_cast|_, |downcast_ref|_
      - Downcasts to one type, as a managed reference in a ``Result`` or a
        borrowed object in an ``Option``
    * - ``.into()``
@@ -666,7 +675,7 @@ Quick Reference
 .. _match_any!: ../reference/rust/generated/tvm_ffi/macro.match_any.html
 .. |Var::new| replace:: ``Var::new``
 .. _Var::new: ../reference/rust/generated/tvm_tirx/ir/expr/struct.Var.html#method.new
-.. |as_node| replace:: ``as_node``
-.. _as_node: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.as_node
+.. |downcast_ref| replace:: ``downcast_ref``
+.. _downcast_ref: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.downcast_ref
 .. |register_global_typed| replace:: ``Function::register_global_typed``
 .. _register_global_typed: ../reference/rust/generated/tvm_ffi/function/struct.Function.html#method.register_global_typed
