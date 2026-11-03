@@ -125,12 +125,7 @@ Program Listing for File target.h
      TVM_TIRX_DLL explicit Target(const ffi::String& tag_or_config_or_target_str);
      TVM_TIRX_DLL explicit Target(const ffi::Map<ffi::String, ffi::Any>& config);
      TVM_TIRX_DLL static ffi::Optional<Target> Current(bool allow_not_defined = true);
-     explicit Target(Target target, ffi::Optional<Target> host) {
-       ffi::ObjectPtr<TargetObj> n = ffi::make_object<TargetObj>(*target.get());
-       n->host =
-           host.has_value() ? ffi::Optional<ffi::ObjectRef>(std::move(host).value()) : std::nullopt;
-       data_ = std::move(n);
-     }
+     explicit Target(Target target, ffi::Optional<Target> host) : Target(WithHost(target, host)) {}
      explicit Target(ffi::UnsafeInit tag, ffi::ObjectPtr<TargetObj> n) : ffi::ObjectRef(tag) {
        data_ = std::move(n);
      }
@@ -141,9 +136,7 @@ Program Listing for File target.h
    
      Target WithoutHost() const {
        if ((*this)->GetHost()) {
-         auto output = ffi::make_object<TargetObj>(*get());
-         output->host = std::nullopt;
-         return Target(ffi::UnsafeInit{}, std::move(output));
+         return WithHost(*this, std::nullopt);
        } else {
          return *this;
        }
