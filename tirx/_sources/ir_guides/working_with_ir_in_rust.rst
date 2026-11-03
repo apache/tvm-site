@@ -317,7 +317,10 @@ the default behavior.
 ``#[dispatch(walk)]`` on an ``impl`` block turns its ``walk_*`` methods
 into callbacks for |structural_walk|_, which visits every node. Each
 method borrows the nodes of its parameter type, and the methods are tried
-in source order. Let's count the variables and additions:
+in source order. Walk handlers share the ``Result<WalkResult>`` return type;
+one handler declares the trailing ``DefRegionKind`` argument used by the
+walker, and handlers that do not need it may omit it. Let's count the
+variables and additions:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -518,17 +521,16 @@ are structurally equal.
 Visitors and Mutators in Rust
 -----------------------------
 
-Stateful traversals use the same four structural utilities. The state
-lives either on a |dispatch|_ struct, as in Dispatching on Node Types, or
-in |VisitCallbacks|_ and |MutateCallbacks|_, which attach it to a tuple of
-callbacks. ``#[dispatch(map)]``, ``#[dispatch(visit)]``, and
-``#[dispatch(mutate)]`` work like ``#[dispatch(walk)]`` for ``map_*``,
-``visit_*``, and ``mutate_*`` methods.
+Stateful traversals use the same four structural utilities. State lives
+on a |dispatch|_ struct, as in Dispatching on Node Types.
+``#[dispatch(map)]`` and ``#[dispatch(visit)]`` group ``map_*`` and
+``visit_*`` methods. ``#[dispatch(mutate, MutationView)]`` groups
+``mutate_*`` methods and carries mutation permission through matching.
 
 **A visit or mutate callback takes control of its node's children.**
-Let's record the loops around each write. With ``VisitCallbacks``, each
-callback receives the node and a ``VisitContext``, which holds the shared
-state:
+Let's record the loops around each write. Each handler receives the node
+and can take a ``StructuralVisitorView<'_, Self>`` for recursive traversal;
+the loop stack and collected writes remain on ``self``:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -541,20 +543,20 @@ The output is:
 
    ['B inside [i]']
 
-``visit_for`` pushes the loop variable, lets ``visit_children`` visit the
-loop's children with their usual traversal, then pops the variable. It
-returns the result of ``visit_children``, so that an interrupt from a child
-reaches the caller. The context also provides ``visit`` for a selected
-child and ``def_region_kind`` for the current node.
+``visit_for`` pushes the loop variable, lets ``default_visit(self, loop_)``
+visit the loop's children with their usual traversal, then pops the variable.
+It returns the traversal result, so an interrupt or error from a child
+reaches the caller. The view also provides ``visit(self, child)`` for a
+selected child and ``def_region_kind`` for the current node.
 
-For the mutation we use the struct form instead; either form works for
-both visits and mutations. A ``#[dispatch(mutate)]`` method that takes a
-trailing ``&mut Mutator`` gets the mutation counterpart of
-``VisitContext``, with ``def_region_kind()`` and child-mutation methods. A
+For mutation, a trailing ``&mut StructuralMutatorView<'_, Self>`` provides
+``def_region_kind()`` and child-mutation methods. A
 ``MutationView<'_, For>`` carries the current loop and the engine's
-permission to reuse it. ``as_any_view()`` borrows it for inspection; after
-that borrow ends, ``default_maybe_inplace_mutate`` consumes the handle to
-recurse with the same permission. Reuse still requires unique ownership,
+permission to reuse it. Its typed fields can be borrowed directly; after
+that borrow ends, ``default_mutate`` consumes the handle to recurse with
+the same permission. The returned ``UnchangedOr<Any>`` becomes the common
+``Any`` handler result without discarding an unchanged marker. Reuse still
+requires unique ownership,
 so an alias held by Python remains unchanged. Let's reverse the loop
 by replacing each use of ``i`` with ``n - 1 - i``. As before,
 ``.try_into()?`` extracts the built expression or returns its error:
@@ -578,7 +580,7 @@ The output is:
            B[n - 1 - i] = A[n - 1 - i] + T.float32(1.0)
 
 ``mutate_for`` records the replacement, then
-``default_maybe_inplace_mutate`` rewrites the loop's children through the
+``default_mutate`` rewrites the loop's children through the
 same struct, so ``mutate_var`` sees the
 replacement before any use of ``i``.
 
@@ -626,10 +628,10 @@ Quick Reference
      - Receives the definition region kind
    * - ``Function::get_global("ffi.StructuralEqual")``
      - Compares by structure
-   * - |dispatch|_\ ``(walk)``, ``(map)``, ``(visit)``, ``(mutate)``
+   * - |dispatch|_\ ``(walk)``, ``(map)``, ``(visit)``, ``(mutate, MutationView)``
      - Turns the methods of a struct into typed callbacks
-   * - |VisitCallbacks|_, |MutateCallbacks|_
-     - Attach state to a tuple of visit or mutate callbacks
+   * - |StructuralVisitorView|_, |StructuralMutatorView|_
+     - Recurse with the same dispatcher and current definition region
    * - |static_init_block!|_, |register_global_typed|_
      - Registers Rust functions as global functions
 
@@ -661,10 +663,10 @@ Quick Reference
 .. _make_const: ../reference/rust/generated/tvm_tirx/ir/prim/op/fn.make_const.html
 .. |dispatch| replace:: ``#[dispatch]``
 .. _dispatch: ../reference/rust/generated/tvm_ffi/attr.dispatch.html
-.. |VisitCallbacks| replace:: ``VisitCallbacks``
-.. _VisitCallbacks: ../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.VisitCallbacks.html
-.. |MutateCallbacks| replace:: ``MutateCallbacks``
-.. _MutateCallbacks: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.MutateCallbacks.html
+.. |StructuralVisitorView| replace:: ``StructuralVisitorView``
+.. _StructuralVisitorView: ../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.StructuralVisitorView.html
+.. |StructuralMutatorView| replace:: ``StructuralMutatorView``
+.. _StructuralMutatorView: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.StructuralMutatorView.html
 .. |ObjectIdentity| replace:: ``ObjectIdentity``
 .. _ObjectIdentity: ../reference/rust/generated/tvm_ffi/object/struct.ObjectIdentity.html
 .. |StructuralVisitorWithConstraintContext| replace:: ``StructuralVisitorWithConstraintContext``

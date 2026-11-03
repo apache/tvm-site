@@ -190,7 +190,26 @@
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
 <a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -215,6 +234,25 @@
 <span class="kw">use </span><span class="kw">crate</span>::object::{<span class="self">self</span>, ObjectRefCore};
 <span class="kw">use </span><span class="kw">crate</span>::reflection::FieldGetter;
 <span class="kw">use </span><span class="kw">crate</span>::tvm_ffi_sys::{TVMFFIAny, TVMFFIByteArray, TVMFFITypeIndex, TVMFFITypeKeyToIndex};
+
+<span class="doccomment">/// Initialize the borrowed ABI prefix of a scoped Rust-owned traversal engine.
+///
+/// # Safety
+///
+/// `header` points to the engine's stable Object prefix. The Box retains the
+/// reserved owner reference and destroys the engine itself; low-level hooks may
+/// only borrow it synchronously. All temporary strong and weak references must
+/// end before the Box is dropped, so the foreign deleter is never used.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>initialize_scoped_runtime(
+    header: <span class="kw-2">*mut </span><span class="kw">crate</span>::tvm_ffi_sys::TVMFFIObject,
+    type_index: i32,
+) {
+    <span class="kw">let </span><span class="kw-2">mut </span>value = <span class="kw">crate</span>::tvm_ffi_sys::TVMFFIObject::new();
+    value.combined_ref_count =
+        std::sync::atomic::AtomicU64::new(<span class="kw">crate</span>::tvm_ffi_sys::COMBINED_REF_COUNT_BOTH_ONE);
+    value.type_index = type_index;
+    std::ptr::write(header, value);
+}
 
 <span class="doccomment">/// Add one structural traversal frame to an error's backtrace.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with_structural_error_context(error: Error, operation: <span class="kw-2">&amp;</span>str, frame: <span class="kw-2">&amp;</span>str) -&gt; Error {
@@ -373,12 +411,12 @@
 /// The cell must satisfy `AnyView::from_raw_ffi_any`'s requirements, including
 /// its unique, at-most-once conversion rule for rvalue slots. The traversal
 /// driver must keep the owning root, field, or replacement alive for the borrow.
-</span><span class="attr">#[inline]
+</span><span class="attr">#[inline(always)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>borrowed_view(raw: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; AnyView&lt;<span class="lifetime">'_</span>&gt; {
     AnyView::from_raw_ffi_any(<span class="kw-2">*</span>raw)
 }
 
-<span class="attr">#[inline]
+<span class="attr">#[inline(always)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>raw_of(value: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; TVMFFIAny {
     <span class="kw-2">*</span>value.as_raw_ffi_any()
 }

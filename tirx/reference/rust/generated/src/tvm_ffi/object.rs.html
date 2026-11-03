@@ -694,7 +694,23 @@
 <a href="#693" id="693">693</a>
 <a href="#694" id="694">694</a>
 <a href="#695" id="695">695</a>
-<a href="#696" id="696">696</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
+<a href="#701" id="701">701</a>
+<a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
+<a href="#712" id="712">712</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -712,7 +728,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-</span><span class="kw">use </span>std::ops::{Deref, DerefMut};
+</span><span class="kw">use </span>std::ops::Deref;
 <span class="kw">use </span>std::sync::atomic::AtomicU64;
 
 <span class="kw">use </span><span class="kw">crate</span>::derive::ObjectRef;
@@ -746,10 +762,18 @@
 <span class="kw">unsafe impl</span>&lt;T: Send + Sync + ObjectCore&gt; Send <span class="kw">for </span>ObjectArc&lt;T&gt; {}
 <span class="kw">unsafe impl</span>&lt;T: Send + Sync + ObjectCore&gt; Sync <span class="kw">for </span>ObjectArc&lt;T&gt; {}
 
-<span class="doccomment">/// Traits that can be used to check if a type is an object
+<span class="doccomment">/// The native representation of an object-system type.
 ///
-/// This trait is unsafe because it is used to access the object header
-/// and the object header is unsafe to access
+/// # Safety
+/// `Self` must have a compatible C layout with a valid `TVMFFIObject` prefix
+/// at offset zero. Its registered type, inheritance and payload must describe
+/// that layout correctly, including for foreign declarations.
+///
+/// A live managed object and its header must remain at their original allocation
+/// address until destruction. Safe APIs must not move, replace or expose mutable
+/// access to that header while managed; payload mutation must preserve its type
+/// invariants. Preallocation builders and values moved out during destruction
+/// are not live managed objects and cannot be borrowed as `AnyView`.
 </span><span class="kw">pub unsafe trait </span>ObjectCore: Sized + <span class="lifetime">'static </span>{
     <span class="doccomment">/// the type key of the object
     </span><span class="kw">const </span>TYPE_KEY: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str;
@@ -775,6 +799,10 @@
     /// # Returns
     /// * `&amp;mut TVMFFIObject` - The object header
     /// \return The object header
+    ///
+    /// # Safety
+    /// The caller must have exclusive access to the header and preserve the
+    /// managed allocation's address, reference counts, deleter and dynamic type.
     </span><span class="kw">unsafe fn </span>object_header_mut(this: <span class="kw-2">&amp;mut </span><span class="self">Self</span>) -&gt; <span class="kw-2">&amp;mut </span>TVMFFIObject;
 }
 
@@ -1048,7 +1076,7 @@
     /// * `obj` - The object to increase the reference count
     </span><span class="attr">#[inline]
     </span><span class="kw">pub unsafe fn </span>inc_ref(handle: <span class="kw-2">*mut </span>TVMFFIObject) {
-        <span class="kw">let </span>obj = <span class="kw-2">&amp;mut *</span>handle;
+        <span class="kw">let </span>obj = <span class="kw-2">&amp;*</span>handle;
         obj.combined_ref_count.fetch_add(<span class="number">1</span>, Ordering::Relaxed);
     }
 
@@ -1060,15 +1088,14 @@
     /// * `obj` - The object to decrease the reference count
     </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>dec_ref(handle: <span class="kw-2">*mut </span>TVMFFIObject) {
-        <span class="kw">let </span>obj = <span class="kw-2">&amp;mut *</span>handle;
-        <span class="kw">let </span>old_combined_count = obj
+        <span class="kw">let </span>old_combined_count = (<span class="kw-2">*</span>handle)
             .combined_ref_count
             .fetch_sub(COMBINED_REF_COUNT_STRONG_ONE, Ordering::Relaxed);
         <span class="kw">if </span>old_combined_count == COMBINED_REF_COUNT_BOTH_ONE {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(deleter) = obj.deleter {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(deleter) = (<span class="kw-2">*</span>handle).deleter {
                 fence(Ordering::Acquire);
                 deleter(
-                    obj <span class="kw">as </span><span class="kw-2">*mut </span>TVMFFIObject <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
+                    handle.cast::&lt;c_void&gt;(),
                     kTVMFFIObjectDeleterFlagBitMaskBoth <span class="kw">as </span>i32,
                 );
             }
@@ -1078,20 +1105,20 @@
             <span class="comment">// slow path, there is still a weak reference left
             // need to run two phase decrement
             </span>fence(Ordering::Acquire);
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(deleter) = obj.deleter {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(deleter) = (<span class="kw-2">*</span>handle).deleter {
                 deleter(
-                    obj <span class="kw">as </span><span class="kw-2">*mut </span>TVMFFIObject <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
+                    handle.cast::&lt;c_void&gt;(),
                     kTVMFFIObjectDeleterFlagBitMaskStrong <span class="kw">as </span>i32,
                 );
             }
-            <span class="kw">let </span>old_weak_count = obj
+            <span class="kw">let </span>old_weak_count = (<span class="kw-2">*</span>handle)
                 .combined_ref_count
                 .fetch_sub(COMBINED_REF_COUNT_WEAK_ONE, Ordering::Release);
             <span class="kw">if </span>old_weak_count == COMBINED_REF_COUNT_WEAK_ONE {
                 fence(Ordering::Acquire);
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(deleter) = obj.deleter {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(deleter) = (<span class="kw-2">*</span>handle).deleter {
                     deleter(
-                        obj <span class="kw">as </span><span class="kw-2">*mut </span>TVMFFIObject <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
+                        handle.cast::&lt;c_void&gt;(),
                         kTVMFFIObjectDeleterFlagBitMaskWeak <span class="kw">as </span>i32,
                     );
                 }
@@ -1101,13 +1128,13 @@
 
     <span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>strong_count(handle: <span class="kw-2">*mut </span>TVMFFIObject) -&gt; usize {
-        <span class="kw">let </span>obj = <span class="kw-2">&amp;mut *</span>handle;
+        <span class="kw">let </span>obj = <span class="kw-2">&amp;*</span>handle;
         (obj.combined_ref_count.load(Ordering::Relaxed) &amp; COMBINED_REF_COUNT_MASK_U32) <span class="kw">as </span>usize
     }
 
     <span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>weak_count(handle: <span class="kw-2">*mut </span>TVMFFIObject) -&gt; usize {
-        <span class="kw">let </span>obj = <span class="kw-2">&amp;mut *</span>handle;
+        <span class="kw">let </span>obj = <span class="kw-2">&amp;*</span>handle;
         (obj.combined_ref_count.load(Ordering::Relaxed) &gt;&gt; <span class="number">32</span>) <span class="kw">as </span>usize
     }
 
@@ -1197,7 +1224,8 @@
 //---------------------
 
 </span><span class="kw">impl</span>&lt;T: ObjectCore&gt; ObjectArc&lt;T&gt; {
-    <span class="kw">pub fn </span>new(data: T) -&gt; <span class="self">Self </span>{
+    <span class="doccomment">/// Allocate an initialized object at its stable managed address.
+    </span><span class="kw">pub fn </span>new(data: T) -&gt; <span class="self">Self </span>{
         <span class="kw">unsafe </span>{
             <span class="kw">let </span>layout = std::alloc::Layout::new::&lt;T&gt;();
             <span class="kw">let </span>raw_data_ptr = std::alloc::alloc(layout);
@@ -1223,7 +1251,8 @@
             }
         }
     }
-    <span class="kw">pub fn </span>new_with_extra_items&lt;U&gt;(data: T) -&gt; <span class="self">Self
+    <span class="doccomment">/// Allocate a stable object followed by its type's extra item storage.
+    </span><span class="kw">pub fn </span>new_with_extra_items&lt;U&gt;(data: T) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>T: ObjectCoreWithExtraItems&lt;ExtraItem = U&gt;,
     {
@@ -1278,6 +1307,11 @@
     /// # Returns
     /// * `ObjectArc&lt;T&gt;` - The ObjectArc
     /// \return The ObjectArc
+    ///
+    /// # Safety
+    /// `ptr` must own one strong reference to a live, stable managed allocation
+    /// whose dynamic type is compatible with `T` and whose payload is valid.
+    /// Ownership of that reference is transferred into the returned handle.
     </span><span class="attr">#[inline]
     </span><span class="kw">pub unsafe fn </span>from_raw(ptr: <span class="kw-2">*const </span>T) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -1309,6 +1343,10 @@
     /// # Returns
     /// * `*const T` - The raw pointer
     /// \return The raw pointer
+    ///
+    /// # Safety
+    /// Access must respect existing borrows, and the pointer cannot outlive an
+    /// owning handle. The object and header must not be moved or replaced.
     </span><span class="attr">#[inline]
     </span><span class="kw">pub unsafe fn </span>as_raw(this: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="kw-2">*const </span>T {
         this.ptr.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>T
@@ -1323,9 +1361,13 @@
     ///
     /// # Returns
     /// * `*mut T` - The raw pointer
+    ///
+    /// # Safety
+    /// The handle need not be unique. The caller must establish exclusive access
+    /// for each mutation and must not move or replace the object or its header.
     </span><span class="attr">#[inline]
     </span><span class="kw">pub unsafe fn </span>as_raw_mut(this: <span class="kw-2">&amp;mut </span><span class="self">Self</span>) -&gt; <span class="kw-2">*mut </span>T {
-        this.ptr.as_mut()
+        this.ptr.as_ptr()
     }
 
     <span class="doccomment">/// Get the strong reference count of the ObjectArc
@@ -1337,9 +1379,7 @@
     /// * `usize` - The strong reference count
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>strong_count(this: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; usize {
-        <span class="kw">unsafe </span>{
-            unsafe_::strong_count(this.ptr.as_ref() <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>T <span class="kw">as </span><span class="kw-2">*mut </span>TVMFFIObject)
-        }
+        <span class="kw">unsafe </span>{ unsafe_::strong_count(this.ptr.as_ptr().cast::&lt;TVMFFIObject&gt;()) }
     }
 
     <span class="doccomment">/// Get the weak reference count of the ObjectArc
@@ -1351,7 +1391,7 @@
     /// * `usize` - The weak reference count
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>weak_count(this: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; usize {
-        <span class="kw">unsafe </span>{ unsafe_::weak_count(this.ptr.as_ref() <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>T <span class="kw">as </span><span class="kw-2">*mut </span>TVMFFIObject) }
+        <span class="kw">unsafe </span>{ unsafe_::weak_count(this.ptr.as_ptr().cast::&lt;TVMFFIObject&gt;()) }
     }
 }
 
@@ -1364,18 +1404,10 @@
     }
 }
 
-<span class="comment">// implement DerefMut for ObjectArc
-</span><span class="kw">impl</span>&lt;T: ObjectCore&gt; DerefMut <span class="kw">for </span>ObjectArc&lt;T&gt; {
-    <span class="attr">#[inline]
-    </span><span class="kw">fn </span>deref_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self</span>::Target {
-        <span class="kw">unsafe </span>{ <span class="self">self</span>.ptr.as_mut() }
-    }
-}
-
 <span class="comment">// implement Drop for ObjectArc
 </span><span class="kw">impl</span>&lt;T: ObjectCore&gt; Drop <span class="kw">for </span>ObjectArc&lt;T&gt; {
     <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">unsafe </span>{ unsafe_::dec_ref(<span class="self">self</span>.ptr.as_mut() <span class="kw">as </span><span class="kw-2">*mut </span>T <span class="kw">as </span><span class="kw-2">*mut </span>TVMFFIObject) }
+        <span class="kw">unsafe </span>{ unsafe_::dec_ref(<span class="self">self</span>.ptr.as_ptr().cast::&lt;TVMFFIObject&gt;()) }
     }
 }
 
@@ -1383,7 +1415,7 @@
 </span><span class="kw">impl</span>&lt;T: ObjectCore&gt; Clone <span class="kw">for </span>ObjectArc&lt;T&gt; {
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
-        <span class="kw">unsafe </span>{ unsafe_::inc_ref(<span class="self">self</span>.ptr.as_ref() <span class="kw">as </span><span class="kw-2">*const </span>T <span class="kw">as </span><span class="kw-2">*mut </span>T <span class="kw">as </span><span class="kw-2">*mut </span>TVMFFIObject) }
+        <span class="kw">unsafe </span>{ unsafe_::inc_ref(<span class="self">self</span>.ptr.as_ptr().cast::&lt;TVMFFIObject&gt;()) }
         <span class="self">Self </span>{
             ptr: <span class="self">self</span>.ptr,
             _phantom: std::marker::PhantomData,

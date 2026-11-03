@@ -564,7 +564,9 @@
 <a href="#563" id="563">563</a>
 <a href="#564" id="564">564</a>
 <a href="#565" id="565">565</a>
-<a href="#566" id="566">566</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -855,14 +857,16 @@
         };
         <span class="kw">unsafe </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>obj_arc = ObjectArc::new_with_extra_items(tensor_obj);
-            obj_arc.base.dltensor.shape =
-                TensorObjFromNDAlloc::extra_items(<span class="kw-2">&amp;</span>obj_arc).as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>i64;
-            obj_arc.base.dltensor.strides = obj_arc.base.dltensor.shape.add(shape.len());
-            <span class="kw">let </span>extra_items = TensorObjFromNDAlloc::extra_items_mut(<span class="kw-2">&amp;mut </span>obj_arc);
+            <span class="comment">// The fresh allocation is unique and has not been exposed.
+            </span><span class="kw">let </span>object = <span class="kw-2">&amp;mut *</span>ObjectArc::as_raw_mut(<span class="kw-2">&amp;mut </span>obj_arc);
+            object.base.dltensor.shape =
+                TensorObjFromNDAlloc::extra_items(object).as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>i64;
+            object.base.dltensor.strides = object.base.dltensor.shape.add(shape.len());
+            <span class="kw">let </span>extra_items = TensorObjFromNDAlloc::extra_items_mut(object);
             extra_items[..shape.len()].copy_from_slice(shape);
             Shape::fill_strides_from_shape(shape, <span class="kw-2">&amp;mut </span>extra_items[shape.len()..]);
-            <span class="kw">let </span>dltensor_ptr = <span class="kw-2">&amp;</span>obj_arc.base.dltensor <span class="kw">as </span><span class="kw-2">*const </span>DLTensor;
-            obj_arc.base.dltensor.data = obj_arc.alloc.alloc_data(<span class="kw-2">&amp;*</span>dltensor_ptr);
+            <span class="kw">let </span>dltensor_ptr = <span class="kw-2">&amp;</span>object.base.dltensor <span class="kw">as </span><span class="kw-2">*const </span>DLTensor;
+            object.base.dltensor.data = object.alloc.alloc_data(<span class="kw-2">&amp;*</span>dltensor_ptr);
             <span class="self">Self </span>{
                 data: ObjectArc::from_raw(ObjectArc::into_raw(obj_arc) <span class="kw">as </span><span class="kw-2">*mut </span>TensorObj),
             }

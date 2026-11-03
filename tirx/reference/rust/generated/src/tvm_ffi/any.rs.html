@@ -507,7 +507,15 @@
 <a href="#506" id="506">506</a>
 <a href="#507" id="507">507</a>
 <a href="#508" id="508">508</a>
-<a href="#509" id="509">509</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -557,12 +565,38 @@
         }
     }
 
-    <span class="attr">#[inline]
+    <span class="doccomment">/// Borrow a live managed object without acquiring ownership.
+    </span><span class="attr">#[doc(hidden)]
+    #[inline(always)]
+    </span><span class="kw">pub fn </span>from_object&lt;T: object::ObjectCore&gt;(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>T) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>pointer = std::ptr::from_ref(value).cast::&lt;tvm_ffi_sys::TVMFFIObject&gt;();
+        <span class="comment">// ObjectCore guarantees the prefix and stable managed allocation. A
+        // builder or a moved-out destructor value is not a live managed object.
+        </span><span class="kw">let </span>header = <span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>pointer };
+        <span class="macro">assert!</span>(
+            header.type_index &gt;= TypeIndex::kTVMFFIStaticObjectBegin <span class="kw">as </span>i32
+                &amp;&amp; header.deleter.is_some()
+                &amp;&amp; header
+                    .combined_ref_count
+                    .load(std::sync::atomic::Ordering::Relaxed)
+                    &amp; tvm_ffi_sys::COMBINED_REF_COUNT_MASK_U32
+                    != <span class="number">0</span>,
+            <span class="string">"cannot borrow an unmanaged or dead object as AnyView"
+        </span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>data = TVMFFIAny::new();
+        data.type_index = header.type_index;
+        data.data_union.v_obj = pointer.cast_mut();
+        <span class="comment">// The source borrow bounds the view; the dynamic type comes from the
+        // allocation even when value borrows a base-class prefix.
+        </span><span class="kw">unsafe </span>{ <span class="self">Self</span>::from_raw_ffi_any(data) }
+    }
+
+    <span class="attr">#[inline(always)]
     </span><span class="kw">pub fn </span>type_index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i32 {
         <span class="self">self</span>.data.type_index
     }
 
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>as_raw_ffi_any(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TVMFFIAny {
         <span class="kw-2">&amp;</span><span class="self">self</span>.data
     }
@@ -579,7 +613,7 @@
     /// reference. Owning the view takes that reference and writes null back
     /// through the pointer, so the view must be converted at most once and no
     /// other access to the slot may overlap the conversion.
-    </span><span class="attr">#[inline]
+    </span><span class="attr">#[inline(always)]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>from_raw_ffi_any(data: TVMFFIAny) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             data,
@@ -593,7 +627,7 @@
     /// values and unrelated object types return `None`. This does not change
     /// the object's reference count; the borrow cannot outlive this view or
     /// the owner it borrows. See [`Any::downcast_ref`] for an example.
-    </span><span class="attr">#[inline]
+    </span><span class="attr">#[inline(always)]
     </span><span class="kw">pub fn </span>downcast_ref&lt;T: object::ObjectCore&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>T&gt; {
         <span class="kw">if </span><span class="self">self</span>.data.type_index &lt; TypeIndex::kTVMFFIStaticObjectBegin <span class="kw">as </span>i32
             || !object::is_instance_of::&lt;T&gt;(<span class="self">self</span>.data.type_index)
@@ -613,7 +647,7 @@
     ///
     /// will return Some(T) if the type is exactly compatible with T
     /// will return None if the type is not compatible with T
-    </span><span class="attr">#[inline]
+    </span><span class="attr">#[inline(always)]
     </span><span class="kw">pub fn </span>try_as&lt;T&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt;
     <span class="kw">where
         </span>T: AnyCompatible,
@@ -641,8 +675,15 @@
     }
 }
 
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>object::Object&gt; <span class="kw">for </span>AnyView&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>object::Object) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::from_object(value)
+    }
+}
+
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: AnyCompatible&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>T&gt; <span class="kw">for </span>AnyView&lt;<span class="lifetime">'a</span>&gt; {
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>T) -&gt; <span class="self">Self </span>{
         <span class="kw">unsafe </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>data = TVMFFIAny::new();
@@ -656,7 +697,7 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;<span class="kw-2">&amp;</span>AnyView&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>AnyView&lt;<span class="lifetime">'a</span>&gt; {
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span>AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="kw-2">*</span>value
     }
@@ -826,34 +867,9 @@
     }
 }
 
-<span class="doccomment">/// Convert an [`AnyView`] without constructing a diagnostic error on mismatch.
-</span><span class="attr">#[inline]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>try_cast_from_any_view&lt;T&gt;(value: <span class="kw-2">&amp;</span>AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;T, ()&gt;
-<span class="kw">where
-    </span>T: AnyCompatible,
-{
-    <span class="kw">unsafe </span>{ T::try_cast_from_any_view(<span class="kw-2">&amp;</span>value.data) }
-}
-
-<span class="doccomment">/// Copy a value after exact-leaf lookup has established compatibility.
-///
-/// # Safety
-///
-/// `T::MATCH_ANY_EXACT` must be true and `value.type_index()` must equal
-/// `T::match_any_exact_type_index()`.
-</span><span class="attr">#[inline(always)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>copy_from_any_view_after_check&lt;T&gt;(value: <span class="kw-2">&amp;</span>AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; T
-<span class="kw">where
-    </span>T: AnyCompatible,
-{
-    <span class="macro">debug_assert!</span>(T::MATCH_ANY_EXACT);
-    <span class="macro">debug_assert!</span>(T::check_any_strict(<span class="kw-2">&amp;</span>value.data));
-    T::copy_from_any_view_after_check(<span class="kw-2">&amp;</span>value.data)
-}
-
 <span class="comment">// convert Any ref to AnyView
 </span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Any&gt; <span class="kw">for </span>AnyView&lt;<span class="lifetime">'a</span>&gt; {
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Any) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             data: value.data,

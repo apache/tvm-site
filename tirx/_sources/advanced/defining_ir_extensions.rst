@@ -180,7 +180,7 @@ once per run and keeps them. ``Lowering`` implements the rewrites with them:
       }
       #[dispatch(map)]
       impl Lowering {
-          fn map_sequence(&mut self, seq: SeqStmt) -> SeqStmt { ... }
+          fn map_sequence(&mut self, seq: SeqStmt) -> Result<Any> { ... }
    :append: }
 
 ``ops`` holds the four operators, ``bindings`` records each complex variable
@@ -189,7 +189,9 @@ parts of an operand, either a ``complex(re, im)`` call or a variable already
 split. ``#[dispatch(map)]`` sends each node to the ``map_`` method of its type,
 and leaves other nodes unchanged: ``map_call`` applies the three rules,
 ``map_bind`` splits a complex binding, and ``map_sequence`` flattens the
-sequence that a split binding leaves inside another.
+sequence that a split binding leaves inside another. The value-only callback
+passes each node to ``lowering.dispatch`` and returns ``Unchanged`` when no
+handler matches; these rewrites do not need a definition-region argument.
 
 The pass is built from an ordinary named function:
 

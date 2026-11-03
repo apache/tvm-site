@@ -572,7 +572,18 @@
 <a href="#571" id="571">571</a>
 <a href="#572" id="572">572</a>
 <a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -661,7 +672,7 @@
 #[type_key = <span class="string">"ffi.Map"</span>]
 #[type_index(TypeIndex::kTVMFFIMap)]
 </span><span class="kw">pub struct </span>MapObj {
-    <span class="kw">pub </span>object: Object,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) object: Object,
     <span class="doccomment">/// Pointer to the (opaque) key/value storage region (`MapBaseObj::data_`).
     </span><span class="kw">pub </span>data: <span class="kw-2">*mut </span>core::ffi::c_void,
     <span class="doccomment">/// Number of entries (`MapBaseObj::size_`).
@@ -865,7 +876,7 @@
 
     <span class="doccomment">/// Reads all entries as raw `(Any, Any)` pairs without converting to
     /// `K`/`V`, propagating FFI failures instead of panicking (unlike the
-    /// iterator API): this backs `check_any_strict` and
+    /// iterator API): this backs strict checks and the converting fallback in
     /// `try_cast_from_any_view`, which run during argument decoding where a
     /// panic could unwind across the C ABI.
     </span><span class="kw">fn </span>try_raw_entries(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(Any, Any)&gt;&gt; {
@@ -1065,6 +1076,17 @@
             <span class="prelude-val">Ok</span>(entries) =&gt; entries.iter().all(|(k, v)| <span class="kw">unsafe </span>{
                 K::container_check_any_strict(k.as_raw_ffi_any())
                     &amp;&amp; V::container_check_any_strict(v.as_raw_ffi_any())
+            }),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
+        }
+    }
+
+    <span class="kw">unsafe fn </span>match_constraints(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
+        <span class="kw">let </span>map = &lt;<span class="self">Self </span><span class="kw">as </span>AnyCompatible&gt;::copy_from_any_view_after_check(data);
+        <span class="kw">match </span>map.try_raw_entries() {
+            <span class="prelude-val">Ok</span>(entries) =&gt; entries.iter().all(|(k, v)| <span class="kw">unsafe </span>{
+                K::container_match_constraints(k.as_raw_ffi_any())
+                    &amp;&amp; V::container_match_constraints(v.as_raw_ffi_any())
             }),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
         }
