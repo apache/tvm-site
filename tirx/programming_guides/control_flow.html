@@ -49,7 +49,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Types, Tensors, and Memory" href="types_tensors_memory.html" />
-    <link rel="prev" title="Language Basics" href="language_basics.html" />
+    <link rel="prev" title="CUDA Functions and Launches" href="cuda_functions_and_launches.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -209,11 +209,11 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Programming Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="language_basics.html">Language Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cuda_functions_and_launches.html">CUDA Functions and Launches</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Control Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types_tensors_memory.html">Types, Tensors, and Memory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metaprogramming.html">Metaprogramming</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cuda_ptx_interfaces.html">Calling CUDA and PTX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cuda_ptx_interfaces.html">CUDA and PTX Interfaces</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_layout.html">Data Layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile/index.html">Tile Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compiling.html">Compiling and Inspecting</a></li>
@@ -225,7 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/defining_ir_extensions.html">Defining Types, Operators, and Passes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/using_ir_extensions.html">Using and Compiling the Extension</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../reference/python/index.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/cpp/index.html">C++ API</a></li>
@@ -405,10 +405,10 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-statements"><code class="docutils literal notranslate"><span class="pre">if</span></code> Statements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#for-loops"><code class="docutils literal notranslate"><span class="pre">for</span></code> Loops</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#while-loops"><code class="docutils literal notranslate"><span class="pre">while</span></code> Loops</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#break-and-continue"><code class="docutils literal notranslate"><span class="pre">break</span></code> and <code class="docutils literal notranslate"><span class="pre">continue</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-statements"><code class="docutils literal notranslate"><span class="pre">if</span></code> Statements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#early-thread-exit">Early Thread Exit</a></li>
 </ul>
             </nav>
@@ -428,7 +428,7 @@
 <p>All the code in this guide is in
 <a class="reference external" href="https://github.com/apache/tvm-tirx/blob/main/examples/programming_guides/control_flow.py">examples/programming_guides/control_flow.py</a>.</p>
 </div>
-<p>This guide shows how to write conditions and loops in TIRx kernels. TIRx uses
+<p>This guide shows how to write loops and conditions in TIRx kernels. TIRx uses
 Python’s own control flow syntax: <code class="docutils literal notranslate"><span class="pre">if</span></code>, <code class="docutils literal notranslate"><span class="pre">elif</span></code>, <code class="docutils literal notranslate"><span class="pre">else</span></code>, <code class="docutils literal notranslate"><span class="pre">for</span></code>,
 <code class="docutils literal notranslate"><span class="pre">while</span></code>, <code class="docutils literal notranslate"><span class="pre">break</span></code>, and <code class="docutils literal notranslate"><span class="pre">continue</span></code> all mean what they mean in Python, and
 each thread executes them independently with its own values.</p>
@@ -441,29 +441,6 @@ each thread executes them independently with its own values.</p>
 <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="if-statements">
-<h2><code class="docutils literal notranslate"><span class="pre">if</span></code> Statements<a class="headerlink" href="#if-statements" title="Link to this heading">#</a></h2>
-<p>An <code class="docutils literal notranslate"><span class="pre">if</span></code> statement runs its body only on the threads whose condition holds.
-The following kernel implements ReLU, which keeps positive values and replaces
-the rest with zero:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">relu</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
-    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-</pre></div>
-</div>
-<p>The outer <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> is the usual bounds check: the last block may have more
-threads than elements left, and the check keeps those threads from reading or
-writing past the end of the tensors. Inside it, <code class="docutils literal notranslate"><span class="pre">if</span></code> and <code class="docutils literal notranslate"><span class="pre">else</span></code> choose
-between two stores for each element, and <code class="docutils literal notranslate"><span class="pre">elif</span></code> can add more branches, just
-as in Python. A branch-free <code class="docutils literal notranslate"><span class="pre">T.max(A[i],</span> <span class="pre">0.0)</span></code> would also compute ReLU; the
-<code class="docutils literal notranslate"><span class="pre">if</span></code> form shows how threads can take different paths.</p>
-</section>
 <section id="for-loops">
 <h2><code class="docutils literal notranslate"><span class="pre">for</span></code> Loops<a class="headerlink" href="#for-loops" title="Link to this heading">#</a></h2>
 <p>A <code class="docutils literal notranslate"><span class="pre">for</span></code> loop over <code class="docutils literal notranslate"><span class="pre">range(...)</span></code> runs its body once per iteration, in order,
@@ -538,6 +515,29 @@ local scalars, so they keep their updates from one iteration to the next.</p>
 iteration, just as in Python. Both work in <code class="docutils literal notranslate"><span class="pre">for</span></code> and <code class="docutils literal notranslate"><span class="pre">while</span></code> loops, and
 each thread decides on its own when to break or continue.</p>
 </section>
+<section id="if-statements">
+<h2><code class="docutils literal notranslate"><span class="pre">if</span></code> Statements<a class="headerlink" href="#if-statements" title="Link to this heading">#</a></h2>
+<p>An <code class="docutils literal notranslate"><span class="pre">if</span></code> statement runs its body only on the threads whose condition holds.
+The following kernel implements ReLU, which keeps positive values and replaces
+the rest with zero:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">relu</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+<p>The outer <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> is the usual bounds check: the last block may have more
+threads than elements left, and the check keeps those threads from reading or
+writing past the end of the tensors. Inside it, <code class="docutils literal notranslate"><span class="pre">if</span></code> and <code class="docutils literal notranslate"><span class="pre">else</span></code> choose
+between two stores for each element, and <code class="docutils literal notranslate"><span class="pre">elif</span></code> can add more branches, just
+as in Python. A branch-free <code class="docutils literal notranslate"><span class="pre">T.max(A[i],</span> <span class="pre">0.0)</span></code> would also compute ReLU; the
+<code class="docutils literal notranslate"><span class="pre">if</span></code> form shows how threads can take different paths.</p>
+</section>
 <section id="early-thread-exit">
 <h2>Early Thread Exit<a class="headerlink" href="#early-thread-exit" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">T.gpu_thread_return()</span></code> ends the current thread early. A common use is the
@@ -571,12 +571,12 @@ cannot end a single GPU thread.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="language_basics.html"
+       href="cuda_functions_and_launches.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Language Basics</p>
+        <p class="prev-next-title">CUDA Functions and Launches</p>
       </div>
     </a>
     <a class="right-next"
@@ -606,10 +606,10 @@ cannot end a single GPU thread.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-statements"><code class="docutils literal notranslate"><span class="pre">if</span></code> Statements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#for-loops"><code class="docutils literal notranslate"><span class="pre">for</span></code> Loops</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#while-loops"><code class="docutils literal notranslate"><span class="pre">while</span></code> Loops</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#break-and-continue"><code class="docutils literal notranslate"><span class="pre">break</span></code> and <code class="docutils literal notranslate"><span class="pre">continue</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-statements"><code class="docutils literal notranslate"><span class="pre">if</span></code> Statements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#early-thread-exit">Early Thread Exit</a></li>
 </ul>
   </nav></div>

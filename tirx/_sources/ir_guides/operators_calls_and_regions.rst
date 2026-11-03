@@ -235,7 +235,10 @@ operator becomes a region operator by setting two attributes:
 ``FRegionValidate`` checks its operands. ``ir.RegionStmt`` records one
 use of such an operator: ``op``, the operands ``args`` and ``attrs``,
 the ``body``, and any variables the region defines in ``body_params``
-and ``result_vars``.
+and ``result_vars``. Operands and attributes are evaluated in the enclosing
+scope. ``body_params`` are visible only inside the body, while
+``result_vars`` are defined after the region and are available to subsequent
+statements in the enclosing sequence.
 
 ``tirx.device_entry`` is a region operator that enters a GPU kernel. Its
 operands carry the kernel's launch configuration:

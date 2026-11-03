@@ -17,8 +17,8 @@
 
 .. Adapted from Apache TVM: https://tvm.apache.org/docs/_sources/tirx/native_basics/cuda/threads_sync.rst
 
-Calling CUDA and PTX
-====================
+CUDA and PTX Interfaces
+=======================
 
 This guide shows how to use three interfaces for CUDA programming in TVMScript.
 Backend intrinsics under ``T.cuda`` provide common operations, such as

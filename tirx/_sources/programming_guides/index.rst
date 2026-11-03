@@ -129,7 +129,7 @@ recurring hardware operations appear as tile operations.
 Guides in This Section
 ----------------------
 
-- :doc:`language_basics` covers defining and launching kernels.
+- :doc:`cuda_functions_and_launches` covers defining and launching kernels.
 - :doc:`control_flow` covers conditions, loops, and early thread exit.
 - :doc:`types_tensors_memory` covers element types, tensors, and memory
   spaces.

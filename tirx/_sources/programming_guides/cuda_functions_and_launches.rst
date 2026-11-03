@@ -20,12 +20,15 @@
    https://tvm.apache.org/docs/_sources/tirx/native_basics/cuda/control_flow.rst
    https://tvm.apache.org/docs/_sources/tirx/native_basics/cuda/parser_utils.rst
 
-Language Basics
-===============
+CUDA Functions and Launches
+===========================
 
 This guide shows how to define CUDA functions, configure their launches, and
-assign work to threads. We will use the GPU add-one program from :doc:`Quick
-Start </get_started/quick_start>`, then extend it with a runtime parameter.
+assign work to threads. The :doc:`IR guides </ir_guides/functions_and_modules>`
+explain how functions are represented; here we focus on writing and launching
+a kernel with tensor and scalar arguments. We will use the GPU add-one program
+from :doc:`Quick Start </get_started/quick_start>`, then extend it with a runtime
+parameter.
 
 A CUDA Function
 ---------------
@@ -53,28 +56,6 @@ the launch, the index assigned to each thread, and the guarded tensor store.
 
 Parameters
 ----------
-
-The parameter annotations specify the types of arguments a kernel accepts:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 34 36 30
-
-   * - Annotation
-     - Meaning
-     - Argument
-   * - ``T.Tensor(shape, dtype)``
-     - A tensor with the declared shape and dtype
-     - A tensor on the expected device
-   * - ``T.int32``, ``T.float32``, etc.
-     - A runtime scalar
-     - A Python ``int`` or ``float``
-   * - ``T.handle``
-     - An opaque handle
-     - A handle value
-   * - ``T.constexpr`` (``@T.jit``)
-     - A compile-time parameter
-     - Passed to ``.specialize(...)``
 
 We can extend ``add_one`` so each call chooses the amount to add.
 The ``increment: T.float32`` parameter controls that amount:

@@ -118,6 +118,15 @@ shows ``device='cuda:0'``):
 
    tensor([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])
 
+.. note::
+
+   If compiling for CUDA fails with ``ValueError: CUDA compilation requires an
+   explicit backend_config arch or Target arch when no CUDA device is available``
+   even though the machine has a GPU, TIRx could not find the CUDA runtime library
+   ``libcudart.so.13``. Install and import a CUDA 13 build of PyTorch, which ships
+   this library, or install the CUDA 13 toolkit and add its ``lib64`` directory to
+   ``LD_LIBRARY_PATH``.
+
 
 Inspect and Transform the Program
 ---------------------------------
@@ -287,18 +296,6 @@ The same program can also be built with CMake. The ``CMakeLists.txt`` in
    cmake . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
    cmake --build build --config RelWithDebInfo
    build/load_cpp
-
-
-Troubleshooting
----------------
-
-If compiling for CUDA fails with ``ValueError: CUDA compilation requires an
-explicit backend_config arch or Target arch when no CUDA device is available``
-even though the machine has a GPU, TIRx could not find the CUDA runtime library
-``libcudart.so.13``. Install and import a CUDA 13 build of PyTorch, which ships
-this library, or install the CUDA 13 toolkit and add its ``lib64`` directory to
-``LD_LIBRARY_PATH``.
-
 
 Further Reading
 ---------------

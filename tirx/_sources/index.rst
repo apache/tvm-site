@@ -18,8 +18,11 @@
 Apache TVM TIRx Documentation
 =============================
 
-Welcome to the documentation for TVM TIRx. You can get started by reading the
-Get Started section, then reading through the other sections.
+Welcome to the documentation for TVM TIRx. TIRx is a compiler foundation for
+building ML compilers and agentic compiler harnesses. It provides shared IR,
+symbolic analysis, transformations, code generation, and runtime support that
+you can inspect, customize, and compose. Start with the Get Started section,
+then explore the guides and API reference.
 
 Installation
 ------------
@@ -64,7 +67,7 @@ Table of Contents
    :titlesonly:
 
    programming_guides/index
-   programming_guides/language_basics
+   programming_guides/cuda_functions_and_launches
    programming_guides/control_flow
    programming_guides/types_tensors_memory
    programming_guides/metaprogramming
@@ -85,7 +88,7 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: Reference
+   :caption: API Reference
 
    Python API <reference/python/index>
    C++ API <reference/cpp/index>

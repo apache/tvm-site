@@ -24,10 +24,15 @@ Metaprogramming
    `examples/programming_guides/metaprogramming.py
    <https://github.com/apache/tvm-tirx/blob/main/examples/programming_guides/metaprogramming.py>`_.
 
-This guide shows how to use Python to generate, reuse, and specialize TIRx
-kernels. TIRx functions are written in Python, so ordinary Python code runs
-before compilation and decides what each kernel contains: which dtypes and
-sizes it uses, which helper code it includes, and which values are fixed.
+Metaprogramming means writing code that constructs or specializes other code.
+In TIRx, ordinary Python functions can generate kernel definitions, inline
+helpers can insert reusable statements, and compile-time parameters can
+produce specialized kernels. These choices determine the program before it
+runs on the GPU; runtime parameters supply data to the resulting program.
+
+This guide shows these three techniques: capturing Python values in kernel
+generators, reusing code with ``@T.inline``, and specializing ``@T.jit``
+functions.
 
 The examples use the following imports:
 

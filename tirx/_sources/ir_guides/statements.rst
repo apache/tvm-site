@@ -387,64 +387,10 @@ function returns ``A[0] + 1``.
 Regions
 -------
 
-Regions are the main place for extensions. ``ir.RegionStmt`` is a
-statement whose meaning is defined by an operator rather than by a
-dedicated node class. A library registers a region operator to add a
-new kind of statement, and the IR represents every such statement in
-the same form:
+``ir.RegionStmt`` groups statements under an operator that defines their
+meaning. For example, ``tirx.device_entry`` marks a body as GPU code and
+carries its launch configuration. Regions let libraries introduce new kinds
+of statements without adding a dedicated IR node class.
 
-- ``op`` is the operator that defines the region's meaning.
-- ``args`` and ``attrs`` are the operator's operands and attributes,
-  evaluated in the enclosing scope.
-- ``body`` is the sequence of statements inside the region.
-- ``body_params`` are variables the region defines on entry, visible
-  only inside ``body``.
-- ``result_vars`` are variables the region defines for the statements
-  that follow it.
-
-This GPU version of add-one places its computation in a device region,
-where each thread handles one element:
-
-.. code-block:: python
-
-   from tvm_tirx import ir
-   from tvm_tirx.script import tirx as T
-
-   n = T.dynamic("n")
-
-   @T.function
-   def gpu_add_one(A: T.Tensor((n,), T.float32), B: T.Tensor((n,), T.float32)):
-       T.device_entry(launch=T.cuda.LaunchConfig(grid=T.ceildiv(n, 256), block=256))
-       i = T.cuda.block_idx("x") * 256 + T.cuda.thread_idx("x")
-       if i < n:
-           B[i] = A[i] + 1
-
-   region = gpu_add_one.body[0]
-   print(ir.format_tree(
-       region, hide=["attrs", "args", "body_params", "result_vars", "value"]))
-
-The output is:
-
-.. code-block:: text
-
-   RegionStmt(op=tirx.device_entry)
-   └── body: SeqStmt
-       ├── seq[0]: Bind
-       │   └── var: i = Var(ty=int32)
-       └── seq[1]: If(else_case=None)
-           ├── condition: LT
-           │   ├── a: i
-           │   └── b: n
-           └── then_case: SeqStmt
-               └── seq[0]: TensorStore(dest=B, indices=[i])
-
-The ``tirx.device_entry`` operator marks its body as code that runs on
-the GPU, and its operands carry the launch configuration. The view
-hides those operands and the value expressions to focus on the
-statements inside the region.
-
-.. note::
-
-   Regions and calls are the two ways operators extend TIRx: a call
-   applies an operator as an expression, and a region applies one as a
-   statement.
+:doc:`operators_calls_and_regions` explains region fields, variable scopes,
+and operator registration, with a device-region example.

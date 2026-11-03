@@ -31,9 +31,6 @@ an explanation of how operand axes divide the work across threads. The
 :doc:`instruction reference </reference/python/backend.cuda.tile.instructions>`
 lists each family's parameters, operand layouts, and alignment requirements.
 
-CUDA Instruction Guides
------------------------
-
 The guides below show how to use these interfaces for data movement,
 arithmetic, asynchronous transfers, and matrix instructions. Asynchronous
 examples include the completion protocol required by their instruction family.
@@ -46,7 +43,7 @@ examples include the completion protocol required by their instruction family.
    arithmetic
 
 Asynchronous Transfers
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 .. toctree::
    :maxdepth: 1
@@ -55,7 +52,7 @@ Asynchronous Transfers
    tma
 
 Matrix Instructions
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 .. toctree::
    :maxdepth: 1

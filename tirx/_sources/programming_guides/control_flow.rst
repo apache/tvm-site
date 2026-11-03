@@ -24,7 +24,7 @@ Control Flow
    `examples/programming_guides/control_flow.py
    <https://github.com/apache/tvm-tirx/blob/main/examples/programming_guides/control_flow.py>`_.
 
-This guide shows how to write conditions and loops in TIRx kernels. TIRx uses
+This guide shows how to write loops and conditions in TIRx kernels. TIRx uses
 Python's own control flow syntax: ``if``, ``elif``, ``else``, ``for``,
 ``while``, ``break``, and ``continue`` all mean what they mean in Python, and
 each thread executes them independently with its own values.
@@ -35,25 +35,6 @@ The examples use the following imports and a symbolic length ``n``:
    :language: python
    :start-after: # [imports.begin]
    :end-before: # [imports.end]
-
-``if`` Statements
------------------
-
-An ``if`` statement runs its body only on the threads whose condition holds.
-The following kernel implements ReLU, which keeps positive values and replaces
-the rest with zero:
-
-.. literalinclude:: ../../examples/programming_guides/control_flow.py
-   :language: python
-   :start-after: # [if.begin]
-   :end-before: # [if.end]
-
-The outer ``if i < n`` is the usual bounds check: the last block may have more
-threads than elements left, and the check keeps those threads from reading or
-writing past the end of the tensors. Inside it, ``if`` and ``else`` choose
-between two stores for each element, and ``elif`` can add more branches, just
-as in Python. A branch-free ``T.max(A[i], 0.0)`` would also compute ReLU; the
-``if`` form shows how threads can take different paths.
 
 ``for`` Loops
 -------------
@@ -111,6 +92,25 @@ local scalars, so they keep their updates from one iteration to the next.
 ``break`` exits the innermost loop, and ``continue`` skips to its next
 iteration, just as in Python. Both work in ``for`` and ``while`` loops, and
 each thread decides on its own when to break or continue.
+
+``if`` Statements
+-----------------
+
+An ``if`` statement runs its body only on the threads whose condition holds.
+The following kernel implements ReLU, which keeps positive values and replaces
+the rest with zero:
+
+.. literalinclude:: ../../examples/programming_guides/control_flow.py
+   :language: python
+   :start-after: # [if.begin]
+   :end-before: # [if.end]
+
+The outer ``if i < n`` is the usual bounds check: the last block may have more
+threads than elements left, and the check keeps those threads from reading or
+writing past the end of the tensors. Inside it, ``if`` and ``else`` choose
+between two stores for each element, and ``elif`` can add more branches, just
+as in Python. A branch-free ``T.max(A[i], 0.0)`` would also compute ReLU; the
+``if`` form shows how threads can take different paths.
 
 Early Thread Exit
 -----------------

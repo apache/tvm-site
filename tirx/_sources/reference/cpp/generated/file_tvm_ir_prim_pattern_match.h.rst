@@ -200,11 +200,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a66abe3176c42f9cdf33fd093da102d78`
 
+- :ref:`exhale_function_namespacetvm_1add476d29b0ca26e54e6358ccc4b1dbeb`
+
 - :ref:`exhale_function_namespacetvm_1a80ea8873c8723a7b89454683a972a2bd`
 
 - :ref:`exhale_function_namespacetvm_1a9aafb09559d1108176ccc9fd5e41091d`
-
-- :ref:`exhale_function_namespacetvm_1add476d29b0ca26e54e6358ccc4b1dbeb`
 
 - :ref:`exhale_function_namespacetvm_1aeda545b338b07ae36db00ebaece10cdb`
 

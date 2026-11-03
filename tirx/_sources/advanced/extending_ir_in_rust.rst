@@ -23,11 +23,17 @@ Getting Started with Rust Extensions
    All the code in this tutorial is in the repository, as the Python package
    `examples/extension <https://github.com/apache/tvm-tirx/tree/main/examples/extension>`_.
 
+TIRx is designed around the idea that "everything is a plugin": compiler
+features can be provided by separately built libraries, using the same IR and
+registration interfaces as built-in features. This chapter puts that idea into practice
+with a complex-number extension that loads into TIRx without modifying its
+core library.
+
 This tutorial shows how to extend TIRx from Rust: define new IR types and
 operators, write a pass that lowers them, and use them from Python like
 built-in features.
 
-In this chapter, we will first look at why extensions are written in Rust, then
+On this page, we will first look at why extensions are written in Rust, then
 get ready for the rest of the tutorial: a Python package for the extension and
 the example program it will compile.
 

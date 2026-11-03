@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Language Basics &#8212; tvm-tirx</title>
+    <title>CUDA Functions and Launches &#8212; tvm-tirx</title>
   
   
   
@@ -44,7 +44,7 @@
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'programming_guides/language_basics';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'programming_guides/cuda_functions_and_launches';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -209,11 +209,11 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Programming Guides</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Programming Overview</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Language Basics</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">CUDA Functions and Launches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="control_flow.html">Control Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types_tensors_memory.html">Types, Tensors, and Memory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metaprogramming.html">Metaprogramming</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cuda_ptx_interfaces.html">Calling CUDA and PTX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cuda_ptx_interfaces.html">CUDA and PTX Interfaces</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_layout.html">Data Layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile/index.html">Tile Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compiling.html">Compiling and Inspecting</a></li>
@@ -225,7 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/defining_ir_extensions.html">Defining Types, Operators, and Passes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/using_ir_extensions.html">Using and Compiling the Extension</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../reference/python/index.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/cpp/index.html">C++ API</a></li>
@@ -312,7 +312,7 @@
       
       
       
-      <li><a href="../_sources/programming_guides/language_basics.rst" target="_blank"
+      <li><a href="../_sources/programming_guides/cuda_functions_and_launches.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -395,7 +395,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Language Basics</h1>
+    <h1>CUDA Functions and Launches</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -420,11 +420,14 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="language-basics">
-<h1>Language Basics<a class="headerlink" href="#language-basics" title="Link to this heading">#</a></h1>
+  <section id="cuda-functions-and-launches">
+<h1>CUDA Functions and Launches<a class="headerlink" href="#cuda-functions-and-launches" title="Link to this heading">#</a></h1>
 <p>This guide shows how to define CUDA functions, configure their launches, and
-assign work to threads. We will use the GPU add-one program from <a class="reference internal" href="../get_started/quick_start.html"><span class="doc">Quick
-Start</span></a>, then extend it with a runtime parameter.</p>
+assign work to threads. The <a class="reference internal" href="../ir_guides/functions_and_modules.html"><span class="doc">IR guides</span></a>
+explain how functions are represented; here we focus on writing and launching
+a kernel with tensor and scalar arguments. We will use the GPU add-one program
+from <a class="reference internal" href="../get_started/quick_start.html"><span class="doc">Quick Start</span></a>, then extend it with a runtime
+parameter.</p>
 <section id="a-cuda-function">
 <h2>A CUDA Function<a class="headerlink" href="#a-cuda-function" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code> decorator constructs a <code class="docutils literal notranslate"><span class="pre">tirx.Function</span></code> from a
@@ -448,39 +451,6 @@ the launch, the index assigned to each thread, and the guarded tensor store.</p>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
-<p>The parameter annotations specify the types of arguments a kernel accepts:</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<colgroup>
-<col style="width: 34.0%" />
-<col style="width: 36.0%" />
-<col style="width: 30.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Annotation</p></th>
-<th class="head"><p>Meaning</p></th>
-<th class="head"><p>Argument</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">T.Tensor(shape,</span> <span class="pre">dtype)</span></code></p></td>
-<td><p>A tensor with the declared shape and dtype</p></td>
-<td><p>A tensor on the expected device</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T.int32</span></code>, <code class="docutils literal notranslate"><span class="pre">T.float32</span></code>, etc.</p></td>
-<td><p>A runtime scalar</p></td>
-<td><p>A Python <code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">T.handle</span></code></p></td>
-<td><p>An opaque handle</p></td>
-<td><p>A handle value</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T.constexpr</span></code> (<code class="docutils literal notranslate"><span class="pre">&#64;T.jit</span></code>)</p></td>
-<td><p>A compile-time parameter</p></td>
-<td><p>Passed to <code class="docutils literal notranslate"><span class="pre">.specialize(...)</span></code></p></td>
-</tr>
-</tbody>
-</table>
-</div>
 <p>We can extend <code class="docutils literal notranslate"><span class="pre">add_one</span></code> so each call chooses the amount to add.
 The <code class="docutils literal notranslate"><span class="pre">increment:</span> <span class="pre">T.float32</span></code> parameter controls that amount:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
