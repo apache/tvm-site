@@ -39,7 +39,7 @@ use tvm_tirx::tvm_ffi::{
 #[rs_class("my_ext.ComplexType", final)]
 pub struct ComplexTypeObj {
     base: TypeObj,
-    pub elem: PrimType,
+    pub dtype: PrimType,
 }
 def_object_ref!(pub ComplexType, Type, ComplexTypeObj);
 
@@ -97,20 +97,20 @@ fn complex_arg(call: &CallObj, index: usize) -> Result<ComplexType> {
         .clone()
         .try_cast()
         .map_err(|_| type_error(&format!("{} expects a complex value", op.name.as_str())))?;
-    float_part(&ty.elem.clone().into())?;
+    float_part(&ty.dtype.clone().into())?;
     Ok(ty)
 }
 
 fn infer_cmul(call: &CallObj) -> Result<Type> {
     check_call(call, 2)?;
     let (a, b) = (complex_arg(call, 0)?, complex_arg(call, 1)?);
-    require(a.elem.dtype == b.elem.dtype, "my_ext.cmul expects complex values of the same type")?;
+    require(a.dtype.dtype == b.dtype.dtype, "my_ext.cmul expects complex values of the same type")?;
     Ok(a.into())
 }
 
 fn infer_part(call: &CallObj) -> Result<Type> {
     check_call(call, 1)?;
-    Ok(complex_arg(call, 0)?.elem.clone().into())
+    Ok(complex_arg(call, 0)?.dtype.clone().into())
 }
 
 // Explicit result types bypass inference, so validation checks the inputs and result again.
@@ -161,33 +161,17 @@ tvm_ffi::static_init_block! {
         .set_attr(CALL_EFFECT_KIND, CallEffectKind::Pure);
 }
 
-// begin operators
-struct ComplexOps {
-    complex: Op,
-    cmul: Op,
-    real: Op,
-    imag: Op,
-}
-
-impl ComplexOps {
-    fn get() -> Result<Self> {
-        Ok(Self {
-            complex: Op::get("my_ext.complex")?,
-            cmul: Op::get("my_ext.cmul")?,
-            real: Op::get("my_ext.real")?,
-            imag: Op::get("my_ext.imag")?,
-        })
+/// Whether `op`, such as a call's `op`, is one of the four complex operators.
+fn is_complex_op(op: &Expr) -> Result<bool> {
+    for name in ["my_ext.complex", "my_ext.cmul", "my_ext.real", "my_ext.imag"] {
+        if op.same_as(&Op::get(name)?) {
+            return Ok(true);
+        }
     }
-
-    /// Whether `op`, such as a call's `op`, is one of the four operators.
-    fn contains(&self, op: &Expr) -> bool {
-        [&self.complex, &self.cmul, &self.real, &self.imag].into_iter().any(|own| op.same_as(own))
-    }
+    Ok(false)
 }
-// end operators
 
 struct Lowering {
-    ops: ComplexOps,
     // Each complex local variable is replaced by two scalar local variables.
     bindings: Vec<(Var, Var, Var)>,
 }
@@ -195,7 +179,7 @@ struct Lowering {
 impl Lowering {
     fn parts(&self, expr: &Expr) -> Result<(Expr, Expr)> {
         if let Some(call) = expr.downcast_ref::<CallObj>() {
-            if call.op.same_as(&self.ops.complex) {
+            if call.op.same_as(&Op::get("my_ext.complex")?) {
                 return Ok((call.args.get(0)?, call.args.get(1)?));
             }
         }
@@ -216,11 +200,10 @@ impl Lowering {
 
     // begin lowering
     fn map_call(&mut self, call: Call) -> Result<Any> {
-        let ops = &self.ops;
-        if ops.contains(&call.op) {
+        if is_complex_op(&call.op)? {
             validate_call(&call)?;
         }
-        if call.op.same_as(&ops.cmul) {
+        if call.op.same_as(&Op::get("my_ext.cmul")?) {
             let (a, b) = self.parts(&call.args.get(0)?)?;
             let (c, d) = self.parts(&call.args.get(1)?)?;
             // (a + bi)(c + di) = (ac - bd) + (ad + bc)i
@@ -228,7 +211,7 @@ impl Lowering {
             let im = &a * &d + &b * &c;
             return Ok(Call::new(
                 None,
-                ops.complex.clone(),
+                Op::get("my_ext.complex")?,
                 [re, im],
                 None,
                 Vec::<Type>::new(),
@@ -236,9 +219,10 @@ impl Lowering {
             )?
             .into());
         }
-        if call.op.same_as(&ops.real) || call.op.same_as(&ops.imag) {
+        let real = call.op.same_as(&Op::get("my_ext.real")?);
+        if real || call.op.same_as(&Op::get("my_ext.imag")?) {
             let (re, im) = self.parts(&call.args.get(0)?)?;
-            return Ok(if call.op.same_as(&ops.real) { re.into() } else { im.into() });
+            return Ok(if real { re.into() } else { im.into() });
         }
         Ok(call.into())
     }
@@ -247,8 +231,8 @@ impl Lowering {
         if let Some(ty) = bind.var.ty.downcast_ref::<ComplexTypeObj>() {
             let (re, im) = self.parts(&bind.value)?;
             let name = bind.var.name.as_str();
-            let re_var = Var::new(&format!("{name}_re"), ty.elem.clone(), bind.var.loc.clone());
-            let im_var = Var::new(&format!("{name}_im"), ty.elem.clone(), bind.var.loc.clone());
+            let re_var = Var::new(&format!("{name}_re"), ty.dtype.clone(), bind.var.loc.clone());
+            let im_var = Var::new(&format!("{name}_im"), ty.dtype.clone(), bind.var.loc.clone());
             self.bindings.push((bind.var.clone(), re_var.clone(), im_var.clone()));
             let binds = [
                 Bind::new(re_var, re, bind.loc.clone())?,
@@ -280,8 +264,8 @@ fn check_expr(expr: Expr) -> Result<Expr> {
 }
 
 /// Reject a call to one of the four complex operators that the rewrite did not consume.
-fn check_call_lowered(ops: &ComplexOps, call: Call) -> Result<Call> {
-    if ops.contains(&call.op) {
+fn check_call_lowered(call: Call) -> Result<Call> {
+    if is_complex_op(&call.op)? {
         return Err(Error::new(
             tvm_ffi::VALUE_ERROR,
             "LowerComplex left an unsupported complex call",
@@ -297,16 +281,15 @@ fn lower_function(
     _module: IRModule,
     _ctx: PassContext,
 ) -> Result<Option<Function>> {
-    let mut lowering = Lowering { ops: ComplexOps::get()?, bindings: Vec::new() };
+    let mut lowering = Lowering { bindings: Vec::new() };
     let rewritten = tvm_ffi::structural_map(
         func,
         |value: AnyView<'_>| lowering.dispatch(value).unwrap_or_else(|| Ok(Unchanged.into())),
         WalkOrder::PostOrder,
     )?;
-    let ops = &lowering.ops;
     let checked = tvm_ffi::structural_map(
         rewritten,
-        (check_type, |call| check_call_lowered(ops, call), check_expr),
+        (check_type, check_call_lowered, check_expr),
         WalkOrder::PostOrder,
     )?;
     let function: Function = checked.try_into()?;

@@ -447,13 +447,14 @@ directly.</p>
 <p>With agents, compiler development iterates quickly. Along the way, a project may
 need new types and operators to describe its own concepts, such as a new number
 format or a hardware feature, and passes that lower them to what the backend
-supports. To support this, TIRx provides Rust bindings, the <code class="docutils literal notranslate"><span class="pre">tvm-tirx</span></code> crate,
-which let you define new types, operators, and passes on the same IR objects as
-C++ and Python. An extension is a separate Rust library that builds and loads on
-its own, without changing the C++ library, so the C++ core stays stable while
-the extension iterates quickly. Once loaded, its types and operators can be
-written in TVMScript and its passes can run in Python compilation pipelines,
-just like built-in ones.</p>
+supports. To support this, TIRx provides the <code class="docutils literal notranslate"><span class="pre">tvm-tirx</span></code> crate, with which you
+define new types, operators, and passes in Rust on the same IR objects as C++
+and Python.</p>
+<p>With the <code class="docutils literal notranslate"><span class="pre">tvm-tirx</span></code> crate, users can extend TIRx in separate Rust libraries.
+Each extension builds and loads on its own, without changing the C++ library, so
+the C++ core stays stable while the extension iterates quickly. Once loaded, its
+types and operators can be written in TVMScript and its passes can run in Python
+compilation pipelines, just like built-in ones.</p>
 </section>
 <section id="setting-up-the-project">
 <h2>Setting Up the Project<a class="headerlink" href="#setting-up-the-project" title="Link to this heading">#</a></h2>
@@ -469,15 +470,17 @@ it is installed and imported like any other package. The example package,
 └── run_example.py    # compiles and runs a function that uses the extension
 </pre></div>
 </div>
-<p>The Rust library is an ordinary crate that builds a shared library. Its only
-dependency is the <a class="reference external" href="https://crates.io/crates/tvm-tirx">tvm-tirx</a> crate, which
-re-exports TVM FFI as <code class="docutils literal notranslate"><span class="pre">tvm_tirx::tvm_ffi</span></code>:</p>
+<p>The Rust library is an ordinary crate that builds a shared library. It depends
+on the <a class="reference external" href="https://crates.io/crates/tvm-tirx">tvm-tirx</a> crate, which re-exports
+TVM FFI as <code class="docutils literal notranslate"><span class="pre">tvm_tirx::tvm_ffi</span></code>, and also lists <code class="docutils literal notranslate"><span class="pre">tvm-ffi</span></code> itself, because
+the code that <code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code> generates refers to the crate by that name:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[lib]</span>
 <span class="c1"># The shared library that the Python package loads.</span>
 <span class="n">crate-type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"cdylib"</span><span class="p">]</span>
 
 <span class="k">[dependencies]</span>
-<span class="c1"># Use this checkout so the Rust API and native libraries share the same FFI revision.</span>
+<span class="c1"># This example builds against this checkout. A standalone extension depends on</span>
+<span class="c1"># the published releases instead, e.g. tvm-tirx = "&lt;version&gt;".</span>
 <span class="n">tvm-tirx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"../../rust"</span><span class="w"> </span><span class="p">}</span>
 <span class="c1"># Procedural macros resolve the FFI crate directly; use the same pinned sources.</span>
 <span class="n">tvm-ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"../../3rdparty/tvm-ffi/rust/tvm-ffi"</span><span class="w"> </span><span class="p">}</span>
@@ -502,7 +505,7 @@ that build and multiply complex values, and a pass that expands complex
 multiplication into real arithmetic:</p>
 <div class="math notranslate nohighlight">
 \[(a + bi)(c + di) = (ac - bd) + (ad + bc)i.\]</div>
-<p>The following function multiplies two arrays of complex numbers element by
+<p>The following function multiplies two tensors of complex numbers element by
 element. <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> hold the real and imaginary parts of the first operand,
 <code class="docutils literal notranslate"><span class="pre">C</span></code> and <code class="docutils literal notranslate"><span class="pre">D</span></code> those of the second:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">16</span>
@@ -528,9 +531,9 @@ element. <code class="docutils literal notranslate"><span class="pre">A</span></
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">my_ext</span></code> is the extension’s Python package, which holds the builders of its
-type and operators; <a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> shows how it provides them. <code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>, and <code class="docutils literal notranslate"><span class="pre">product</span></code> are complex
-values that exist only in the IR.
-The function’s inputs and outputs are ordinary <code class="docutils literal notranslate"><span class="pre">float32</span></code> arrays, so no
+type and operators; <a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> shows how it provides them.
+<code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>, and <code class="docutils literal notranslate"><span class="pre">product</span></code> are complex values that exist only in the IR.
+The function’s inputs and outputs are ordinary <code class="docutils literal notranslate"><span class="pre">float32</span></code> tensors, so no
 runtime storage format for complex numbers is needed.</p>
 <p>Next, <a class="reference internal" href="defining_ir_extensions.html"><span class="doc">Defining Types, Operators, and Passes</span></a> defines the type, operators, and pass this
 function uses, and <a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> compiles and runs it.</p>

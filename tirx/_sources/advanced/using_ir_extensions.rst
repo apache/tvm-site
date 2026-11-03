@@ -107,6 +107,6 @@ Next Steps
 Complex addition or conjugation needs one more operator and one more rewrite
 rule in ``LowerComplex``, registered and written the same way. The example
 keeps complex values inside a function: parameters and outputs are ordinary
-arrays, and complex numbers have no runtime storage format or calling
+tensors, and complex numbers have no runtime storage format or calling
 convention. See the :doc:`Rust API reference <../reference/rust/index>` for
 the full Rust API.

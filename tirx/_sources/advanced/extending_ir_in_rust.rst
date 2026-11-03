@@ -48,13 +48,15 @@ directly.
 With agents, compiler development iterates quickly. Along the way, a project may
 need new types and operators to describe its own concepts, such as a new number
 format or a hardware feature, and passes that lower them to what the backend
-supports. To support this, TIRx provides Rust bindings, the ``tvm-tirx`` crate,
-which let you define new types, operators, and passes on the same IR objects as
-C++ and Python. An extension is a separate Rust library that builds and loads on
-its own, without changing the C++ library, so the C++ core stays stable while
-the extension iterates quickly. Once loaded, its types and operators can be
-written in TVMScript and its passes can run in Python compilation pipelines,
-just like built-in ones.
+supports. To support this, TIRx provides the ``tvm-tirx`` crate, with which you
+define new types, operators, and passes in Rust on the same IR objects as C++
+and Python.
+
+With the ``tvm-tirx`` crate, users can extend TIRx in separate Rust libraries.
+Each extension builds and loads on its own, without changing the C++ library, so
+the C++ core stays stable while the extension iterates quickly. Once loaded, its
+types and operators can be written in TVMScript and its passes can run in Python
+compilation pipelines, just like built-in ones.
 
 Setting Up the Project
 ----------------------
@@ -73,9 +75,10 @@ it is installed and imported like any other package. The example package,
    ├── python/my_ext/    # loads the library and registers a compilation pipeline
    └── run_example.py    # compiles and runs a function that uses the extension
 
-The Rust library is an ordinary crate that builds a shared library. Its only
-dependency is the `tvm-tirx <https://crates.io/crates/tvm-tirx>`_ crate, which
-re-exports TVM FFI as ``tvm_tirx::tvm_ffi``:
+The Rust library is an ordinary crate that builds a shared library. It depends
+on the `tvm-tirx <https://crates.io/crates/tvm-tirx>`_ crate, which re-exports
+TVM FFI as ``tvm_tirx::tvm_ffi``, and also lists ``tvm-ffi`` itself, because
+the code that ``#[dispatch]`` generates refers to the crate by that name:
 
 .. literalinclude:: ../../examples/extension/Cargo.toml
    :language: toml
@@ -106,7 +109,7 @@ multiplication into real arithmetic:
 
    (a + bi)(c + di) = (ac - bd) + (ad + bc)i.
 
-The following function multiplies two arrays of complex numbers element by
+The following function multiplies two tensors of complex numbers element by
 element. ``A`` and ``B`` hold the real and imaginary parts of the first operand,
 ``C`` and ``D`` those of the second:
 
@@ -116,9 +119,9 @@ element. ``A`` and ``B`` hold the real and imaginary parts of the first operand,
    :end-before: # end kernel
 
 ``my_ext`` is the extension's Python package, which holds the builders of its
-type and operators; :doc:`using_ir_extensions` shows how it provides them. ``z``, ``w``, and ``product`` are complex
-values that exist only in the IR.
-The function's inputs and outputs are ordinary ``float32`` arrays, so no
+type and operators; :doc:`using_ir_extensions` shows how it provides them.
+``z``, ``w``, and ``product`` are complex values that exist only in the IR.
+The function's inputs and outputs are ordinary ``float32`` tensors, so no
 runtime storage format for complex numbers is needed.
 
 Next, :doc:`defining_ir_extensions` defines the type, operators, and pass this

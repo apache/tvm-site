@@ -18,8 +18,9 @@
 Rust API
 ========
 
-The `tvm-tirx <https://crates.io/crates/tvm-tirx>`__ crate binds the TIRx compiler
-objects over TVM FFI. Its modules follow the Python package: ``tvm_tirx::ir`` is
+The `tvm-tirx <https://crates.io/crates/tvm-tirx>`__ crate provides TIRx in Rust:
+the compiler objects over TVM FFI, and the definition of new types, operators, and
+passes. Its modules follow the Python package: ``tvm_tirx::ir`` is
 :doc:`tvm_tirx.ir <../python/ir>`, ``tvm_tirx::tirx`` is :doc:`tvm_tirx.tirx
 <../python/tirx>`, and so on. Operators and types can also be defined from Rust in
 ``tvm_ffi::static_init_block!`` blocks, which run when their library loads; the
@@ -45,7 +46,8 @@ Crates
      - Description
    * - 📦 `tvm-tirx <generated/tvm_tirx/index.html>`_
      - The IR, TIRx, symbolic analysis, target, backend, runtime, codegen and script
-       bindings, and the Rust IR constructors and operators.
+       bindings, the Rust IR constructors and operators, and the definition of new
+       types, operators, and passes.
    * - 📦 `tvm-ffi <generated/tvm_ffi/index.html>`_
      - The TVM FFI objects, functions, containers and ``static_init_block!`` the
        bindings are built on, re-exported as ``tvm_tirx::tvm_ffi``.

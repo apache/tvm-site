@@ -27,8 +27,9 @@ the validation and traversal helpers they use.
 Defining a Type
 ---------------
 
-``ComplexType`` has one field, ``elem``, the scalar type shared by the real and
-imaginary parts:
+To work with complex numbers directly in the IR, we first introduce a type for
+them. ``ComplexType`` has one field, ``dtype``, the scalar type shared by the
+real and imaginary parts, as in ``TensorType``:
 
 .. literalinclude:: ../../examples/extension/src/lib.rs
    :language: rust
@@ -50,18 +51,14 @@ reference. Its arguments are:
   as the result of type inference.
 - ``ComplexTypeObj``: the object it refers to. A ``ComplexTypeObj`` converts
   into a ``ComplexType`` with ``into()``, and a ``ComplexType`` dereferences to
-  it, so ``ty.elem`` reads the field.
-
-``infer_complex`` in the next section uses both conversions: it builds a
-``ComplexTypeObj``, turns it into a ``ComplexType``, and returns it as a
-``Type``.
+  it, so ``ty.dtype`` reads the field.
 
 The ``static_init_block!`` runs ``register_type`` when the library loads, as a
 ``TVM_FFI_STATIC_INIT_BLOCK`` does for C++, and Python then sees the type as
 ``my_ext.Complex``.
 
 A ``ComplexType`` records the scalar type of the two parts, and a
-``complex(re, im)`` call supplies their values as its operands. ``elem`` can be
+``complex(re, im)`` call supplies their values as its operands. ``dtype`` can be
 any scalar float type, such as ``float32``, ``float64`` or ``bfloat16``; this
 tutorial uses ``float32``.
 
@@ -71,7 +68,7 @@ Defining Operators
 To support operations on the new type, we need to define new operators. In our
 case, complex arithmetic needs four: one builds a complex value from two
 scalars, one multiplies complex values, and two read the parts back as scalars
-so that results can be stored in ordinary ``float32`` buffers. Like the type,
+so that results can be stored in ordinary ``float32`` tensors. Like the type,
 they are registered under the ``my_ext`` namespace:
 
 .. list-table::
@@ -94,7 +91,7 @@ they are registered under the ``my_ext`` namespace:
      - Extract the imaginary part
      - ``T.float32``
 
-The constructor is registered as an ``OpDef`` chain in a
+The ``complex`` operator is registered as an ``OpDef`` chain in a
 ``static_init_block!``. Each step updates the operator registry, and the chain
 completes when its statement ends:
 
@@ -113,14 +110,18 @@ checks the arguments and computes the result type:
    :end-before: // end inference
 
 ``set_validator`` repeats these checks for a call whose result type is given
-explicitly rather than inferred. ``Pure`` marks the operator as computing a
-value without writing memory.
+explicitly rather than inferred. ``Pure`` marks the operator as a pure
+function, which does not interact with any external state.
 
-``infer_complex`` requires both parts to be scalar floats of the same type, and
-converts neither. The other three operators follow the same pattern. ``cmul``
-requires two complex arguments of the same type and returns it; ``real`` and
-``imag`` require one and return its ``elem``. Passing an ordinary scalar to ``cmul`` therefore fails
-with ``TypeError: my_ext.cmul expects a complex value``.
+``infer_complex`` computes the type of a ``complex(re, im)`` call: a
+``ComplexType`` whose ``dtype`` is the type of the two parts. It requires both
+parts to be scalar floats of the same type, and converts neither. It then uses
+both conversions of the reference: it builds a ``ComplexTypeObj``, turns it into
+a ``ComplexType``, and returns it as a ``Type``. The other three operators
+follow the same pattern. ``cmul`` requires two complex arguments of the same
+type and returns it; ``real`` and ``imag`` require one and return its
+``dtype``. Passing an ordinary scalar to ``cmul`` therefore fails with
+``TypeError: my_ext.cmul expects a complex value``.
 
 Writing a Pass
 --------------
@@ -153,26 +154,18 @@ that pair. This lets the rules apply to the step-by-step function from
    R[i] = product_re
    Im[i] = product_im
 
-Only scalar arithmetic remains. The pass looks up the four operators by name,
-as C++ does with ``Op::Get``:
-
-.. literalinclude:: ../../examples/extension/src/lib.rs
-   :language: rust
-   :start-after: // begin operators
-   :end-before: // end operators
-
-The operators are registered when the library loads, and ``Op::get`` returns
-the registry's single object for a name. ``call.op.same_as(&ops.cmul)``
-therefore tests whether a call's ``op`` is ``my_ext.cmul`` by comparing
-pointers. A lookup goes through the registry, so the pass fetches the operators
-once per run and keeps them. ``Lowering`` implements the rewrites with them:
+Only scalar arithmetic remains. The pass looks up the operators by name, as C++
+does with ``Op::Get``. The operators are registered when the library loads, and
+``Op::get`` returns the registry's single object for a name.
+``call.op.same_as(&Op::get("my_ext.cmul")?)`` therefore tests whether a call's
+``op`` is ``my_ext.cmul`` by comparing pointers. ``Lowering`` implements the
+rewrites:
 
 .. literalinclude:: ../../examples/extension/src/lib.rs
    :language: rust
    :start-after: // begin lowering
    :end-before: // end lowering
    :prepend: struct Lowering {
-          ops: ComplexOps,
           bindings: Vec<(Var, Var, Var)>,
       }
       impl Lowering {
@@ -183,15 +176,15 @@ once per run and keeps them. ``Lowering`` implements the rewrites with them:
           fn map_sequence(&mut self, seq: SeqStmt) -> Result<Any> { ... }
    :append: }
 
-``ops`` holds the four operators, ``bindings`` records each complex variable
-with its two scalar replacements, and ``parts`` reads the real and imaginary
-parts of an operand, either a ``complex(re, im)`` call or a variable already
-split. ``#[dispatch(map)]`` sends each node to the ``map_`` method of its type,
-and leaves other nodes unchanged: ``map_call`` applies the three rules,
-``map_bind`` splits a complex binding, and ``map_sequence`` flattens the
-sequence that a split binding leaves inside another. The value-only callback
-passes each node to ``lowering.dispatch`` and returns ``Unchanged`` when no
-handler matches; these rewrites do not need a definition-region argument.
+``bindings`` records each complex variable with its two scalar replacements,
+and ``parts`` reads the real and imaginary parts of an operand, either a
+``complex(re, im)`` call or a variable already split. ``#[dispatch(map)]``
+sends each node to the ``map_`` method of its type, and leaves other nodes
+unchanged: ``map_call`` applies the three rules, ``map_bind`` splits a complex
+binding, and ``map_sequence`` flattens the sequence that a split binding leaves
+inside another. The callback passes each node to ``lowering.dispatch`` and
+returns ``Unchanged`` when no handler matches; these rewrites do not need the
+definition region kind.
 
 The pass is built from an ordinary named function:
 
@@ -205,8 +198,7 @@ rewritten function; ``Some`` replaces the original. The first ``structural_map``
 walks the function with ``Lowering``. ``PostOrder`` visits children before their
 parent, so the operands of ``cmul`` are lowered before ``cmul`` itself. The
 second ``structural_map`` only checks the result. It takes a tuple of three
-functions, and calls each on the nodes of its parameter type; the closure
-passes the operators to ``check_call_lowered``:
+functions, and calls each on the nodes of its parameter type:
 
 .. code-block:: rust
 
@@ -217,14 +209,15 @@ passes the operators to ``check_call_lowered``:
    fn check_expr(expr: Expr) -> Result<Expr> { ... }
 
    /// Reject a call to one of the four complex operators that the rewrite did not consume.
-   fn check_call_lowered(ops: &ComplexOps, call: Call) -> Result<Call> { ... }
+   fn check_call_lowered(call: Call) -> Result<Call> { ... }
 
 Each returns its node unchanged and raises a ``ValueError`` on an unsupported
 use, such as a complex function parameter, so the pass reports such a use
 before code generation.
 
-Finally, ``FunctionPass::new`` wraps the function as a pass, and the factory is
-exported so that Python can call it as ``lib.lower_complex()``:
+Finally, ``FunctionPass::new`` wraps the function as a pass, and
+``tvm_ffi_dll_export_typed_func!`` exports ``lower_complex``, which builds it,
+so that the Python package can call it from the loaded library:
 
 .. literalinclude:: ../../examples/extension/src/lib.rs
    :language: rust
