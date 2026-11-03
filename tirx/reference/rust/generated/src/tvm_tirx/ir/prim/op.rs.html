@@ -2124,7 +2124,31 @@
 <a href="#2123" id="2123">2123</a>
 <a href="#2124" id="2124">2124</a>
 <a href="#2125" id="2125">2125</a>
-<a href="#2126" id="2126">2126</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#2126" id="2126">2126</a>
+<a href="#2127" id="2127">2127</a>
+<a href="#2128" id="2128">2128</a>
+<a href="#2129" id="2129">2129</a>
+<a href="#2130" id="2130">2130</a>
+<a href="#2131" id="2131">2131</a>
+<a href="#2132" id="2132">2132</a>
+<a href="#2133" id="2133">2133</a>
+<a href="#2134" id="2134">2134</a>
+<a href="#2135" id="2135">2135</a>
+<a href="#2136" id="2136">2136</a>
+<a href="#2137" id="2137">2137</a>
+<a href="#2138" id="2138">2138</a>
+<a href="#2139" id="2139">2139</a>
+<a href="#2140" id="2140">2140</a>
+<a href="#2141" id="2141">2141</a>
+<a href="#2142" id="2142">2142</a>
+<a href="#2143" id="2143">2143</a>
+<a href="#2144" id="2144">2144</a>
+<a href="#2145" id="2145">2145</a>
+<a href="#2146" id="2146">2146</a>
+<a href="#2147" id="2147">2147</a>
+<a href="#2148" id="2148">2148</a>
+<a href="#2149" id="2149">2149</a>
+<a href="#2150" id="2150">2150</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -2199,6 +2223,7 @@
 // tvm-ffi-stubgen(import-object): crate::ir::expr::IntImm
 // tvm-ffi-stubgen(import-object): crate::ir::expr::IntImmObj
 // tvm-ffi-stubgen(import-object): crate::ir::expr::IntoExpr
+// tvm-ffi-stubgen(import-object): crate::ir::expr::PrimExpr
 // tvm-ffi-stubgen(import-object): crate::ir::expr::TensorLoad
 // tvm-ffi-stubgen(import-object): crate::ir::expr::Var
 // tvm-ffi-stubgen(import-object): crate::ir::location::Location
@@ -2253,6 +2278,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ir::expr::IntImm;
 <span class="kw">use </span><span class="kw">crate</span>::ir::expr::IntImmObj;
 <span class="kw">use </span><span class="kw">crate</span>::ir::expr::IntoExpr;
+<span class="kw">use </span><span class="kw">crate</span>::ir::expr::PrimExpr;
 <span class="kw">use </span><span class="kw">crate</span>::ir::expr::TensorLoad;
 <span class="kw">use </span><span class="kw">crate</span>::ir::expr::Var;
 <span class="kw">use </span><span class="kw">crate</span>::ir::location::Location;
@@ -2484,7 +2510,9 @@
 <span class="doccomment">/// An operand next to `peer`: a literal is typed after it.
 </span><span class="kw">fn </span>typed_after(operand: OperandKind, peer: <span class="kw-2">&amp;</span>ExprResult) -&gt; ExprResult {
     <span class="kw">let </span>constant = |value: i64| {
-        ExprResult(peer.dtype().and_then(|dtype| make_const(PrimType::from_dtype(dtype)<span class="question-mark">?</span>, value)))
+        ExprResult::checked(
+            peer.dtype().and_then(|dtype| make_const(PrimType::from_dtype(dtype)<span class="question-mark">?</span>, value)),
+        )
     };
     <span class="kw">match </span>operand {
         OperandKind::Expr(expr) =&gt; expr,
@@ -3853,12 +3881,14 @@
 <span class="comment">// ---------------------------------------------------------------------------------------------
 // `ExprResult`: expressions under construction
 
-</span><span class="doccomment">/// An expression being built by operators: either the expression, or the first error any step
-/// raised. Later steps pass an error through untouched. An `ExprResult` is an [`IntoExpr`], so it passes
-/// into any function or constructor that takes one, whose `?` then reports the error;
-/// `Expr::try_from` takes the expression out.
+</span><span class="doccomment">/// An expression being built by operators: either the expression, a [`PrimExpr`], or the first
+/// error any step raised. Later steps pass an error through untouched. An `ExprResult` is an
+/// [`IntoExpr`], so it passes into any function or constructor that takes one, whose `?` then
+/// reports the error; `PrimExpr::try_from` takes the expression out without a further check, and
+/// `Expr::try_from` takes it out as an `Expr`.
 ///
-/// Registered expression wrappers convert into an `ExprResult`. The operators
+/// Registered expression wrappers convert into an `ExprResult`; one whose type is not a
+/// `PrimType` is a TypeError there. The operators
 /// `+`, `-`, `*`, `&amp;`, `|`, `^`, `&lt;&lt;`, `&gt;&gt;`, unary `-` and `!` are the C++ ones, typed after C++:
 /// an integer literal on either side is `MakeConst(other.ty(), v)`, an `f32` a float32 constant,
 /// an `f64` a float64 one. `/` and `%` are not defined: name the division
@@ -3867,13 +3897,23 @@
 /// Comparisons, `&amp;&amp;` and `||` are [`PrimOps`] methods too, because Rust's comparison traits
 /// return `bool`.
 </span><span class="attr">#[derive(Clone)]
-#[must_use = <span class="string">"an `ExprResult` holds the result; pass it on, or convert it with `Expr::try_from`"</span>]
-</span><span class="kw">pub struct </span>ExprResult(<span class="prelude-ty">Result</span>&lt;Expr&gt;);
+#[must_use = <span class="string">"an `ExprResult` holds the result; pass it on, or convert it with `PrimExpr::try_from`"</span>]
+</span><span class="kw">pub struct </span>ExprResult(<span class="prelude-ty">Result</span>&lt;PrimExpr&gt;);
 
 <span class="kw">impl </span>TryFrom&lt;ExprResult&gt; <span class="kw">for </span>Expr {
     <span class="kw">type </span>Error = Error;
 
     <span class="doccomment">/// The built expression, or the first error raised while constructing it.
+    </span><span class="kw">fn </span>try_from(value: ExprResult) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        value.<span class="number">0</span>.map(Into::into)
+    }
+}
+
+<span class="kw">impl </span>TryFrom&lt;ExprResult&gt; <span class="kw">for </span>PrimExpr {
+    <span class="kw">type </span>Error = Error;
+
+    <span class="doccomment">/// The built expression, which every step checks is a `PrimExpr`, or the first error raised
+    /// while building it.
     </span><span class="kw">fn </span>try_from(value: ExprResult) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         value.<span class="number">0
     </span>}
@@ -3883,7 +3923,7 @@
     <span class="doccomment">/// The dtype a literal next to this expression takes (`MakeConst(this.ty(), v)`).
     </span><span class="kw">fn </span>dtype(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;DLDataType&gt; {
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0 </span>{
-            <span class="prelude-val">Ok</span>(expr) =&gt; support::prim_dtype(expr),
+            <span class="prelude-val">Ok</span>(expr) =&gt; <span class="prelude-val">Ok</span>(expr.dtype()),
             <span class="prelude-val">Err</span>(error) =&gt; <span class="prelude-val">Err</span>(error.clone()),
         }
     }
@@ -3891,19 +3931,27 @@
 
 <span class="kw">impl </span>IntoExpr <span class="kw">for </span>ExprResult {
     <span class="kw">fn </span>into_expr(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
-        <span class="self">self</span>.<span class="number">0
-    </span>}
+        <span class="self">self</span>.<span class="number">0</span>.map(Into::into)
+    }
 }
 
 <span class="kw">impl </span>IntoExpr <span class="kw">for </span><span class="kw-2">&amp;</span>ExprResult {
     <span class="kw">fn </span>into_expr(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Expr&gt; {
-        <span class="self">self</span>.<span class="number">0</span>.clone()
+        <span class="self">self</span>.<span class="number">0</span>.clone().map(Into::into)
     }
 }
 
 <span class="kw">impl</span>&lt;T: Into&lt;Expr&gt;&gt; From&lt;<span class="prelude-ty">Result</span>&lt;T&gt;&gt; <span class="kw">for </span>ExprResult {
     <span class="kw">fn </span>from(value: <span class="prelude-ty">Result</span>&lt;T&gt;) -&gt; <span class="self">Self </span>{
-        ExprResult(value.map(Into::into))
+        ExprResult::checked(value.map(Into::into))
+    }
+}
+
+<span class="kw">impl </span>ExprResult {
+    <span class="doccomment">/// A step's result, checked to be a `PrimExpr`; an expression of another type is a TypeError,
+    /// raised where it enters the chain.
+    </span><span class="kw">fn </span>checked(value: <span class="prelude-ty">Result</span>&lt;Expr&gt;) -&gt; <span class="self">Self </span>{
+        ExprResult(value.and_then(PrimExpr::try_from))
     }
 }
 
@@ -3921,7 +3969,7 @@
 ) -&gt; ExprResult {
     <span class="kw">let </span>rhs = typed_after(rhs.classify(), <span class="kw-2">&amp;</span>lhs);
     <span class="kw">match </span>(lhs.<span class="number">0</span>, rhs.<span class="number">0</span>) {
-        (<span class="prelude-val">Ok</span>(a), <span class="prelude-val">Ok</span>(b)) =&gt; ExprResult(op(a, b)),
+        (<span class="prelude-val">Ok</span>(a), <span class="prelude-val">Ok</span>(b)) =&gt; ExprResult::checked(op(a.into(), b.into())),
         (<span class="prelude-val">Err</span>(error), <span class="kw">_</span>) | (<span class="kw">_</span>, <span class="prelude-val">Err</span>(error)) =&gt; ExprResult(<span class="prelude-val">Err</span>(error)),
     }
 }
@@ -4017,14 +4065,14 @@
                 </span><span class="kw">impl </span>Neg <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
                     <span class="kw">type </span>Output = ExprResult;
                     <span class="kw">fn </span>neg(<span class="self">self</span>) -&gt; ExprResult {
-                        ExprResult(<span class="kw">super</span>::neg(ExprResult::from(<span class="self">self</span>)))
+                        ExprResult::checked(<span class="kw">super</span>::neg(ExprResult::from(<span class="self">self</span>)))
                     }
                 }
                 <span class="doccomment">/// C++ `!` (`logical_not`).
                 </span><span class="kw">impl </span>Not <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
                     <span class="kw">type </span>Output = ExprResult;
                     <span class="kw">fn </span>not(<span class="self">self</span>) -&gt; ExprResult {
-                        ExprResult(<span class="kw">super</span>::logical_not(ExprResult::from(<span class="self">self</span>)))
+                        ExprResult::checked(<span class="kw">super</span>::logical_not(ExprResult::from(<span class="self">self</span>)))
                     }
                 }
             )+
@@ -4040,7 +4088,7 @@
         $(
             $(<span class="attr">#[<span class="macro-nonterminal">$doc</span>]</span>)*
             <span class="kw">fn </span><span class="macro-nonterminal">$name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ExprResult {
-                ExprResult(<span class="macro-nonterminal">$name</span>(<span class="self">self</span>.to_expr_result()))
+                ExprResult::checked(<span class="macro-nonterminal">$name</span>(<span class="self">self</span>.to_expr_result()))
             }
         )+
     };
@@ -4093,11 +4141,11 @@
     }
     <span class="doccomment">/// C++ `a &amp;&amp; b` ([`logical_and`]).
     </span><span class="kw">fn </span>logical_and(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(logical_and(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(logical_and(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `a || b` ([`logical_or`]).
     </span><span class="kw">fn </span>logical_or(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(logical_or(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(logical_or(<span class="self">self</span>.to_expr_result(), rhs))
     }
 
     <span class="macro">binary_methods!</span> {
@@ -4125,31 +4173,31 @@
 
     <span class="doccomment">/// C++ `pow(a, b)` ([`pow`]).
     </span><span class="kw">fn </span>pow(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(pow(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(pow(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `fmod(a, b)` ([`fmod`]).
     </span><span class="kw">fn </span>fmod(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(fmod(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(fmod(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `atan2(a, b)` ([`atan2`]).
     </span><span class="kw">fn </span>atan2(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(atan2(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(atan2(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `nextafter(a, b)` ([`nextafter`]).
     </span><span class="kw">fn </span>nextafter(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(nextafter(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(nextafter(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `copysign(a, b)` ([`copysign`]).
     </span><span class="kw">fn </span>copysign(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(copysign(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(copysign(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `hypot(a, b)` ([`hypot`]).
     </span><span class="kw">fn </span>hypot(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(hypot(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(hypot(<span class="self">self</span>.to_expr_result(), rhs))
     }
     <span class="doccomment">/// C++ `ldexp(a, b)` ([`ldexp`]).
     </span><span class="kw">fn </span>ldexp(<span class="kw-2">&amp;</span><span class="self">self</span>, rhs: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(ldexp(<span class="self">self</span>.to_expr_result(), rhs))
+        ExprResult::checked(ldexp(<span class="self">self</span>.to_expr_result(), rhs))
     }
 
     <span class="macro">unary_methods!</span> {
@@ -4231,17 +4279,17 @@
 
     <span class="doccomment">/// C++ `cast(a, t)` ([`cast`]).
     </span><span class="kw">fn </span>cast(<span class="kw-2">&amp;</span><span class="self">self</span>, ty: <span class="kw">impl </span>Into&lt;PrimType&gt;) -&gt; ExprResult {
-        ExprResult(cast(<span class="self">self</span>.to_expr_result(), ty))
+        ExprResult::checked(cast(<span class="self">self</span>.to_expr_result(), ty))
     }
 
     <span class="doccomment">/// C++ `if_then_else(self, t, f)` ([`if_then_else`]), with `self` the condition.
     </span><span class="kw">fn </span>if_then_else(<span class="kw-2">&amp;</span><span class="self">self</span>, t: <span class="kw">impl </span>IntoExpr, f: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(if_then_else(<span class="self">self</span>.to_expr_result(), t, f))
+        ExprResult::checked(if_then_else(<span class="self">self</span>.to_expr_result(), t, f))
     }
 
     <span class="doccomment">/// The raw `Select(self, t, f)` ([`Select::new`]), with `self` the condition.
     </span><span class="kw">fn </span>select(<span class="kw-2">&amp;</span><span class="self">self</span>, t: <span class="kw">impl </span>IntoExpr, f: <span class="kw">impl </span>IntoExpr) -&gt; ExprResult {
-        ExprResult(Select::new(<span class="self">self</span>.to_expr_result(), t, f, UNKNOWN_LOC).map(Into::into))
+        ExprResult::checked(Select::new(<span class="self">self</span>.to_expr_result(), t, f, UNKNOWN_LOC).map(Expr::from))
     }
 }
 

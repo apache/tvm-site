@@ -862,50 +862,7 @@
 <a href="#861" id="861">861</a>
 <a href="#862" id="862">862</a>
 <a href="#863" id="863">863</a>
-<a href="#864" id="864">864</a>
-<a href="#865" id="865">865</a>
-<a href="#866" id="866">866</a>
-<a href="#867" id="867">867</a>
-<a href="#868" id="868">868</a>
-<a href="#869" id="869">869</a>
-<a href="#870" id="870">870</a>
-<a href="#871" id="871">871</a>
-<a href="#872" id="872">872</a>
-<a href="#873" id="873">873</a>
-<a href="#874" id="874">874</a>
-<a href="#875" id="875">875</a>
-<a href="#876" id="876">876</a>
-<a href="#877" id="877">877</a>
-<a href="#878" id="878">878</a>
-<a href="#879" id="879">879</a>
-<a href="#880" id="880">880</a>
-<a href="#881" id="881">881</a>
-<a href="#882" id="882">882</a>
-<a href="#883" id="883">883</a>
-<a href="#884" id="884">884</a>
-<a href="#885" id="885">885</a>
-<a href="#886" id="886">886</a>
-<a href="#887" id="887">887</a>
-<a href="#888" id="888">888</a>
-<a href="#889" id="889">889</a>
-<a href="#890" id="890">890</a>
-<a href="#891" id="891">891</a>
-<a href="#892" id="892">892</a>
-<a href="#893" id="893">893</a>
-<a href="#894" id="894">894</a>
-<a href="#895" id="895">895</a>
-<a href="#896" id="896">896</a>
-<a href="#897" id="897">897</a>
-<a href="#898" id="898">898</a>
-<a href="#899" id="899">899</a>
-<a href="#900" id="900">900</a>
-<a href="#901" id="901">901</a>
-<a href="#902" id="902">902</a>
-<a href="#903" id="903">903</a>
-<a href="#904" id="904">904</a>
-<a href="#905" id="905">905</a>
-<a href="#906" id="906">906</a>
-<a href="#907" id="907">907</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#864" id="864">864</a></pre></div><pre class="rust"><code><span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1330,10 +1287,10 @@
 /// order, [`var_args`](sig::var_args) and [`var_ty_args`](sig::var_ty_args) a variadic tail of
 /// each, and [`call_attrs`](sig::call_attrs) the type of `Call.attrs`. As an argument type, a node
 /// type, such as [`StringImm`](super::StringImm) or [`Var`], accepts an instance of it, as C++
-/// `TypeTraits&lt;T&gt;::CheckAnyStrict` does, and [`Expr`] or [`Type`] accepts any.
-/// [`PrimExpr`](sig::PrimExpr), [`IntExpr`](sig::IntExpr) and [`PrimVar`](sig::PrimVar) are the
-/// C++ view types, which also check the expression's type, as is
-/// [`TensorVar`](crate::tirx::TensorVar). Implement [`ArgType`](sig::ArgType) for another check.
+/// `TypeTraits&lt;T&gt;::CheckAnyStrict` does, and [`Expr`] or [`Type`] accepts any. The typed views
+/// [`PrimExpr`](super::PrimExpr) and [`IntExpr`](super::IntExpr) also check the expression's type;
+/// [`PrimVar`](sig::PrimVar) and [`TensorVar`](crate::tirx::TensorVar) check a variable's type, as
+/// the C++ view types of those names do. Implement [`ArgType`](sig::ArgType) for another check.
 </span><span class="kw">pub mod </span>sig {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::ir::expr::ExprObj;
@@ -1362,43 +1319,14 @@
         <span class="kw">fn </span>type_str() -&gt; std::string::String {
             T::type_str()
         }
-    }
-
-    <span class="doccomment">/// C++ `PrimExpr`: an expression whose type is a `PrimType`.
-    </span><span class="kw">pub struct </span>PrimExpr;
-
-    <span class="kw">impl </span>ArgType <span class="kw">for </span>PrimExpr {
-        <span class="kw">fn </span>check(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
-            prim_dtype(value).is_some()
-        }
-
-        <span class="kw">fn </span>type_str() -&gt; std::string::String {
-            <span class="string">"ir.PrimExpr"</span>.into()
-        }
 
         <span class="kw">fn </span>mismatch(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::string::String {
-            typed_expr_mismatch(value)
+            T::get_mismatch_type_info(value)
         }
     }
 
-    <span class="doccomment">/// C++ `IntExpr`: a `PrimExpr` of a scalar signed or unsigned integer type.
-    </span><span class="kw">pub struct </span>IntExpr;
-
-    <span class="kw">impl </span>ArgType <span class="kw">for </span>IntExpr {
-        <span class="kw">fn </span>check(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
-            prim_dtype(value).is_some_and(|dtype| {
-                dtype.lanes == <span class="number">1 </span>&amp;&amp; <span class="macro">matches!</span>(dtype.code, support::INT | support::UINT)
-            })
-        }
-
-        <span class="kw">fn </span>type_str() -&gt; std::string::String {
-            <span class="string">"ir.IntExpr"</span>.into()
-        }
-
-        <span class="kw">fn </span>mismatch(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::string::String {
-            typed_expr_mismatch(value)
-        }
-    }
+    <span class="doccomment">/// The typed views, which are argument types as they are.
+    </span><span class="kw">pub use </span><span class="kw">crate</span>::ir::expr::{IntExpr, PrimExpr};
 
     <span class="doccomment">/// C++ `PrimVar`: a `Var`, not a subclass, whose type is a `PrimType`.
     </span><span class="kw">pub struct </span>PrimVar;
@@ -1427,20 +1355,6 @@
             (is_object &amp;&amp; Expr::check_any_strict(value))
                 .then(|| <span class="kw-2">&amp;*</span>(value.data_union.v_obj <span class="kw">as </span><span class="kw-2">*const </span>ExprObj))
         }
-    }
-
-    <span class="kw">fn </span>prim_dtype(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="prelude-ty">Option</span>&lt;tvm_ffi::DLDataType&gt; {
-        <span class="prelude-val">Some</span>(expr(value)<span class="question-mark">?</span>.ty.downcast_ref::&lt;PrimTypeObj&gt;()<span class="question-mark">?</span>.dtype)
-    }
-
-    <span class="doccomment">/// C++ `TypeTraits&lt;TypedExpr&lt;T&gt;&gt;::GetMismatchTypeInfo`: an expression with its type.
-    </span><span class="kw">fn </span>typed_expr_mismatch(value: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::string::String {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(expr) = expr(value) <span class="kw">else </span>{ <span class="kw">return </span>support::type_key(value.type_index) };
-        <span class="kw">let </span>ty = <span class="kw">match </span>expr.ty.downcast_ref::&lt;PrimTypeObj&gt;() {
-            <span class="prelude-val">Some</span>(prim) =&gt; support::dtype_name(prim.dtype),
-            <span class="prelude-val">None </span>=&gt; support::type_key(AnyView::from(<span class="kw-2">&amp;</span>expr.ty).type_index()),
-        };
-        <span class="macro">format!</span>(<span class="string">"{}[ty={ty}]"</span>, support::type_key(value.type_index))
     }
 
     <span class="doccomment">/// A required value argument of type `T` (C++ `sig::arg&lt;T&gt;`); [`Expr`] accepts any.
