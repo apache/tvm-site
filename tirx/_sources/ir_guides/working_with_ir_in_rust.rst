@@ -314,12 +314,13 @@ struct. It works like a trait whose methods all have default bodies: we
 write methods for the node types we care about, and every other type gets
 the default behavior.
 
-``#[dispatch(walk)]`` on an ``impl`` block turns its ``walk_*`` methods
-into callbacks for |structural_walk|_, which visits every node. Each
-method borrows the nodes of its parameter type, and the methods are tried
-in source order. Walk handlers share the ``Result<WalkResult>`` return type;
-one handler declares the trailing ``DefRegionKind`` argument used by the
-walker, and handlers that do not need it may omit it. Let's count the
+``#[dispatch(walk, (AnyView<'_>, DefRegionKind), Result<WalkResult>)]``
+on an ``impl`` block turns its ``walk_*`` methods into callbacks for
+|structural_walk|_, which visits every node. Each method borrows the nodes
+of its parameter type, and the methods are tried in source order. The
+attribute declares the argument tuple and ``Result<WalkResult>`` return type;
+handlers that
+do not need the trailing ``DefRegionKind`` may omit it. Let's count the
 variables and additions:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
@@ -523,9 +524,10 @@ Visitors and Mutators in Rust
 
 Stateful traversals use the same four structural utilities. State lives
 on a |dispatch|_ struct, as in Dispatching on Node Types.
-``#[dispatch(map)]`` and ``#[dispatch(visit)]`` group ``map_*`` and
-``visit_*`` methods. ``#[dispatch(mutate, MutationView)]`` groups
-``mutate_*`` methods and carries mutation permission through matching.
+The ``map``, ``visit``, and ``mutate`` prefixes group ``map_*``,
+``visit_*``, and ``mutate_*`` methods. Each attribute declares its
+argument tuple and return type; mutation uses ``MutationView`` as its
+first argument to carry mutation permission through matching.
 
 **A visit or mutate callback takes control of its node's children.**
 Let's record the loops around each write. Each handler receives the node
@@ -628,7 +630,7 @@ Quick Reference
      - Receives the definition region kind
    * - ``Function::get_global("ffi.StructuralEqual")``
      - Compares by structure
-   * - |dispatch|_\ ``(walk)``, ``(map)``, ``(visit)``, ``(mutate, MutationView)``
+   * - |dispatch|_\ ``(prefix, (Carrier, ...), ResultType)``
      - Turns the methods of a struct into typed callbacks
    * - |StructuralVisitorView|_, |StructuralMutatorView|_
      - Recurse with the same dispatcher and current definition region
@@ -648,15 +650,15 @@ Quick Reference
 .. |try_cast| replace:: ``.try_cast()``
 .. _try_cast: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCast.html
 .. |structural_walk| replace:: ``structural_walk``
-.. _structural_walk: ../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_walk.html
+.. _structural_walk: ../reference/rust/generated/tvm_ffi/extra/structural_walk/fn.structural_walk.html
 .. |structural_map| replace:: ``structural_map``
-.. _structural_map: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_map.html
+.. _structural_map: ../reference/rust/generated/tvm_ffi/extra/structural_map/fn.structural_map.html
 .. |structural_visit| replace:: ``structural_visit``
 .. _structural_visit: ../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_visit.html
 .. |structural_mutate| replace:: ``structural_mutate``
 .. _structural_mutate: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html
 .. |WalkResult| replace:: ``WalkResult``
-.. _WalkResult: ../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.WalkResult.html
+.. _WalkResult: ../reference/rust/generated/tvm_ffi/extra/structural_walk/enum.WalkResult.html
 .. |DefRegionKind| replace:: ``DefRegionKind``
 .. _DefRegionKind: ../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html
 .. |make_const| replace:: ``make_const``

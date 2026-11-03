@@ -171,15 +171,15 @@ rewrites:
       impl Lowering {
           fn parts(&self, expr: &Expr) -> Result<(Expr, Expr)> { ... }
       }
-      #[dispatch(map)]
+      #[dispatch(map, (AnyView<'_>,), Result<Any>)]
       impl Lowering {
           fn map_sequence(&mut self, seq: SeqStmt) -> Result<Any> { ... }
    :append: }
 
 ``bindings`` records each complex variable with its two scalar replacements,
 and ``parts`` reads the real and imaginary parts of an operand, either a
-``complex(re, im)`` call or a variable already split. ``#[dispatch(map)]``
-sends each node to the ``map_`` method of its type, and leaves other nodes
+``complex(re, im)`` call or a variable already split.
+``#[dispatch(map, (AnyView<'_>,), Result<Any>)]`` sends each node to the ``map_`` method of its type, and leaves other nodes
 unchanged: ``map_call`` applies the three rules, ``map_bind`` splits a complex
 binding, and ``map_sequence`` flattens the sequence that a split binding leaves
 inside another. The callback passes each node to ``lowering.dispatch`` and

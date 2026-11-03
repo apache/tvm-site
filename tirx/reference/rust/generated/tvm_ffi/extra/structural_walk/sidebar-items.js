@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["WalkOrder","WalkResult"],"fn":["structural_walk"],"trait":["IntoWalkResult","IntoWalker","WalkChainLink"]};

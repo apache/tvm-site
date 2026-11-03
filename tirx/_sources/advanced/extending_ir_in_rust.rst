@@ -84,7 +84,7 @@ the code that ``#[dispatch]`` generates refers to the crate by that name:
    :language: toml
    :start-at: [lib]
 
-First build and install TIRx from this checkout. With Rust 1.84 or newer,
+First build and install TIRx from this checkout. With Rust 1.95 or newer,
 install the extension from the repository root in the same Python environment:
 
 .. code-block:: bash

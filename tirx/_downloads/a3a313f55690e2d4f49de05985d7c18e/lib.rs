@@ -192,7 +192,7 @@ impl Lowering {
     }
 }
 
-#[dispatch(map)]
+#[dispatch(map, (AnyView<'_>,), Result<Any>)]
 impl Lowering {
     fn map_sequence(&mut self, seq: SeqStmt) -> Result<Any> {
         Ok(SeqStmt::new(seq.seq.iter(), seq.loc.clone()).into())

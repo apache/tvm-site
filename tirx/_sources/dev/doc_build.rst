@@ -92,9 +92,8 @@ Build with Rust Docs
 --------------------
 
 The Rust API reference is the ``cargo doc`` output of the ``rust/`` crate, copied
-under ``reference/rust/generated`` of the HTML output. Use Rust 1.85 or newer to avoid
-the `Rust 1.84 rustdoc crash <https://github.com/rust-lang/rust/issues/134715>`_
-when documenting ``tvm-ffi``. The crate's build script runs
+under ``reference/rust/generated`` of the HTML output. Use Rust 1.95 or newer,
+as required by the crate and its ``tvm-ffi`` dependency. The crate's build script runs
 ``tvm-tirx-config`` to find ``libtvm_tirx_compiler``, so
 build the package first; ``uv run`` puts the helper on ``PATH``. Set
 ``BUILD_RUST_DOCS=1`` to enable the extra step:

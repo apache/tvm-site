@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["DefRegionKind","WalkOrder","WalkResult"],"fn":["structural_visit","structural_walk"],"struct":["StructuralVisitor","StructuralVisitorObj","StructuralVisitorView","VisitInterrupt"],"trait":["IntoVisitor","IntoWalkResult","IntoWalker","StructuralVisitorBase","WalkChainLink"]};
+window.SIDEBAR_ITEMS = {"enum":["DefRegionKind"],"fn":["structural_visit"],"struct":["StructuralVisitorObj","StructuralVisitorView","VisitInterrupt","VisitInterruptObj"],"trait":["IntoVisitor"]};
