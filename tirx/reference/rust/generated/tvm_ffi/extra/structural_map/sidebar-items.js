@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["structural_map"],"trait":["IntoMapper","MapChainLink"]};
+window.SIDEBAR_ITEMS = {"fn":["structural_map"]};

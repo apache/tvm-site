@@ -132,11 +132,10 @@ Program Listing for File constraint.h
    class ConstraintContextObj : public ffi::Object {
     public:
      ConstraintContextObj() = default;
-     ConstraintContextObj(ffi::ObjectPtr<ConstraintContextObj> parent, int64_t parent_local_prefix)
-         : parent_(std::move(parent)), parent_prefix_size_(parent_local_prefix) {
-       TVM_FFI_CHECK(
-           parent_ && 0 <= parent_local_prefix && parent_local_prefix <= parent_->LocalSize(),
-           ValueError)
+     ConstraintContextObj(ffi::ObjectPtr<ConstraintContextObj> parent, int64_t parent_prefix_size)
+         : parent_(std::move(parent)), parent_prefix_size_(parent_prefix_size) {
+       TVM_FFI_CHECK(parent_ && 0 <= parent_prefix_size && parent_prefix_size <= parent_->LocalSize(),
+                     ValueError)
            << "Constraint context parent local prefix is out of bounds";
      }
      // Context nodes have stable identity; use Snapshot to capture their current position.
@@ -199,9 +198,9 @@ Program Listing for File constraint.h
    class ConstraintContext : public ffi::ObjectRef {
     public:
      ConstraintContext() : ffi::ObjectRef(ffi::make_object<ConstraintContextObj>()) {}
-     ConstraintContext(ConstraintContext parent, int64_t parent_local_prefix)
+     ConstraintContext(ConstraintContext parent, int64_t parent_prefix_size)
          : ffi::ObjectRef(ffi::make_object<ConstraintContextObj>(
-               ffi::GetObjectPtr<ConstraintContextObj>(parent.get()), parent_local_prefix)) {}
+               ffi::GetObjectPtr<ConstraintContextObj>(parent.get()), parent_prefix_size)) {}
      explicit ConstraintContext(ffi::ObjectPtr<ConstraintContextObj> node)
          : ffi::ObjectRef(std::move(node)) {}
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(ConstraintContext, ffi::ObjectRef,

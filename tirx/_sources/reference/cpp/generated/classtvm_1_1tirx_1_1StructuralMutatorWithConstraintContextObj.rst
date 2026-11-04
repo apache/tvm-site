@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public tvm::ffi::StructuralMapEngineBase``
+- ``public tvm::ffi::detail::StructuralMutatorEngineBase< StructuralMutatorObj >``
 
 
 Derived Type

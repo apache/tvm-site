@@ -661,11 +661,16 @@ replacement before any use of ``i``.
 
 .. note::
 
-   TIRx also has traversals that track the facts valid at each node, such
-   as loop ranges and branch conditions. In Rust they are
-   |StructuralVisitorWithConstraintContext|_ and
-   |StructuralMutatorWithConstraintContext|_; ``constraints()`` returns the
-   current facts.
+   |structural_visit_with_constraint_context|_ tracks facts such as loop
+   ranges and branch conditions through the same Rust visitor engine. Its
+   |StructuralVisitorWithConstraintContextView|_ supports explicit descent;
+   ``visitor.base().constraints()`` returns the ordinary owning
+   ``ConstraintContext`` handle to the current facts. Use ``snapshot()`` to retain the visible prefix or
+   ``to_array()`` for an independent sequence of fact handles.
+   |structural_walk_with_constraint_context|_ supplies the same context to
+   pre- or post-order observers and handles descent through the visitor engine.
+   Typed contexts are neither ``Send`` nor ``Sync``; erased FFI handles retain
+   the ordinary contract against concurrent access.
 
 With fields, typed callbacks, and the structural utilities, a Rust function
 works with the same IR that Python builds and prints, so an analysis or a
@@ -739,10 +744,12 @@ Quick Reference
 .. _StructuralMutatorView: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.StructuralMutatorView.html
 .. |ObjectIdentity| replace:: ``ObjectIdentity``
 .. _ObjectIdentity: ../reference/rust/generated/tvm_ffi/object/struct.ObjectIdentity.html
-.. |StructuralVisitorWithConstraintContext| replace:: ``StructuralVisitorWithConstraintContext``
-.. _StructuralVisitorWithConstraintContext: ../reference/rust/generated/tvm_tirx/tirx/struct.StructuralVisitorWithConstraintContext.html
-.. |StructuralMutatorWithConstraintContext| replace:: ``StructuralMutatorWithConstraintContext``
-.. _StructuralMutatorWithConstraintContext: ../reference/rust/generated/tvm_tirx/tirx/struct.StructuralMutatorWithConstraintContext.html
+.. |structural_visit_with_constraint_context| replace:: ``structural_visit_with_constraint_context``
+.. _structural_visit_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/fn.structural_visit_with_constraint_context.html
+.. |structural_walk_with_constraint_context| replace:: ``structural_walk_with_constraint_context``
+.. _structural_walk_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_walk_with_constraint_context/fn.structural_walk_with_constraint_context.html
+.. |StructuralVisitorWithConstraintContextView| replace:: ``StructuralVisitorWithConstraintContextView``
+.. _StructuralVisitorWithConstraintContextView: ../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/type.StructuralVisitorWithConstraintContextView.html
 .. |match_any!| replace:: ``match_any!``
 .. _match_any!: ../reference/rust/generated/tvm_ffi/macro.match_any.html
 .. |Var::new| replace:: ``Var::new``

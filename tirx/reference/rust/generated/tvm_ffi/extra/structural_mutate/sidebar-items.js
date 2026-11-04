@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["InplaceMode"],"fn":["structural_mutate"],"struct":["MutationView","StructuralMutatorObj","StructuralMutatorView","StructuralVarRemap"],"trait":["IntoMutator"]};
+window.SIDEBAR_ITEMS = {"enum":["InplaceMode"],"fn":["structural_mutate"],"struct":["MutationView","StructuralMutateEngine","StructuralMutatorObj","StructuralMutatorView","StructuralVarRemap"],"trait":["StructuralMutatorBase"]};

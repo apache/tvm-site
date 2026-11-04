@@ -18,7 +18,7 @@ Base Type
 Derived Type
 ************
 
-- ``public tvm::ffi::StructuralMapEngineBase``
+- ``public tvm::ffi::detail::StructuralMutatorEngineBase< StructuralMutatorObj >``
 
 
 Class Documentation

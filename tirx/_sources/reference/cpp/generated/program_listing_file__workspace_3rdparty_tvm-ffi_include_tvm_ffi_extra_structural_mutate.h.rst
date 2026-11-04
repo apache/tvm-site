@@ -267,6 +267,7 @@ Program Listing for File structural_mutate.h
    class StructuralMutatorObj : public Object {
     public:
      using MutatorObjType = StructuralMutatorObj;
+     using StateTupleType = std::tuple<>;
    
      TVM_FFI_INLINE UnchangedOr<Any> Mutate(AnyView value,
                                             InplaceMode inplace_mode = InplaceMode::kDisallow) {
@@ -461,6 +462,18 @@ Program Listing for File structural_mutate.h
     protected:
      explicit StructuralMutatorObj(const StructuralMutatorVTable* vtable) : vtable_(vtable) {}
    
+     TVM_FFI_INLINE StateTupleType StateTuple() const noexcept { return {}; }
+   
+     TVM_FFI_COLD_CODE static void UpdateVisitErrorContext(const Expected<Any>& result,
+                                                           AnyView node) noexcept {
+       // The Error is refcounted, so annotating the local handle annotates the object the result
+       // holds. A non-object node has no context to add.
+       if (node.type_index() >= TypeIndex::kTVMFFIStaticObjectBegin) {
+         Error err = result.error();
+         ::tvm::ffi::detail::UpdateVisitErrorContext(err, node.cast<ObjectRef>());
+       }
+     }
+   
      const StructuralMutatorVTable* vtable_ = nullptr;
    
      TVMFFIDefRegionKind def_region_mode_ = kTVMFFIDefRegionKindNone;
@@ -633,14 +646,17 @@ Program Listing for File structural_mutate.h
    
    }  // namespace detail
    
-   class StructuralMapEngineBase : public StructuralMutatorObj {
+   namespace detail {
+   
+   template <typename Parent>
+   class StructuralMutatorEngineBase : public Parent {
     public:
-     using StateTupleType = std::tuple<>;
+     static_assert(std::is_base_of_v<StructuralMutatorObj, Parent>,
+                   "Structural map/mutate Parent must derive from StructuralMutatorObj");
    
-     explicit StructuralMapEngineBase(const StructuralMutatorVTable* vtable)
-         : StructuralMutatorObj(vtable) {}
+     explicit StructuralMutatorEngineBase(const StructuralMutatorVTable* vtable) : Parent(vtable) {}
    
-     ~StructuralMapEngineBase() {
+     ~StructuralMutatorEngineBase() {
        for (const auto& kv : var_remap_) {
          detail::ObjectUnsafe::DecRefObjectHandle(
              reinterpret_cast<TVMFFIObjectHandle>(const_cast<Object*>(kv.first)));
@@ -648,8 +664,6 @@ Program Listing for File structural_mutate.h
      }
    
     protected:
-     TVM_FFI_INLINE StateTupleType StateTuple() const noexcept { return {}; }
-   
      // Out of line so its strings stay out of the per-node dispatch function, which TryLink inlines
      // into. Shared by the typed and dynamic engines below.
      TVM_FFI_COLD_CODE static Expected<Any> SMutateDescentTypeError() noexcept {
@@ -661,24 +675,14 @@ Program Listing for File structural_mutate.h
      }
    
      static TVMFFIAny DispatchVarRemapGet(StructuralMutatorObj* mutator, AnyView var) noexcept {
-       auto* self = static_cast<StructuralMapEngineBase*>(mutator);
+       auto* self = static_cast<StructuralMutatorEngineBase*>(mutator);
        return detail::ExpectedUnsafe::MoveToTVMFFIAny(self->VarRemapGetImpl(var));
      }
    
      static TVMFFIAny DispatchVarRemapSet(StructuralMutatorObj* mutator, AnyView var,
                                           AnyView mapped_value) noexcept {
-       auto* self = static_cast<StructuralMapEngineBase*>(mutator);
+       auto* self = static_cast<StructuralMutatorEngineBase*>(mutator);
        return detail::ExpectedUnsafe::MoveToTVMFFIAny(self->VarRemapSetImpl(var, mapped_value));
-     }
-   
-     TVM_FFI_COLD_CODE static void UpdateVisitErrorContext(const Expected<Any>& result,
-                                                           AnyView node) noexcept {
-       // The Error is refcounted, so annotating the local handle annotates the object the result
-       // holds. A non-object node has no context to add.
-       if (node.type_index() >= TypeIndex::kTVMFFIStaticObjectBegin) {
-         Error err = result.error();
-         ::tvm::ffi::detail::UpdateVisitErrorContext(err, node.cast<ObjectRef>());
-       }
      }
    
      Expected<Any> VarRemapGetImpl(AnyView var) noexcept {
@@ -707,28 +711,30 @@ Program Listing for File structural_mutate.h
        return Expected<void>();
      }
    
-     template <typename Parent, WalkOrder order, typename... Callbacks>
-     friend class StructuralMapEngine;
-     template <typename Parent, WalkOrder order>
-     friend class StructuralMapDynEngine;
-     template <typename Parent, typename... Callbacks>
-     friend class StructuralMutateEngine;
-     template <typename Parent>
-     friend class detail::StructuralMutateDynEngine;
-   
      // Raw-pointer key: IncRef once on first insert, DecRef all keys in the destructor.
      std::unordered_map<const Object*, Any> var_remap_;
    };
    
+   // Existing semantic layers may already inherit the original remap-owning base. Reuse that
+   // complete layer rather than adding a second map; new parents receive storage above their state.
+   template <typename Parent>
+   using StructuralMutatorEngineParent =
+       std::conditional_t<std::is_base_of_v<StructuralMutatorEngineBase<StructuralMutatorObj>, Parent>,
+                          Parent, StructuralMutatorEngineBase<Parent>>;
+   
+   }  // namespace detail
+   
+   using StructuralMapEngineBase = detail::StructuralMutatorEngineBase<StructuralMutatorObj>;
+   
    template <typename Parent, WalkOrder order, typename... Callbacks>
-   class StructuralMapEngine : public Parent {
+   class StructuralMapEngine : public detail::StructuralMutatorEngineParent<Parent> {
+     using EngineBase = detail::StructuralMutatorEngineParent<Parent>;
+   
     public:
-     static_assert(std::is_base_of_v<StructuralMapEngineBase, Parent>,
-                   "StructuralMap Parent must derive from StructuralMapEngineBase");
      using StateTupleType = typename Parent::StateTupleType;
    
      explicit StructuralMapEngine(Callbacks... callbacks)
-         : Parent(VTable()), callbacks_(std::move(callbacks)...) {}
+         : EngineBase(VTable()), callbacks_(std::move(callbacks)...) {}
    
     private:
      using ExpectedUnsafe = detail::ExpectedUnsafe;
@@ -917,13 +923,13 @@ Program Listing for File structural_mutate.h
    };
    
    template <typename Parent, WalkOrder order>
-   class StructuralMapDynEngine : public Parent {
+   class StructuralMapDynEngine : public detail::StructuralMutatorEngineParent<Parent> {
+     using EngineBase = detail::StructuralMutatorEngineParent<Parent>;
+   
     public:
-     static_assert(std::is_base_of_v<StructuralMapEngineBase, Parent>,
-                   "StructuralMap Parent must derive from StructuralMapEngineBase");
      StructuralMapDynEngine(Array<Tuple<int32_t, Function>> callbacks,
                             Array<Tuple<int32_t, Function>> callbacks_with_def_region_kind)
-         : Parent(VTable()),
+         : EngineBase(VTable()),
            callbacks_(std::move(callbacks)),
            callbacks_with_def_region_kind_(std::move(callbacks_with_def_region_kind)) {}
    
@@ -1075,13 +1081,12 @@ Program Listing for File structural_mutate.h
    };
    
    template <typename Parent, typename... Callbacks>
-   class StructuralMutateEngine : public Parent {
-    public:
-     static_assert(std::is_base_of_v<StructuralMapEngineBase, Parent>,
-                   "StructuralMutate Parent must derive from StructuralMapEngineBase");
+   class StructuralMutateEngine : public detail::StructuralMutatorEngineParent<Parent> {
+     using EngineBase = detail::StructuralMutatorEngineParent<Parent>;
    
+    public:
      explicit StructuralMutateEngine(Callbacks... callbacks)
-         : Parent(VTable()), callbacks_(std::move(callbacks)...) {}
+         : EngineBase(VTable()), callbacks_(std::move(callbacks)...) {}
    
     private:
      static const StructuralMutatorVTable* VTable() {
@@ -1248,7 +1253,7 @@ Program Listing for File structural_mutate.h
    Expected<Any> StructuralMapExpected(
        Any root, Callbacks&&... callbacks) noexcept {  // NOLINT(performance-unnecessary-value-param)
      static_assert(sizeof...(Callbacks) != 0, "StructuralMap requires at least one callback");
-     using Mutator = StructuralMapEngine<StructuralMapEngineBase, order, std::decay_t<Callbacks>...>;
+     using Mutator = StructuralMapEngine<StructuralMutatorObj, order, std::decay_t<Callbacks>...>;
      StructuralMutator mutator(make_object<Mutator>(std::forward<Callbacks>(callbacks)...));
      auto result = mutator->MutateExpected(root, InplaceMode::kAllow);
      if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
@@ -1276,7 +1281,7 @@ Program Listing for File structural_mutate.h
    Expected<Any> StructuralMutateExpected(
        Any root, Callbacks&&... callbacks) noexcept {  // NOLINT(performance-unnecessary-value-param)
      static_assert(sizeof...(Callbacks) != 0, "StructuralMutate requires at least one callback");
-     using Mutator = StructuralMutateEngine<StructuralMapEngineBase, std::decay_t<Callbacks>...>;
+     using Mutator = StructuralMutateEngine<StructuralMutatorObj, std::decay_t<Callbacks>...>;
      StructuralMutator mutator(make_object<Mutator>(std::forward<Callbacks>(callbacks)...));
      auto result = mutator->MutateExpected(root, InplaceMode::kAllow);
      if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
