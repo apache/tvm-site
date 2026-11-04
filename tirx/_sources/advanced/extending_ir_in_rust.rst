@@ -57,7 +57,7 @@ Code generation has no complex type, so by the time the function reaches the
 backend, every complex value must be a pair of ``float32`` values. Expanding
 complex multiplication as
 
-.. math::
+.. code-block:: text
 
    (a + bi)(c + di) = (ac - bd) + (ad + bc)i
 

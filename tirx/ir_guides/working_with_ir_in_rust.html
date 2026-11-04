@@ -507,7 +507,7 @@ directly, clone cheaply</p></td>
 <td><p>Branch on the node type</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a></p></td>
-<td><p>Process each node type in its own method, with shared state</p></td>
+<td><p>Write one method per node type; the attribute generates the match</p></td>
 </tr>
 </tbody>
 </table>
@@ -680,8 +680,9 @@ matching each node and recursing into its operands:</p>
 &lt;other&gt;
 </pre></div>
 </div>
-<p>Each arm names an object type and borrows the matching node with <code class="docutils literal notranslate"><span class="pre">ref</span></code>;
-the first matching arm runs. The <code class="docutils literal notranslate"><span class="pre">AddObj</span></code> and <code class="docutils literal notranslate"><span class="pre">MulObj</span></code> arms recurse into
+<p>Each <em>arm</em> of the match pairs a pattern with code; here each pattern names
+an object type and borrows the matching node with <code class="docutils literal notranslate"><span class="pre">ref</span></code>. The first
+matching arm runs. The <code class="docutils literal notranslate"><span class="pre">AddObj</span></code> and <code class="docutils literal notranslate"><span class="pre">MulObj</span></code> arms recurse into
 the operands, the <code class="docutils literal notranslate"><span class="pre">VarObj</span></code> and <code class="docutils literal notranslate"><span class="pre">IntImmObj</span></code> arms end the recursion, and
 <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">1</span></code> falls to the <code class="docutils literal notranslate"><span class="pre">_</span></code> arm because <code class="docutils literal notranslate"><span class="pre">describe</span></code> has no arm for
 subtraction.</p>
@@ -698,64 +699,101 @@ owning arm such as <code class="docutils literal notranslate"><span class="pre">
 tensors, shapes, and typed arrays. Plain values such as integers take
 the <code class="docutils literal notranslate"><span class="pre">_</span></code> arm in this example.</p>
 </div>
-<p>A match looks at one node at a time; to process every node in a program
-while keeping state, we dispatch.</p>
+<p><code class="docutils literal notranslate"><span class="pre">describe</span></code> puts parentheses around every operation. To add them only
+where they are needed, each node needs to know whether it is nested, so
+let’s give each node type its own method that takes that context.</p>
 </section>
 <section id="dispatching-on-node-types">
 <span id="rust-dispatch"></span><h3>Dispatching on Node Types<a class="headerlink" href="#dispatching-on-node-types" title="Link to this heading">#</a></h3>
-<p><a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> <strong>lets one struct process each node type in its own method,
-with shared state.</strong> A compiler pass often needs one piece of logic per
-node type and state shared across them; <code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code> puts both on one
-struct. It works like a trait whose methods all have default bodies: we
-write methods for the node types we care about, and every other type gets
-the default behavior.</p>
-<p><code class="docutils literal notranslate"><span class="pre">#[dispatch(walk,</span> <span class="pre">(AnyView&lt;'_&gt;,</span> <span class="pre">DefRegionKind),</span> <span class="pre">Result&lt;WalkResult&gt;)]</span></code>
-on an <code class="docutils literal notranslate"><span class="pre">impl</span></code> block turns its <code class="docutils literal notranslate"><span class="pre">walk_*</span></code> methods into callbacks for
-<a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_walk/fn.structural_walk.html"><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code></a>, which visits every node. Each method borrows the nodes
-of its parameter type, and the methods are tried in source order. The
-attribute declares the argument tuple and <code class="docutils literal notranslate"><span class="pre">Result&lt;WalkResult&gt;</span></code> return type;
-handlers that
-do not need the trailing <code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code> may omit it. Let’s count the
-variables and additions:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
-<span class="k">struct</span><span class="w"> </span><span class="nc">Counter</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">vars</span><span class="p">:</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span>
-<span class="w">    </span><span class="n">adds</span><span class="p">:</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span>
-<span class="p">}</span>
+<p>A common need in a compiler is to dispatch over many kinds of IR nodes:
+run different logic depending on which kind a value is. <code class="docutils literal notranslate"><span class="pre">match_any!</span></code>
+provides the machinery, and <a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> <strong>makes such dispatchers simpler to
+build</strong>: write one method per node type, and the attribute generates the
+match that picks between them. Let’s print additions with parentheses only
+where they nest:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">Printer</span><span class="p">;</span>
 
-<span class="cp">#[dispatch(walk, (AnyView&lt;'_&gt;, DefRegionKind), Result&lt;WalkResult&gt;)]</span>
-<span class="k">impl</span><span class="w"> </span><span class="n">Counter</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_var</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">_var</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">VarObj</span><span class="p">,</span><span class="w"> </span><span class="n">_kind</span><span class="p">:</span><span class="w"> </span><span class="nc">DefRegionKind</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">vars</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
-<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+<span class="cp">#[dispatch(print, (AnyView&lt;'_&gt;, bool), String)]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">print_add</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">add</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">AddObj</span><span class="p">,</span><span class="w"> </span><span class="n">nested</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="fm">format!</span><span class="p">(</span><span class="s">"{} + {}"</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">show</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">),</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">show</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="p">.</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">nested</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="fm">format!</span><span class="p">(</span><span class="s">"({text})"</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">text</span>
+<span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">_add</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">AddObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">adds</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
-<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">print_var</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">var</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">VarObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">var</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">as_str</span><span class="p">().</span><span class="n">to_owned</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">print_imm</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">imm</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">IntImmObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">imm</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">to_string</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Expr</span><span class="p">,</span><span class="w"> </span><span class="n">nested</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">AnyView</span><span class="p">::</span><span class="n">from</span><span class="p">(</span><span class="n">expr</span><span class="p">),</span><span class="w"> </span><span class="n">nested</span><span class="p">);</span>
+<span class="w">        </span><span class="n">text</span><span class="p">.</span><span class="n">unwrap_or_else</span><span class="p">(</span><span class="o">||</span><span class="w"> </span><span class="s">"&lt;other&gt;"</span><span class="p">.</span><span class="n">to_owned</span><span class="p">())</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>We walk <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">+</span> <span class="pre">1</span></code> with it. <code class="docutils literal notranslate"><span class="pre">WalkResult::Advance</span></code> continues into
-the node’s children, and <code class="docutils literal notranslate"><span class="pre">WalkOrder::PreOrder</span></code> visits a node before its
-children:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">count</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x_times_2_plus_1</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">counter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Counter</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
-<span class="w">    </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">structural_walk</span><span class="p">(</span><span class="o">&amp;</span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">counter</span><span class="p">,</span><span class="w"> </span><span class="n">WalkOrder</span><span class="p">::</span><span class="n">PreOrder</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"variables: {}, additions: {}"</span><span class="p">,</span><span class="w"> </span><span class="n">counter</span><span class="p">.</span><span class="n">vars</span><span class="p">,</span><span class="w"> </span><span class="n">counter</span><span class="p">.</span><span class="n">adds</span><span class="p">).</span><span class="n">into</span><span class="p">())</span>
+<p>We print <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span> <span class="pre">+</span> <span class="pre">2</span></code>:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">print</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">"x"</span><span class="p">,</span><span class="w"> </span><span class="n">PrimType</span><span class="p">::</span><span class="n">int</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">UNKNOWN_LOC</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">).</span><span class="n">try_into</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Printer</span><span class="p">.</span><span class="n">show</span><span class="p">(</span><span class="o">&amp;</span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">).</span><span class="n">into</span><span class="p">())</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The output is:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>variables: 1, additions: 1
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(x + 1) + 2
 </pre></div>
 </div>
-<p><strong>Node types without a method fall back to the default traversal</strong>: the
-walk continues into their children, so new types pass through. Here the
-multiplication and the constants have no method, and the walk still
-reaches <code class="docutils literal notranslate"><span class="pre">x</span></code> inside the multiplication.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">#[dispatch(print,</span> <span class="pre">(AnyView&lt;'_&gt;,</span> <span class="pre">bool),</span> <span class="pre">String)]</span></code> attribute makes the
+<code class="docutils literal notranslate"><span class="pre">print_*</span></code> methods handlers and generates
+<code class="docutils literal notranslate"><span class="pre">dispatch(value,</span> <span class="pre">nested)</span> <span class="pre">-&gt;</span> <span class="pre">Option&lt;String&gt;</span></code>. The first element of the
+tuple is the value to match; the rest are passed to the handlers.
+<code class="docutils literal notranslate"><span class="pre">print_add</span></code> passes <code class="docutils literal notranslate"><span class="pre">nested</span> <span class="pre">=</span> <span class="pre">true</span></code> to its operands, so the inner
+addition gets parentheses and the outer one does not. <code class="docutils literal notranslate"><span class="pre">show</span></code> is an
+ordinary method: it calls <code class="docutils literal notranslate"><span class="pre">dispatch</span></code> and turns <code class="docutils literal notranslate"><span class="pre">None</span></code>, which means no
+handler matched, into <code class="docutils literal notranslate"><span class="pre">&quot;&lt;other&gt;&quot;</span></code>.</p>
+<p><strong>The attribute is sugar for a match.</strong> Simplified, <code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code>
+generates a <code class="docutils literal notranslate"><span class="pre">match_any!</span></code> and a <code class="docutils literal notranslate"><span class="pre">Dispatcher</span></code> implementation:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">impl</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nc">AnyView</span><span class="o">&lt;'</span><span class="nb">_</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">nested</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">match_any</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">value</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">AddObj</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">node</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">print_add</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="n">nested</span><span class="p">).</span><span class="n">into</span><span class="p">()),</span>
+<span class="w">                </span><span class="n">VarObj</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">node</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">print_var</span><span class="p">(</span><span class="n">node</span><span class="p">).</span><span class="n">into</span><span class="p">()),</span>
+<span class="w">                </span><span class="n">IntImmObj</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">node</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">print_imm</span><span class="p">(</span><span class="n">node</span><span class="p">).</span><span class="n">into</span><span class="p">()),</span>
+<span class="w">                </span><span class="n">_</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">None</span><span class="p">,</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="w"> </span><span class="n">Dispatcher</span><span class="o">&lt;</span><span class="p">(</span><span class="n">AnyView</span><span class="o">&lt;'</span><span class="nb">_</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="p">),</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="o">&amp;</span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">dispatch_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">nested</span><span class="p">):</span><span class="w"> </span><span class="p">(</span><span class="n">AnyView</span><span class="o">&lt;'</span><span class="nb">_</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="p">))</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Printer</span><span class="p">::</span><span class="n">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">nested</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Each handler becomes one arm, in source order, and its parameter type
+selects the nodes it matches. The attribute appends <code class="docutils literal notranslate"><span class="pre">_</span> <span class="pre">=&gt;</span> <span class="pre">None</span></code>, so a
+type without a handler returns <code class="docutils literal notranslate"><span class="pre">None</span></code> instead of failing. The
+<code class="docutils literal notranslate"><span class="pre">Dispatcher</span></code> implementation lets generic code call the same match
+through one trait.</p>
+<p><strong>A handler takes only the arguments it needs.</strong> It receives the matched
+value and a leading prefix of the remaining arguments, in declaration
+order: <code class="docutils literal notranslate"><span class="pre">print_add</span></code> takes <code class="docutils literal notranslate"><span class="pre">nested</span></code>, while <code class="docutils literal notranslate"><span class="pre">print_var</span></code> and
+<code class="docutils literal notranslate"><span class="pre">print_imm</span></code> omit it.</p>
+<p>The structural utilities below accept the same kind of dispatcher: walk,
+visit, map, and mutate each call the dispatcher on the nodes they reach.
+The prefix only names the methods; the utility that calls the dispatcher
+decides what happens to the result.</p>
 </section>
 </section>
 <section id="structural-utilities">
@@ -877,6 +915,47 @@ lets a walk search for a node:</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">structural_walk</span></code> returns <code class="docutils literal notranslate"><span class="pre">Ok(Some(interrupt))</span></code> when a callback stops
 it, with the payload in <code class="docutils literal notranslate"><span class="pre">interrupt.value</span></code>, and <code class="docutils literal notranslate"><span class="pre">Ok(None)</span></code> otherwise.</p>
+<p>A walk also accepts a <a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> struct, which keeps state across node
+types. <code class="docutils literal notranslate"><span class="pre">#[dispatch(walk,</span> <span class="pre">(AnyView&lt;'_&gt;,</span> <span class="pre">DefRegionKind),</span> <span class="pre">Result&lt;WalkResult&gt;)]</span></code>
+matches the arguments and result of a walk callback. Let’s count the
+variables and additions:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">vars</span><span class="p">:</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span>
+<span class="w">    </span><span class="n">adds</span><span class="p">:</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="cp">#[dispatch(walk, (AnyView&lt;'_&gt;, DefRegionKind), Result&lt;WalkResult&gt;)]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_var</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">_var</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">VarObj</span><span class="p">,</span><span class="w"> </span><span class="n">_kind</span><span class="p">:</span><span class="w"> </span><span class="nc">DefRegionKind</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">vars</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">walk_add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">_add</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">AddObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">adds</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We walk <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">+</span> <span class="pre">1</span></code> with it, visiting each node before its children:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">count</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x_times_2_plus_1</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">counter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Counter</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
+<span class="w">    </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">structural_walk</span><span class="p">(</span><span class="o">&amp;</span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">counter</span><span class="p">,</span><span class="w"> </span><span class="n">WalkOrder</span><span class="p">::</span><span class="n">PreOrder</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">"variables: {}, additions: {}"</span><span class="p">,</span><span class="w"> </span><span class="n">counter</span><span class="p">.</span><span class="n">vars</span><span class="p">,</span><span class="w"> </span><span class="n">counter</span><span class="p">.</span><span class="n">adds</span><span class="p">).</span><span class="n">into</span><span class="p">())</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>variables: 1, additions: 1
+</pre></div>
+</div>
+<p><strong>Node types without a handler fall back to the default traversal</strong>: the
+dispatcher returns <code class="docutils literal notranslate"><span class="pre">None</span></code>, and the walk continues into their children,
+so new types pass through. Here the multiplication and the constants have
+no handler, and the walk still reaches <code class="docutils literal notranslate"><span class="pre">x</span></code> inside the multiplication.</p>
 </section>
 <section id="definitions-and-uses">
 <h3>Definitions and Uses<a class="headerlink" href="#definitions-and-uses" title="Link to this heading">#</a></h3>
@@ -968,7 +1047,7 @@ are structurally equal.</p>
 <section id="visitors-and-mutators-in-rust">
 <h2>Visitors and Mutators in Rust<a class="headerlink" href="#visitors-and-mutators-in-rust" title="Link to this heading">#</a></h2>
 <p>Stateful traversals use the same four structural utilities. State lives
-on a <a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> struct, as in Dispatching on Node Types.
+on a <a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> struct, as in Structural Walk.
 The <code class="docutils literal notranslate"><span class="pre">map</span></code>, <code class="docutils literal notranslate"><span class="pre">visit</span></code>, and <code class="docutils literal notranslate"><span class="pre">mutate</span></code> prefixes group <code class="docutils literal notranslate"><span class="pre">map_*</span></code>,
 <code class="docutils literal notranslate"><span class="pre">visit_*</span></code>, and <code class="docutils literal notranslate"><span class="pre">mutate_*</span></code> methods. Each attribute declares its
 argument tuple and return type; mutation uses <code class="docutils literal notranslate"><span class="pre">MutationView</span></code> as its
@@ -1139,7 +1218,8 @@ borrowed object in an <code class="docutils literal notranslate"><span class="pr
 <td><p>Compares by structure</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a><code class="docutils literal notranslate"><span class="pre">(prefix,</span> <span class="pre">(Carrier,</span> <span class="pre">...),</span> <span class="pre">ResultType)</span></code></p></td>
-<td><p>Turns the methods of a struct into typed callbacks</p></td>
+<td><p>Generates <code class="docutils literal notranslate"><span class="pre">dispatch</span></code>, a <code class="docutils literal notranslate"><span class="pre">match_any!</span></code> over the <code class="docutils literal notranslate"><span class="pre">prefix_*</span></code>
+methods of a struct</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.StructuralVisitorView.html"><code class="docutils literal notranslate"><span class="pre">StructuralVisitorView</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.StructuralMutatorView.html"><code class="docutils literal notranslate"><span class="pre">StructuralMutatorView</span></code></a></p></td>
 <td><p>Recurse with the same dispatcher and current definition region</p></td>

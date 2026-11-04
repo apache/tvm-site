@@ -115,7 +115,7 @@ key constructs are:
    * - |match_any!|_
      - Branch on the node type
    * - |dispatch|_
-     - Process each node type in its own method, with shared state
+     - Write one method per node type; the attribute generates the match
 
 The subsections below introduce each construct.
 
@@ -281,8 +281,9 @@ The output is:
    ((x * 2) + 1)
    <other>
 
-Each arm names an object type and borrows the matching node with ``ref``;
-the first matching arm runs. The ``AddObj`` and ``MulObj`` arms recurse into
+Each *arm* of the match pairs a pattern with code; here each pattern names
+an object type and borrows the matching node with ``ref``. The first
+matching arm runs. The ``AddObj`` and ``MulObj`` arms recurse into
 the operands, the ``VarObj`` and ``IntImmObj`` arms end the recursion, and
 ``x - 1`` falls to the ``_`` arm because ``describe`` has no arm for
 subtraction.
@@ -301,54 +302,88 @@ types it knows, and ``_`` lets programs with new types pass through.
    tensors, shapes, and typed arrays. Plain values such as integers take
    the ``_`` arm in this example.
 
-A match looks at one node at a time; to process every node in a program
-while keeping state, we dispatch.
+``describe`` puts parentheses around every operation. To add them only
+where they are needed, each node needs to know whether it is nested, so
+let's give each node type its own method that takes that context.
 
 .. _rust-dispatch:
 
 Dispatching on Node Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|dispatch|_ **lets one struct process each node type in its own method,
-with shared state.** A compiler pass often needs one piece of logic per
-node type and state shared across them; ``#[dispatch]`` puts both on one
-struct. It works like a trait whose methods all have default bodies: we
-write methods for the node types we care about, and every other type gets
-the default behavior.
-
-``#[dispatch(walk, (AnyView<'_>, DefRegionKind), Result<WalkResult>)]``
-on an ``impl`` block turns its ``walk_*`` methods into callbacks for
-|structural_walk|_, which visits every node. Each method borrows the nodes
-of its parameter type, and the methods are tried in source order. The
-attribute declares the argument tuple and ``Result<WalkResult>`` return type;
-handlers that
-do not need the trailing ``DefRegionKind`` may omit it. Let's count the
-variables and additions:
+A common need in a compiler is to dispatch over many kinds of IR nodes:
+run different logic depending on which kind a value is. ``match_any!``
+provides the machinery, and |dispatch|_ **makes such dispatchers simpler to
+build**: write one method per node type, and the attribute generates the
+match that picks between them. Let's print additions with parentheses only
+where they nest:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
-   :start-after: // [counter.begin]
-   :end-before: // [counter.end]
+   :start-after: // [printer.begin]
+   :end-before: // [printer.end]
 
-We walk ``x * 2 + 1`` with it. ``WalkResult::Advance`` continues into
-the node's children, and ``WalkOrder::PreOrder`` visits a node before its
-children:
+We print ``x + 1 + 2``:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
-   :start-after: // [count.begin]
-   :end-before: // [count.end]
+   :start-after: // [print.begin]
+   :end-before: // [print.end]
 
 The output is:
 
 .. code-block:: text
 
-   variables: 1, additions: 1
+   (x + 1) + 2
 
-**Node types without a method fall back to the default traversal**: the
-walk continues into their children, so new types pass through. Here the
-multiplication and the constants have no method, and the walk still
-reaches ``x`` inside the multiplication.
+The ``#[dispatch(print, (AnyView<'_>, bool), String)]`` attribute makes the
+``print_*`` methods handlers and generates
+``dispatch(value, nested) -> Option<String>``. The first element of the
+tuple is the value to match; the rest are passed to the handlers.
+``print_add`` passes ``nested = true`` to its operands, so the inner
+addition gets parentheses and the outer one does not. ``show`` is an
+ordinary method: it calls ``dispatch`` and turns ``None``, which means no
+handler matched, into ``"<other>"``.
+
+**The attribute is sugar for a match.** Simplified, ``#[dispatch]``
+generates a ``match_any!`` and a ``Dispatcher`` implementation:
+
+.. code-block:: rust
+
+   impl Printer {
+       pub fn dispatch(&self, value: AnyView<'_>, nested: bool) -> Option<String> {
+           match_any! {
+               value {
+                   AddObj(ref node) => Some(self.print_add(node, nested).into()),
+                   VarObj(ref node) => Some(self.print_var(node).into()),
+                   IntImmObj(ref node) => Some(self.print_imm(node).into()),
+                   _ => None,
+               }
+           }
+       }
+   }
+
+   impl Dispatcher<(AnyView<'_>, bool), Option<String>> for &Printer {
+       fn dispatch_tuple(self, (value, nested): (AnyView<'_>, bool)) -> Option<String> {
+           Printer::dispatch(self, value, nested)
+       }
+   }
+
+Each handler becomes one arm, in source order, and its parameter type
+selects the nodes it matches. The attribute appends ``_ => None``, so a
+type without a handler returns ``None`` instead of failing. The
+``Dispatcher`` implementation lets generic code call the same match
+through one trait.
+
+**A handler takes only the arguments it needs.** It receives the matched
+value and a leading prefix of the remaining arguments, in declaration
+order: ``print_add`` takes ``nested``, while ``print_var`` and
+``print_imm`` omit it.
+
+The structural utilities below accept the same kind of dispatcher: walk,
+visit, map, and mutate each call the dispatcher on the nodes they reach.
+The prefix only names the methods; the utility that calls the dispatcher
+decides what happens to the result.
 
 .. _rust-structural-utilities:
 
@@ -446,6 +481,34 @@ Python prints the ``dest.name`` of the store it receives. The output is:
 ``structural_walk`` returns ``Ok(Some(interrupt))`` when a callback stops
 it, with the payload in ``interrupt.value``, and ``Ok(None)`` otherwise.
 
+A walk also accepts a |dispatch|_ struct, which keeps state across node
+types. ``#[dispatch(walk, (AnyView<'_>, DefRegionKind), Result<WalkResult>)]``
+matches the arguments and result of a walk callback. Let's count the
+variables and additions:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [counter.begin]
+   :end-before: // [counter.end]
+
+We walk ``x * 2 + 1`` with it, visiting each node before its children:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [count.begin]
+   :end-before: // [count.end]
+
+The output is:
+
+.. code-block:: text
+
+   variables: 1, additions: 1
+
+**Node types without a handler fall back to the default traversal**: the
+dispatcher returns ``None``, and the walk continues into their children,
+so new types pass through. Here the multiplication and the constants have
+no handler, and the walk still reaches ``x`` inside the multiplication.
+
 Definitions and Uses
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -527,7 +590,7 @@ Visitors and Mutators in Rust
 -----------------------------
 
 Stateful traversals use the same four structural utilities. State lives
-on a |dispatch|_ struct, as in Dispatching on Node Types.
+on a |dispatch|_ struct, as in Structural Walk.
 The ``map``, ``visit``, and ``mutate`` prefixes group ``map_*``,
 ``visit_*``, and ``mutate_*`` methods. Each attribute declares its
 argument tuple and return type; mutation uses ``MutationView`` as its
@@ -635,7 +698,8 @@ Quick Reference
    * - ``Function::get_global("ffi.StructuralEqual")``
      - Compares by structure
    * - |dispatch|_\ ``(prefix, (Carrier, ...), ResultType)``
-     - Turns the methods of a struct into typed callbacks
+     - Generates ``dispatch``, a ``match_any!`` over the ``prefix_*``
+       methods of a struct
    * - |StructuralVisitorView|_, |StructuralMutatorView|_
      - Recurse with the same dispatcher and current definition region
    * - |static_init_block!|_, |register_global_typed|_
