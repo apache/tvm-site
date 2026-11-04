@@ -1,14 +1,269 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2026-10-16T16:43:56+00:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot; =&gt; nil}</name></author><entry><title type="html">TIRx: An Open Compiler Stack for Evolving Frontier ML Kernels</title><link href="/2026/06/22/tirx" rel="alternate" type="text/html" title="TIRx: An Open Compiler Stack for Evolving Frontier ML Kernels" /><published>2026-06-22T00:00:00+00:00</published><updated>2026-06-22T00:00:00+00:00</updated><id>/2026/06/22/tirx</id><content type="html" xml:base="/2026/06/22/tirx"><![CDATA[<style>
-/* Theme has h3=38px but no h2 rule; size both down a notch and keep h2 > h3. */
-.post-content h2 { font-size: 38px; line-height: 1.3; }
-.post-content h3 { font-size: 30px; line-height: 1.3; }
-@media (max-width: 768px) {
-  .post-content h2 { font-size: 30px; }
-  .post-content h3 { font-size: 25px; }
-}
-</style>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2026-11-04T16:28:54+00:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot; =&gt; nil}</name></author><entry><title type="html">Rethinking the ML Compiler Foundation for the Agentic Era</title><link href="/2026/11/03/rethink-ml-compiler-foundation-for-the-agentic-era" rel="alternate" type="text/html" title="Rethinking the ML Compiler Foundation for the Agentic Era" /><published>2026-11-03T00:00:00+00:00</published><updated>2026-11-03T00:00:00+00:00</updated><id>/2026/11/03/rethink-ml-compiler-foundation-for-the-agentic-era</id><content type="html" xml:base="/2026/11/03/rethink-ml-compiler-foundation-for-the-agentic-era"><![CDATA[<section class="post-summary" aria-labelledby="tldr">
 
-<p>Today we are introducing <strong>TIRx</strong>, an open-source, hardware-native DSL and compiler for ML kernels, built on Apache TVM. It targets the part of the AI software stack where fast-moving kernels meet fast-moving hardware: TIRx compiles to GPUs and specialized AI accelerators today and is designed to grow with the generations that follow. The same design serves expert-written kernels, agent-generated kernels, and megakernel systems.</p>
+  <h2 id="tldr">TL;DR</h2>
+
+  <p>In our <a href="https://blog.mlc.ai/2026/09/29/tirx-harness-an-open-compiler-harness-for-agentic-gpu-programming">previous community effort</a>, we showed that with little more than Opus 5.5 and a few presses of Enter, we could produce production-quality B200 kernels that significantly outperform existing baselines.</p>
+
+  <p>This led us, as ML compiler practitioners, to revisit a fundamental question from first principles: <strong>Do we still need our beloved compilers?</strong></p>
+
+  <p>Our answer is <strong>yes, but perhaps not in the form we know today.</strong> Through concrete case studies and first-principles reasoning, we explore why agents still need compiler abstractions and how these abstractions should be designed for them.</p>
+
+  <p>We’re putting these ideas into practice through a ground-up rebuild of <a href="https://github.com/apache/tvm-tirx/tree/main">TIRx</a>, with the goal of making it a shared DSL and compiler foundation for agentic kernel development.</p>
+
+</section>
+
+<p>For those of us working on ML compilers and GPU kernels, 2026 has been both an exciting and an unsettling year.</p>
+
+<p><img src="/images/rethink-ml-compiler-foundation/image7.png" alt="Opportunities and challenges for ML compiler practitioners in 2026" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>On the one hand, much of the tedious maintenance work that once consumed our time can now be delegated to agents. Agents are even tackling the development of high-performance GPU kernels, one of the ultimate goals of our compiler research, with remarkable success. Perhaps we can finally free ourselves from the endless cycle of reading Nsight Compute reports, inspecting SASS assembly, and hand-tuning the most delicate details of GPU kernels. Recent efforts such as <a href="https://pytorch.org/blog/kernelagent-hardware-guided-gpu-kernel-optimization-via-multi-agent-orchestration/">KernelAgent</a>, <a href="https://arxiv.org/abs/2602.24286">CUDA Agent</a>, <a href="https://prod.cursor.com/blog/multi-agent-kernels">Cursor’s multi-agent system</a>, <a href="https://arxiv.org/abs/2608.12629">CAKE</a>, <a href="https://blog.mlc.ai/2026/09/29/tirx-harness-an-open-compiler-harness-for-agentic-gpu-programming">TIRx Harness</a>, <a href="https://nvlabs.github.io/kda/">KDAgent</a>, and <a href="https://arxiv.org/abs/2610.36848">EAT</a> have demonstrated remarkable progress in automated GPU kernel development.</p>
+
+<p>On the other hand, this progress raises an uncomfortable question: <strong>Are we automating ourselves out of relevance?</strong> In the essay <a href="https://mp.weixin.qq.com/s/zk0KxuLzhmMJ4LPYW_OHMA"><em>I Have No Choice but to Bury My Talent in Yesterday</em></a>, DeepSeek engineer Shengyu Liu reflects on the possibility of agents surpassing human experts in kernel development. Meanwhile, Stanford’s <a href="https://hazyresearch.stanford.edu/blog/2026-08-05-retire-the-abstractions"><em>Retire the Abstractions</em></a> questions whether even CUDA DSLs will remain necessary.</p>
+
+<p>This is a particularly uncomfortable thought for those of us who have spent years building DSLs, compiler heuristics, optimization passes, and entire compilation frameworks. Much of this machinery was designed around the needs and limitations of human programmers.</p>
+
+<p>After all, we humans have limited attention and working memory. We cannot easily keep every detail of GPU hardware in our heads, nor can we manually explore thousands of possible optimization strategies. We need high-level abstractions to make low-level programming manageable and compilers to automate the tedious, repetitive, and error-prone parts of optimization.</p>
+
+<p><strong>But what happens when the programmer is no longer human?</strong></p>
+
+<p>Agents can work directly with low-level CUDA or PTX, inspect profiling results in seconds, experiment with unconventional optimization strategies, and explore dozens or even hundreds of kernel variants within an hour. They are not constrained by human cognitive limitations in the same way. Why should we expect them to use the same languages, abstractions, and workflows we designed for ourselves?</p>
+
+<p>This brings us to a more fundamental question:</p>
+
+<p><strong>If agents can handle the low-level details themselves, should we still put a compiler between them and the hardware?</strong></p>
+
+<p>We believe the answer is <strong>yes, but for a different reason.</strong> Instead of requiring agents to reinvent IR and compiler infrastructure at every iteration of kernel development, a minimal, stable ML compiler foundation can provide shared abstractions and reusable tools for the entire community while leaving agents free to explore their own optimization strategies.</p>
+
+<p><img src="/images/rethink-ml-compiler-foundation/image2.png" alt="From an opaque compiler to agentic kernel programming, compiler harnesses, and a minimal compiler foundation" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>In this post, we explain why such a foundation is still needed and how it should be designed for agents. These ideas guided our redesign of TIRx around the following core elements:</p>
+
+<ul>
+  <li><strong>A minimal, stable set of core AST nodes</strong> designed for common needs and extensions.</li>
+  <li><strong>Stable, predictable utilities</strong> for common needs, including TVM-FFI bridge generation, symbolic integer analysis, structural traversal and mapping, and basic code generation for CUDA and host LLVM targets.</li>
+  <li><strong>Dynamic extension by design:</strong> Types and operations can be easily added without rebuilding a static bundle. Customizations can be developed in independent repositories and loaded dynamically to interoperate with the foundation layer.</li>
+  <li><strong>First-class cross-language support:</strong> Python, C++, and Rust (work in progress). Agents can implement compiler analyses and extensions in any of these languages, quickly prototyping ideas in a dynamic language like Python and then implementing them in Rust or C++. Extensions work out of the box across supported languages.</li>
+  <li><strong>Connections to stable compiler toolchains:</strong> The foundation provides a minimal layer for ML compilation while using the backend capabilities of established toolchains where possible.</li>
+</ul>
+
+<p>This post walks through the design reasoning behind our approach to rethinking the ML compiler foundation for the agentic era. We hope these principles and ideas will be broadly applicable to the ML compiler and agentic development communities.</p>
+
+<h2 id="do-we-still-need-compilers-at-all">Do We Still Need Compilers at All?</h2>
+
+<p>The first question we should ask ourselves is whether we really need compilers at all.</p>
+
+<p>Many of the abstractions we designed for DSLs help human programmers manage low-level details. If agents can work directly with CUDA, PTX, or assembly, they may no longer need the same human-oriented programming interfaces.</p>
+
+<p>Agents are also already very good at the heuristic optimizations traditionally performed by compilers and can work directly with low-level code.</p>
+
+<p><img src="/images/rethink-ml-compiler-foundation/image6.png" alt="Agents still need structured IR and AST representations for analysis and verification" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p><strong>But does eliminating a DSL interface or compiler-driven code generation eliminate the need for compiler infrastructure?</strong></p>
+
+<p>Imagine a future where an agent writes CUDA kernels directly, relies on existing toolchains to generate PTX and SASS, and iterates through profiling and testing. It might even generate PTX or native machine instructions directly, without going through a traditional ML compiler at all.</p>
+
+<p>Now suppose we want to verify that a generated kernel is correct. We cannot simply trust the agent’s judgment or rely on tests alone. We still need a formal representation of the program and its semantics, such as an IR formalized in Lean, against which correctness proofs can be checked.</p>
+
+<p>Moreover, we wouldn’t want agents to spend hundreds of iterations on programs with obvious bugs. Ideally, we should catch errors as early as possible, using efficient checkers to analyze program patterns, memory accesses, synchronization, and other properties without relying on expensive model reasoning or full formal verification for every candidate (see the <a href="https://github.com/mlc-ai/TIRx-harness/tree/main/tools">checkers</a> we built).</p>
+
+<p>This thought experiment reveals two important needs that remain even when agents take over code generation:</p>
+
+<ul>
+  <li><strong>Analysis:</strong> While agents can reason directly over program text, not every analysis needs to be performed through model reasoning. Just as humans can perform arithmetic by hand but benefit from calculators, agents can benefit from structured program representations and efficient analysis algorithms to catch problems early in development.</li>
+  <li><strong>Verification:</strong> Program correctness should not depend on trusting an agent’s judgment. Independent verification requires precisely defined program semantics against which correctness claims can be checked.</li>
+</ul>
+
+<p>These two needs motivate a common foundation: a minimal, extensible IR that exposes program structure and semantics to both agents and conventional tools, independently of any particular code generation or optimization strategy.</p>
+
+<p>In this future, <strong>we may no longer need a compiler that actually compiles anything, but we will still need compiler infrastructure to understand and verify programs.</strong> A shared IR can serve as the foundation for analysis, verification, and new tools built by agents.</p>
+
+<p>Our insight is that we need a <strong>minimal, stable set of core IR/AST nodes</strong> designed for common needs and extensions. Whether agents generate CUDA/PTX or eventually native machine instructions, the resulting programs should be representable by introducing new operations into the stable operator system without fundamentally changing the IR infrastructure.</p>
+
+<p>Additionally, the foundation should be able to <strong>connect to stable compiler toolchains</strong> where it makes sense, so we can reuse established backend capabilities when those backends are not a bottleneck.</p>
+
+<h2 id="how-should-we-design-ml-compilers-for-agents">How Should We Design ML Compilers for Agents?</h2>
+
+<p>One key characteristic of the agentic era is the accelerating pace of development. Agents will become the primary developers of compiler extensions and will try out new ideas. We should rethink what makes compiler code itself easy to develop and maintain.</p>
+
+<h3 id="should-everything-be-written-in-the-same-language">Should Everything Be Written in the Same Language?</h3>
+
+<p><img src="/images/rethink-ml-compiler-foundation/image5.png" alt="A shared TVM-FFI and TIRx foundation supports Python, C++, and Rust compiler components" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>Most of our current compilers are written primarily in one programming language, with supporting wrappers in others. However, an agent implementing different kinds of compiler components may have different needs:</p>
+
+<ul>
+  <li>For experimental analyses that benefit from existing Python libraries such as NumPy or PyTorch, Python would be preferable.</li>
+  <li>For frequently executed analysis passes, C++ or Rust may be preferable.</li>
+</ul>
+
+<p>While agents can always reimplement everything in a single language such as C++ or Rust, the tokens spent doing so could be put to better use. Ideally, a global choice of programming language should not constrain local implementation decisions.</p>
+
+<p>These observations highlight the need for <strong>first-class cross-language support</strong>. Built on TVM-FFI, the TIRx foundation provides out-of-the-box, first-class support for Python, C++, and Rust. Agents can prototype in Python, move performance-critical components to C++ or Rust, and reuse extensions across supported languages.</p>
+
+<h3 id="how-can-we-help-agents-iterate-faster">How Can We Help Agents Iterate Faster?</h3>
+
+<p><img src="/images/rethink-ml-compiler-foundation/image3.png" alt="Dynamic extensions shorten the agent development loop by avoiding monolithic compiler rebuilds" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>An agent can be very smart, but its iteration speed is fundamentally limited by its development environment and workflow. Suppose an agent wants to add a new operator or experiment with a new backend. Generally, it needs to modify the code, rebuild the compiler, run the tests, and repeat that process. As agents become faster at writing code, rebuilding and testing account for a larger share of the development loop. While mechanisms like build caching can partly alleviate the issue, they do not completely eliminate the overhead.</p>
+
+<p>These needs call for a shift from statically bundled compilers and extensions to <strong>dynamic extension by design.</strong> The TIRx foundation allows types and operations to be added dynamically without rebuilding a monolithic compiler. Extensions can live in independent repositories and interoperate with the foundation, enabling faster development iterations.</p>
+
+<h3 id="what-will-maintenance-look-like-going-forward">What Will Maintenance Look Like Going Forward?</h3>
+
+<p>As agents get better at building compiler components, we should also consider how project maintenance will change. Agents may still need to maintain different, potentially conflicting optimization pipelines tailored to specific domains. There will also be a strong need for compiler harnesses that focus on analysis rather than code transformation. Finally, agents may make optimization decisions themselves rather than relying on heuristic transformations.</p>
+
+<p>There is a <strong>fundamental tension between rapid innovation and the need for stability and code quality</strong>. Kernels can be generated in minutes and discarded, whereas lower layers benefit from stability and closer human oversight.</p>
+
+<p><img src="/images/rethink-ml-compiler-foundation/image1.png" alt="Kernels, compiler harnesses, and the minimal compiler foundation evolve at different rates with different levels of human oversight" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>These observations favor structuring projects into layers based on their levels of stability and rates of change. The new ML compiler foundation should provide a minimal, stable, and predictable base for compilation, with extension mechanisms that allow agents to customize the compiler abstractions themselves. Agents can build compiler harnesses and transformations on top and evolve them at a faster rate. The TIRx foundation focuses on:</p>
+
+<ul>
+  <li><strong>A minimal, stable core AST</strong>, extended through an open operator system.</li>
+  <li><strong>Reusable, predictable utilities</strong>, including symbolic integer analysis, structural traversal and mapping, and TVM-FFI bridge generation.</li>
+  <li><strong>Integration with established toolchains</strong>, including basic CUDA and host LLVM code generation, rather than reimplementing everything within a custom compiler pipeline.</li>
+</ul>
+
+<p>The goal is not to eliminate compiler functionality, but to keep the shared foundation small while letting agents implement and evolve the functionality they need at upper layers.</p>
+
+<h2 id="discussion-and-looking-to-the-future">Discussion and Looking to the Future</h2>
+
+<p><img src="/images/rethink-ml-compiler-foundation/image4.png" alt="Minimal composable boundaries support continued improvement as agent tokens and engineering effort increase" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>We are at a crossroads this year, and predicting where the future will lead is challenging. The approach outlined in this post is likely not the only path forward for ML compilers in the agentic era. As ML compilers transition into this new phase, we must carefully avoid rigid abstractions that restrict agent capabilities, while recognizing that a complete lack of layering leads to unnecessary token expenditure and sloppy outcomes.</p>
+
+<p>Our view is that composable layers can succeed as long as we avoid rigid abstractions that limit agent capabilities. An ML compiler foundation can play a vital role in supporting research and development in ML compilers and agents. We hope TIRx can provide such a foundation and work with the broader ML compiler and agentic development ecosystems.</p>
+
+<h2 id="technical-details">Technical Details</h2>
+
+<p>The previous section discusses the overall design motivation. This section walks through some of the technical design elements with code examples. For readability, the technical details are collapsed below.</p>
+
+<details class="technical-details">
+  <summary>Technical details and code examples</summary>
+
+  <p>TIRx offers a complete interface to construct typical tensor programs in Python:</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">tvm_tirx.script</span> <span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="p">.</span><span class="nf">dynamic</span><span class="p">(</span><span class="sh">"</span><span class="s">n</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="nd">@T.function</span>
+<span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</code></pre></div>  </div>
+
+  <p>The example above constructs a function object representing an add-one operation on the CPU. TIRx provides a built-in API to compile the function into code that interoperates with libraries in the Python array API ecosystem, such as NumPy and PyTorch.</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">torch</span>
+<span class="kn">import</span> <span class="n">tvm_tirx</span> <span class="k">as</span> <span class="n">tirx</span>
+
+<span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tirx</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="sh">"</span><span class="s">llvm</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">empty</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="p">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="nf">add_one_compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>  </div>
+
+  <p>Our design aims to be <strong>minimal, faithful, and predictable</strong>. A call to <code class="language-plaintext highlighter-rouge">tirx.compile</code> applies no additional heuristic optimizations; the program is passed directly to the LLVM compiler toolchain to generate CPU code.</p>
+
+  <p>The examples so far show how TIRx can be used as a typical opaque domain-specific compiler. As mentioned earlier, our goal is to expose not only the programming interface but also the compiler API and every intermediate AST object to developers and agents. We store every AST node in a <strong>cross-language object</strong> backed by TVM FFI, making it directly accessible from languages including Python, C++, and Rust. The following code shows how we can inspect program structures such as types and shape values:</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># query the type of parameter A
+</span><span class="n">ty_A</span> <span class="o">=</span> <span class="n">add_one</span><span class="p">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">ty</span>
+<span class="c1"># query the length of parameter B
+</span><span class="n">n</span> <span class="o">=</span> <span class="n">add_one</span><span class="p">.</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">ty</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre></div>  </div>
+
+  <h3 id="common-utilities-for-traversal-mapping-and-analysis">Common Utilities for Traversal, Mapping, and Analysis</h3>
+
+  <p>Direct access to internal compiler objects allows us to inspect and transform programs further. We use a set of lightweight, general-purpose utilities built into TIRx and TVM FFI to traverse, compare, and transform program structures. For example, the following code snippet specializes the dynamic dimension <code class="language-plaintext highlighter-rouge">n</code> to 128:</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">tvm_ffi</span>
+<span class="kn">import</span> <span class="n">tvm_tirx</span>
+
+<span class="n">add_one_specialized</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="p">.</span><span class="nf">structural_map</span><span class="p">(</span>
+    <span class="n">add_one</span><span class="p">,</span>
+    <span class="p">(</span><span class="n">tvm_tirx</span><span class="p">.</span><span class="n">ir</span><span class="p">.</span><span class="n">Var</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="mi">128</span> <span class="k">if</span> <span class="n">v</span><span class="p">.</span><span class="nf">same_as</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">add_one_specialized</span><span class="p">.</span><span class="nf">show</span><span class="p">()</span>
+</code></pre></div>  </div>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@T.function</span>
+<span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">128</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</code></pre></div>  </div>
+
+  <p>Symbolic shapes and indices are common in both kernels and higher-level programs. TIRx’s representation allows types like <code class="language-plaintext highlighter-rouge">TensorType</code> to depend on expression values, and we provide common utilities to check symbolic relations during program analysis. Thanks to feedback from the TileLang community, we have also added structural traversal variants with symbolic constraint contexts and stronger Z3 proofs. These tools are designed to work with dynamic TVM FFI objects, so they continue to function as the set of AST nodes expands, whether in the main project or in downstream projects.</p>
+
+  <p>At every stage of compilation, the program can be printed in Python script syntax, as shown above. This allows agents and developers to inspect intermediate programs, experiment with transformations, and build new ones.</p>
+
+  <h3 id="dynamic-extension-through-types-and-operations">Dynamic Extension through Types and Operations</h3>
+
+  <p>While the compiler foundation provides a minimal backbone, TIRx is designed to accommodate new customizations both in-tree and downstream. The primary way to extend the TIRx foundation is to introduce new types and operations. Downstream projects can define new types as TVM-FFI objects that subclass the original type node and carry additional type and expression information. For example, we introduced <code class="language-plaintext highlighter-rouge">tirx.TensorMapType</code> to support TMA tensor maps in CUDA programs.</p>
+
+  <p>Because new types can carry information that depends on other types and expressions, they can preserve that information across intermediate stages of compilation. A typical approach is to lower these intermediate types to existing types or add dedicated backend code generation support for the new types. To maintain simplicity and consistency, we allow Python type constructors to be used directly in the script syntax. For instance, <code class="language-plaintext highlighter-rouge">T.Tensor((n,), T.float32)</code> simply invokes the type constructor with a tuple and <code class="language-plaintext highlighter-rouge">T.float32</code> to obtain an instance of the concrete type.</p>
+
+  <p>Most extensions introduce new operations (ops). An op can be used in either a <code class="language-plaintext highlighter-rouge">Call</code> AST node, resembling an intrinsic call, or a <code class="language-plaintext highlighter-rouge">RegionStmt</code>, defining a region with additional semantics such as a thread launch or kernel region. We built minimal CUDA and PTX support by introducing the <code class="language-plaintext highlighter-rouge">device_entry</code> region op and representing calls to <code class="language-plaintext highlighter-rouge">T.ptx.add.rn.f32</code> as <code class="language-plaintext highlighter-rouge">Call</code> nodes for the corresponding PTX op.</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">tvm_tirx.script</span> <span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="p">.</span><span class="nf">dynamic</span><span class="p">(</span><span class="sh">"</span><span class="s">n</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="nd">@T.function</span>
+<span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="p">.</span><span class="nf">device_entry</span><span class="p">(</span>
+        <span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="p">.</span><span class="n">cuda</span><span class="p">.</span><span class="nc">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">((</span><span class="n">n</span> <span class="o">+</span> <span class="mi">255</span><span class="p">)</span> <span class="o">//</span> <span class="mi">256</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,))</span>
+    <span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">T</span><span class="p">.</span><span class="n">cuda</span><span class="p">.</span><span class="nf">block_idx</span><span class="p">(</span><span class="sh">"</span><span class="s">x</span><span class="sh">"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="n">T</span><span class="p">.</span><span class="n">cuda</span><span class="p">.</span><span class="nf">thread_idx</span><span class="p">(</span><span class="sh">"</span><span class="s">x</span><span class="sh">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">T</span><span class="p">.</span><span class="n">ptx</span><span class="p">.</span><span class="n">add</span><span class="p">.</span><span class="n">rn</span><span class="p">.</span><span class="nf">f32</span><span class="p">(</span><span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">T</span><span class="p">.</span><span class="nf">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+</code></pre></div>  </div>
+
+  <p>As an example of these dynamic extension capabilities, we registered most ops in the <code class="language-plaintext highlighter-rouge">T.ptx</code> namespace directly through Python, allowing us to update compiler support quickly without modifying the core library.</p>
+
+  <p>Both type and operator registrations support dynamic extension through runtime tables indexed by string keys. This setup allows us to build extensions as downstream packages that depend on the compiler foundation without needing to recompile or bundle the original project. This separation enables different modules to evolve at different rates. The ML compiler foundation contains reusable code that is continuously hardened, while agents can independently iterate on new compiler harness ideas.</p>
+
+  <h3 id="first-class-tvm-ffi-host-abi-support">First-Class TVM FFI Host ABI Support</h3>
+
+  <p>Every new ML compiler or harness needs a way to connect to the broader ecosystem. TVM FFI provides standard ABI and FFI support for interoperability. The TIRx foundation provides shared utilities for generating host code compatible with the TVM FFI ABI. This is particularly useful for generating efficient compiled tensor checks. For example, the following code declares a <code class="language-plaintext highlighter-rouge">2 * n</code> shape constraint on an input tensor. The compiled function produces a clear error message when an input violates this constraint.</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">torch</span>
+<span class="kn">import</span> <span class="n">tvm_tirx</span> <span class="k">as</span> <span class="n">tirx</span>
+<span class="kn">from</span> <span class="n">tvm_tirx.script</span> <span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="p">.</span><span class="nf">dynamic</span><span class="p">(</span><span class="sh">"</span><span class="s">n</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="nd">@T.function</span>
+<span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="p">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="n">add_one_compiled</span> <span class="o">=</span> <span class="n">tirx</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="sh">"</span><span class="s">llvm</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">arange</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">empty</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="p">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="nf">add_one_compiled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>  </div>
+
+  <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ValueError: Invalid A.shape[0] on argument #0 when calling:
+   `add_one(A: Tensor([2 * n], float32), B: Tensor([2 * n], float32))`,
+   expected A.shape[0] to be divisible by 2
+</code></pre></div>  </div>
+
+  <p>While agents can easily rebuild support for new variants on the fly, these foundation features remain stable and continue to be hardened, allowing agents to focus on developing new compiler features and analyses while relying on established pipelines.</p>
+
+</details>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+
+<p>This post summarizes work by many contributors across the TVM and broader ML communities. It was written by a human, with GenAI models assisting with grammar and style edits.</p>
+
+<h2 id="links">Links</h2>
+
+<ul>
+  <li>GitHub (work in progress): <a href="https://github.com/apache/tvm-tirx/">https://github.com/apache/tvm-tirx/</a></li>
+</ul>]]></content><author><name>Apache TVM Community</name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">TIRx: An Open Compiler Stack for Evolving Frontier ML Kernels</title><link href="/2026/06/22/tirx" rel="alternate" type="text/html" title="TIRx: An Open Compiler Stack for Evolving Frontier ML Kernels" /><published>2026-06-22T00:00:00+00:00</published><updated>2026-06-22T00:00:00+00:00</updated><id>/2026/06/22/tirx</id><content type="html" xml:base="/2026/06/22/tirx"><![CDATA[<p>Today we are introducing <strong>TIRx</strong>, an open-source, hardware-native DSL and compiler for ML kernels, built on Apache TVM. It targets the part of the AI software stack where fast-moving kernels meet fast-moving hardware: TIRx compiles to GPUs and specialized AI accelerators today and is designed to grow with the generations that follow. The same design serves expert-written kernels, agent-generated kernels, and megakernel systems.</p>
 
 <p>We have been working together with the broader community to provide the following materials at launch:</p>
 
@@ -301,7 +556,7 @@ rD = <span class="fn">T.wg_reg_tile</span>(TMEM_LD_N)
 
 <h2 id="acknowledgement"><strong>Acknowledgement</strong></h2>
 
-<p>TIRx would not exist without Apache TVM, on whose compiler infrastructure it is built. Beyond that foundation, its design has been shaped by a long line of systems work, including NumPy, CuTe, Triton, ThunderKittens, and TileLang. We thank the FlashInfer, FlashInfer-Bench, and TileLang teams and the Apache TVM community for helpful technical discussions.</p>]]></content><author><name>Apache TVM Community</name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Building an Open ABI and FFI for ML Systems</title><link href="/2025/10/21/tvm-ffi" rel="alternate" type="text/html" title="Building an Open ABI and FFI for ML Systems" /><published>2025-10-21T00:00:00+00:00</published><updated>2025-10-21T00:00:00+00:00</updated><id>/2025/10/21/tvm-ffi</id><content type="html" xml:base="/2025/10/21/tvm-ffi"><![CDATA[<p>We are currently living in an exciting era for AI, where machine learning systems and infrastructures are crucial for training and deploying efficient AI models. The modern machine learning systems landscape comes rich with diverse components, including popular ML frameworks and array libraries like JAX, PyTorch, and CuPy. It also includes specialized libraries such as FlashAttention, FlashInfer and cuDNN. Furthermore, there’s a growing trend of ML compilers and domain-specific languages (DSLs) operating at both graph and kernel levels, encompassing tools like Torch Inductor, OpenAI Triton, TileLang, Mojo, cuteDSL, Helion, Hidet and more. Finally, we are starting to see intriguing developments of coding agents that can generate kernels and integrate them into ML systems.</p>
+<p>TIRx would not exist without Apache TVM, on whose compiler infrastructure it is built. Beyond that foundation, its design has been shaped by a long line of systems work, including NumPy, CuTe, Triton, ThunderKittens, and TileLang. We thank the FlashInfer, FlashInfer-Bench, and TileLang teams and the Apache TVM community for helpful technical discussions.</p>]]></content><author><name>Apache TVM Community</name></author><summary type="html"><![CDATA[Today we are introducing TIRx, an open-source, hardware-native DSL and compiler for ML kernels, built on Apache TVM. It targets the part of the AI software stack where fast-moving kernels meet fast-moving hardware: TIRx compiles to GPUs and specialized AI accelerators today and is designed to grow with the generations that follow. The same design serves expert-written kernels, agent-generated kernels, and megakernel systems.]]></summary></entry><entry><title type="html">Building an Open ABI and FFI for ML Systems</title><link href="/2025/10/21/tvm-ffi" rel="alternate" type="text/html" title="Building an Open ABI and FFI for ML Systems" /><published>2025-10-21T00:00:00+00:00</published><updated>2025-10-21T00:00:00+00:00</updated><id>/2025/10/21/tvm-ffi</id><content type="html" xml:base="/2025/10/21/tvm-ffi"><![CDATA[<p>We are currently living in an exciting era for AI, where machine learning systems and infrastructures are crucial for training and deploying efficient AI models. The modern machine learning systems landscape comes rich with diverse components, including popular ML frameworks and array libraries like JAX, PyTorch, and CuPy. It also includes specialized libraries such as FlashAttention, FlashInfer and cuDNN. Furthermore, there’s a growing trend of ML compilers and domain-specific languages (DSLs) operating at both graph and kernel levels, encompassing tools like Torch Inductor, OpenAI Triton, TileLang, Mojo, cuteDSL, Helion, Hidet and more. Finally, we are starting to see intriguing developments of coding agents that can generate kernels and integrate them into ML systems.</p>
 
 <p>The exciting growth of the ecosystem is the reason for today’s fast pace of innovation in AI. However, it also presents a significant challenge: <strong>interoperability</strong>. Many of those components need to integrate with each other. For example, libraries such as FlashInfer and cuDNN need to be integrated into PyTorch, JAX, and TensorRT’s runtime system, each of which may come with different interface requirements. ML compilers and DSLs also usually expose Python JIT binding support, while also needing to bring separate ahead-of-time compilation to specific exposure to non-Python environments such as automotive and mobile. The emergence of coding agents makes it even more interesting, as each agent is its own mini code generator that needs to interface with various deployment scenarios. As of now, the ecosystems address these challenges by creating numerous specific bindings for each DSL and library to deployment environments (Python/Torch/JAX/TensorRT, etc.).</p>
 
@@ -2294,96 +2549,4 @@ Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel</p>
 
 <h2 id="acknowledgement">Acknowledgement</h2>
 
-<p>We would like to thank the emscripten project for providing the WASM compilation infrastructures as well as the JS library support on the web. We would also like to thank the WebGPU community for various helpful discussions. Thanks to Fletcher Haynes for valuable feedbacks to the post.</p>]]></content><author><name>Tianqi Chen and Jared Roesch, OctoML</name></author><summary type="html"><![CDATA[TLDR]]></summary></entry><entry><title type="html">Integrating TVM into PyTorch</title><link href="/2019/05/30/pytorch-frontend" rel="alternate" type="text/html" title="Integrating TVM into PyTorch" /><published>2019-05-30T00:00:00+00:00</published><updated>2019-05-30T00:00:00+00:00</updated><id>/2019/05/30/pytorch-frontend</id><content type="html" xml:base="/2019/05/30/pytorch-frontend"><![CDATA[<p>As TVM continuously demonstrates improvements to the efficiency of deep learning execution,
-it has become clear that PyTorch stands to benefit from directly leveraging the compiler stack.
-A major tenet of PyTorch is providing seamless and robust integrations that don’t get in the user’s way.
-To that end, PyTorch now has an official TVM-based backend, <a href="https://github.com/pytorch/tvm">torch_tvm</a>.</p>
-
-<p>Usage is simple:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import torch_tvm
-torch_tvm.enable()
-</code></pre></div></div>
-
-<p>That’s it!  PyTorch will then attempt to convert all operators it can to known Relay operators during its JIT compilation process.</p>
-
-<h3 id="background">Background</h3>
-
-<p>Unlike many other ML frameworks, PyTorch exposes an eager-execution programming interface.  This style of programming avoids graph-based meta-programming and focuses on the direct manipulation of n-dimensional arrays (tensors) in a Pythonic way.  As such, the framework was initially well suited for the experimentation and development of models, but not for automatic performance optimization or deployment.  To leverage optimizing compiler techniques, some large changes were recently introduced to PyTorch to solve this problem.</p>
-
-<p><img src="https://i.imgur.com/4XVHbJE.png" alt="TVM Integration" /></p>
-
-<p>PyTorch 1.0 introduced PyTorch IR, a PyTorch-specific intermediate representation for models similar to Relay.  PyTorch programs can be converted into the IR via model tracing, which records the execution of a model or TorchScript, a subset of Python.  The new TVM backend lowers PyTorch IR to Relay, and is able to transparently improve PyTorch performance with little user involvement.</p>
-
-<h3 id="integration-and-results">Integration and Results</h3>
-
-<p>To support Relay, two features were added to the PyTorch JIT: custom transformation passes and custom subgraph interpreters.</p>
-
-<p>When <code class="language-plaintext highlighter-rouge">torch_tvm</code> is enabled, subgraphs of PyTorch IR that can be converted to Relay <code class="language-plaintext highlighter-rouge">Expr</code>s will be marked as Relay-compatible.  Since PyTorch IR does not always contain shape information, none of the subgraphs can be compiled in a useful way before invocation.</p>
-
-<p>During user invocation, the PyTorch JIT runtime will determine input shape information and compile the previously marked subgraphs with the new Relay C++ <a href="https://github.com/pytorch/tvm/blob/main/torch_tvm/compiler.cpp#L226-L246">build system</a>.  The compilation is cached based on input shapes for subsequent runs.  More details can be found in the <a href="https://github.com/pytorch/tvm/blob/main/README.md">README</a>.</p>
-
-<p><code class="language-plaintext highlighter-rouge">torch_tvm</code> has a continuous benchmark system set up, which is monitoring the performance of ResNet18 on CPU.
-Out of the box TVM provides over two times the performance of the default PyTorch JIT backend for various ResNet models.
-Below is a graph that details the iterations per second achieved with 16 threads on an AWS c5n.4xlarge instance (larger is better):</p>
-
-<p style="text-align: center"><img src="https://i.imgur.com/KfJ7oas.png" alt="bench" width="90%" /></p>
-
-<p>These results are quite encouraging, and the project will continue to focus on improving CPU inference speed across more models.</p>
-
-<h3 id="future-work">Future work</h3>
-
-<p>Right now the PyTorch JIT does a lot of work to find pure functional subsets of its IR to feed to Relay.  This avoids the need to map aliasing and control flow information to Relay, but is not necessary.  Mapping more of the PyTorch IR to Relay may yield performance wins and is a goal of the project.  PyTorch IR is rapidly changing as it is being developed, so this must be done carefully.</p>
-
-<p>More work will be done to ensure the hand off between PyTorch and TVM code is efficient.  This includes unifying the threading model, allocators and reducing the overhead associated with copying inputs into TVM.</p>
-
-<h3 id="tutorial">Tutorial</h3>
-
-<p>If you have an already written PyTorch model, the easiest way to get started comes from using <code class="language-plaintext highlighter-rouge">torch.jit.trace</code> as follows</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import torch_tvm
-from your_model import model, inputs
-
-torch_tvm.enable(opt_level=3)
-
-iters = 100
-warmup = 10
-
-# Ensure your model is in eval mode and also turn off gradients.
-with torch.no_grad():
-  # Use tuned parameters for better performance.
-  with autotvm.apply_history_best("test/autotvm_tuning.log"):
-    # This is where all the compilation happens.
-    trace_tvm = torch.jit.trace(model, inputs)
-    
-    # Warmup
-    for _ in range(warmup):
-      _ = trace_tvm(*inputs)
-
-    # Benchmark
-    start = time.time()
-    for _ in range(iters):
-      _ = trace_tvm(*inputs)
-    tvm_time = time.time() - start
-    
-    print("Took {}s to run {} iters".format(tvm_time, iters))
-</code></pre></div></div>
-
-<p>Much of this code comes from <a href="https://github.com/pytorch/tvm/blob/main/test/benchmarks.py">benchmarks.py</a>.  Note that tuned parameters for AVX2 LLVM compilation is in the <code class="language-plaintext highlighter-rouge">test/</code> folder of the repo.</p>
-
-<p>If you are more comfortable using Relay directly, it is possible to simply extract the expression directly from a
-PyTorch function either via (implicit) tracing or TorchScript:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def add(a, b, c):
-    return a + b + c
-
-# via tracing
-relay_graph = torch_tvm.to_relay(add, inputs)
-
-@torch.jit.script
-def mul(a, b, c):
-    return a * b * c
-
-# via script
-relay_graph = torch_tvm.to_relay(mul, inputs)
-</code></pre></div></div>]]></content><author><name>Bram Wasti</name></author><summary type="html"><![CDATA[As TVM continuously demonstrates improvements to the efficiency of deep learning execution, it has become clear that PyTorch stands to benefit from directly leveraging the compiler stack. A major tenet of PyTorch is providing seamless and robust integrations that don’t get in the user’s way. To that end, PyTorch now has an official TVM-based backend, torch_tvm.]]></summary></entry></feed>
+<p>We would like to thank the emscripten project for providing the WASM compilation infrastructures as well as the JS library support on the web. We would also like to thank the WebGPU community for various helpful discussions. Thanks to Fletcher Haynes for valuable feedbacks to the post.</p>]]></content><author><name>Tianqi Chen and Jared Roesch, OctoML</name></author><summary type="html"><![CDATA[TLDR]]></summary></entry></feed>

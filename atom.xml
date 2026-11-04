@@ -4,7 +4,7 @@
  <title>TVM</title>
  <link href="https://tvm.apache.org" rel="self"/>
  <link href="https://tvm.apache.org"/>
- <updated>2026-10-16T16:43:56+00:00</updated>
+ <updated>2026-11-04T16:28:54+00:00</updated>
  <id>https://tvm.apache.org</id>
  <author>
    <name></name>
@@ -13,21 +13,285 @@
 
  
  <entry>
+   <title>Rethinking the ML Compiler Foundation for the Agentic Era</title>
+   <link href="https://tvm.apache.org/2026/11/03/rethink-ml-compiler-foundation-for-the-agentic-era"/>
+   <updated>2026-11-03T00:00:00+00:00</updated>
+   <id>https://tvm.apache.org/2026/11/03/rethink-ml-compiler-foundation-for-the-agentic-era</id>
+   <content type="html">&lt;section class=&quot;post-summary&quot; aria-labelledby=&quot;tldr&quot;&gt;
+
+  &lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+  &lt;p&gt;In our &lt;a href=&quot;https://blog.mlc.ai/2026/09/29/tirx-harness-an-open-compiler-harness-for-agentic-gpu-programming&quot;&gt;previous community effort&lt;/a&gt;, we showed that with little more than Opus 5.5 and a few presses of Enter, we could produce production-quality B200 kernels that significantly outperform existing baselines.&lt;/p&gt;
+
+  &lt;p&gt;This led us, as ML compiler practitioners, to revisit a fundamental question from first principles: &lt;strong&gt;Do we still need our beloved compilers?&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Our answer is &lt;strong&gt;yes, but perhaps not in the form we know today.&lt;/strong&gt; Through concrete case studies and first-principles reasoning, we explore why agents still need compiler abstractions and how these abstractions should be designed for them.&lt;/p&gt;
+
+  &lt;p&gt;We’re putting these ideas into practice through a ground-up rebuild of &lt;a href=&quot;https://github.com/apache/tvm-tirx/tree/main&quot;&gt;TIRx&lt;/a&gt;, with the goal of making it a shared DSL and compiler foundation for agentic kernel development.&lt;/p&gt;
+
+&lt;/section&gt;
+
+&lt;p&gt;For those of us working on ML compilers and GPU kernels, 2026 has been both an exciting and an unsettling year.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rethink-ml-compiler-foundation/image7.png&quot; alt=&quot;Opportunities and challenges for ML compiler practitioners in 2026&quot; style=&quot;width: 90%; margin: auto; display: block;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;On the one hand, much of the tedious maintenance work that once consumed our time can now be delegated to agents. Agents are even tackling the development of high-performance GPU kernels, one of the ultimate goals of our compiler research, with remarkable success. Perhaps we can finally free ourselves from the endless cycle of reading Nsight Compute reports, inspecting SASS assembly, and hand-tuning the most delicate details of GPU kernels. Recent efforts such as &lt;a href=&quot;https://pytorch.org/blog/kernelagent-hardware-guided-gpu-kernel-optimization-via-multi-agent-orchestration/&quot;&gt;KernelAgent&lt;/a&gt;, &lt;a href=&quot;https://arxiv.org/abs/2602.24286&quot;&gt;CUDA Agent&lt;/a&gt;, &lt;a href=&quot;https://prod.cursor.com/blog/multi-agent-kernels&quot;&gt;Cursor’s multi-agent system&lt;/a&gt;, &lt;a href=&quot;https://arxiv.org/abs/2608.12629&quot;&gt;CAKE&lt;/a&gt;, &lt;a href=&quot;https://blog.mlc.ai/2026/09/29/tirx-harness-an-open-compiler-harness-for-agentic-gpu-programming&quot;&gt;TIRx Harness&lt;/a&gt;, &lt;a href=&quot;https://nvlabs.github.io/kda/&quot;&gt;KDAgent&lt;/a&gt;, and &lt;a href=&quot;https://arxiv.org/abs/2610.36848&quot;&gt;EAT&lt;/a&gt; have demonstrated remarkable progress in automated GPU kernel development.&lt;/p&gt;
+
+&lt;p&gt;On the other hand, this progress raises an uncomfortable question: &lt;strong&gt;Are we automating ourselves out of relevance?&lt;/strong&gt; In the essay &lt;a href=&quot;https://mp.weixin.qq.com/s/zk0KxuLzhmMJ4LPYW_OHMA&quot;&gt;&lt;em&gt;I Have No Choice but to Bury My Talent in Yesterday&lt;/em&gt;&lt;/a&gt;, DeepSeek engineer Shengyu Liu reflects on the possibility of agents surpassing human experts in kernel development. Meanwhile, Stanford’s &lt;a href=&quot;https://hazyresearch.stanford.edu/blog/2026-08-05-retire-the-abstractions&quot;&gt;&lt;em&gt;Retire the Abstractions&lt;/em&gt;&lt;/a&gt; questions whether even CUDA DSLs will remain necessary.&lt;/p&gt;
+
+&lt;p&gt;This is a particularly uncomfortable thought for those of us who have spent years building DSLs, compiler heuristics, optimization passes, and entire compilation frameworks. Much of this machinery was designed around the needs and limitations of human programmers.&lt;/p&gt;
+
+&lt;p&gt;After all, we humans have limited attention and working memory. We cannot easily keep every detail of GPU hardware in our heads, nor can we manually explore thousands of possible optimization strategies. We need high-level abstractions to make low-level programming manageable and compilers to automate the tedious, repetitive, and error-prone parts of optimization.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;But what happens when the programmer is no longer human?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Agents can work directly with low-level CUDA or PTX, inspect profiling results in seconds, experiment with unconventional optimization strategies, and explore dozens or even hundreds of kernel variants within an hour. They are not constrained by human cognitive limitations in the same way. Why should we expect them to use the same languages, abstractions, and workflows we designed for ourselves?&lt;/p&gt;
+
+&lt;p&gt;This brings us to a more fundamental question:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;If agents can handle the low-level details themselves, should we still put a compiler between them and the hardware?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;We believe the answer is &lt;strong&gt;yes, but for a different reason.&lt;/strong&gt; Instead of requiring agents to reinvent IR and compiler infrastructure at every iteration of kernel development, a minimal, stable ML compiler foundation can provide shared abstractions and reusable tools for the entire community while leaving agents free to explore their own optimization strategies.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rethink-ml-compiler-foundation/image2.png&quot; alt=&quot;From an opaque compiler to agentic kernel programming, compiler harnesses, and a minimal compiler foundation&quot; style=&quot;width: 90%; margin: auto; display: block;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In this post, we explain why such a foundation is still needed and how it should be designed for agents. These ideas guided our redesign of TIRx around the following core elements:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;A minimal, stable set of core AST nodes&lt;/strong&gt; designed for common needs and extensions.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Stable, predictable utilities&lt;/strong&gt; for common needs, including TVM-FFI bridge generation, symbolic integer analysis, structural traversal and mapping, and basic code generation for CUDA and host LLVM targets.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Dynamic extension by design:&lt;/strong&gt; Types and operations can be easily added without rebuilding a static bundle. Customizations can be developed in independent repositories and loaded dynamically to interoperate with the foundation layer.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;First-class cross-language support:&lt;/strong&gt; Python, C++, and Rust (work in progress). Agents can implement compiler analyses and extensions in any of these languages, quickly prototyping ideas in a dynamic language like Python and then implementing them in Rust or C++. Extensions work out of the box across supported languages.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Connections to stable compiler toolchains:&lt;/strong&gt; The foundation provides a minimal layer for ML compilation while using the backend capabilities of established toolchains where possible.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This post walks through the design reasoning behind our approach to rethinking the ML compiler foundation for the agentic era. We hope these principles and ideas will be broadly applicable to the ML compiler and agentic development communities.&lt;/p&gt;
+
+&lt;h2 id=&quot;do-we-still-need-compilers-at-all&quot;&gt;Do We Still Need Compilers at All?&lt;/h2&gt;
+
+&lt;p&gt;The first question we should ask ourselves is whether we really need compilers at all.&lt;/p&gt;
+
+&lt;p&gt;Many of the abstractions we designed for DSLs help human programmers manage low-level details. If agents can work directly with CUDA, PTX, or assembly, they may no longer need the same human-oriented programming interfaces.&lt;/p&gt;
+
+&lt;p&gt;Agents are also already very good at the heuristic optimizations traditionally performed by compilers and can work directly with low-level code.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rethink-ml-compiler-foundation/image6.png&quot; alt=&quot;Agents still need structured IR and AST representations for analysis and verification&quot; style=&quot;width: 90%; margin: auto; display: block;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;But does eliminating a DSL interface or compiler-driven code generation eliminate the need for compiler infrastructure?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Imagine a future where an agent writes CUDA kernels directly, relies on existing toolchains to generate PTX and SASS, and iterates through profiling and testing. It might even generate PTX or native machine instructions directly, without going through a traditional ML compiler at all.&lt;/p&gt;
+
+&lt;p&gt;Now suppose we want to verify that a generated kernel is correct. We cannot simply trust the agent’s judgment or rely on tests alone. We still need a formal representation of the program and its semantics, such as an IR formalized in Lean, against which correctness proofs can be checked.&lt;/p&gt;
+
+&lt;p&gt;Moreover, we wouldn’t want agents to spend hundreds of iterations on programs with obvious bugs. Ideally, we should catch errors as early as possible, using efficient checkers to analyze program patterns, memory accesses, synchronization, and other properties without relying on expensive model reasoning or full formal verification for every candidate (see the &lt;a href=&quot;https://github.com/mlc-ai/TIRx-harness/tree/main/tools&quot;&gt;checkers&lt;/a&gt; we built).&lt;/p&gt;
+
+&lt;p&gt;This thought experiment reveals two important needs that remain even when agents take over code generation:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Analysis:&lt;/strong&gt; While agents can reason directly over program text, not every analysis needs to be performed through model reasoning. Just as humans can perform arithmetic by hand but benefit from calculators, agents can benefit from structured program representations and efficient analysis algorithms to catch problems early in development.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Verification:&lt;/strong&gt; Program correctness should not depend on trusting an agent’s judgment. Independent verification requires precisely defined program semantics against which correctness claims can be checked.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;These two needs motivate a common foundation: a minimal, extensible IR that exposes program structure and semantics to both agents and conventional tools, independently of any particular code generation or optimization strategy.&lt;/p&gt;
+
+&lt;p&gt;In this future, &lt;strong&gt;we may no longer need a compiler that actually compiles anything, but we will still need compiler infrastructure to understand and verify programs.&lt;/strong&gt; A shared IR can serve as the foundation for analysis, verification, and new tools built by agents.&lt;/p&gt;
+
+&lt;p&gt;Our insight is that we need a &lt;strong&gt;minimal, stable set of core IR/AST nodes&lt;/strong&gt; designed for common needs and extensions. Whether agents generate CUDA/PTX or eventually native machine instructions, the resulting programs should be representable by introducing new operations into the stable operator system without fundamentally changing the IR infrastructure.&lt;/p&gt;
+
+&lt;p&gt;Additionally, the foundation should be able to &lt;strong&gt;connect to stable compiler toolchains&lt;/strong&gt; where it makes sense, so we can reuse established backend capabilities when those backends are not a bottleneck.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-should-we-design-ml-compilers-for-agents&quot;&gt;How Should We Design ML Compilers for Agents?&lt;/h2&gt;
+
+&lt;p&gt;One key characteristic of the agentic era is the accelerating pace of development. Agents will become the primary developers of compiler extensions and will try out new ideas. We should rethink what makes compiler code itself easy to develop and maintain.&lt;/p&gt;
+
+&lt;h3 id=&quot;should-everything-be-written-in-the-same-language&quot;&gt;Should Everything Be Written in the Same Language?&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rethink-ml-compiler-foundation/image5.png&quot; alt=&quot;A shared TVM-FFI and TIRx foundation supports Python, C++, and Rust compiler components&quot; style=&quot;width: 90%; margin: auto; display: block;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Most of our current compilers are written primarily in one programming language, with supporting wrappers in others. However, an agent implementing different kinds of compiler components may have different needs:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;For experimental analyses that benefit from existing Python libraries such as NumPy or PyTorch, Python would be preferable.&lt;/li&gt;
+  &lt;li&gt;For frequently executed analysis passes, C++ or Rust may be preferable.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;While agents can always reimplement everything in a single language such as C++ or Rust, the tokens spent doing so could be put to better use. Ideally, a global choice of programming language should not constrain local implementation decisions.&lt;/p&gt;
+
+&lt;p&gt;These observations highlight the need for &lt;strong&gt;first-class cross-language support&lt;/strong&gt;. Built on TVM-FFI, the TIRx foundation provides out-of-the-box, first-class support for Python, C++, and Rust. Agents can prototype in Python, move performance-critical components to C++ or Rust, and reuse extensions across supported languages.&lt;/p&gt;
+
+&lt;h3 id=&quot;how-can-we-help-agents-iterate-faster&quot;&gt;How Can We Help Agents Iterate Faster?&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rethink-ml-compiler-foundation/image3.png&quot; alt=&quot;Dynamic extensions shorten the agent development loop by avoiding monolithic compiler rebuilds&quot; style=&quot;width: 90%; margin: auto; display: block;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;An agent can be very smart, but its iteration speed is fundamentally limited by its development environment and workflow. Suppose an agent wants to add a new operator or experiment with a new backend. Generally, it needs to modify the code, rebuild the compiler, run the tests, and repeat that process. As agents become faster at writing code, rebuilding and testing account for a larger share of the development loop. While mechanisms like build caching can partly alleviate the issue, they do not completely eliminate the overhead.&lt;/p&gt;
+
+&lt;p&gt;These needs call for a shift from statically bundled compilers and extensions to &lt;strong&gt;dynamic extension by design.&lt;/strong&gt; The TIRx foundation allows types and operations to be added dynamically without rebuilding a monolithic compiler. Extensions can live in independent repositories and interoperate with the foundation, enabling faster development iterations.&lt;/p&gt;
+
+&lt;h3 id=&quot;what-will-maintenance-look-like-going-forward&quot;&gt;What Will Maintenance Look Like Going Forward?&lt;/h3&gt;
+
+&lt;p&gt;As agents get better at building compiler components, we should also consider how project maintenance will change. Agents may still need to maintain different, potentially conflicting optimization pipelines tailored to specific domains. There will also be a strong need for compiler harnesses that focus on analysis rather than code transformation. Finally, agents may make optimization decisions themselves rather than relying on heuristic transformations.&lt;/p&gt;
+
+&lt;p&gt;There is a &lt;strong&gt;fundamental tension between rapid innovation and the need for stability and code quality&lt;/strong&gt;. Kernels can be generated in minutes and discarded, whereas lower layers benefit from stability and closer human oversight.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rethink-ml-compiler-foundation/image1.png&quot; alt=&quot;Kernels, compiler harnesses, and the minimal compiler foundation evolve at different rates with different levels of human oversight&quot; style=&quot;width: 90%; margin: auto; display: block;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;These observations favor structuring projects into layers based on their levels of stability and rates of change. The new ML compiler foundation should provide a minimal, stable, and predictable base for compilation, with extension mechanisms that allow agents to customize the compiler abstractions themselves. Agents can build compiler harnesses and transformations on top and evolve them at a faster rate. The TIRx foundation focuses on:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;A minimal, stable core AST&lt;/strong&gt;, extended through an open operator system.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Reusable, predictable utilities&lt;/strong&gt;, including symbolic integer analysis, structural traversal and mapping, and TVM-FFI bridge generation.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Integration with established toolchains&lt;/strong&gt;, including basic CUDA and host LLVM code generation, rather than reimplementing everything within a custom compiler pipeline.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The goal is not to eliminate compiler functionality, but to keep the shared foundation small while letting agents implement and evolve the functionality they need at upper layers.&lt;/p&gt;
+
+&lt;h2 id=&quot;discussion-and-looking-to-the-future&quot;&gt;Discussion and Looking to the Future&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rethink-ml-compiler-foundation/image4.png&quot; alt=&quot;Minimal composable boundaries support continued improvement as agent tokens and engineering effort increase&quot; style=&quot;width: 90%; margin: auto; display: block;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We are at a crossroads this year, and predicting where the future will lead is challenging. The approach outlined in this post is likely not the only path forward for ML compilers in the agentic era. As ML compilers transition into this new phase, we must carefully avoid rigid abstractions that restrict agent capabilities, while recognizing that a complete lack of layering leads to unnecessary token expenditure and sloppy outcomes.&lt;/p&gt;
+
+&lt;p&gt;Our view is that composable layers can succeed as long as we avoid rigid abstractions that limit agent capabilities. An ML compiler foundation can play a vital role in supporting research and development in ML compilers and agents. We hope TIRx can provide such a foundation and work with the broader ML compiler and agentic development ecosystems.&lt;/p&gt;
+
+&lt;h2 id=&quot;technical-details&quot;&gt;Technical Details&lt;/h2&gt;
+
+&lt;p&gt;The previous section discusses the overall design motivation. This section walks through some of the technical design elements with code examples. For readability, the technical details are collapsed below.&lt;/p&gt;
+
+&lt;details class=&quot;technical-details&quot;&gt;
+  &lt;summary&gt;Technical details and code examples&lt;/summary&gt;
+
+  &lt;p&gt;TIRx offers a complete interface to construct typical tensor programs in Python:&lt;/p&gt;
+
+  &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_tirx.script&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tirx&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dynamic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;nd&quot;&gt;@T.function&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)):&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;The example above constructs a function object representing an add-one operation on the CPU. TIRx provides a built-in API to compile the function into code that interoperates with libraries in the Python array API ecosystem, such as NumPy and PyTorch.&lt;/p&gt;
+
+  &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_tirx&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tirx&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;add_one_compiled&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tirx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;compile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;llvm&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;arange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;add_one_compiled&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Our design aims to be &lt;strong&gt;minimal, faithful, and predictable&lt;/strong&gt;. A call to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tirx.compile&lt;/code&gt; applies no additional heuristic optimizations; the program is passed directly to the LLVM compiler toolchain to generate CPU code.&lt;/p&gt;
+
+  &lt;p&gt;The examples so far show how TIRx can be used as a typical opaque domain-specific compiler. As mentioned earlier, our goal is to expose not only the programming interface but also the compiler API and every intermediate AST object to developers and agents. We store every AST node in a &lt;strong&gt;cross-language object&lt;/strong&gt; backed by TVM FFI, making it directly accessible from languages including Python, C++, and Rust. The following code shows how we can inspect program structures such as types and shape values:&lt;/p&gt;
+
+  &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# query the type of parameter A
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ty_A&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ty&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# query the length of parameter B
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;h3 id=&quot;common-utilities-for-traversal-mapping-and-analysis&quot;&gt;Common Utilities for Traversal, Mapping, and Analysis&lt;/h3&gt;
+
+  &lt;p&gt;Direct access to internal compiler objects allows us to inspect and transform programs further. We use a set of lightweight, general-purpose utilities built into TIRx and TVM FFI to traverse, compare, and transform program structures. For example, the following code snippet specializes the dynamic dimension &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; to 128:&lt;/p&gt;
+
+  &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_ffi&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_tirx&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;add_one_specialized&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_ffi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;structural_map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tvm_tirx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ir&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Var&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;128&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;same_as&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;add_one_specialized&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@T.function&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;128&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;128&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)):&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;128&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Symbolic shapes and indices are common in both kernels and higher-level programs. TIRx’s representation allows types like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TensorType&lt;/code&gt; to depend on expression values, and we provide common utilities to check symbolic relations during program analysis. Thanks to feedback from the TileLang community, we have also added structural traversal variants with symbolic constraint contexts and stronger Z3 proofs. These tools are designed to work with dynamic TVM FFI objects, so they continue to function as the set of AST nodes expands, whether in the main project or in downstream projects.&lt;/p&gt;
+
+  &lt;p&gt;At every stage of compilation, the program can be printed in Python script syntax, as shown above. This allows agents and developers to inspect intermediate programs, experiment with transformations, and build new ones.&lt;/p&gt;
+
+  &lt;h3 id=&quot;dynamic-extension-through-types-and-operations&quot;&gt;Dynamic Extension through Types and Operations&lt;/h3&gt;
+
+  &lt;p&gt;While the compiler foundation provides a minimal backbone, TIRx is designed to accommodate new customizations both in-tree and downstream. The primary way to extend the TIRx foundation is to introduce new types and operations. Downstream projects can define new types as TVM-FFI objects that subclass the original type node and carry additional type and expression information. For example, we introduced &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tirx.TensorMapType&lt;/code&gt; to support TMA tensor maps in CUDA programs.&lt;/p&gt;
+
+  &lt;p&gt;Because new types can carry information that depends on other types and expressions, they can preserve that information across intermediate stages of compilation. A typical approach is to lower these intermediate types to existing types or add dedicated backend code generation support for the new types. To maintain simplicity and consistency, we allow Python type constructors to be used directly in the script syntax. For instance, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;T.Tensor((n,), T.float32)&lt;/code&gt; simply invokes the type constructor with a tuple and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;T.float32&lt;/code&gt; to obtain an instance of the concrete type.&lt;/p&gt;
+
+  &lt;p&gt;Most extensions introduce new operations (ops). An op can be used in either a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Call&lt;/code&gt; AST node, resembling an intrinsic call, or a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RegionStmt&lt;/code&gt;, defining a region with additional semantics such as a thread launch or kernel region. We built minimal CUDA and PTX support by introducing the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;device_entry&lt;/code&gt; region op and representing calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;T.ptx.add.rn.f32&lt;/code&gt; as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Call&lt;/code&gt; nodes for the corresponding PTX op.&lt;/p&gt;
+
+  &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_tirx.script&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tirx&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dynamic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;nd&quot;&gt;@T.function&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;device_entry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;launch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cuda&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;LaunchConfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;255&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;256&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;256&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cuda&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;block_idx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;256&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cuda&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;thread_idx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ptx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;As an example of these dynamic extension capabilities, we registered most ops in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;T.ptx&lt;/code&gt; namespace directly through Python, allowing us to update compiler support quickly without modifying the core library.&lt;/p&gt;
+
+  &lt;p&gt;Both type and operator registrations support dynamic extension through runtime tables indexed by string keys. This setup allows us to build extensions as downstream packages that depend on the compiler foundation without needing to recompile or bundle the original project. This separation enables different modules to evolve at different rates. The ML compiler foundation contains reusable code that is continuously hardened, while agents can independently iterate on new compiler harness ideas.&lt;/p&gt;
+
+  &lt;h3 id=&quot;first-class-tvm-ffi-host-abi-support&quot;&gt;First-Class TVM FFI Host ABI Support&lt;/h3&gt;
+
+  &lt;p&gt;Every new ML compiler or harness needs a way to connect to the broader ecosystem. TVM FFI provides standard ABI and FFI support for interoperability. The TIRx foundation provides shared utilities for generating host code compatible with the TVM FFI ABI. This is particularly useful for generating efficient compiled tensor checks. For example, the following code declares a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2 * n&lt;/code&gt; shape constraint on an input tensor. The compiled function produces a clear error message when an input violates this constraint.&lt;/p&gt;
+
+  &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_tirx&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tirx&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm_tirx.script&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tirx&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dynamic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;nd&quot;&gt;@T.function&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)):&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;add_one_compiled&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tirx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;compile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;add_one&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;llvm&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;arange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;11&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;add_one_compiled&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ValueError: Invalid A.shape[0] on argument #0 when calling:
+   `add_one(A: Tensor([2 * n], float32), B: Tensor([2 * n], float32))`,
+   expected A.shape[0] to be divisible by 2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;While agents can easily rebuild support for new variants on the fly, these foundation features remain stable and continue to be hardened, allowing agents to focus on developing new compiler features and analyses while relying on established pipelines.&lt;/p&gt;
+
+&lt;/details&gt;
+
+&lt;h2 id=&quot;acknowledgements&quot;&gt;Acknowledgements&lt;/h2&gt;
+
+&lt;p&gt;This post summarizes work by many contributors across the TVM and broader ML communities. It was written by a human, with GenAI models assisting with grammar and style edits.&lt;/p&gt;
+
+&lt;h2 id=&quot;links&quot;&gt;Links&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;GitHub (work in progress): &lt;a href=&quot;https://github.com/apache/tvm-tirx/&quot;&gt;https://github.com/apache/tvm-tirx/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
+ 
+ <entry>
    <title>TIRx: An Open Compiler Stack for Evolving Frontier ML Kernels</title>
    <link href="https://tvm.apache.org/2026/06/22/tirx"/>
    <updated>2026-06-22T00:00:00+00:00</updated>
    <id>https://tvm.apache.org/2026/06/22/tirx</id>
-   <content type="html">&lt;style&gt;
-/* Theme has h3=38px but no h2 rule; size both down a notch and keep h2 &gt; h3. */
-.post-content h2 { font-size: 38px; line-height: 1.3; }
-.post-content h3 { font-size: 30px; line-height: 1.3; }
-@media (max-width: 768px) {
-  .post-content h2 { font-size: 30px; }
-  .post-content h3 { font-size: 25px; }
-}
-&lt;/style&gt;
-
-&lt;p&gt;Today we are introducing &lt;strong&gt;TIRx&lt;/strong&gt;, an open-source, hardware-native DSL and compiler for ML kernels, built on Apache TVM. It targets the part of the AI software stack where fast-moving kernels meet fast-moving hardware: TIRx compiles to GPUs and specialized AI accelerators today and is designed to grow with the generations that follow. The same design serves expert-written kernels, agent-generated kernels, and megakernel systems.&lt;/p&gt;
+   <content type="html">&lt;p&gt;Today we are introducing &lt;strong&gt;TIRx&lt;/strong&gt;, an open-source, hardware-native DSL and compiler for ML kernels, built on Apache TVM. It targets the part of the AI software stack where fast-moving kernels meet fast-moving hardware: TIRx compiles to GPUs and specialized AI accelerators today and is designed to grow with the generations that follow. The same design serves expert-written kernels, agent-generated kernels, and megakernel systems.&lt;/p&gt;
 
 &lt;p&gt;We have been working together with the broader community to provide the following materials at launch:&lt;/p&gt;
 
@@ -4047,122 +4311,6 @@ C = tvm.compute(
 &lt;p&gt;[2] &lt;a href=&quot;https://devblogs.nvidia.com/cuda-pro-tip-nvprof-your-handy-universal-gpu-profiler/&quot;&gt;nvprof is Your Handy Universal GPU Profiler&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;[3] &lt;a href=&quot;https://github.com/tensorflow/tensorflow/pull/16306&quot;&gt;Add Loop Invariant Node Motion Optimization in GraphOptimizer&lt;/a&gt;&lt;/p&gt;
-</content>
- </entry>
- 
- <entry>
-   <title>Compiling Deep Learning Models to WebGL with TVM</title>
-   <link href="https://tvm.apache.org/2018/03/12/webgl"/>
-   <updated>2018-03-12T00:00:00+00:00</updated>
-   <id>https://tvm.apache.org/2018/03/12/webgl</id>
-   <content type="html">&lt;p&gt;Now TVM comes with a brand-new OpenGL/WebGL backend!
-This blog post explains what it is, and what you can achieve with it.&lt;/p&gt;
-
-&lt;h1 id=&quot;the-openglwebgl-backend&quot;&gt;The OpenGL/WebGL Backend&lt;/h1&gt;
-
-&lt;p&gt;TVM already targets a lot of backends covering a variety of platforms: CPU, GPU,
-mobile devices, etc… This time we are adding another backend: OpenGL/WebGL.&lt;/p&gt;
-
-&lt;p&gt;OpenGL/WebGL enables us to leverage the GPU on an environment which does not
-have CUDA installed. It is, for the time being, the only way of using the GPU
-inside a browser.&lt;/p&gt;
-
-&lt;p&gt;This new backend allows us to use OpenGL/WebGL in 3 different ways:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Local OpenGL&lt;/strong&gt;:
-We can compile a deep learning model into OpenGL and directly
-run it on the local machine, entirely using Python.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;WebGL with RPC&lt;/strong&gt;:
-We can compile a deep learning model into WebGL and export
-it as a shared library via Emscripten, with JavaScript host code and WebGL device code. Then
-we can deploy that library through RPC onto a TVM JavaScript runtime system
-running inside a browser.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;WebGL with static library&lt;/strong&gt;:
-We can compile a deep learning model into WebGL,
-link it with the TVM JavaScript runtime system and export the entire package.
-Then we can run the model in a web page on a browser, with no dependency.
-The detailed flow is described in figure 1.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;We rely on Emscripten and its fastcomp LLVM backend to generate the javascript backend.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/opengl/webgl-flow.png&quot; alt=&quot;image&quot; width=&quot;65%&quot; /&gt;&lt;br /&gt;
-Figure 1&lt;/p&gt;
-
-&lt;p&gt;See &lt;a href=&quot;https://github.com/dmlc/nnvm/blob/master/tutorials/from_mxnet_to_webgl.py&quot;&gt;here&lt;/a&gt;
-for examples of all three of them.&lt;/p&gt;
-
-&lt;h1 id=&quot;how-is-this-different-from-x&quot;&gt;How is this Different from X?&lt;/h1&gt;
-
-&lt;p&gt;Running a neural network on a browser isn’t an entirely new thing.
-Andrej Karpathy’s &lt;a href=&quot;https://cs.stanford.edu/people/karpathy/convnetjs/&quot;&gt;ConvNetJS&lt;/a&gt;
-and Google’s &lt;a href=&quot;https://deeplearnjs.org/&quot;&gt;DeepLearning.JS&lt;/a&gt; are examples of that.&lt;/p&gt;
-
-&lt;p&gt;So what’s unique about TVM with WebGL? The big difference is that the op kernels
-in TVM are automatically compiled, not handwritten. As shown in Figure 2, TVM
-utilizes a unified AST to define kernels, and compiles it to code on different
-platforms.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/opengl/comparison.png&quot; alt=&quot;&quot; width=&quot;50%&quot; /&gt;&lt;br /&gt;
-Figure 2&lt;/p&gt;
-
-&lt;p&gt;This means that:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;To deploy your existing model to WebGL, you don’t need to write a lot of
-additional code. The NNVM/TVM model definition is the same for all targets, so
-you just need to compile it to a new target.&lt;/li&gt;
-  &lt;li&gt;To add a new op kernel, you only need to define it in TVM once, instead of
-implementing it once for every target. You don’t need to know how to write
-GLSL code to add a new op kernel to WebGL!&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&quot;benchmark&quot;&gt;Benchmark&lt;/h1&gt;
-
-&lt;p&gt;Here we perform a benchmark for a typical workload: image classification using
-resnet18.&lt;/p&gt;
-
-&lt;p&gt;I’m using my &lt;a href=&quot;https://www.asus.com/us/Laptops/N76VZ/&quot;&gt;5-year-old laptop&lt;/a&gt; which
-has an 8-core Intel® Core™ i7-3610QM, and a GTX650M.&lt;/p&gt;
-
-&lt;p&gt;In this benchmark, we download a resnet18 model from the Gluon model zoo, and
-perform end-to-end classification on a cat image. We only measure the model
-execution time (without model/input/parameter loading), and each model is run
-100 times to get an average. The results are shown in figure 3.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/opengl/opengl-benchmark.png&quot; alt=&quot;image&quot; /&gt;&lt;br /&gt;
-Figure 3&lt;/p&gt;
-
-&lt;p&gt;The benchmark is run in 4 different settings:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;CPU (LLVM)&lt;/strong&gt;: The model is compiled into LLVM IR and JIT’ed. Therefore, it is
-run entirely on the CPU.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;OpenCL&lt;/strong&gt;: The model is compiled into OpenCL. There is still some glue code
-compiled to LLVM, which is responsible for setting up and launching OpenCL
-kernels. Then we run it on the local machine.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;OpenGL&lt;/strong&gt;: Same as OpenCL, but compiled to OpenGL.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;WebGL&lt;/strong&gt;: The glue code is compiled to LLVM, and transformed to JavaScript using
-Emscripten’s Fastcomp LLVM backend.
-The device code is compiled to WebGL. We execute the model in Firefox.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;From the result above we can observe that, the TVM OpenGL backend has a similar
-performance as OpenCL. More interestingly, the WebGL version inside the browser
-isn’t significantly slower than desktop OpenGL. Considering that the host code
-is JavaScript, this is quite surprising. This might be due to the fact that
-Emscripten generates &lt;a href=&quot;http://asmjs.org/&quot;&gt;asm.js&lt;/a&gt; which enables dramatic
-optimizations in Firefox.&lt;/p&gt;
-
-&lt;p&gt;This is a first step toward automatic compilation of deep learning models
-into web browser. We expect more performance improvements as we bring
-optimizations into the TVM stack.&lt;/p&gt;
-
-&lt;h2 id=&quot;show-me-the-code&quot;&gt;Show me the Code&lt;/h2&gt;
-&lt;ul&gt;
-  &lt;li&gt;Checkout &lt;a href=&quot;https://github.com/dmlc/nnvm/blob/master/tutorials/from_mxnet_to_webgl.py&quot;&gt;this complete code example&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;acknowledgement&quot;&gt;Acknowledgement&lt;/h2&gt;
-&lt;p&gt;We thank the developers of Emscripten for providing the fastcomp toolchain and the helps during the development.&lt;/p&gt;
 </content>
  </entry>
  
