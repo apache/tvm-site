@@ -292,9 +292,9 @@ The rewrites are:
             impl Lowering {
                 fn parts(&self, expr: &Expr) -> Result<(Expr, Expr)> { ... }
             }
-            #[dispatch(map, (AnyView<'_>,), Result<Any>)]
+            #[dispatch(map, (AnyView<'_>,), Result<UnchangedOr<Any>>)]
             impl Lowering {
-                fn map_sequence(&mut self, seq: SeqStmt) -> Result<Any> { ... }
+                fn map_sequence(&mut self, seq: SeqStmt) -> Result<UnchangedOr<Any>> { ... }
          :append: }
 
    .. group-tab:: Python
@@ -309,7 +309,7 @@ and ``parts`` reads the real and imaginary parts of an operand, either a
 validates a call to one of the operators, then applies the three rules;
 ``map_bind`` splits a complex binding, and ``map_sequence`` flattens the
 sequence that a split binding leaves inside another. In Rust,
-``#[dispatch(map, (AnyView<'_>,), Result<Any>)]`` sends each node to the
+``#[dispatch(map, (AnyView<'_>,), Result<UnchangedOr<Any>>)]`` sends each node to the
 ``map_`` method of its type. In Python, the next excerpt pairs each method with
 the type of node it takes.
 

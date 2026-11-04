@@ -645,8 +645,10 @@ The output is:
 ``mutate_for`` records the replacement for its loop variable, then
 ``mutator.default_mutate(self, value)`` rewrites the loop's children
 through the same struct, so ``mutate_var`` sees the replacement before any
-use of ``i``. ``default_mutate`` returns ``UnchangedOr<Any>``, and
-``.map(Into::into)`` turns it into the handler's ``Any`` result.
+use of ``i``. Mutate handlers return ``Result<UnchangedOr<Any>>``, the
+same type that ``default_mutate`` returns, so ``mutate_for`` returns its
+result directly. ``mutate_var`` returns the new index with ``.into()``, or
+``Unchanged`` to keep the variable.
 
 A mutate handler receives its node as a ``MutationView``, here
 ``MutationView<'_, For>``. We read the loop's fields through it, as with
