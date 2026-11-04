@@ -93,7 +93,7 @@ real and imaginary parts, as in ``TensorType``:
 In Rust, as in C++, the type is defined in two parts: ``ComplexTypeObj`` is the
 object that holds the fields, and ``ComplexType`` is a reference-counted
 reference to it, which IR nodes store and functions pass around.
-``base: TypeObj`` makes the object an IR type, and ``rs_class`` registers its
+``base: TypeObj`` makes the object an IR type, and ``rs_object`` registers its
 fields for reflection, through which Python and IR JSON loading construct the
 type as they construct a C++ one. ``def_object_ref!`` defines the reference.
 
