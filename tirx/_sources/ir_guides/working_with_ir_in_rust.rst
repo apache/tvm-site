@@ -304,6 +304,8 @@ types it knows, and ``_`` lets programs with new types pass through.
 A match looks at one node at a time; to process every node in a program
 while keeping state, we dispatch.
 
+.. _rust-dispatch:
+
 Dispatching on Node Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -347,6 +349,8 @@ The output is:
 walk continues into their children, so new types pass through. Here the
 multiplication and the constants have no method, and the walk still
 reaches ``x`` inside the multiplication.
+
+.. _rust-structural-utilities:
 
 Structural Utilities
 --------------------

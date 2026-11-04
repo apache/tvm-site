@@ -301,51 +301,18 @@
 
 
 
-
-
-
-<div class="dropdown dropdown-download-buttons">
-  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
-    <i class="fas fa-download"></i>
-  </button>
-  <ul class="dropdown-menu">
-      
-      
-      
-      <li><a href="../_sources/advanced/using_ir_extensions.rst" target="_blank"
-   class="btn btn-sm btn-download-source-button dropdown-item"
-   title="Download source file"
-   data-bs-placement="left" data-bs-toggle="tooltip"
+<a href="https://github.com/apache/tvm-tirx/blob/main/docs/advanced/using_ir_extensions.rst" target="_blank"
+   class="btn btn-sm btn-source-link-button pst-navbar-icon"
+   title="Source file on GitHub"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
-  <i class="fas fa-file"></i>
+  <i class="fas fa-file-code"></i>
   </span>
-<span class="btn__text-container">.rst</span>
+
 </a>
-</li>
-      
-      
-      
-      
-      <li>
-<button onclick="window.print()"
-  class="btn btn-sm btn-download-pdf-button dropdown-item"
-  title="Print to PDF"
-  data-bs-placement="left" data-bs-toggle="tooltip"
->
-  
-
-<span class="btn__icon-container">
-  <i class="fas fa-file-pdf"></i>
-  </span>
-<span class="btn__text-container">.pdf</span>
-</button>
-</li>
-      
-  </ul>
-</div>
 
 
 
@@ -432,19 +399,34 @@ static init blocks, which run as soon as the library loads. To write them in
 TVMScript, Python also needs a module that holds their builders. Definitions
 under <code class="docutils literal notranslate"><span class="pre">tirx.</span></code> go to <code class="docutils literal notranslate"><span class="pre">T</span></code>, but an extension namespace such as <code class="docutils literal notranslate"><span class="pre">my_ext</span></code> is
 published only into a module that the extension declares. The package’s
-<a class="reference download internal" download="" href="../_downloads/74f1979b73074fa9721561fe97287625/__init__.py"><code class="xref download docutils literal notranslate"><span class="pre">__init__.py</span></code></a>
+<a class="reference external" href="https://github.com/apache/tvm-tirx/blob/main/examples/extension/python/my_ext/__init__.py">__init__.py</a>
 therefore declares itself as that module before it loads the library:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_init_exposed_op_api</span><span class="p">(</span><span class="s2">"my_ext"</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">auto_emit_void_call</span><span class="p">)</span>
 <span class="n">_init_exposed_type_api</span><span class="p">(</span><span class="s2">"my_ext"</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
 <span class="n">_LIB</span> <span class="o">=</span> <span class="n">load_lib_module</span><span class="p">(</span><span class="s2">"my-ext"</span><span class="p">,</span> <span class="s2">"my_ext"</span><span class="p">,</span> <span class="n">extra_lib_paths</span><span class="o">=</span><span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>The two <code class="docutils literal notranslate"><span class="pre">_init_exposed_*_api</span></code> calls, internal to <code class="docutils literal notranslate"><span class="pre">tvm_tirx.ir</span></code> for now,
-publish the operators and the type into <code class="docutils literal notranslate"><span class="pre">my_ext</span></code>; <code class="docutils literal notranslate"><span class="pre">auto_emit_void_call</span></code>
-gives its builders the TVMScript behavior of the <code class="docutils literal notranslate"><span class="pre">T</span></code> builders.
-<code class="docutils literal notranslate"><span class="pre">load_lib_module</span></code> finds the library that the package installs next to
-<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>. To parse printed IR that uses the extension, pass the package
-as well, as in <code class="docutils literal notranslate"><span class="pre">extra_vars={&quot;T&quot;:</span> <span class="pre">T,</span> <span class="pre">&quot;my_ext&quot;:</span> <span class="pre">my_ext}</span></code>.</p>
+<p>The three lines do the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_init_exposed_op_api(&quot;my_ext&quot;,</span> <span class="pre">__name__,</span> <span class="pre">wrapper=auto_emit_void_call)</span></code>
+declares the module <code class="docutils literal notranslate"><span class="pre">__name__</span></code> as the destination of the operators whose
+names start with <code class="docutils literal notranslate"><span class="pre">my_ext.</span></code>, and publishes each of them there without the
+prefix, as <code class="docutils literal notranslate"><span class="pre">my_ext.cmul</span></code>. <code class="docutils literal notranslate"><span class="pre">auto_emit_void_call</span></code> gives the builders the
+TVMScript behavior of the <code class="docutils literal notranslate"><span class="pre">T</span></code> builders.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_init_exposed_type_api(&quot;my_ext&quot;,</span> <span class="pre">__name__)</span></code> does the same for the types
+whose keys start with <code class="docutils literal notranslate"><span class="pre">my_ext.</span></code>, so <code class="docutils literal notranslate"><span class="pre">my_ext.ComplexType</span></code> is published as
+<code class="docutils literal notranslate"><span class="pre">my_ext.Complex</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load_lib_module(&quot;my-ext&quot;,</span> <span class="pre">&quot;my_ext&quot;,</span> <span class="pre">extra_lib_paths=[...])</span></code> finds the
+library <code class="docutils literal notranslate"><span class="pre">my_ext</span></code> (<code class="docutils literal notranslate"><span class="pre">libmy_ext.so</span></code> on Linux) of the package <code class="docutils literal notranslate"><span class="pre">my-ext</span></code>,
+here next to <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>, and loads it, which runs its static init
+blocks. It returns the library as a module, whose exported functions, such as
+<code class="docutils literal notranslate"><span class="pre">lower_complex</span></code>, Python calls.</p></li>
+</ul>
+<p>Both declarations come before the library loads, so its registrations reach
+<code class="docutils literal notranslate"><span class="pre">my_ext</span></code> as they happen. The two <code class="docutils literal notranslate"><span class="pre">_init_exposed_*_api</span></code> functions are
+internal to <code class="docutils literal notranslate"><span class="pre">tvm_tirx.ir</span></code> for now. To parse printed IR that uses the
+extension, pass the package as well, as in
+<code class="docutils literal notranslate"><span class="pre">extra_vars={&quot;T&quot;:</span> <span class="pre">T,</span> <span class="pre">&quot;my_ext&quot;:</span> <span class="pre">my_ext}</span></code>.</p>
 <p>The registered type and operators let the IR express complex values;
 <code class="docutils literal notranslate"><span class="pre">LowerComplex</span></code> turns them into a form the backend can compile. The default
 pipeline does not know about the pass, so the package registers a pipeline,
@@ -461,9 +443,9 @@ also named <code class="docutils literal notranslate"><span class="pre">my_ext</
 </section>
 <section id="compile-the-function">
 <h2>Compile the Function<a class="headerlink" href="#compile-the-function" title="Link to this heading">#</a></h2>
-<p><a class="reference download internal" download="" href="../_downloads/a483640fed07f295cc410c36f56470e9/run_example.py"><code class="xref download docutils literal notranslate"><span class="pre">run_example.py</span></code></a> imports
-<code class="docutils literal notranslate"><span class="pre">my_ext</span></code>, which loads the library and registers the pipeline, and compiles
-the function from <a class="reference internal" href="extending_ir_in_rust.html"><span class="doc">Getting Started with Rust Extensions</span></a> with it:</p>
+<p><a class="reference external" href="https://github.com/apache/tvm-tirx/blob/main/examples/extension/run_example.py">run_example.py</a>
+imports <code class="docutils literal notranslate"><span class="pre">my_ext</span></code>, which loads the library and registers the pipeline, and
+compiles the function from <a class="reference internal" href="extending_ir_in_rust.html"><span class="doc">Getting Started with Rust Extensions</span></a> with it:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">compiled</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">complex_product</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"llvm"</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">=</span><span class="s2">"my_ext"</span><span class="p">)</span>
 </pre></div>
 </div>

@@ -30,7 +30,7 @@ static init blocks, which run as soon as the library loads. To write them in
 TVMScript, Python also needs a module that holds their builders. Definitions
 under ``tirx.`` go to ``T``, but an extension namespace such as ``my_ext`` is
 published only into a module that the extension declares. The package's
-:download:`__init__.py <../../examples/extension/python/my_ext/__init__.py>`
+`__init__.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension/python/my_ext/__init__.py>`_
 therefore declares itself as that module before it loads the library:
 
 .. literalinclude:: ../../examples/extension/python/my_ext/__init__.py
@@ -38,12 +38,27 @@ therefore declares itself as that module before it loads the library:
    :start-after: # begin load
    :end-before: # end load
 
-The two ``_init_exposed_*_api`` calls, internal to ``tvm_tirx.ir`` for now,
-publish the operators and the type into ``my_ext``; ``auto_emit_void_call``
-gives its builders the TVMScript behavior of the ``T`` builders.
-``load_lib_module`` finds the library that the package installs next to
-``__init__.py``. To parse printed IR that uses the extension, pass the package
-as well, as in ``extra_vars={"T": T, "my_ext": my_ext}``.
+The three lines do the following:
+
+- ``_init_exposed_op_api("my_ext", __name__, wrapper=auto_emit_void_call)``
+  declares the module ``__name__`` as the destination of the operators whose
+  names start with ``my_ext.``, and publishes each of them there without the
+  prefix, as ``my_ext.cmul``. ``auto_emit_void_call`` gives the builders the
+  TVMScript behavior of the ``T`` builders.
+- ``_init_exposed_type_api("my_ext", __name__)`` does the same for the types
+  whose keys start with ``my_ext.``, so ``my_ext.ComplexType`` is published as
+  ``my_ext.Complex``.
+- ``load_lib_module("my-ext", "my_ext", extra_lib_paths=[...])`` finds the
+  library ``my_ext`` (``libmy_ext.so`` on Linux) of the package ``my-ext``,
+  here next to ``__init__.py``, and loads it, which runs its static init
+  blocks. It returns the library as a module, whose exported functions, such as
+  ``lower_complex``, Python calls.
+
+Both declarations come before the library loads, so its registrations reach
+``my_ext`` as they happen. The two ``_init_exposed_*_api`` functions are
+internal to ``tvm_tirx.ir`` for now. To parse printed IR that uses the
+extension, pass the package as well, as in
+``extra_vars={"T": T, "my_ext": my_ext}``.
 
 The registered type and operators let the IR express complex values;
 ``LowerComplex`` turns them into a form the backend can compile. The default
@@ -60,9 +75,9 @@ also named ``my_ext``, that runs it first:
 Compile the Function
 --------------------
 
-:download:`run_example.py <../../examples/extension/run_example.py>` imports
-``my_ext``, which loads the library and registers the pipeline, and compiles
-the function from :doc:`extending_ir_in_rust` with it:
+`run_example.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension/run_example.py>`_
+imports ``my_ext``, which loads the library and registers the pipeline, and
+compiles the function from :doc:`extending_ir_in_rust` with it:
 
 .. literalinclude:: ../../examples/extension/run_example.py
    :language: python

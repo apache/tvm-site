@@ -300,9 +300,15 @@ The same program can also be built with CMake. The ``CMakeLists.txt`` in
 Further Reading
 ---------------
 
+- `Modern GPU Programming for MLSys <https://mlc.ai/modern-gpu-programming-for-mlsys/>`_:
+  a book on writing fast GPU kernels with TIRx, from the GPU execution model
+  to GEMM and FlashAttention 4 on NVIDIA Blackwell (**recommended for learning
+  how to write programs with TIRx**).
 - :doc:`/ir_guides/overview`: the IR objects in depth and how they fit together.
 - :doc:`Programming Guides </programming_guides/index>`: writing CUDA
   kernels with TIRx.
+- :doc:`/advanced/extending_ir_in_rust`: extending the compiler with types,
+  operators, and passes of your own.
 - :doc:`Python API </reference/python/index>`: the full Python API reference.
 - :doc:`/dev/source_build`: building TIRx from source.
 - `TVM-FFI documentation <https://tvm.apache.org/ffi/>`_: the FFI and ABI

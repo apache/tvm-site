@@ -32,6 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../_static/css/tabs_theme.css?v=2f226b7f" />
   
   <!-- So that users can add custom icons -->
@@ -44,6 +45,7 @@
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../_static/tabs.js?v=3030b3cb"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'advanced/defining_ir_extensions';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -301,51 +303,18 @@
 
 
 
-
-
-
-<div class="dropdown dropdown-download-buttons">
-  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
-    <i class="fas fa-download"></i>
-  </button>
-  <ul class="dropdown-menu">
-      
-      
-      
-      <li><a href="../_sources/advanced/defining_ir_extensions.rst" target="_blank"
-   class="btn btn-sm btn-download-source-button dropdown-item"
-   title="Download source file"
-   data-bs-placement="left" data-bs-toggle="tooltip"
+<a href="https://github.com/apache/tvm-tirx/blob/main/docs/advanced/defining_ir_extensions.rst" target="_blank"
+   class="btn btn-sm btn-source-link-button pst-navbar-icon"
+   title="Source file on GitHub"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
-  <i class="fas fa-file"></i>
+  <i class="fas fa-file-code"></i>
   </span>
-<span class="btn__text-container">.rst</span>
+
 </a>
-</li>
-      
-      
-      
-      
-      <li>
-<button onclick="window.print()"
-  class="btn btn-sm btn-download-pdf-button dropdown-item"
-  title="Print to PDF"
-  data-bs-placement="left" data-bs-toggle="tooltip"
->
-  
-
-<span class="btn__icon-container">
-  <i class="fas fa-file-pdf"></i>
-  </span>
-<span class="btn__text-container">.pdf</span>
-</button>
-</li>
-      
-  </ul>
-</div>
 
 
 
@@ -421,17 +390,36 @@
                   
   <section id="defining-types-operators-and-passes">
 <h1>Defining Types, Operators, and Passes<a class="headerlink" href="#defining-types-operators-and-passes" title="Link to this heading">#</a></h1>
-<p>In this chapter, we walk through the Rust library of the package set up in
-<a class="reference internal" href="extending_ir_in_rust.html"><span class="doc">Getting Started with Rust Extensions</span></a>: a complex type, four operators, and a pass that
-lowers them to scalar arithmetic. The excerpts come from
-<a class="reference download internal" download="" href="../_downloads/a3a313f55690e2d4f49de05985d7c18e/lib.rs"><code class="xref download docutils literal notranslate"><span class="pre">src/lib.rs</span></code></a>, which also contains
-the validation and traversal helpers they use.</p>
+<p>In this chapter, we define the extension set up in <a class="reference internal" href="extending_ir_in_rust.html"><span class="doc">Getting Started with Rust Extensions</span></a>:
+a complex type, four operators, and a pass that lowers them to scalar
+arithmetic. Each step is shown in Rust, from the library
+<a class="reference external" href="https://github.com/apache/tvm-tirx/blob/main/examples/extension/src/lib.rs">src/lib.rs</a>,
+and in Python, from the module
+<a class="reference external" href="https://github.com/apache/tvm-tirx/blob/main/examples/extension/my_ext_py/my_ext.py">my_ext_py/my_ext.py</a>.
+Both files also contain the validation and traversal helpers that the excerpts
+use.</p>
+<p>The two versions define the same names, so the example program runs with
+either. The Python version is a single module that needs no build, which makes
+it a quick way to try out an extension before writing it in Rust. To run the
+example with it, put its directory on <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">PYTHONPATH</span><span class="o">=</span>examples/extension/my_ext_py<span class="w"> </span>python<span class="w"> </span>examples/extension/run_example.py
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Why is Rust preferred for extensions?</strong></p>
+<p>Python is the quickest way to try out an extension, but it is slow on large
+programs.</p>
+<p>Rust is fast and memory safe, which makes it a good fit for agents exploring
+new types, operators, and passes.</p>
+</div>
 <section id="defining-a-type">
 <h2>Defining a Type<a class="headerlink" href="#defining-a-type" title="Link to this heading">#</a></h2>
 <p>To work with complex numbers directly in the IR, we first introduce a type for
 them. <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> has one field, <code class="docutils literal notranslate"><span class="pre">dtype</span></code>, the scalar type shared by the
 real and imaginary parts, as in <code class="docutils literal notranslate"><span class="pre">TensorType</span></code>:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="sd">/// A complex number whose real and imaginary parts share a scalar type.</span>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-UnVzdA==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-UnVzdA==" name="UnVzdA==" role="tab" tabindex="0">Rust</button><button aria-controls="panel-0-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-0-UnVzdA==" class="sphinx-tabs-panel group-tab" id="panel-0-UnVzdA==" name="UnVzdA==" role="tabpanel" tabindex="0"><div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="sd">/// A complex number whose real and imaginary parts share a scalar type.</span>
 <span class="cp">#[rs_class(</span><span class="s">"my_ext.ComplexType"</span><span class="cp">, final)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">ComplexTypeObj</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">base</span><span class="p">:</span><span class="w"> </span><span class="nc">TypeObj</span><span class="p">,</span>
@@ -444,29 +432,69 @@ real and imaginary parts, as in <code class="docutils literal notranslate"><span
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>As in C++, the type is defined in two parts: <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> is the object
-that holds the fields, and <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> is a reference-counted reference to
-it, which IR nodes store and functions pass around. <code class="docutils literal notranslate"><span class="pre">base:</span> <span class="pre">TypeObj</span></code> makes the
-object an IR type, and <code class="docutils literal notranslate"><span class="pre">rs_class</span></code> registers its fields for reflection, through
-which Python and IR JSON loading construct the type as they construct a C++ one.</p>
-<p><code class="docutils literal notranslate"><span class="pre">def_object_ref!(pub</span> <span class="pre">ComplexType,</span> <span class="pre">Type,</span> <span class="pre">ComplexTypeObj)</span></code> defines the
-reference. Its arguments are:</p>
+</div><div aria-labelledby="tab-0-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-0-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@py_class</span><span class="p">(</span><span class="s2">"my_ext.ComplexType"</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ComplexType</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A complex number whose real and imaginary parts share a scalar type."""</span>
+
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">ir</span><span class="o">.</span><span class="n">PrimType</span>
+
+
+<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">get_global_func</span><span class="p">(</span><span class="s2">"ir.expose_type"</span><span class="p">)(</span><span class="s2">"my_ext.ComplexType"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>What does def_object_ref! do?</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">def_object_ref!(ObjRef,</span> <span class="pre">Parent,</span> <span class="pre">Obj)</span></code> defines <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code>, the reference
+type of the object type <code class="docutils literal notranslate"><span class="pre">Obj</span></code>, as the C++ macro
+<code class="docutils literal notranslate"><span class="pre">TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE</span></code> does. An <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> holds
+a reference-counted pointer to an <code class="docutils literal notranslate"><span class="pre">Obj</span></code>, and the macro gives it these
+conversions:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">pub</span> <span class="pre">ComplexType</span></code>: the name and visibility of the reference.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code>: the reference to the parent object, <code class="docutils literal notranslate"><span class="pre">TypeObj</span></code>. A <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>
-converts into a <code class="docutils literal notranslate"><span class="pre">Type</span></code> with <code class="docutils literal notranslate"><span class="pre">into()</span></code> wherever a <code class="docutils literal notranslate"><span class="pre">Type</span></code> is expected, such
-as the result of type inference.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code>: the object it refers to. A <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> converts
-into a <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> with <code class="docutils literal notranslate"><span class="pre">into()</span></code>, and a <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> dereferences to
-it, so <code class="docutils literal notranslate"><span class="pre">ty.dtype</span></code> reads the field.</p></li>
+<li><p>an <code class="docutils literal notranslate"><span class="pre">Obj</span></code> converts into an <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> with <code class="docutils literal notranslate"><span class="pre">into()</span></code>;</p></li>
+<li><p>an <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> dereferences to its <code class="docutils literal notranslate"><span class="pre">Obj</span></code>, so its fields read directly;</p></li>
+<li><p>an <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> converts into <code class="docutils literal notranslate"><span class="pre">Parent</span></code>, the reference to the parent
+object, with <code class="docutils literal notranslate"><span class="pre">into()</span></code>.</p></li>
 </ul>
-<p>The <code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code> runs <code class="docutils literal notranslate"><span class="pre">register_type</span></code> when the library loads, as a
-<code class="docutils literal notranslate"><span class="pre">TVM_FFI_STATIC_INIT_BLOCK</span></code> does for C++, and Python then sees the type as
-<code class="docutils literal notranslate"><span class="pre">my_ext.Complex</span></code>.</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> records the scalar type of the two parts, and a
-<code class="docutils literal notranslate"><span class="pre">complex(re,</span> <span class="pre">im)</span></code> call supplies their values as its operands. <code class="docutils literal notranslate"><span class="pre">dtype</span></code> can be
-any scalar float type, such as <code class="docutils literal notranslate"><span class="pre">float32</span></code>, <code class="docutils literal notranslate"><span class="pre">float64</span></code> or <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code>; this
-tutorial uses <code class="docutils literal notranslate"><span class="pre">float32</span></code>.</p>
+<p>A visibility such as <code class="docutils literal notranslate"><span class="pre">pub</span></code> before <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> applies to the reference.
+Here, <code class="docutils literal notranslate"><span class="pre">def_object_ref!(pub</span> <span class="pre">ComplexType,</span> <span class="pre">Type,</span> <span class="pre">ComplexTypeObj)</span></code> defines the
+public reference <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>: <code class="docutils literal notranslate"><span class="pre">ty.dtype</span></code> reads the field of a
+<code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>, and a <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> converts into a <code class="docutils literal notranslate"><span class="pre">Type</span></code> wherever one
+is expected, such as the result of type inference.</p>
+</div>
+<p>In Rust, as in C++, the type is defined in two parts: <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> is the
+object that holds the fields, and <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> is a reference-counted
+reference to it, which IR nodes store and functions pass around.
+<code class="docutils literal notranslate"><span class="pre">base:</span> <span class="pre">TypeObj</span></code> makes the object an IR type, and <code class="docutils literal notranslate"><span class="pre">rs_class</span></code> registers its
+fields for reflection, through which Python and IR JSON loading construct the
+type as they construct a C++ one. <code class="docutils literal notranslate"><span class="pre">def_object_ref!</span></code> defines the reference.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code> registers the type when the library loads.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>What does static_init_block! do?</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">static_init_block!</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></code> runs its body when the program or library that
+holds it loads, as a C++ <code class="docutils literal notranslate"><span class="pre">TVM_FFI_STATIC_INIT_BLOCK</span></code> does. The body
+registers what the library defines, such as types, operators, and global
+functions, and Python sees these registrations once it loads the library.
+The body is the body of a function that returns <code class="docutils literal notranslate"><span class="pre">Result&lt;()&gt;</span></code>, so <code class="docutils literal notranslate"><span class="pre">?</span></code>
+stops it at its first error.</p>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">register_type::&lt;ComplexType&gt;()</span></code> registers <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> as an IR
+type, so that Python constructs it from its fields and IR JSON holds it, as
+for a C++ type.</p>
+</div>
+<p>In Python, one class is enough. <code class="docutils literal notranslate"><span class="pre">py_class</span></code> from <code class="docutils literal notranslate"><span class="pre">tvm_ffi.dataclasses</span></code>
+registers it as an IR object: <code class="docutils literal notranslate"><span class="pre">my_ext.ComplexType</span></code> is its type key,
+<code class="docutils literal notranslate"><span class="pre">ir.Type</span></code> its parent, and the annotated <code class="docutils literal notranslate"><span class="pre">dtype</span></code> its field. The class gets a
+constructor, <code class="docutils literal notranslate"><span class="pre">ComplexType(dtype)</span></code>, and its field takes part in structural
+equality, printing, and IR JSON, as the fields of a C++ type do. The global
+function <code class="docutils literal notranslate"><span class="pre">ir.expose_type</span></code> then publishes the type, as <code class="docutils literal notranslate"><span class="pre">register_type</span></code> does
+in Rust.</p>
+<p>Either way, Python sees the type as <code class="docutils literal notranslate"><span class="pre">my_ext.Complex</span></code>. A <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>
+records the scalar type of the two parts, and a <code class="docutils literal notranslate"><span class="pre">complex(re,</span> <span class="pre">im)</span></code> call
+supplies their values as its operands. <code class="docutils literal notranslate"><span class="pre">dtype</span></code> can be any scalar float type,
+such as <code class="docutils literal notranslate"><span class="pre">float32</span></code>, <code class="docutils literal notranslate"><span class="pre">float64</span></code> or <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code>; this tutorial uses
+<code class="docutils literal notranslate"><span class="pre">float32</span></code>.</p>
 </section>
 <section id="defining-operators">
 <h2>Defining Operators<a class="headerlink" href="#defining-operators" title="Link to this heading">#</a></h2>
@@ -507,10 +535,11 @@ they are registered under the <code class="docutils literal notranslate"><span c
 </tbody>
 </table>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">complex</span></code> operator is registered as an <code class="docutils literal notranslate"><span class="pre">OpDef</span></code> chain in a
-<code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code>. Each step updates the operator registry, and the chain
-completes when its statement ends:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">static_init_block</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<p>Each operator has a signature, a type inference function, and the effect kind
+<code class="docutils literal notranslate"><span class="pre">Pure</span></code>, which marks it as a pure function that does not interact with any
+external state. The <code class="docutils literal notranslate"><span class="pre">complex</span></code> operator is registered as follows:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-UnVzdA==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-UnVzdA==" name="UnVzdA==" role="tab" tabindex="0">Rust</button><button aria-controls="panel-1-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-1-UnVzdA==" class="sphinx-tabs-panel group-tab" id="panel-1-UnVzdA==" name="UnVzdA==" role="tabpanel" tabindex="0"><div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">static_init_block</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">OpDef</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">"my_ext.complex"</span><span class="p">,</span><span class="w"> </span><span class="s">"Construct the complex number re + im * i."</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="n">signature</span><span class="p">((</span>
 <span class="w">            </span><span class="n">sig</span><span class="p">::</span><span class="n">arg</span><span class="p">::</span><span class="o">&lt;</span><span class="n">PrimExpr</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"re"</span><span class="p">,</span><span class="w"> </span><span class="s">"The real part."</span><span class="p">),</span>
@@ -522,10 +551,49 @@ completes when its statement ends:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">signature</span></code> declares the arguments of the operator and of its Python and
-TVMScript builder. <code class="docutils literal notranslate"><span class="pre">set_infer_type</span></code> attaches a named Rust function that
-checks the arguments and computes the result type:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">infer_complex</span><span class="p">(</span><span class="n">call</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">CallObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+</div><div aria-labelledby="tab-1-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_define</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">infer_type</span><span class="p">):</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="sa">f</span><span class="s2">"my_ext.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">set_signature</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">set_attr</span><span class="p">(</span><span class="s2">"FInferType"</span><span class="p">,</span> <span class="n">infer_type</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">set_attr</span><span class="p">(</span><span class="s2">"TCallEffectKind"</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">CallEffectKind</span><span class="o">.</span><span class="n">Pure</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">expose</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">op</span>
+
+
+<span class="n">COMPLEX</span> <span class="o">=</span> <span class="n">_define</span><span class="p">(</span>
+    <span class="s2">"complex"</span><span class="p">,</span>
+    <span class="s2">"Construct the complex number re + im * i."</span><span class="p">,</span>
+    <span class="p">[(</span><span class="s2">"re"</span><span class="p">,</span> <span class="s2">"The real part."</span><span class="p">),</span> <span class="p">(</span><span class="s2">"im"</span><span class="p">,</span> <span class="s2">"The imaginary part."</span><span class="p">)],</span>
+    <span class="n">_infer_complex</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>In Rust, the operator is an <code class="docutils literal notranslate"><span class="pre">OpDef</span></code> chain in a <code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code>: each
+step updates the operator registry, and the chain completes when its statement
+ends. In Python, <code class="docutils literal notranslate"><span class="pre">ir.Op.register</span></code> adds the operator to the registry and
+returns it, and the helper <code class="docutils literal notranslate"><span class="pre">_define</span></code> sets its signature and attributes;
+<code class="docutils literal notranslate"><span class="pre">expose</span></code> publishes its builder, <code class="docutils literal notranslate"><span class="pre">my_ext.complex</span></code>, once the definition is
+complete. The module keeps the returned operator as the global <code class="docutils literal notranslate"><span class="pre">COMPLEX</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code> can hold any registrations, types and operators
+alike. The example keeps the type and the operators in separate blocks, but
+one block can register both:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">static_init_block</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">register_type</span><span class="p">::</span><span class="o">&lt;</span><span class="n">ComplexType</span><span class="o">&gt;</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="n">OpDef</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">"my_ext.complex"</span><span class="p">,</span><span class="w"> </span><span class="s">"Construct the complex number re + im * i."</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">signature</span><span class="p">(</span><span class="o">..</span><span class="p">.)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">set_infer_type</span><span class="p">(</span><span class="n">infer_complex</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>In both, the signature declares the arguments of the operator and of its Python
+and TVMScript builder, and the type inference function checks the arguments
+and computes the result type:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-UnVzdA==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-UnVzdA==" name="UnVzdA==" role="tab" tabindex="0">Rust</button><button aria-controls="panel-2-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-2-UnVzdA==" class="sphinx-tabs-panel group-tab" id="panel-2-UnVzdA==" name="UnVzdA==" role="tabpanel" tabindex="0"><div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">infer_complex</span><span class="p">(</span><span class="n">call</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">CallObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">check_call</span><span class="p">(</span><span class="n">call</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">elem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float_part</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">ty</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">im</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float_part</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">ty</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
@@ -535,18 +603,31 @@ checks the arguments and computes the result type:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">set_validator</span></code> repeats these checks for a call whose result type is given
-explicitly rather than inferred. <code class="docutils literal notranslate"><span class="pre">Pure</span></code> marks the operator as a pure
-function, which does not interact with any external state.</p>
-<p><code class="docutils literal notranslate"><span class="pre">infer_complex</span></code> computes the type of a <code class="docutils literal notranslate"><span class="pre">complex(re,</span> <span class="pre">im)</span></code> call: a
+</div><div aria-labelledby="tab-2-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_infer_complex</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+    <span class="n">_check_call</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">elem</span> <span class="o">=</span> <span class="n">_float_part</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">_float_part</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="n">_require</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">im</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="s2">"my_ext.complex expects parts of the same type"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ComplexType</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>The function computes the type of a <code class="docutils literal notranslate"><span class="pre">complex(re,</span> <span class="pre">im)</span></code> call: a
 <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> whose <code class="docutils literal notranslate"><span class="pre">dtype</span></code> is the type of the two parts. It requires both
-parts to be scalar floats of the same type, and converts neither. It then uses
-both conversions of the reference: it builds a <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code>, turns it into
-a <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>, and returns it as a <code class="docutils literal notranslate"><span class="pre">Type</span></code>. The other three operators
-follow the same pattern. <code class="docutils literal notranslate"><span class="pre">cmul</span></code> requires two complex arguments of the same
-type and returns it; <code class="docutils literal notranslate"><span class="pre">real</span></code> and <code class="docutils literal notranslate"><span class="pre">imag</span></code> require one and return its
-<code class="docutils literal notranslate"><span class="pre">dtype</span></code>. Passing an ordinary scalar to <code class="docutils literal notranslate"><span class="pre">cmul</span></code> therefore fails with
+parts to be scalar floats of the same type, and converts neither. The Rust
+version uses both conversions of the reference: it builds a
+<code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code>, turns it into a <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>, and returns it as a
+<code class="docutils literal notranslate"><span class="pre">Type</span></code>; the Python version calls the class. The other three operators follow
+the same pattern. <code class="docutils literal notranslate"><span class="pre">cmul</span></code> requires two complex arguments of the same type and
+returns it; <code class="docutils literal notranslate"><span class="pre">real</span></code> and <code class="docutils literal notranslate"><span class="pre">imag</span></code> require one and return its <code class="docutils literal notranslate"><span class="pre">dtype</span></code>. Passing
+an ordinary scalar to <code class="docutils literal notranslate"><span class="pre">cmul</span></code> therefore fails with
 <code class="docutils literal notranslate"><span class="pre">TypeError:</span> <span class="pre">my_ext.cmul</span> <span class="pre">expects</span> <span class="pre">a</span> <span class="pre">complex</span> <span class="pre">value</span></code>.</p>
+<p>An operator’s validator checks a call whose result type is given explicitly
+rather than inferred. In Rust, <code class="docutils literal notranslate"><span class="pre">set_validator</span></code> attaches one that repeats the
+checks of type inference. A Python operator has the validator that its
+signature generates, which checks the number of arguments; validators that also
+check types are native functions. The Python version therefore checks the types
+of such calls in its pass, before lowering them.</p>
 </section>
 <section id="writing-a-pass">
 <h2>Writing a Pass<a class="headerlink" href="#writing-a-pass" title="Link to this heading">#</a></h2>
@@ -574,13 +655,16 @@ that pair. This lets the rules apply to the step-by-step function from
 <span class="n">Im</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">product_im</span>
 </pre></div>
 </div>
-<p>Only scalar arithmetic remains. The pass looks up the operators by name, as C++
-does with <code class="docutils literal notranslate"><span class="pre">Op::Get</span></code>. The operators are registered when the library loads, and
-<code class="docutils literal notranslate"><span class="pre">Op::get</span></code> returns the registry’s single object for a name.
+<p>Only scalar arithmetic remains. To apply the rules, the pass tests whether a
+call’s <code class="docutils literal notranslate"><span class="pre">op</span></code> is one of the four operators. The Rust pass looks them up by name,
+as C++ does with <code class="docutils literal notranslate"><span class="pre">Op::Get</span></code>. The operators are registered when the library
+loads, and <code class="docutils literal notranslate"><span class="pre">Op::get</span></code> returns the registry’s single object for a name.
 <code class="docutils literal notranslate"><span class="pre">call.op.same_as(&amp;Op::get(&quot;my_ext.cmul&quot;)?)</span></code> therefore tests whether a call’s
-<code class="docutils literal notranslate"><span class="pre">op</span></code> is <code class="docutils literal notranslate"><span class="pre">my_ext.cmul</span></code> by comparing pointers. <code class="docutils literal notranslate"><span class="pre">Lowering</span></code> implements the
-rewrites:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">Lowering</span><span class="w"> </span><span class="p">{</span>
+<code class="docutils literal notranslate"><span class="pre">op</span></code> is <code class="docutils literal notranslate"><span class="pre">my_ext.cmul</span></code> by comparing pointers. The Python pass compares with
+the operators that <code class="docutils literal notranslate"><span class="pre">Op.register</span></code> returned, as in <code class="docutils literal notranslate"><span class="pre">call.op.same_as(CMUL)</span></code>.
+The rewrites are:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-3-UnVzdA==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-3-UnVzdA==" name="UnVzdA==" role="tab" tabindex="0">Rust</button><button aria-controls="panel-3-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-3-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-3-UnVzdA==" class="sphinx-tabs-panel group-tab" id="panel-3-UnVzdA==" name="UnVzdA==" role="tabpanel" tabindex="0"><div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">Lowering</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">bindings</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="n">Var</span><span class="p">,</span><span class="w"> </span><span class="n">Var</span><span class="p">,</span><span class="w"> </span><span class="n">Var</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="k">impl</span><span class="w"> </span><span class="n">Lowering</span><span class="w"> </span><span class="p">{</span>
@@ -635,17 +719,63 @@ rewrites:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+</div><div aria-labelledby="tab-3-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-3-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">_Lowering</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Each complex local variable is replaced by two scalar local variables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">parts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">)</span> <span class="ow">and</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">COMPLEX</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">expr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="p">[</span><span class="n">expr</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"LowerComplex cannot resolve complex operand"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">map_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">call</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">_OPS</span><span class="p">):</span>
+            <span class="n">_validate_call</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">CMUL</span><span class="p">):</span>
+            <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="c1"># (a + bi)(c + di) = (ac - bd) + (ad + bc)i</span>
+            <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">COMPLEX</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span> <span class="o">*</span> <span class="n">c</span> <span class="o">-</span> <span class="n">b</span> <span class="o">*</span> <span class="n">d</span><span class="p">,</span> <span class="n">a</span> <span class="o">*</span> <span class="n">d</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">REAL</span><span class="p">)</span> <span class="ow">or</span> <span class="n">call</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">IMAG</span><span class="p">):</span>
+            <span class="n">re</span><span class="p">,</span> <span class="n">im</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">re</span> <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">REAL</span><span class="p">)</span> <span class="k">else</span> <span class="n">im</span>
+        <span class="k">return</span> <span class="n">call</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">map_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bind</span><span class="p">):</span>
+        <span class="n">ty</span> <span class="o">=</span> <span class="n">bind</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">ty</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">ComplexType</span><span class="p">):</span>
+            <span class="n">re</span><span class="p">,</span> <span class="n">im</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">(</span><span class="n">bind</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">re_var</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bind</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_re"</span><span class="p">,</span> <span class="n">ty</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">im_var</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bind</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_im"</span><span class="p">,</span> <span class="n">ty</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="p">[</span><span class="n">bind</span><span class="o">.</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">re_var</span><span class="p">,</span> <span class="n">im_var</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">SeqStmt</span><span class="p">([</span><span class="n">ir</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">re_var</span><span class="p">,</span> <span class="n">re</span><span class="p">),</span> <span class="n">ir</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">im_var</span><span class="p">,</span> <span class="n">im</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">bind</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">map_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">SeqStmt</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">seq</span><span class="p">))</span>
+</pre></div>
+</div>
+</div></div>
 <p><code class="docutils literal notranslate"><span class="pre">bindings</span></code> records each complex variable with its two scalar replacements,
 and <code class="docutils literal notranslate"><span class="pre">parts</span></code> reads the real and imaginary parts of an operand, either a
-<code class="docutils literal notranslate"><span class="pre">complex(re,</span> <span class="pre">im)</span></code> call or a variable already split.
-<code class="docutils literal notranslate"><span class="pre">#[dispatch(map,</span> <span class="pre">(AnyView&lt;'_&gt;,),</span> <span class="pre">Result&lt;Any&gt;)]</span></code> sends each node to the <code class="docutils literal notranslate"><span class="pre">map_</span></code> method of its type, and leaves other nodes
-unchanged: <code class="docutils literal notranslate"><span class="pre">map_call</span></code> applies the three rules, <code class="docutils literal notranslate"><span class="pre">map_bind</span></code> splits a complex
-binding, and <code class="docutils literal notranslate"><span class="pre">map_sequence</span></code> flattens the sequence that a split binding leaves
-inside another. The callback passes each node to <code class="docutils literal notranslate"><span class="pre">lowering.dispatch</span></code> and
-returns <code class="docutils literal notranslate"><span class="pre">Unchanged</span></code> when no handler matches; these rewrites do not need the
-definition region kind.</p>
+<code class="docutils literal notranslate"><span class="pre">complex(re,</span> <span class="pre">im)</span></code> call or a variable already split. <code class="docutils literal notranslate"><span class="pre">map_call</span></code> first
+validates a call to one of the operators, then applies the three rules;
+<code class="docutils literal notranslate"><span class="pre">map_bind</span></code> splits a complex binding, and <code class="docutils literal notranslate"><span class="pre">map_sequence</span></code> flattens the
+sequence that a split binding leaves inside another. In Rust,
+<code class="docutils literal notranslate"><span class="pre">#[dispatch(map,</span> <span class="pre">(AnyView&lt;'_&gt;,),</span> <span class="pre">Result&lt;Any&gt;)]</span></code> sends each node to the
+<code class="docutils literal notranslate"><span class="pre">map_</span></code> method of its type. In Python, the next excerpt pairs each method with
+the type of node it takes.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../ir_guides/working_with_ir_in_rust.html#rust-dispatch"><span class="std std-ref">Dispatching on Node Types</span></a> and <a class="reference internal" href="../ir_guides/working_with_ir_in_rust.html#rust-structural-utilities"><span class="std std-ref">Structural Utilities</span></a> in
+<a class="reference internal" href="../ir_guides/working_with_ir_in_rust.html"><span class="doc">Working with IR in Rust</span></a>.</p>
+</div>
 <p>The pass is built from an ordinary named function:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">lower_function</span><span class="p">(</span>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-4-UnVzdA==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-4-UnVzdA==" name="UnVzdA==" role="tab" tabindex="0">Rust</button><button aria-controls="panel-4-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-4-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-4-UnVzdA==" class="sphinx-tabs-panel group-tab" id="panel-4-UnVzdA==" name="UnVzdA==" role="tabpanel" tabindex="0"><div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">lower_function</span><span class="p">(</span>
 <span class="w">    </span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">,</span>
 <span class="w">    </span><span class="n">_module</span><span class="p">:</span><span class="w"> </span><span class="nc">IRModule</span><span class="p">,</span>
 <span class="w">    </span><span class="n">_ctx</span><span class="p">:</span><span class="w"> </span><span class="nc">PassContext</span><span class="p">,</span>
@@ -666,13 +796,34 @@ definition region kind.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+</div><div aria-labelledby="tab-4-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-4-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_lower_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">_module</span><span class="p">,</span> <span class="n">_ctx</span><span class="p">):</span>
+    <span class="n">lowering</span> <span class="o">=</span> <span class="n">_Lowering</span><span class="p">()</span>
+    <span class="n">rewritten</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+        <span class="n">func</span><span class="p">,</span>
+        <span class="p">[</span>
+            <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">,</span> <span class="n">lowering</span><span class="o">.</span><span class="n">map_call</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Bind</span><span class="p">,</span> <span class="n">lowering</span><span class="o">.</span><span class="n">map_bind</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">SeqStmt</span><span class="p">,</span> <span class="n">lowering</span><span class="o">.</span><span class="n">map_sequence</span><span class="p">),</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">structural_map</span><span class="p">(</span>
+        <span class="n">rewritten</span><span class="p">,</span> <span class="p">[(</span><span class="n">ir</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">_check_type</span><span class="p">),</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">,</span> <span class="n">_check_call_lowered</span><span class="p">),</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">_check_expr</span><span class="p">)]</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
 <p>It receives a function, its module, and the pass context, and returns the
-rewritten function; <code class="docutils literal notranslate"><span class="pre">Some</span></code> replaces the original. The first <code class="docutils literal notranslate"><span class="pre">structural_map</span></code>
-walks the function with <code class="docutils literal notranslate"><span class="pre">Lowering</span></code>. <code class="docutils literal notranslate"><span class="pre">PostOrder</span></code> visits children before their
-parent, so the operands of <code class="docutils literal notranslate"><span class="pre">cmul</span></code> are lowered before <code class="docutils literal notranslate"><span class="pre">cmul</span></code> itself. The
-second <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> only checks the result. It takes a tuple of three
-functions, and calls each on the nodes of its parameter type:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="sd">/// Reject a complex type, wherever it appears: on a variable, a parameter or an expression.</span>
+rewritten function; in Rust, <code class="docutils literal notranslate"><span class="pre">Some</span></code> replaces the original. The first
+<code class="docutils literal notranslate"><span class="pre">structural_map</span></code> walks the function with the rewrites. It visits children
+before their parent, <code class="docutils literal notranslate"><span class="pre">WalkOrder::PostOrder</span></code> in Rust and the default order in
+Python, so the operands of <code class="docutils literal notranslate"><span class="pre">cmul</span></code> are lowered before <code class="docutils literal notranslate"><span class="pre">cmul</span></code> itself. In
+Python, <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> takes a list of <code class="docutils literal notranslate"><span class="pre">(type,</span> <span class="pre">callback)</span></code> entries and
+calls, on each node, the first callback whose type matches it.</p>
+<p>The second <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> only checks the result. It takes three functions,
+a tuple in Rust and a list of entries in Python, and calls each on the nodes of
+its type:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-5-UnVzdA==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-5-UnVzdA==" name="UnVzdA==" role="tab" tabindex="0">Rust</button><button aria-controls="panel-5-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-5-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-5-UnVzdA==" class="sphinx-tabs-panel group-tab" id="panel-5-UnVzdA==" name="UnVzdA==" role="tabpanel" tabindex="0"><div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="sd">/// Reject a complex type, wherever it appears: on a variable, a parameter or an expression.</span>
 <span class="k">fn</span><span class="w"> </span><span class="nf">check_type</span><span class="p">(</span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">Type</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
 
 <span class="sd">/// Reject an expression whose type is complex.</span>
@@ -682,13 +833,23 @@ functions, and calls each on the nodes of its parameter type:</p>
 <span class="k">fn</span><span class="w"> </span><span class="nf">check_call_lowered</span><span class="p">(</span><span class="n">call</span><span class="p">:</span><span class="w"> </span><span class="nc">Call</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Call</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
 </pre></div>
 </div>
+</div><div aria-labelledby="tab-5-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-5-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_check_type</span><span class="p">(</span><span class="n">ty</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject a complex type, wherever it appears: on a variable, a parameter or an expression."""</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject an expression whose type is complex."""</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_call_lowered</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject a call to one of the four complex operators that the rewrite did not consume."""</span>
+</pre></div>
+</div>
+</div></div>
 <p>Each returns its node unchanged and raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> on an unsupported
 use, such as a complex function parameter, so the pass reports such a use
 before code generation.</p>
-<p>Finally, <code class="docutils literal notranslate"><span class="pre">FunctionPass::new</span></code> wraps the function as a pass, and
-<code class="docutils literal notranslate"><span class="pre">tvm_ffi_dll_export_typed_func!</span></code> exports <code class="docutils literal notranslate"><span class="pre">lower_complex</span></code>, which builds it,
-so that the Python package can call it from the loaded library:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">lower_complex</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Pass</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<p>Finally, the function becomes a pass:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-6-UnVzdA==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-6-UnVzdA==" name="UnVzdA==" role="tab" tabindex="0">Rust</button><button aria-controls="panel-6-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-6-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-6-UnVzdA==" class="sphinx-tabs-panel group-tab" id="panel-6-UnVzdA==" name="UnVzdA==" role="tabpanel" tabindex="0"><div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">lower_complex</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Pass</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">pass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FunctionPass</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">lower_function</span><span class="p">,</span><span class="w"> </span><span class="n">PassInfo</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">"my_ext.LowerComplex"</span><span class="p">));</span>
 <span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Pass</span><span class="p">::</span><span class="n">from</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pass</span><span class="p">))</span>
 <span class="p">}</span>
@@ -696,6 +857,17 @@ so that the Python package can call it from the loaded library:</p>
 <span class="n">tvm_ffi</span><span class="p">::</span><span class="n">tvm_ffi_dll_export_typed_func</span><span class="o">!</span><span class="p">(</span><span class="n">lower_complex</span><span class="p">,</span><span class="w"> </span><span class="n">lower_complex</span><span class="p">);</span>
 </pre></div>
 </div>
+</div><div aria-labelledby="tab-6-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-6-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">lower_complex</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ir</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Pass</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The pass that lowers complex values to scalar arithmetic."""</span>
+    <span class="k">return</span> <span class="n">tirx</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">function_pass</span><span class="p">(</span><span class="n">_lower_function</span><span class="p">,</span> <span class="n">opt_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"my_ext.LowerComplex"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>In Rust, <code class="docutils literal notranslate"><span class="pre">FunctionPass::new</span></code> wraps the function as a pass, and
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi_dll_export_typed_func!</span></code> exports <code class="docutils literal notranslate"><span class="pre">lower_complex</span></code>, which builds it,
+so that the Python package can call it from the loaded library. In Python,
+<code class="docutils literal notranslate"><span class="pre">tirx.transform.function_pass</span></code> wraps the function, and the module defines
+<code class="docutils literal notranslate"><span class="pre">lower_complex</span></code> directly.</p>
 <p>Next, <a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> loads the library and compiles the function.</p>
 </section>
 </section>

@@ -25,45 +25,86 @@ Getting Started with Rust Extensions
 
 TIRx is designed around the idea that "everything is a plugin": compiler
 features can be provided by separately built libraries, using the same IR and
-registration interfaces as built-in features. This chapter puts that idea into practice
-with a complex-number extension that loads into TIRx without modifying its
-core library.
+registration interfaces as built-in features. This tutorial shows how to write
+such a library in Rust.
 
-This tutorial shows how to extend TIRx from Rust: define new IR types and
-operators, write a pass that lowers them, and use them from Python like
-built-in features.
+Case Study: Complex Numbers
+---------------------------
 
-On this page, we will first look at why extensions are written in Rust, then
-get ready for the rest of the tutorial: a Python package for the extension and
-the example program it will compile.
+To show "everything is a plugin" in practice, we use complex numbers as an
+example. All complex-number support comes from an extension that loads into
+TIRx without modifying its core library.
 
-Why Rust
---------
+Our goal is that, once the extension is loaded, complex types and operators are
+written in TVMScript just like built-in ones, and functions that use them
+compile with TIRx. For example, the following function multiplies two complex
+tensors element by element. ``A`` and ``B`` hold the real and imaginary parts
+of the first tensor, ``C`` and ``D`` those of the second. We will compile and
+run it at the end of the tutorial.
 
-TIRx is built on a stable C++ library for its IR, analysis, transformations,
-and code generation. In most cases, you work with it from Python: tensor
-programs are written as Python functions in TVMScript, then compiled and run
-directly.
+.. literalinclude:: ../../examples/extension/run_example.py
+   :language: python
+   :start-after: # begin kernel
+   :end-before: # end kernel
 
-With agents, compiler development iterates quickly. Along the way, a project may
-need new types and operators to describe its own concepts, such as a new number
-format or a hardware feature, and passes that lower them to what the backend
-supports. To support this, TIRx provides the ``tvm-tirx`` crate, with which you
-define new types, operators, and passes in Rust on the same IR objects as C++
-and Python.
+``my_ext`` is the extension's Python package, which holds the builders of its
+type and operators; :doc:`using_ir_extensions` shows how it provides them.
+``z``, ``w``, and ``product`` are complex values that exist only in the IR.
+The function's inputs and outputs are ordinary ``float32`` tensors, so no
+runtime storage format for complex numbers is needed.
 
-With the ``tvm-tirx`` crate, users can extend TIRx in separate Rust libraries.
-Each extension builds and loads on its own, without changing the C++ library, so
-the C++ core stays stable while the extension iterates quickly. Once loaded, its
-types and operators can be written in TVMScript and its passes can run in Python
-compilation pipelines, just like built-in ones.
+Code generation has no complex type, so by the time the function reaches the
+backend, every complex value must be a pair of ``float32`` values. Expanding
+complex multiplication as
+
+.. math::
+
+   (a + bi)(c + di) = (ac - bd) + (ad + bc)i
+
+gives the loop we want the compiler to produce:
+
+.. code-block:: python
+
+   for i in range(N):
+       z_re: T.let[T.float32] = A[i]
+       z_im: T.let[T.float32] = B[i]
+       w_re: T.let[T.float32] = C[i]
+       w_im: T.let[T.float32] = D[i]
+       product_re: T.let[T.float32] = z_re * w_re - z_im * w_im
+       product_im: T.let[T.float32] = z_re * w_im + z_im * w_re
+       R[i] = product_re
+       Im[i] = product_im
+
+``z``, ``w``, and ``product`` have each become a pair of variables for the real
+and imaginary parts, and only scalar arithmetic remains.
+
+To support complex numbers as a custom type, we need:
+
+1. **A type.** For TIRx to recognize complex values, a complex type, the type
+   of ``z``, ``w``, and ``product``.
+2. **Operators.** For TIRx to compute on complex values, the operators
+   ``complex``, ``cmul``, ``real``, and ``imag``, which build complex values,
+   multiply them, and read their parts.
+3. **A lowering pass.** For the target to compile the function, ``LowerComplex``,
+   which lowers the complex type and operators to the scalar arithmetic above.
+
+.. note::
+
+   An extension can also add passes that optimize computations on its types,
+   for example to simplify a product with a known real factor. They are written
+   the same way as the lowering pass, so the example shows only the latter.
+
+The rest of this page sets up the extension's Python package.
+:doc:`defining_ir_extensions` then defines the type, operators, and pass, and
+:doc:`using_ir_extensions` compiles and runs the function.
 
 Setting Up the Project
 ----------------------
 
-An extension is shipped as a Python package that contains its Rust library, so
-it is installed and imported like any other package. The example package,
-``my-ext``, has this layout:
+An extension can be shipped as a Python package that contains its Rust library
+(or written in pure Python, like the version shown beside Rust in
+:doc:`defining_ir_extensions`), so it can be installed and imported like any
+other package. The example package, ``my-ext``, has this layout:
 
 .. code-block:: text
 
@@ -97,32 +138,4 @@ The package depends on ``apache-tvm-tirx`` at run time; disabling build
 isolation keeps its native build aligned with these sources instead of
 installing a released package in a temporary build environment.
 
-Case Study: Complex Numbers
----------------------------
-
-To show how to define new types, operators, and passes, we will use complex
-numbers as a running example throughout this tutorial: a complex type, operators
-that build and multiply complex values, and a pass that expands complex
-multiplication into real arithmetic:
-
-.. math::
-
-   (a + bi)(c + di) = (ac - bd) + (ad + bc)i.
-
-The following function multiplies two tensors of complex numbers element by
-element. ``A`` and ``B`` hold the real and imaginary parts of the first operand,
-``C`` and ``D`` those of the second:
-
-.. literalinclude:: ../../examples/extension/run_example.py
-   :language: python
-   :start-after: # begin kernel
-   :end-before: # end kernel
-
-``my_ext`` is the extension's Python package, which holds the builders of its
-type and operators; :doc:`using_ir_extensions` shows how it provides them.
-``z``, ``w``, and ``product`` are complex values that exist only in the IR.
-The function's inputs and outputs are ordinary ``float32`` tensors, so no
-runtime storage format for complex numbers is needed.
-
-Next, :doc:`defining_ir_extensions` defines the type, operators, and pass this
-function uses, and :doc:`using_ir_extensions` compiles and runs it.
+Next, :doc:`defining_ir_extensions` walks through the extension's Rust library.

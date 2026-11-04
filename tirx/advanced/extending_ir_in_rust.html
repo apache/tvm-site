@@ -302,51 +302,18 @@
 
 
 
-
-
-
-<div class="dropdown dropdown-download-buttons">
-  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
-    <i class="fas fa-download"></i>
-  </button>
-  <ul class="dropdown-menu">
-      
-      
-      
-      <li><a href="../_sources/advanced/extending_ir_in_rust.rst" target="_blank"
-   class="btn btn-sm btn-download-source-button dropdown-item"
-   title="Download source file"
-   data-bs-placement="left" data-bs-toggle="tooltip"
+<a href="https://github.com/apache/tvm-tirx/blob/main/docs/advanced/extending_ir_in_rust.rst" target="_blank"
+   class="btn btn-sm btn-source-link-button pst-navbar-icon"
+   title="Source file on GitHub"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
-  <i class="fas fa-file"></i>
+  <i class="fas fa-file-code"></i>
   </span>
-<span class="btn__text-container">.rst</span>
+
 </a>
-</li>
-      
-      
-      
-      
-      <li>
-<button onclick="window.print()"
-  class="btn btn-sm btn-download-pdf-button dropdown-item"
-  title="Print to PDF"
-  data-bs-placement="left" data-bs-toggle="tooltip"
->
-  
-
-<span class="btn__icon-container">
-  <i class="fas fa-file-pdf"></i>
-  </span>
-<span class="btn__text-container">.pdf</span>
-</button>
-</li>
-      
-  </ul>
-</div>
 
 
 
@@ -406,9 +373,8 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-rust">Why Rust</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-project">Setting Up the Project</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-complex-numbers">Case Study: Complex Numbers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-project">Setting Up the Project</a></li>
 </ul>
             </nav>
         </div>
@@ -429,38 +395,91 @@
 </div>
 <p>TIRx is designed around the idea that “everything is a plugin”: compiler
 features can be provided by separately built libraries, using the same IR and
-registration interfaces as built-in features. This chapter puts that idea into practice
-with a complex-number extension that loads into TIRx without modifying its
-core library.</p>
-<p>This tutorial shows how to extend TIRx from Rust: define new IR types and
-operators, write a pass that lowers them, and use them from Python like
-built-in features.</p>
-<p>On this page, we will first look at why extensions are written in Rust, then
-get ready for the rest of the tutorial: a Python package for the extension and
-the example program it will compile.</p>
-<section id="why-rust">
-<h2>Why Rust<a class="headerlink" href="#why-rust" title="Link to this heading">#</a></h2>
-<p>TIRx is built on a stable C++ library for its IR, analysis, transformations,
-and code generation. In most cases, you work with it from Python: tensor
-programs are written as Python functions in TVMScript, then compiled and run
-directly.</p>
-<p>With agents, compiler development iterates quickly. Along the way, a project may
-need new types and operators to describe its own concepts, such as a new number
-format or a hardware feature, and passes that lower them to what the backend
-supports. To support this, TIRx provides the <code class="docutils literal notranslate"><span class="pre">tvm-tirx</span></code> crate, with which you
-define new types, operators, and passes in Rust on the same IR objects as C++
-and Python.</p>
-<p>With the <code class="docutils literal notranslate"><span class="pre">tvm-tirx</span></code> crate, users can extend TIRx in separate Rust libraries.
-Each extension builds and loads on its own, without changing the C++ library, so
-the C++ core stays stable while the extension iterates quickly. Once loaded, its
-types and operators can be written in TVMScript and its passes can run in Python
-compilation pipelines, just like built-in ones.</p>
+registration interfaces as built-in features. This tutorial shows how to write
+such a library in Rust.</p>
+<section id="case-study-complex-numbers">
+<h2>Case Study: Complex Numbers<a class="headerlink" href="#case-study-complex-numbers" title="Link to this heading">#</a></h2>
+<p>To show “everything is a plugin” in practice, we use complex numbers as an
+example. All complex-number support comes from an extension that loads into
+TIRx without modifying its core library.</p>
+<p>Our goal is that, once the extension is loaded, complex types and operators are
+written in TVMScript just like built-in ones, and functions that use them
+compile with TIRx. For example, the following function multiplies two complex
+tensors element by element. <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> hold the real and imaginary parts
+of the first tensor, <code class="docutils literal notranslate"><span class="pre">C</span></code> and <code class="docutils literal notranslate"><span class="pre">D</span></code> those of the second. We will compile and
+run it at the end of the tutorial.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">16</span>
+
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">complex_product</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
+    <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
+    <span class="n">C</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
+    <span class="n">D</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
+    <span class="n">Im</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
+<span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">complex</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">complex</span><span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">product</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">cmul</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+        <span class="n">Im</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+
+
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">my_ext</span></code> is the extension’s Python package, which holds the builders of its
+type and operators; <a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> shows how it provides them.
+<code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>, and <code class="docutils literal notranslate"><span class="pre">product</span></code> are complex values that exist only in the IR.
+The function’s inputs and outputs are ordinary <code class="docutils literal notranslate"><span class="pre">float32</span></code> tensors, so no
+runtime storage format for complex numbers is needed.</p>
+<p>Code generation has no complex type, so by the time the function reaches the
+backend, every complex value must be a pair of <code class="docutils literal notranslate"><span class="pre">float32</span></code> values. Expanding
+complex multiplication as</p>
+<div class="math notranslate nohighlight">
+\[(a + bi)(c + di) = (ac - bd) + (ad + bc)i\]</div>
+<p>gives the loop we want the compiler to produce:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="n">z_re</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">let</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">z_im</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">let</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">w_re</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">let</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">w_im</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">let</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">product_re</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">let</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">z_re</span> <span class="o">*</span> <span class="n">w_re</span> <span class="o">-</span> <span class="n">z_im</span> <span class="o">*</span> <span class="n">w_im</span>
+    <span class="n">product_im</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">let</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">z_re</span> <span class="o">*</span> <span class="n">w_im</span> <span class="o">+</span> <span class="n">z_im</span> <span class="o">*</span> <span class="n">w_re</span>
+    <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">product_re</span>
+    <span class="n">Im</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">product_im</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>, and <code class="docutils literal notranslate"><span class="pre">product</span></code> have each become a pair of variables for the real
+and imaginary parts, and only scalar arithmetic remains.</p>
+<p>To support complex numbers as a custom type, we need:</p>
+<ol class="arabic simple">
+<li><p><strong>A type.</strong> For TIRx to recognize complex values, a complex type, the type
+of <code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>, and <code class="docutils literal notranslate"><span class="pre">product</span></code>.</p></li>
+<li><p><strong>Operators.</strong> For TIRx to compute on complex values, the operators
+<code class="docutils literal notranslate"><span class="pre">complex</span></code>, <code class="docutils literal notranslate"><span class="pre">cmul</span></code>, <code class="docutils literal notranslate"><span class="pre">real</span></code>, and <code class="docutils literal notranslate"><span class="pre">imag</span></code>, which build complex values,
+multiply them, and read their parts.</p></li>
+<li><p><strong>A lowering pass.</strong> For the target to compile the function, <code class="docutils literal notranslate"><span class="pre">LowerComplex</span></code>,
+which lowers the complex type and operators to the scalar arithmetic above.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An extension can also add passes that optimize computations on its types,
+for example to simplify a product with a known real factor. They are written
+the same way as the lowering pass, so the example shows only the latter.</p>
+</div>
+<p>The rest of this page sets up the extension’s Python package.
+<a class="reference internal" href="defining_ir_extensions.html"><span class="doc">Defining Types, Operators, and Passes</span></a> then defines the type, operators, and pass, and
+<a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> compiles and runs the function.</p>
 </section>
 <section id="setting-up-the-project">
 <h2>Setting Up the Project<a class="headerlink" href="#setting-up-the-project" title="Link to this heading">#</a></h2>
-<p>An extension is shipped as a Python package that contains its Rust library, so
-it is installed and imported like any other package. The example package,
-<code class="docutils literal notranslate"><span class="pre">my-ext</span></code>, has this layout:</p>
+<p>An extension can be shipped as a Python package that contains its Rust library
+(or written in pure Python, like the version shown beside Rust in
+<a class="reference internal" href="defining_ir_extensions.html"><span class="doc">Defining Types, Operators, and Passes</span></a>), so it can be installed and imported like any
+other package. The example package, <code class="docutils literal notranslate"><span class="pre">my-ext</span></code>, has this layout:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>examples/extension/
 ├── Cargo.toml        # the Rust library, which depends on tvm-tirx
 ├── src/lib.rs        # the type, operators, and pass
@@ -496,47 +515,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 The package depends on <code class="docutils literal notranslate"><span class="pre">apache-tvm-tirx</span></code> at run time; disabling build
 isolation keeps its native build aligned with these sources instead of
 installing a released package in a temporary build environment.</p>
-</section>
-<section id="case-study-complex-numbers">
-<h2>Case Study: Complex Numbers<a class="headerlink" href="#case-study-complex-numbers" title="Link to this heading">#</a></h2>
-<p>To show how to define new types, operators, and passes, we will use complex
-numbers as a running example throughout this tutorial: a complex type, operators
-that build and multiply complex values, and a pass that expands complex
-multiplication into real arithmetic:</p>
-<div class="math notranslate nohighlight">
-\[(a + bi)(c + di) = (ac - bd) + (ad + bc)i.\]</div>
-<p>The following function multiplies two tensors of complex numbers element by
-element. <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> hold the real and imaginary parts of the first operand,
-<code class="docutils literal notranslate"><span class="pre">C</span></code> and <code class="docutils literal notranslate"><span class="pre">D</span></code> those of the second:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">16</span>
-
-
-<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">complex_product</span><span class="p">(</span>
-    <span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
-    <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
-    <span class="n">C</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
-    <span class="n">D</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
-    <span class="n">R</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
-    <span class="n">Im</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">"float32"</span><span class="p">),</span>
-<span class="p">):</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">complex</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="n">w</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">complex</span><span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="n">product</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">cmul</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
-        <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
-        <span class="n">Im</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_ext</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
-
-
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">my_ext</span></code> is the extension’s Python package, which holds the builders of its
-type and operators; <a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> shows how it provides them.
-<code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>, and <code class="docutils literal notranslate"><span class="pre">product</span></code> are complex values that exist only in the IR.
-The function’s inputs and outputs are ordinary <code class="docutils literal notranslate"><span class="pre">float32</span></code> tensors, so no
-runtime storage format for complex numbers is needed.</p>
-<p>Next, <a class="reference internal" href="defining_ir_extensions.html"><span class="doc">Defining Types, Operators, and Passes</span></a> defines the type, operators, and pass this
-function uses, and <a class="reference internal" href="using_ir_extensions.html"><span class="doc">Using and Compiling the Extension</span></a> compiles and runs it.</p>
+<p>Next, <a class="reference internal" href="defining_ir_extensions.html"><span class="doc">Defining Types, Operators, and Passes</span></a> walks through the extension’s Rust library.</p>
 </section>
 </section>
 
@@ -587,9 +566,8 @@ function uses, and <a class="reference internal" href="using_ir_extensions.html"
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-rust">Why Rust</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-project">Setting Up the Project</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-complex-numbers">Case Study: Complex Numbers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-project">Setting Up the Project</a></li>
 </ul>
   </nav></div>
 
