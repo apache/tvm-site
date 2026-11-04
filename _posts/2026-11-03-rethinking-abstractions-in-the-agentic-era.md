@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Rethinking the ML Compiler Foundation for the Agentic Era"
+title: "Rethinking Abstractions in the Agentic Era: Towards a DSL and Compiler Foundation for Agentic Kernel Development"
 date: 2026-11-03
 author: "Apache TVM Community"
 ---
