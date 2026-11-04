@@ -269,4 +269,5 @@ This post summarizes work by many contributors across the TVM and broader ML com
 
 ## Links
 
-- GitHub (work in progress): [https://github.com/apache/tvm-tirx/](https://github.com/apache/tvm-tirx/)
+- Documentation: [TIRx documentation](https://tvm.apache.org/tirx/)
+- GitHub: [apache/tvm-tirx](https://github.com/apache/tvm-tirx/)
