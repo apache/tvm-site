@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["analysis","function","index_map","layout","op","op_attr","tensor","thread_scope","tile","transform","type"],"struct":["StructuralMutatorWithConstraintContext","StructuralMutatorWithConstraintContextObj","StructuralVisitorWithConstraintContext","StructuralVisitorWithConstraintContextObj"]};
+window.SIDEBAR_ITEMS = {"mod":["analysis","function","index_map","layout","op","op_attr","structural","tensor","thread_scope","tile","transform","type"]};
