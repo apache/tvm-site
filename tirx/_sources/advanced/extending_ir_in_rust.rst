@@ -20,8 +20,8 @@ Getting Started with Rust Extensions
 
 .. note::
 
-   All the code in this tutorial is in the repository, as the Python package
-   `examples/extension <https://github.com/apache/tvm-tirx/tree/main/examples/extension>`_.
+   All the code in this tutorial is in the repository, as the Python packages in
+   `examples/extension_guides <https://github.com/apache/tvm-tirx/tree/main/examples/extension_guides>`_.
 
 TIRx is designed around the idea that "everything is a plugin": compiler
 features can be provided by separately built libraries, using the same IR and
@@ -42,7 +42,7 @@ tensors element by element. ``A`` and ``B`` hold the real and imaginary parts
 of the first tensor, ``C`` and ``D`` those of the second. We will compile and
 run it at the end of the tutorial.
 
-.. literalinclude:: ../../examples/extension/run_example.py
+.. literalinclude:: ../../examples/extension_guides/run_example.py
    :language: python
    :start-after: # begin kernel
    :end-before: # end kernel
@@ -108,20 +108,22 @@ other package. The example package, ``my-ext``, has this layout:
 
 .. code-block:: text
 
-   examples/extension/
-   ├── Cargo.toml        # the Rust library, which depends on tvm-tirx
-   ├── src/lib.rs        # the type, operators, and pass
-   ├── CMakeLists.txt    # builds the library with cargo and installs it into my_ext
-   ├── pyproject.toml    # the Python package, built with scikit-build-core
-   ├── python/my_ext/    # loads the library and registers a compilation pipeline
-   └── run_example.py    # compiles and runs a function that uses the extension
+   examples/extension_guides/
+   ├── rust/                 # the Rust version of my-ext
+   │   ├── Cargo.toml        # the Rust library, which depends on tvm-tirx
+   │   ├── src/lib.rs        # the type, operators, and pass
+   │   ├── CMakeLists.txt    # builds the library with cargo and installs it into my_ext
+   │   ├── pyproject.toml    # the Python package, built with scikit-build-core
+   │   └── my_ext/           # loads the library and registers a compilation pipeline
+   ├── python/               # the Python version of my-ext, with the same my_ext package
+   └── run_example.py        # compiles and runs a function that uses the extension
 
 The Rust library is an ordinary crate that builds a shared library. It depends
 on the `tvm-tirx <https://crates.io/crates/tvm-tirx>`_ crate, which re-exports
 TVM FFI as ``tvm_tirx::tvm_ffi``, and also lists ``tvm-ffi`` itself, because
 the code that ``#[dispatch]`` generates refers to the crate by that name:
 
-.. literalinclude:: ../../examples/extension/Cargo.toml
+.. literalinclude:: ../../examples/extension_guides/rust/Cargo.toml
    :language: toml
    :start-at: [lib]
 
@@ -131,7 +133,7 @@ install the extension from the repository root in the same Python environment:
 .. code-block:: bash
 
    uv pip install scikit-build-core
-   uv pip install --no-build-isolation --no-deps ./examples/extension
+   uv pip install --no-build-isolation --no-deps ./examples/extension_guides/rust
 
 The example uses this checkout's Rust crate and pinned TVM FFI sources.
 The package depends on ``apache-tvm-tirx`` at run time; disabling build

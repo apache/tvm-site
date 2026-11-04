@@ -21,20 +21,22 @@ Defining Types, Operators, and Passes
 In this chapter, we define the extension set up in :doc:`extending_ir_in_rust`:
 a complex type, four operators, and a pass that lowers them to scalar
 arithmetic. Each step is shown in Rust, from the library
-`src/lib.rs <https://github.com/apache/tvm-tirx/blob/main/examples/extension/src/lib.rs>`_,
-and in Python, from the module
-`my_ext_py/my_ext.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension/my_ext_py/my_ext.py>`_.
+`rust/src/lib.rs <https://github.com/apache/tvm-tirx/blob/main/examples/extension_guides/rust/src/lib.rs>`_,
+and in Python, from the package
+`python/my_ext/__init__.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension_guides/python/my_ext/__init__.py>`_.
 Both files also contain the validation and traversal helpers that the excerpts
 use.
 
-The two versions define the same names, so the example program runs with
-either. The Python version is a single module that needs no build, which makes
-it a quick way to try out an extension before writing it in Rust. To run the
-example with it, put its directory on ``PYTHONPATH``:
+The two versions are Python projects that install the same package,
+``my_ext``, with the same names, so the example program runs with either. The
+Python version needs no build, which makes it a quick way to try out an
+extension before writing it in Rust. To run the example with it, install it in
+place of the Rust version:
 
 .. code-block:: bash
 
-   PYTHONPATH=examples/extension/my_ext_py python examples/extension/run_example.py
+   uv pip install --no-deps ./examples/extension_guides/python
+   python examples/extension_guides/run_example.py
 
 .. note::
 
@@ -57,14 +59,14 @@ real and imaginary parts, as in ``TensorType``:
 
    .. group-tab:: Rust
 
-      .. literalinclude:: ../../examples/extension/src/lib.rs
+      .. literalinclude:: ../../examples/extension_guides/rust/src/lib.rs
          :language: rust
          :start-after: // begin type
          :end-before: // end type
 
    .. group-tab:: Python
 
-      .. literalinclude:: ../../examples/extension/my_ext_py/my_ext.py
+      .. literalinclude:: ../../examples/extension_guides/python/my_ext/__init__.py
          :language: python
          :start-after: # begin type
          :end-before: # end type
@@ -165,14 +167,14 @@ external state. The ``complex`` operator is registered as follows:
 
    .. group-tab:: Rust
 
-      .. literalinclude:: ../../examples/extension/src/lib.rs
+      .. literalinclude:: ../../examples/extension_guides/rust/src/lib.rs
          :language: rust
          :start-after: // begin constructor
          :end-before: // end constructor
 
    .. group-tab:: Python
 
-      .. literalinclude:: ../../examples/extension/my_ext_py/my_ext.py
+      .. literalinclude:: ../../examples/extension_guides/python/my_ext/__init__.py
          :language: python
          :start-after: # begin constructor
          :end-before: # end constructor
@@ -207,14 +209,14 @@ and computes the result type:
 
    .. group-tab:: Rust
 
-      .. literalinclude:: ../../examples/extension/src/lib.rs
+      .. literalinclude:: ../../examples/extension_guides/rust/src/lib.rs
          :language: rust
          :start-after: // begin inference
          :end-before: // end inference
 
    .. group-tab:: Python
 
-      .. literalinclude:: ../../examples/extension/my_ext_py/my_ext.py
+      .. literalinclude:: ../../examples/extension_guides/python/my_ext/__init__.py
          :language: python
          :pyobject: _infer_complex
 
@@ -280,7 +282,7 @@ The rewrites are:
 
    .. group-tab:: Rust
 
-      .. literalinclude:: ../../examples/extension/src/lib.rs
+      .. literalinclude:: ../../examples/extension_guides/rust/src/lib.rs
          :language: rust
          :start-after: // begin lowering
          :end-before: // end lowering
@@ -297,7 +299,7 @@ The rewrites are:
 
    .. group-tab:: Python
 
-      .. literalinclude:: ../../examples/extension/my_ext_py/my_ext.py
+      .. literalinclude:: ../../examples/extension_guides/python/my_ext/__init__.py
          :language: python
          :pyobject: _Lowering
 
@@ -322,14 +324,14 @@ The pass is built from an ordinary named function:
 
    .. group-tab:: Rust
 
-      .. literalinclude:: ../../examples/extension/src/lib.rs
+      .. literalinclude:: ../../examples/extension_guides/rust/src/lib.rs
          :language: rust
          :start-after: // begin function callback
          :end-before: // end function callback
 
    .. group-tab:: Python
 
-      .. literalinclude:: ../../examples/extension/my_ext_py/my_ext.py
+      .. literalinclude:: ../../examples/extension_guides/python/my_ext/__init__.py
          :language: python
          :pyobject: _lower_function
 
@@ -383,14 +385,14 @@ Finally, the function becomes a pass:
 
    .. group-tab:: Rust
 
-      .. literalinclude:: ../../examples/extension/src/lib.rs
+      .. literalinclude:: ../../examples/extension_guides/rust/src/lib.rs
          :language: rust
          :start-after: // begin pass
          :end-before: // end pass
 
    .. group-tab:: Python
 
-      .. literalinclude:: ../../examples/extension/my_ext_py/my_ext.py
+      .. literalinclude:: ../../examples/extension_guides/python/my_ext/__init__.py
          :language: python
          :pyobject: lower_complex
 

@@ -15,10 +15,11 @@ Base Type
 - ``public Object``
 
 
-Derived Type
-************
+Derived Types
+*************
 
 - ``public tvm::ffi::detail::StructuralMutatorEngineBase< StructuralMutatorObj >``
+- ``public tvm::tirx::StructuralMutatorWithConstraintContextObj`` (:ref:`exhale_class_classtvm_1_1tirx_1_1StructuralMutatorWithConstraintContextObj`)
 
 
 Class Documentation

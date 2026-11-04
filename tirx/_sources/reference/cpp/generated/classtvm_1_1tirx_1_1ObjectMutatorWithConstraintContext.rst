@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public tvm::tirx::StructuralMutatorWithConstraintContextObj`` (:ref:`exhale_class_classtvm_1_1tirx_1_1StructuralMutatorWithConstraintContextObj`)
+- ``public tvm::ffi::detail::StructuralMutatorEngineBase< StructuralMutatorWithConstraintContextObj >``
 
 
 Derived Type

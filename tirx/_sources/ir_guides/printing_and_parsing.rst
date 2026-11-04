@@ -236,6 +236,9 @@ TVMScript function on each call:
 language for this: ``value`` and ``dtype`` are evaluated like any other
 Python name when the builder program runs.
 
+Writing Builder Code
+~~~~~~~~~~~~~~~~~~~~
+
 The builder is also a public API, so we can construct the same function
 directly, without the parser:
 
@@ -249,17 +252,24 @@ to ``add_one``. Hand-written builder code uses the user-facing API, such as
 ``T.serial`` and ``T.assign``, rather than the protocol hooks the parser
 emits.
 
-Writing builder code directly is sometimes helpful because it stays
-**unambiguously in the Python domain**. A plain Python ``for`` or ``if``
-runs while the IR is built, and IR control flow comes only from explicit
-frames such as ``T.serial`` and ``T.if_`` with ``T.then_``. Developers and
-agents therefore know exactly what each line executes.
+Writing builder code directly is sometimes helpful, especially for agents,
+because it stays **unambiguously in the Python domain**. A plain Python
+``for`` or ``if`` runs while the IR is built, and IR control flow comes only
+from explicit frames such as ``T.serial`` and ``T.if_`` with ``T.then_``.
+Developers and agents therefore know exactly what each line executes.
 
-.. note::
+``@T.function.builder`` lets us write builder code as a function, with the
+same signature as ``@T.function``:
 
-   To record source locations, wrap the construction in
-   ``builder.line_trace_scope()``, and each statement then records its
-   source line in ``loc``.
+.. literalinclude:: ../../examples/ir_guides/printing_and_parsing.py
+   :language: python
+   :start-after: # [function_builder.begin]
+   :end-before: # [function_builder.end]
+
+The parameters come from the annotations, and the body runs as plain
+Python. The result is structurally equal to ``add_one``. Each statement
+also records its source line in ``loc``, which raw ``IRBuilder`` code does
+only inside ``builder.line_trace_scope()``.
 
 .. _tvmscript-region-syntax:
 

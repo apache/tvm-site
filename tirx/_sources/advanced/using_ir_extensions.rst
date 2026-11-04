@@ -30,10 +30,10 @@ static init blocks, which run as soon as the library loads. To write them in
 TVMScript, Python also needs a module that holds their builders. Definitions
 under ``tirx.`` go to ``T``, but an extension namespace such as ``my_ext`` is
 published only into a module that the extension declares. The package's
-`__init__.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension/python/my_ext/__init__.py>`_
+`__init__.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension_guides/rust/my_ext/__init__.py>`_
 therefore declares itself as that module before it loads the library:
 
-.. literalinclude:: ../../examples/extension/python/my_ext/__init__.py
+.. literalinclude:: ../../examples/extension_guides/rust/my_ext/__init__.py
    :language: python
    :start-after: # begin load
    :end-before: # end load
@@ -65,7 +65,7 @@ The registered type and operators let the IR express complex values;
 pipeline does not know about the pass, so the package registers a pipeline,
 also named ``my_ext``, that runs it first:
 
-.. literalinclude:: ../../examples/extension/python/my_ext/__init__.py
+.. literalinclude:: ../../examples/extension_guides/rust/my_ext/__init__.py
    :language: python
    :start-after: # begin pipeline
    :end-before: # end pipeline
@@ -75,11 +75,11 @@ also named ``my_ext``, that runs it first:
 Compile the Function
 --------------------
 
-`run_example.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension/run_example.py>`_
+`run_example.py <https://github.com/apache/tvm-tirx/blob/main/examples/extension_guides/run_example.py>`_
 imports ``my_ext``, which loads the library and registers the pipeline, and
 compiles the function from :doc:`extending_ir_in_rust` with it:
 
-.. literalinclude:: ../../examples/extension/run_example.py
+.. literalinclude:: ../../examples/extension_guides/run_example.py
    :language: python
    :start-after: # begin compile
    :end-before: # end compile
@@ -95,7 +95,7 @@ the backend. To check that its rewrite also computes the right numbers, the
 script runs the compiled function on random ``float32`` inputs and compares
 both outputs with NumPy's complex multiplication:
 
-.. literalinclude:: ../../examples/extension/run_example.py
+.. literalinclude:: ../../examples/extension_guides/run_example.py
    :language: python
    :start-after: # begin comparison
    :end-before: # end comparison
@@ -104,7 +104,7 @@ With the package installed as in :doc:`extending_ir_in_rust`, run the script:
 
 .. code-block:: bash
 
-   python examples/extension/run_example.py
+   python examples/extension_guides/run_example.py
 
 A successful run prints:
 

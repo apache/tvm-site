@@ -38,11 +38,10 @@ Program Listing for File structural_mutate_with_constraint_context.h
    namespace tvm {
    namespace tirx {
    
-   class StructuralMutatorWithConstraintContextObj : public ffi::StructuralMapEngineBase {
+   class StructuralMutatorWithConstraintContextObj : public ffi::StructuralMutatorObj {
     public:
      using MutatorObjType = StructuralMutatorWithConstraintContextObj;
      using StateTupleType = std::tuple<const sym::ConstraintContext&>;
-     StructuralMutatorWithConstraintContextObj();
      sym::ConstraintContext constraints;
    
      void AppendConstraint(const sym::Constraint& constraint) {
@@ -76,7 +75,7 @@ Program Listing for File structural_mutate_with_constraint_context.h
    
     protected:
      explicit StructuralMutatorWithConstraintContextObj(const ffi::StructuralMutatorVTable* vtable)
-         : ffi::StructuralMapEngineBase(vtable) {}
+         : ffi::StructuralMutatorObj(vtable) {}
    
      StateTupleType StateTuple() const noexcept { return {constraints}; }
    
@@ -142,23 +141,6 @@ Program Listing for File structural_mutate_with_constraint_context.h
        kStructuralMaybeInplaceMutateWithConstraintContext{
            "__s_maybe_inplace_mutate_with_constraint_context__"};
    }  // namespace type_attr
-   
-   inline StructuralMutatorWithConstraintContextObj::StructuralMutatorWithConstraintContextObj()
-       : StructuralMutatorWithConstraintContextObj([] {
-           static const ffi::StructuralMutatorVTable table{
-               [](ffi::StructuralMutatorObj* self, ffi::AnyView value) noexcept {
-                 return ffi::details::ExpectedUnsafe::MoveToTVMFFIAny(
-                     static_cast<StructuralMutatorWithConstraintContextObj*>(self)
-                         ->DefaultMutateExpected(value, ffi::InplaceMode::kDisallow));
-               },
-               [](ffi::StructuralMutatorObj* self, ffi::AnyView value) noexcept {
-                 return ffi::details::ExpectedUnsafe::MoveToTVMFFIAny(
-                     static_cast<StructuralMutatorWithConstraintContextObj*>(self)
-                         ->DefaultMutateExpected(value, ffi::InplaceMode::kAllow));
-               },
-               DispatchVarRemapGet, DispatchVarRemapSet};
-           return &table;
-         }()) {}
    
    inline ffi::Expected<ffi::UnchangedOr<ffi::Any>>
    StructuralMutatorWithConstraintContextObj::DefaultMutateExpected(ffi::AnyView value,

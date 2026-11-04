@@ -374,6 +374,7 @@
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#print-and-parse-back">Print and Parse Back</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-the-parser-works">How the Parser Works</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#writing-builder-code">Writing Builder Code</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#region-syntax">Region Syntax</a></li>
 </ul>
 </li>
@@ -623,6 +624,8 @@ TVMScript function on each call:</p>
 <code class="docutils literal notranslate"><span class="pre">T.float32(3.0)</span></code> to <code class="docutils literal notranslate"><span class="pre">float32</span></code> tensors. The parser needs no template
 language for this: <code class="docutils literal notranslate"><span class="pre">value</span></code> and <code class="docutils literal notranslate"><span class="pre">dtype</span></code> are evaluated like any other
 Python name when the builder program runs.</p>
+<section id="writing-builder-code">
+<h3>Writing Builder Code<a class="headerlink" href="#writing-builder-code" title="Link to this heading">#</a></h3>
 <p>The builder is also a public API, so we can construct the same function
 directly, without the parser:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script.ir_builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRBuilder</span>
@@ -643,17 +646,24 @@ directly, without the parser:</p>
 to <code class="docutils literal notranslate"><span class="pre">add_one</span></code>. Hand-written builder code uses the user-facing API, such as
 <code class="docutils literal notranslate"><span class="pre">T.serial</span></code> and <code class="docutils literal notranslate"><span class="pre">T.assign</span></code>, rather than the protocol hooks the parser
 emits.</p>
-<p>Writing builder code directly is sometimes helpful because it stays
-<strong>unambiguously in the Python domain</strong>. A plain Python <code class="docutils literal notranslate"><span class="pre">for</span></code> or <code class="docutils literal notranslate"><span class="pre">if</span></code>
-runs while the IR is built, and IR control flow comes only from explicit
-frames such as <code class="docutils literal notranslate"><span class="pre">T.serial</span></code> and <code class="docutils literal notranslate"><span class="pre">T.if_</span></code> with <code class="docutils literal notranslate"><span class="pre">T.then_</span></code>. Developers and
-agents therefore know exactly what each line executes.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>To record source locations, wrap the construction in
-<code class="docutils literal notranslate"><span class="pre">builder.line_trace_scope()</span></code>, and each statement then records its
-source line in <code class="docutils literal notranslate"><span class="pre">loc</span></code>.</p>
+<p>Writing builder code directly is sometimes helpful, especially for agents,
+because it stays <strong>unambiguously in the Python domain</strong>. A plain Python
+<code class="docutils literal notranslate"><span class="pre">for</span></code> or <code class="docutils literal notranslate"><span class="pre">if</span></code> runs while the IR is built, and IR control flow comes only
+from explicit frames such as <code class="docutils literal notranslate"><span class="pre">T.serial</span></code> and <code class="docutils literal notranslate"><span class="pre">T.if_</span></code> with <code class="docutils literal notranslate"><span class="pre">T.then_</span></code>.
+Developers and agents therefore know exactly what each line executes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">&#64;T.function.builder</span></code> lets us write builder code as a function, with the
+same signature as <code class="docutils literal notranslate"><span class="pre">&#64;T.function</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">builder</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">serial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">as</span> <span class="n">i</span><span class="p">:</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
 </div>
+<p>The parameters come from the annotations, and the body runs as plain
+Python. The result is structurally equal to <code class="docutils literal notranslate"><span class="pre">add_one</span></code>. Each statement
+also records its source line in <code class="docutils literal notranslate"><span class="pre">loc</span></code>, which raw <code class="docutils literal notranslate"><span class="pre">IRBuilder</span></code> code does
+only inside <code class="docutils literal notranslate"><span class="pre">builder.line_trace_scope()</span></code>.</p>
+</section>
 <section id="region-syntax">
 <span id="tvmscript-region-syntax"></span><h3>Region Syntax<a class="headerlink" href="#region-syntax" title="Link to this heading">#</a></h3>
 <p>Regions are built with frames in the same way. A region operator such as
@@ -765,6 +775,7 @@ highlighting.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#print-and-parse-back">Print and Parse Back</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-the-parser-works">How the Parser Works</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#writing-builder-code">Writing Builder Code</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#region-syntax">Region Syntax</a></li>
 </ul>
 </li>

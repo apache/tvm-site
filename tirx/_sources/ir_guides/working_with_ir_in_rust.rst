@@ -669,6 +669,20 @@ replacement before any use of ``i``.
    ``to_array()`` for an independent sequence of fact handles.
    |structural_walk_with_constraint_context|_ supplies the same context to
    pre- or post-order observers and handles descent through the visitor engine.
+   |structural_mutate_with_constraint_context|_ uses
+   ``StructuralMutatorWithConstraintContextView`` for explicit mutation descent.
+   ``mutator.base().constraints()`` exposes facts derived from rewritten bindings,
+   predicates, and loop ranges. Call ``default_mutate(self, value)`` to collect
+   those facts while descending; a replacement returned directly skips that
+   node's descent. As with ordinary mutation, moved unique roots may reuse storage
+   and retained roots copy.
+   |structural_map_with_constraint_context|_ provides ordered mapping with the
+   same lexical facts. Callbacks receive a leading prefix of
+   ``(value, &ConstraintContext, DefRegionKind)`` and return a replacement or
+   ``Unchanged``. ``WalkOrder::PreOrder`` descends into replacement children;
+   ``PostOrder`` invokes the mapper after children are rewritten and the node's
+   constraint scope is restored. Facts for later siblings come from the
+   resulting bindings and expressions.
    Typed contexts are neither ``Send`` nor ``Sync``; erased FFI handles retain
    the ordinary contract against concurrent access.
 
@@ -748,6 +762,8 @@ Quick Reference
 .. _structural_visit_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/fn.structural_visit_with_constraint_context.html
 .. |structural_walk_with_constraint_context| replace:: ``structural_walk_with_constraint_context``
 .. _structural_walk_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_walk_with_constraint_context/fn.structural_walk_with_constraint_context.html
+.. |structural_mutate_with_constraint_context| replace:: ``structural_mutate_with_constraint_context``
+.. _structural_mutate_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_mutate_with_constraint_context/fn.structural_mutate_with_constraint_context.html
 .. |StructuralVisitorWithConstraintContextView| replace:: ``StructuralVisitorWithConstraintContextView``
 .. _StructuralVisitorWithConstraintContextView: ../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/type.StructuralVisitorWithConstraintContextView.html
 .. |match_any!| replace:: ``match_any!``
@@ -758,3 +774,5 @@ Quick Reference
 .. _downcast_ref: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.downcast_ref
 .. |register_global_typed| replace:: ``Function::register_global_typed``
 .. _register_global_typed: ../reference/rust/generated/tvm_ffi/function/struct.Function.html#method.register_global_typed
+.. |structural_map_with_constraint_context| replace:: ``structural_map_with_constraint_context``
+.. _structural_map_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_map_with_constraint_context/fn.structural_map_with_constraint_context.html

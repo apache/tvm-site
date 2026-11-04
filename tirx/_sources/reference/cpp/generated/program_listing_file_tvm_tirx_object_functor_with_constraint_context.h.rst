@@ -78,7 +78,10 @@ Program Listing for File object_functor_with_constraint_context.h
    };
    
    class TVM_TIRX_DLL ObjectMutatorWithConstraintContext
-       : public StructuralMutatorWithConstraintContextObj {
+       : public ffi::detail::StructuralMutatorEngineBase<StructuralMutatorWithConstraintContextObj> {
+     using EngineBase =
+         ffi::detail::StructuralMutatorEngineBase<StructuralMutatorWithConstraintContextObj>;
+   
     public:
      ObjectMutatorWithConstraintContext() : ObjectMutatorWithConstraintContext(GlobalVTable()) {}
      ObjectMutatorWithConstraintContext(const ObjectMutatorWithConstraintContext&) = delete;
@@ -102,7 +105,7 @@ Program Listing for File object_functor_with_constraint_context.h
          const ffi::Object*, ObjectMutatorWithConstraintContext*, ffi::InplaceMode)>;
    
      explicit ObjectMutatorWithConstraintContext(const VTable* table)
-         : StructuralMutatorWithConstraintContextObj(StructuralVTable()), native_vtable_(table) {}
+         : EngineBase(StructuralVTable()), native_vtable_(table) {}
    
      static void InitVTable(VTable* table) {}
    
