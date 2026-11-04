@@ -10,7 +10,7 @@ author: "Apache TVM Community"
 ## TL;DR
 {: #tldr }
 
-In our [previous community effort](https://blog.mlc.ai/2026/09/29/tirx-harness-an-open-compiler-harness-for-agentic-gpu-programming), we showed that with little more than Opus 5.5 and a few presses of Enter, we could produce production-quality B200 kernels that significantly outperform existing baselines.
+In our [previous community effort](https://blog.mlc.ai/2026/09/29/tirx-harness-an-open-compiler-harness-for-agentic-gpu-programming), we showed that by leveraging Claude/Codex with just a few presses of Enter, we could produce production-quality B200 kernels that significantly outperform existing baselines.
 
 This led us, as ML compiler practitioners, to revisit a fundamental question from first principles: **Do we still need our beloved compilers?**
 
