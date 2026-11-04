@@ -26,6 +26,7 @@ converted or copied along the way. This guide covers:
 - **TVM-FFI object system**: how IR nodes are represented and used in Rust.
 - **Structural utilities**: walk, map, and compare programs.
 - **Visitors and mutators**: keep state and control the traversal.
+- **Constraint-aware traversal**: use the facts that hold at each node.
 
 .. note::
 
@@ -532,8 +533,11 @@ The output is:
    i Simple
 
 ``DefRegionKind::None`` marks a use site; ``Pattern`` and ``Simple`` are
-the two kinds of definition site. ``structural_map`` callbacks take the
-same trailing parameter.
+the two kinds of definition site. A parameter is a ``Pattern`` definition:
+everything inside it is defined there, including the ``n`` in its shape.
+The loop variable ``i`` is a ``Simple`` definition: only the variable
+itself is defined. ``structural_map`` callbacks take the same trailing
+parameter.
 
 Structural Map
 ~~~~~~~~~~~~~~
@@ -589,17 +593,15 @@ are structurally equal.
 Visitors and Mutators in Rust
 -----------------------------
 
-Stateful traversals use the same four structural utilities. State lives
-on a |dispatch|_ struct, as in Structural Walk.
-The ``map``, ``visit``, and ``mutate`` prefixes group ``map_*``,
-``visit_*``, and ``mutate_*`` methods. Each attribute declares its
-argument tuple and return type; mutation uses ``MutationView`` as its
-first argument to carry mutation permission through matching.
+A walk callback sees one node at a time. Some traversals need context
+around a node's children, such as the loops that enclose a write. A
+visitor or mutator callback **takes control of the recursion into its
+node's children**: it decides when to descend, so it can set up state
+before and restore it after. State lives on a |dispatch|_ struct, as in
+Structural Walk, with ``visit_*`` methods for |structural_visit|_ and
+``mutate_*`` methods for |structural_mutate|_.
 
-**A visit or mutate callback takes control of its node's children.**
-Let's record the loops around each write. Each handler receives the node
-and can take a ``StructuralVisitorView<'_, Self>`` for recursive traversal;
-the loop stack and collected writes remain on ``self``:
+Let's record the loops around each write:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -612,23 +614,15 @@ The output is:
 
    ['B inside [i]']
 
-``visit_for`` pushes the loop variable, lets ``default_visit(self, loop_)``
-visit the loop's children with their usual traversal, then pops the variable.
-It returns the traversal result, so an interrupt or error from a child
-reaches the caller. The view also provides ``visit(self, child)`` for a
-selected child and ``def_region_kind`` for the current node.
+``visit_for`` pushes the loop variable, visits the loop's children with
+``visitor.default_visit(self, loop_)``, then pops the variable. Returning
+the result passes an interrupt or error from a child back to the caller.
+``visit_store`` records the write and does not descend further. The
+trailing |StructuralVisitorView|_ also provides ``visit(self, child)`` for
+a selected child and ``def_region_kind()`` for the current node.
 
-For mutation, a trailing ``&mut StructuralMutatorView<'_, Self>`` provides
-``def_region_kind()`` and child-mutation methods. A
-``MutationView<'_, For>`` carries the current loop and the engine's
-permission to reuse it. Its typed fields can be borrowed directly; after
-that borrow ends, ``default_mutate`` consumes the handle to recurse with
-the same permission. The returned ``UnchangedOr<Any>`` becomes the common
-``Any`` handler result without discarding an unchanged marker. Reuse still
-requires unique ownership,
-so an alias held by Python remains unchanged. Let's reverse the loop
-by replacing each use of ``i`` with ``n - 1 - i``. As before,
-``.try_into()?`` extracts the built expression or returns its error:
+A mutator works the same way and returns the replacement for each node.
+Let's reverse the loop by replacing each use of ``i`` with ``n - 1 - i``:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -648,10 +642,18 @@ The output is:
        for i in range(n):
            B[n - 1 - i] = A[n - 1 - i] + T.float32(1.0)
 
-``mutate_for`` records the replacement, then
-``default_mutate`` rewrites the loop's children through the
-same struct, so ``mutate_var`` sees the
-replacement before any use of ``i``.
+``mutate_for`` records the replacement for its loop variable, then
+``mutator.default_mutate(self, value)`` rewrites the loop's children
+through the same struct, so ``mutate_var`` sees the replacement before any
+use of ``i``. ``default_mutate`` returns ``UnchangedOr<Any>``, and
+``.map(Into::into)`` turns it into the handler's ``Any`` result.
+
+A mutate handler receives its node as a ``MutationView``, here
+``MutationView<'_, For>``. We read the loop's fields through it, as with
+``value.end`` and ``value.var``, and pass it on to ``default_mutate``,
+which may then update the loop in place instead of copying it. Only a node
+that nothing else holds is updated in place, so ``add_one``, still held by
+Python, stays unchanged.
 
 .. note::
 
@@ -659,32 +661,95 @@ replacement before any use of ``i``.
    ``None``, so the loop's own ``i`` stays a variable. |ObjectIdentity|_
    keys the map by object identity, so only this loop's ``i`` matches.
 
+Constraint-Aware Traversal
+--------------------------
+
+Many rewrites depend on facts that hold at a point in the program: the
+range of a loop variable, or the condition of an enclosing branch.
+Collecting these facts by hand at every node would repeat the same
+bookkeeping in every pass. The ``tvm_tirx::tirx`` module provides
+constraint-aware versions of the four structural utilities, which collect
+the facts for us and hand them to our callbacks as a ``ConstraintContext``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
+
+   * - Utility
+     - Facts reach the callback as
+   * - |structural_walk_with_constraint_context|_
+     - A ``&ConstraintContext`` parameter
+   * - |structural_map_with_constraint_context|_
+     - A ``&ConstraintContext`` parameter
+   * - |structural_visit_with_constraint_context|_
+     - ``visitor.base().constraints()``
+   * - |structural_mutate_with_constraint_context|_
+     - ``mutator.base().constraints()``
+
+Compilers often insert bounds checks to stay safe, such as the
+``if i // 4 < n`` below. Here the loop already guarantees the condition,
+so the check only costs time on every iteration:
+
+.. literalinclude:: ../../examples/ir_guides/working_with_ir_in_rust.py
+   :language: python
+   :start-after: # [add_one_guarded.begin]
+   :end-before: # [add_one_guarded.end]
+
+A walk can check whether each condition is provable from the facts at
+that point:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [check_guard.begin]
+   :end-before: // [check_guard.end]
+
+The output is:
+
+.. code-block:: text
+
+   [True]
+
+The walk passes each ``if`` together with the facts that hold there: the
+loop's range, and that the loop runs. ``sync_constraint_context`` hands
+those facts to the analyzer, which then proves the condition. The branch's
+own condition is not a fact at the ``if`` itself, only inside it.
+
+A map with the same callback shape removes the check by returning the
+branch body in place of the ``if``:
+
+.. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
+   :language: rust
+   :start-after: // [remove_guard.begin]
+   :end-before: // [remove_guard.end]
+
+The output is:
+
+.. code-block:: python
+
+   from __future__ import annotations
+
+   # from tvm_tirx.script import tirx as T
+
+   @T.function
+   def add_one_guarded[n](A: T.Tensor((n, 4), T.float32), B: T.Tensor((n, 4), T.float32)):
+       for i in range(n * 4):
+           B[i // 4, i % 4] = A[i // 4, i % 4] + T.float32(1.0)
+
+Returning ``Unchanged`` keeps an ``if`` the analyzer cannot prove. In
+pre-order, the map then continues into the children of the value it
+returned.
+
+The visit and mutate versions give the same facts to stateful
+traversals. A handler reads them with ``visitor.base().constraints()``
+or ``mutator.base().constraints()``, and ``default_visit`` or
+``default_mutate`` collects the facts of the children as it descends.
+
 .. note::
 
-   |structural_visit_with_constraint_context|_ tracks facts such as loop
-   ranges and branch conditions through the same Rust visitor engine. Its
-   |StructuralVisitorWithConstraintContextView|_ supports explicit descent;
-   ``visitor.base().constraints()`` returns the ordinary owning
-   ``ConstraintContext`` handle to the current facts. Use ``snapshot()`` to retain the visible prefix or
-   ``to_array()`` for an independent sequence of fact handles.
-   |structural_walk_with_constraint_context|_ supplies the same context to
-   pre- or post-order observers and handles descent through the visitor engine.
-   |structural_mutate_with_constraint_context|_ uses
-   ``StructuralMutatorWithConstraintContextView`` for explicit mutation descent.
-   ``mutator.base().constraints()`` exposes facts derived from rewritten bindings,
-   predicates, and loop ranges. Call ``default_mutate(self, value)`` to collect
-   those facts while descending; a replacement returned directly skips that
-   node's descent. As with ordinary mutation, moved unique roots may reuse storage
-   and retained roots copy.
-   |structural_map_with_constraint_context|_ provides ordered mapping with the
-   same lexical facts. Callbacks receive a leading prefix of
-   ``(value, &ConstraintContext, DefRegionKind)`` and return a replacement or
-   ``Unchanged``. ``WalkOrder::PreOrder`` descends into replacement children;
-   ``PostOrder`` invokes the mapper after children are rewritten and the node's
-   constraint scope is restored. Facts for later siblings come from the
-   resulting bindings and expressions.
-   Typed contexts are neither ``Send`` nor ``Sync``; erased FFI handles retain
-   the ordinary contract against concurrent access.
+   A callback reads the context but must not add facts to it. The
+   ``ConstraintContext`` it receives follows the traversal; call
+   ``snapshot()`` to keep the facts at one point, or ``to_array()`` for
+   the individual facts.
 
 With fields, typed callbacks, and the structural utilities, a Rust function
 works with the same IR that Python builds and prints, so an analysis or a
@@ -719,8 +784,13 @@ Quick Reference
    * - |dispatch|_\ ``(prefix, (Carrier, ...), ResultType)``
      - Generates ``dispatch``, a ``match_any!`` over the ``prefix_*``
        methods of a struct
+   * - |structural_visit|_, |structural_mutate|_
+     - Traverse with a dispatcher whose handlers control descent
    * - |StructuralVisitorView|_, |StructuralMutatorView|_
      - Recurse with the same dispatcher and current definition region
+   * - |structural_walk_with_constraint_context|_ and the map, visit, and
+       mutate versions
+     - Traverse with the facts that hold at each node
    * - |static_init_block!|_, |register_global_typed|_
      - Registers Rust functions as global functions
 

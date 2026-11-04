@@ -389,6 +389,7 @@
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visitors-and-mutators-in-rust">Visitors and Mutators in Rust</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#constraint-aware-traversal">Constraint-Aware Traversal</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-reference">Quick Reference</a></li>
 </ul>
             </nav>
@@ -411,6 +412,7 @@ converted or copied along the way. This guide covers:</p>
 <li><p><strong>TVM-FFI object system</strong>: how IR nodes are represented and used in Rust.</p></li>
 <li><p><strong>Structural utilities</strong>: walk, map, and compare programs.</p></li>
 <li><p><strong>Visitors and mutators</strong>: keep state and control the traversal.</p></li>
+<li><p><strong>Constraint-aware traversal</strong>: use the facts that hold at each node.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -984,8 +986,11 @@ i Simple
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">DefRegionKind::None</span></code> marks a use site; <code class="docutils literal notranslate"><span class="pre">Pattern</span></code> and <code class="docutils literal notranslate"><span class="pre">Simple</span></code> are
-the two kinds of definition site. <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> callbacks take the
-same trailing parameter.</p>
+the two kinds of definition site. A parameter is a <code class="docutils literal notranslate"><span class="pre">Pattern</span></code> definition:
+everything inside it is defined there, including the <code class="docutils literal notranslate"><span class="pre">n</span></code> in its shape.
+The loop variable <code class="docutils literal notranslate"><span class="pre">i</span></code> is a <code class="docutils literal notranslate"><span class="pre">Simple</span></code> definition: only the variable
+itself is defined. <code class="docutils literal notranslate"><span class="pre">structural_map</span></code> callbacks take the same trailing
+parameter.</p>
 </section>
 <section id="structural-map">
 <h3>Structural Map<a class="headerlink" href="#structural-map" title="Link to this heading">#</a></h3>
@@ -1046,16 +1051,14 @@ are structurally equal.</p>
 </section>
 <section id="visitors-and-mutators-in-rust">
 <h2>Visitors and Mutators in Rust<a class="headerlink" href="#visitors-and-mutators-in-rust" title="Link to this heading">#</a></h2>
-<p>Stateful traversals use the same four structural utilities. State lives
-on a <a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> struct, as in Structural Walk.
-The <code class="docutils literal notranslate"><span class="pre">map</span></code>, <code class="docutils literal notranslate"><span class="pre">visit</span></code>, and <code class="docutils literal notranslate"><span class="pre">mutate</span></code> prefixes group <code class="docutils literal notranslate"><span class="pre">map_*</span></code>,
-<code class="docutils literal notranslate"><span class="pre">visit_*</span></code>, and <code class="docutils literal notranslate"><span class="pre">mutate_*</span></code> methods. Each attribute declares its
-argument tuple and return type; mutation uses <code class="docutils literal notranslate"><span class="pre">MutationView</span></code> as its
-first argument to carry mutation permission through matching.</p>
-<p><strong>A visit or mutate callback takes control of its node’s children.</strong>
-Let’s record the loops around each write. Each handler receives the node
-and can take a <code class="docutils literal notranslate"><span class="pre">StructuralVisitorView&lt;'_,</span> <span class="pre">Self&gt;</span></code> for recursive traversal;
-the loop stack and collected writes remain on <code class="docutils literal notranslate"><span class="pre">self</span></code>:</p>
+<p>A walk callback sees one node at a time. Some traversals need context
+around a node’s children, such as the loops that enclose a write. A
+visitor or mutator callback <strong>takes control of the recursion into its
+node’s children</strong>: it decides when to descend, so it can set up state
+before and restore it after. State lives on a <a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a> struct, as in
+Structural Walk, with <code class="docutils literal notranslate"><span class="pre">visit_*</span></code> methods for <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_visit.html"><code class="docutils literal notranslate"><span class="pre">structural_visit</span></code></a> and
+<code class="docutils literal notranslate"><span class="pre">mutate_*</span></code> methods for <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html"><code class="docutils literal notranslate"><span class="pre">structural_mutate</span></code></a>.</p>
+<p>Let’s record the loops around each write:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
 <span class="k">struct</span><span class="w"> </span><span class="nc">LoopNest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">loops</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
@@ -1095,22 +1098,14 @@ the loop stack and collected writes remain on <code class="docutils literal notr
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['B inside [i]']
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">visit_for</span></code> pushes the loop variable, lets <code class="docutils literal notranslate"><span class="pre">default_visit(self,</span> <span class="pre">loop_)</span></code>
-visit the loop’s children with their usual traversal, then pops the variable.
-It returns the traversal result, so an interrupt or error from a child
-reaches the caller. The view also provides <code class="docutils literal notranslate"><span class="pre">visit(self,</span> <span class="pre">child)</span></code> for a
-selected child and <code class="docutils literal notranslate"><span class="pre">def_region_kind</span></code> for the current node.</p>
-<p>For mutation, a trailing <code class="docutils literal notranslate"><span class="pre">&amp;mut</span> <span class="pre">StructuralMutatorView&lt;'_,</span> <span class="pre">Self&gt;</span></code> provides
-<code class="docutils literal notranslate"><span class="pre">def_region_kind()</span></code> and child-mutation methods. A
-<code class="docutils literal notranslate"><span class="pre">MutationView&lt;'_,</span> <span class="pre">For&gt;</span></code> carries the current loop and the engine’s
-permission to reuse it. Its typed fields can be borrowed directly; after
-that borrow ends, <code class="docutils literal notranslate"><span class="pre">default_mutate</span></code> consumes the handle to recurse with
-the same permission. The returned <code class="docutils literal notranslate"><span class="pre">UnchangedOr&lt;Any&gt;</span></code> becomes the common
-<code class="docutils literal notranslate"><span class="pre">Any</span></code> handler result without discarding an unchanged marker. Reuse still
-requires unique ownership,
-so an alias held by Python remains unchanged. Let’s reverse the loop
-by replacing each use of <code class="docutils literal notranslate"><span class="pre">i</span></code> with <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">-</span> <span class="pre">1</span> <span class="pre">-</span> <span class="pre">i</span></code>. As before,
-<code class="docutils literal notranslate"><span class="pre">.try_into()?</span></code> extracts the built expression or returns its error:</p>
+<p><code class="docutils literal notranslate"><span class="pre">visit_for</span></code> pushes the loop variable, visits the loop’s children with
+<code class="docutils literal notranslate"><span class="pre">visitor.default_visit(self,</span> <span class="pre">loop_)</span></code>, then pops the variable. Returning
+the result passes an interrupt or error from a child back to the caller.
+<code class="docutils literal notranslate"><span class="pre">visit_store</span></code> records the write and does not descend further. The
+trailing <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.StructuralVisitorView.html"><code class="docutils literal notranslate"><span class="pre">StructuralVisitorView</span></code></a> also provides <code class="docutils literal notranslate"><span class="pre">visit(self,</span> <span class="pre">child)</span></code> for
+a selected child and <code class="docutils literal notranslate"><span class="pre">def_region_kind()</span></code> for the current node.</p>
+<p>A mutator works the same way and returns the replacement for each node.
+Let’s reverse the loop by replacing each use of <code class="docutils literal notranslate"><span class="pre">i</span></code> with <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">-</span> <span class="pre">1</span> <span class="pre">-</span> <span class="pre">i</span></code>:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[derive(Default)]</span>
 <span class="k">struct</span><span class="w"> </span><span class="nc">ReverseLoops</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">reversed_index</span><span class="p">:</span><span class="w"> </span><span class="nc">HashMap</span><span class="o">&lt;</span><span class="n">ObjectIdentity</span><span class="p">,</span><span class="w"> </span><span class="n">Expr</span><span class="o">&gt;</span><span class="p">,</span>
@@ -1157,42 +1152,138 @@ by replacing each use of <code class="docutils literal notranslate"><span class=
         <span class="n">B</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">mutate_for</span></code> records the replacement, then
-<code class="docutils literal notranslate"><span class="pre">default_mutate</span></code> rewrites the loop’s children through the
-same struct, so <code class="docutils literal notranslate"><span class="pre">mutate_var</span></code> sees the
-replacement before any use of <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mutate_for</span></code> records the replacement for its loop variable, then
+<code class="docutils literal notranslate"><span class="pre">mutator.default_mutate(self,</span> <span class="pre">value)</span></code> rewrites the loop’s children
+through the same struct, so <code class="docutils literal notranslate"><span class="pre">mutate_var</span></code> sees the replacement before any
+use of <code class="docutils literal notranslate"><span class="pre">i</span></code>. <code class="docutils literal notranslate"><span class="pre">default_mutate</span></code> returns <code class="docutils literal notranslate"><span class="pre">UnchangedOr&lt;Any&gt;</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">.map(Into::into)</span></code> turns it into the handler’s <code class="docutils literal notranslate"><span class="pre">Any</span></code> result.</p>
+<p>A mutate handler receives its node as a <code class="docutils literal notranslate"><span class="pre">MutationView</span></code>, here
+<code class="docutils literal notranslate"><span class="pre">MutationView&lt;'_,</span> <span class="pre">For&gt;</span></code>. We read the loop’s fields through it, as with
+<code class="docutils literal notranslate"><span class="pre">value.end</span></code> and <code class="docutils literal notranslate"><span class="pre">value.var</span></code>, and pass it on to <code class="docutils literal notranslate"><span class="pre">default_mutate</span></code>,
+which may then update the loop in place instead of copying it. Only a node
+that nothing else holds is updated in place, so <code class="docutils literal notranslate"><span class="pre">add_one</span></code>, still held by
+Python, stays unchanged.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">mutate_var</span></code> replaces <code class="docutils literal notranslate"><span class="pre">i</span></code> only where <code class="docutils literal notranslate"><span class="pre">def_region_kind()</span></code> is
 <code class="docutils literal notranslate"><span class="pre">None</span></code>, so the loop’s own <code class="docutils literal notranslate"><span class="pre">i</span></code> stays a variable. <a class="reference external" href="../reference/rust/generated/tvm_ffi/object/struct.ObjectIdentity.html"><code class="docutils literal notranslate"><span class="pre">ObjectIdentity</span></code></a>
 keys the map by object identity, so only this loop’s <code class="docutils literal notranslate"><span class="pre">i</span></code> matches.</p>
 </div>
+</section>
+<section id="constraint-aware-traversal">
+<h2>Constraint-Aware Traversal<a class="headerlink" href="#constraint-aware-traversal" title="Link to this heading">#</a></h2>
+<p>Many rewrites depend on facts that hold at a point in the program: the
+range of a loop variable, or the condition of an enclosing branch.
+Collecting these facts by hand at every node would repeat the same
+bookkeeping in every pass. The <code class="docutils literal notranslate"><span class="pre">tvm_tirx::tirx</span></code> module provides
+constraint-aware versions of the four structural utilities, which collect
+the facts for us and hand them to our callbacks as a <code class="docutils literal notranslate"><span class="pre">ConstraintContext</span></code>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Utility</p></th>
+<th class="head"><p>Facts reach the callback as</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_walk_with_constraint_context/fn.structural_walk_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_walk_with_constraint_context</span></code></a></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">&amp;ConstraintContext</span></code> parameter</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_map_with_constraint_context/fn.structural_map_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_map_with_constraint_context</span></code></a></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">&amp;ConstraintContext</span></code> parameter</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/fn.structural_visit_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_visit_with_constraint_context</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">visitor.base().constraints()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_mutate_with_constraint_context/fn.structural_mutate_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_mutate_with_constraint_context</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mutator.base().constraints()</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Compilers often insert bounds checks to stay safe, such as the
+<code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">i</span> <span class="pre">//</span> <span class="pre">4</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> below. Here the loop already guarantees the condition,
+so the check only costs time on every iteration:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one_guarded</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">//</span> <span class="mi">4</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">i</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>A walk can check whether each condition is provable from the facts at
+that point:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">proven_guards</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Array</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">analyzer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Analyzer</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">proven</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
+<span class="w">    </span><span class="n">structural_walk_with_constraint_context</span><span class="p">(</span>
+<span class="w">        </span><span class="o">&amp;</span><span class="n">func</span><span class="p">,</span>
+<span class="w">        </span><span class="o">|</span><span class="n">branch</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">IfObj</span><span class="p">,</span><span class="w"> </span><span class="n">constraints</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">ConstraintContext</span><span class="o">|</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">analyzer</span><span class="p">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">            </span><span class="n">proven</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">analyzer</span><span class="p">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">branch</span><span class="p">.</span><span class="n">condition</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span><span class="w"> </span><span class="n">ProofStrength</span><span class="p">::</span><span class="nb">Default</span><span class="p">)</span><span class="o">?</span><span class="p">);</span>
+<span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="n">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="n">WalkOrder</span><span class="p">::</span><span class="n">PreOrder</span><span class="p">,</span>
+<span class="w">    </span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">proven</span><span class="p">.</span><span class="n">into_iter</span><span class="p">().</span><span class="n">collect</span><span class="p">())</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[True]
+</pre></div>
+</div>
+<p>The walk passes each <code class="docutils literal notranslate"><span class="pre">if</span></code> together with the facts that hold there: the
+loop’s range, and that the loop runs. <code class="docutils literal notranslate"><span class="pre">sync_constraint_context</span></code> hands
+those facts to the analyzer, which then proves the condition. The branch’s
+own condition is not a fact at the <code class="docutils literal notranslate"><span class="pre">if</span></code> itself, only inside it.</p>
+<p>A map with the same callback shape removes the check by returning the
+branch body in place of the <code class="docutils literal notranslate"><span class="pre">if</span></code>:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">remove_redundant_guards</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">analyzer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Analyzer</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
+<span class="w">    </span><span class="n">structural_map_with_constraint_context</span><span class="p">(</span>
+<span class="w">        </span><span class="n">func</span><span class="p">,</span>
+<span class="w">        </span><span class="o">|</span><span class="n">branch</span><span class="p">:</span><span class="w"> </span><span class="nc">If</span><span class="p">,</span><span class="w"> </span><span class="n">constraints</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">ConstraintContext</span><span class="o">|</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">analyzer</span><span class="p">.</span><span class="n">sync_constraint_context</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="n">analyzer</span><span class="p">.</span><span class="n">can_prove</span><span class="p">(</span><span class="n">branch</span><span class="p">.</span><span class="n">condition</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span><span class="w"> </span><span class="n">ProofStrength</span><span class="p">::</span><span class="nb">Default</span><span class="p">)</span><span class="o">?</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">branch</span><span class="p">.</span><span class="n">then_case</span><span class="p">.</span><span class="n">clone</span><span class="p">().</span><span class="n">into</span><span class="p">()</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Unchanged</span><span class="p">.</span><span class="n">into</span><span class="p">()</span>
+<span class="w">            </span><span class="p">})</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="n">WalkOrder</span><span class="p">::</span><span class="n">PreOrder</span><span class="p">,</span>
+<span class="w">    </span><span class="p">)</span><span class="o">?</span>
+<span class="w">    </span><span class="p">.</span><span class="n">try_into</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The output is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># from tvm_tirx.script import tirx as T</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one_guarded</span><span class="p">[</span><span class="n">n</span><span class="p">](</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Returning <code class="docutils literal notranslate"><span class="pre">Unchanged</span></code> keeps an <code class="docutils literal notranslate"><span class="pre">if</span></code> the analyzer cannot prove. In
+pre-order, the map then continues into the children of the value it
+returned.</p>
+<p>The visit and mutate versions give the same facts to stateful
+traversals. A handler reads them with <code class="docutils literal notranslate"><span class="pre">visitor.base().constraints()</span></code>
+or <code class="docutils literal notranslate"><span class="pre">mutator.base().constraints()</span></code>, and <code class="docutils literal notranslate"><span class="pre">default_visit</span></code> or
+<code class="docutils literal notranslate"><span class="pre">default_mutate</span></code> collects the facts of the children as it descends.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/fn.structural_visit_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_visit_with_constraint_context</span></code></a> tracks facts such as loop
-ranges and branch conditions through the same Rust visitor engine. Its
-<a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/type.StructuralVisitorWithConstraintContextView.html"><code class="docutils literal notranslate"><span class="pre">StructuralVisitorWithConstraintContextView</span></code></a> supports explicit descent;
-<code class="docutils literal notranslate"><span class="pre">visitor.base().constraints()</span></code> returns the ordinary owning
-<code class="docutils literal notranslate"><span class="pre">ConstraintContext</span></code> handle to the current facts. Use <code class="docutils literal notranslate"><span class="pre">snapshot()</span></code> to retain the visible prefix or
-<code class="docutils literal notranslate"><span class="pre">to_array()</span></code> for an independent sequence of fact handles.
-<a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_walk_with_constraint_context/fn.structural_walk_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_walk_with_constraint_context</span></code></a> supplies the same context to
-pre- or post-order observers and handles descent through the visitor engine.
-<a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_mutate_with_constraint_context/fn.structural_mutate_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_mutate_with_constraint_context</span></code></a> uses
-<code class="docutils literal notranslate"><span class="pre">StructuralMutatorWithConstraintContextView</span></code> for explicit mutation descent.
-<code class="docutils literal notranslate"><span class="pre">mutator.base().constraints()</span></code> exposes facts derived from rewritten bindings,
-predicates, and loop ranges. Call <code class="docutils literal notranslate"><span class="pre">default_mutate(self,</span> <span class="pre">value)</span></code> to collect
-those facts while descending; a replacement returned directly skips that
-node’s descent. As with ordinary mutation, moved unique roots may reuse storage
-and retained roots copy.
-<a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_map_with_constraint_context/fn.structural_map_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_map_with_constraint_context</span></code></a> provides ordered mapping with the
-same lexical facts. Callbacks receive a leading prefix of
-<code class="docutils literal notranslate"><span class="pre">(value,</span> <span class="pre">&amp;ConstraintContext,</span> <span class="pre">DefRegionKind)</span></code> and return a replacement or
-<code class="docutils literal notranslate"><span class="pre">Unchanged</span></code>. <code class="docutils literal notranslate"><span class="pre">WalkOrder::PreOrder</span></code> descends into replacement children;
-<code class="docutils literal notranslate"><span class="pre">PostOrder</span></code> invokes the mapper after children are rewritten and the node’s
-constraint scope is restored. Facts for later siblings come from the
-resulting bindings and expressions.
-Typed contexts are neither <code class="docutils literal notranslate"><span class="pre">Send</span></code> nor <code class="docutils literal notranslate"><span class="pre">Sync</span></code>; erased FFI handles retain
-the ordinary contract against concurrent access.</p>
+<p>A callback reads the context but must not add facts to it. The
+<code class="docutils literal notranslate"><span class="pre">ConstraintContext</span></code> it receives follows the traversal; call
+<code class="docutils literal notranslate"><span class="pre">snapshot()</span></code> to keep the facts at one point, or <code class="docutils literal notranslate"><span class="pre">to_array()</span></code> for
+the individual facts.</p>
 </div>
 <p>With fields, typed callbacks, and the structural utilities, a Rust function
 works with the same IR that Python builds and prints, so an analysis or a
@@ -1240,8 +1331,15 @@ borrowed object in an <code class="docutils literal notranslate"><span class="pr
 <td><p>Generates <code class="docutils literal notranslate"><span class="pre">dispatch</span></code>, a <code class="docutils literal notranslate"><span class="pre">match_any!</span></code> over the <code class="docutils literal notranslate"><span class="pre">prefix_*</span></code>
 methods of a struct</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.StructuralVisitorView.html"><code class="docutils literal notranslate"><span class="pre">StructuralVisitorView</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.StructuralMutatorView.html"><code class="docutils literal notranslate"><span class="pre">StructuralMutatorView</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_visit.html"><code class="docutils literal notranslate"><span class="pre">structural_visit</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html"><code class="docutils literal notranslate"><span class="pre">structural_mutate</span></code></a></p></td>
+<td><p>Traverse with a dispatcher whose handlers control descent</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/struct.StructuralVisitorView.html"><code class="docutils literal notranslate"><span class="pre">StructuralVisitorView</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_mutate/struct.StructuralMutatorView.html"><code class="docutils literal notranslate"><span class="pre">StructuralMutatorView</span></code></a></p></td>
 <td><p>Recurse with the same dispatcher and current definition region</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_tirx/tirx/structural_walk_with_constraint_context/fn.structural_walk_with_constraint_context.html"><code class="docutils literal notranslate"><span class="pre">structural_walk_with_constraint_context</span></code></a> and the map, visit, and
+mutate versions</p></td>
+<td><p>Traverse with the facts that hold at each node</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/macro.static_init_block.html"><code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code></a>, <a class="reference external" href="../reference/rust/generated/tvm_ffi/function/struct.Function.html#method.register_global_typed"><code class="docutils literal notranslate"><span class="pre">Function::register_global_typed</span></code></a></p></td>
 <td><p>Registers Rust functions as global functions</p></td>
@@ -1316,6 +1414,7 @@ methods of a struct</p></td>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visitors-and-mutators-in-rust">Visitors and Mutators in Rust</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#constraint-aware-traversal">Constraint-Aware Traversal</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-reference">Quick Reference</a></li>
 </ul>
   </nav></div>
