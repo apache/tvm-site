@@ -17,180 +17,173 @@
 <a href=#17 id=17 data-nosnippet>17</a> * under the License.
 <a href=#18 id=18 data-nosnippet>18</a> */
 <a href=#19 id=19 data-nosnippet>19</a>
-<a href=#20 id=20 data-nosnippet>20</a></span><span class="doccomment">//! Structural visiting with the lexical constraint context.
-<a href=#21 id=21 data-nosnippet>21</a>//!
-<a href=#22 id=22 data-nosnippet>22</a>//! The shared Rust structural engine owns dispatch and recursion. This module
-<a href=#23 id=23 data-nosnippet>23</a>//! supplies its complete native-compatible base and sparse constraint-aware
-<a href=#24 id=24 data-nosnippet>24</a>//! default hooks; ordinary default traversal is reused when a hook is absent.
-<a href=#25 id=25 data-nosnippet>25</a>//! Native semantic hooks create no analyzer and do not snapshot mutable IR reads.
-<a href=#26 id=26 data-nosnippet>26</a>//!
-<a href=#27 id=27 data-nosnippet>27</a>//! Hook and global-function registration follows the ordinary visitor/binding
-<a href=#28 id=28 data-nosnippet>28</a>//! trust contract: registered hooks must honor the synchronous ABI, may not retain
-<a href=#29 id=29 data-nosnippet>29</a>//! or concurrently use the visitor, and registration must not race with traversal.
-<a href=#30 id=30 data-nosnippet>30</a>
-<a href=#31 id=31 data-nosnippet>31</a></span><span class="kw">use </span>std::borrow::BorrowMut;
-<a href=#32 id=32 data-nosnippet>32</a><span class="kw">use </span>std::cell::UnsafeCell;
+<a href=#20 id=20 data-nosnippet>20</a></span><span class="doccomment">//! Constraint-aware structural visiting: visit values with the facts in scope.
+<a href=#21 id=21 data-nosnippet>21</a>
+<a href=#22 id=22 data-nosnippet>22</a></span><span class="kw">use </span>std::borrow::BorrowMut;
+<a href=#23 id=23 data-nosnippet>23</a><span class="kw">use </span>std::cell::UnsafeCell;
+<a href=#24 id=24 data-nosnippet>24</a>
+<a href=#25 id=25 data-nosnippet>25</a><span class="kw">use </span>tvm_ffi::extra::cold_init_lazy_lock::ColdInitLazyLock;
+<a href=#26 id=26 data-nosnippet>26</a><span class="kw">use </span>tvm_ffi::extra::structural_visit::StructuralVisitorBase;
+<a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span>tvm_ffi::reflection::TypeAttrColumn;
+<a href=#28 id=28 data-nosnippet>28</a><span class="kw">use </span>tvm_ffi::tvm_ffi_sys::{TVMFFIAny, TVMFFITypeIndex};
+<a href=#29 id=29 data-nosnippet>29</a><span class="kw">use </span>tvm_ffi::{
+<a href=#30 id=30 data-nosnippet>30</a>    AnyView, Dispatcher, IntoDispatcher, ObjectCore, <span class="prelude-ty">Result</span>, StructuralVisitEngine,
+<a href=#31 id=31 data-nosnippet>31</a>    StructuralVisitorObj, StructuralVisitorView, VisitInterrupt,
+<a href=#32 id=32 data-nosnippet>32</a>};
 <a href=#33 id=33 data-nosnippet>33</a>
-<a href=#34 id=34 data-nosnippet>34</a><span class="kw">use </span>tvm_ffi::extra::cold_init_lazy_lock::ColdInitLazyLock;
-<a href=#35 id=35 data-nosnippet>35</a><span class="kw">use </span>tvm_ffi::extra::structural_visit::StructuralVisitorBase;
-<a href=#36 id=36 data-nosnippet>36</a><span class="kw">use </span>tvm_ffi::reflection::TypeAttrColumn;
-<a href=#37 id=37 data-nosnippet>37</a><span class="kw">use </span>tvm_ffi::tvm_ffi_sys::{TVMFFIAny, TVMFFITypeIndex};
-<a href=#38 id=38 data-nosnippet>38</a><span class="kw">use </span>tvm_ffi::{
-<a href=#39 id=39 data-nosnippet>39</a>    AnyView, Dispatcher, IntoDispatcher, ObjectCore, <span class="prelude-ty">Result</span>, StructuralVisitEngine,
-<a href=#40 id=40 data-nosnippet>40</a>    StructuralVisitorObj, StructuralVisitorView, VisitInterrupt,
-<a href=#41 id=41 data-nosnippet>41</a>};
-<a href=#42 id=42 data-nosnippet>42</a>
-<a href=#43 id=43 data-nosnippet>43</a><span class="kw">use </span><span class="kw">super</span>::StructuralVisitorWithConstraintContextObj;
-<a href=#44 id=44 data-nosnippet>44</a><span class="kw">use </span><span class="kw">crate</span>::sym::{ConstraintContext, ConstraintContextObj};
-<a href=#45 id=45 data-nosnippet>45</a>
-<a href=#46 id=46 data-nosnippet>46</a><span class="doccomment">/// Complete Rust representation of the native constraint-aware visitor base.
-<a href=#47 id=47 data-nosnippet>47</a>///
-<a href=#48 id=48 data-nosnippet>48</a>/// This is distinct from the generated opaque
-<a href=#49 id=49 data-nosnippet>49</a>/// [`StructuralVisitorWithConstraintContextObj`]. The engine allocates this
-<a href=#50 id=50 data-nosnippet>50</a>/// complete representation and installs its own callback; no generated opaque
-<a href=#51 id=51 data-nosnippet>51</a>/// object is allocated. The base has no owning object conversion.
-<a href=#52 id=52 data-nosnippet>52</a>///
-<a href=#53 id=53 data-nosnippet>53</a>/// Native semantic hooks can replace the active context and update the private
-<a href=#54 id=54 data-nosnippet>54</a>/// scope flag through a shared [`StructuralVisitorView::base`] reference. Those
-<a href=#55 id=55 data-nosnippet>55</a>/// fields use interior mutability; context access clones the current handle.
-<a href=#56 id=56 data-nosnippet>56</a></span><span class="attr">#[repr(C)]
-<a href=#57 id=57 data-nosnippet>57</a></span><span class="kw">pub struct </span>StructuralVisitorWithConstraintContextBase {
-<a href=#58 id=58 data-nosnippet>58</a>    base: StructuralVisitorObj,
-<a href=#59 id=59 data-nosnippet>59</a>    constraints: UnsafeCell&lt;ConstraintContext&gt;,
-<a href=#60 id=60 data-nosnippet>60</a>    needs_child_context: UnsafeCell&lt;bool&gt;,
-<a href=#61 id=61 data-nosnippet>61</a>}
-<a href=#62 id=62 data-nosnippet>62</a>
-<a href=#63 id=63 data-nosnippet>63</a><span class="kw">impl </span>StructuralVisitorWithConstraintContextBase {
-<a href=#64 id=64 data-nosnippet>64</a>    <span class="doccomment">/// Read the current live context. This ordinary owning handle may
-<a href=#65 id=65 data-nosnippet>65</a>    /// outlive the visitor. Use [`ConstraintContextObj::snapshot`] to retain the
-<a href=#66 id=66 data-nosnippet>66</a>    /// current prefix or [`ConstraintContextObj::to_array`] for a detached sequence.
-<a href=#67 id=67 data-nosnippet>67</a>    </span><span class="kw">pub fn </span>constraints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ConstraintContext {
-<a href=#68 id=68 data-nosnippet>68</a>        <span class="comment">// No reference to the replaceable field survives this short clone.
-<a href=#69 id=69 data-nosnippet>69</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).clone() }
-<a href=#70 id=70 data-nosnippet>70</a>    }
-<a href=#71 id=71 data-nosnippet>71</a>
-<a href=#72 id=72 data-nosnippet>72</a>    <span class="doccomment">/// Borrow only while an observer has no access to this visitor's descent.
-<a href=#73 id=73 data-nosnippet>73</a>    /// The caller must end the borrow before any operation can replace the context.
-<a href=#74 id=74 data-nosnippet>74</a>    </span><span class="attr">#[inline]
-<a href=#75 id=75 data-nosnippet>75</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">unsafe fn </span>constraints_for_observer(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ConstraintContext {
-<a href=#76 id=76 data-nosnippet>76</a>        <span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()
-<a href=#77 id=77 data-nosnippet>77</a>    }
-<a href=#78 id=78 data-nosnippet>78</a>}
+<a href=#34 id=34 data-nosnippet>34</a><span class="kw">use </span><span class="kw">super</span>::StructuralVisitorWithConstraintContextObj;
+<a href=#35 id=35 data-nosnippet>35</a><span class="kw">use </span><span class="kw">crate</span>::sym::{ConstraintContext, ConstraintContextObj};
+<a href=#36 id=36 data-nosnippet>36</a>
+<a href=#37 id=37 data-nosnippet>37</a><span class="doccomment">/// The base of a constraint-aware visitor, holding the constraint context of the current value.
+<a href=#38 id=38 data-nosnippet>38</a>///
+<a href=#39 id=39 data-nosnippet>39</a>/// Unlike the opaque [`StructuralVisitorWithConstraintContextObj`], its layout mirrors the native
+<a href=#40 id=40 data-nosnippet>40</a>/// one, so it requires the matching native build.
+<a href=#41 id=41 data-nosnippet>41</a></span><span class="attr">#[repr(C)]
+<a href=#42 id=42 data-nosnippet>42</a></span><span class="kw">pub struct </span>StructuralVisitorWithConstraintContextBase {
+<a href=#43 id=43 data-nosnippet>43</a>    base: StructuralVisitorObj,
+<a href=#44 id=44 data-nosnippet>44</a>    constraints: UnsafeCell&lt;ConstraintContext&gt;,
+<a href=#45 id=45 data-nosnippet>45</a>    needs_child_context: UnsafeCell&lt;bool&gt;,
+<a href=#46 id=46 data-nosnippet>46</a>}
+<a href=#47 id=47 data-nosnippet>47</a>
+<a href=#48 id=48 data-nosnippet>48</a><span class="kw">impl </span>StructuralVisitorWithConstraintContextBase {
+<a href=#49 id=49 data-nosnippet>49</a>    <span class="doccomment">/// Return the constraint context in effect at the current value; use
+<a href=#50 id=50 data-nosnippet>50</a>    /// [`ConstraintContextObj::snapshot`] to keep its current prefix.
+<a href=#51 id=51 data-nosnippet>51</a>    </span><span class="kw">pub fn </span>constraints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ConstraintContext {
+<a href=#52 id=52 data-nosnippet>52</a>        <span class="comment">// No reference to the replaceable field survives this short clone.
+<a href=#53 id=53 data-nosnippet>53</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).clone() }
+<a href=#54 id=54 data-nosnippet>54</a>    }
+<a href=#55 id=55 data-nosnippet>55</a>
+<a href=#56 id=56 data-nosnippet>56</a>    <span class="doccomment">/// Borrow only while an observer has no access to this visitor's descent.
+<a href=#57 id=57 data-nosnippet>57</a>    /// The caller must end the borrow before any operation can replace the context.
+<a href=#58 id=58 data-nosnippet>58</a>    </span><span class="attr">#[inline]
+<a href=#59 id=59 data-nosnippet>59</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">unsafe fn </span>constraints_for_observer(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ConstraintContext {
+<a href=#60 id=60 data-nosnippet>60</a>        <span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()
+<a href=#61 id=61 data-nosnippet>61</a>    }
+<a href=#62 id=62 data-nosnippet>62</a>}
+<a href=#63 id=63 data-nosnippet>63</a>
+<a href=#64 id=64 data-nosnippet>64</a><span class="comment">// SAFETY: repr(C) mirrors the complete base in the matching native header.
+<a href=#65 id=65 data-nosnippet>65</a>// Stub generation cannot certify its private tail; the binding requires the
+<a href=#66 id=66 data-nosnippet>66</a>// matching native build. All fields begin with the same state as the native
+<a href=#67 id=67 data-nosnippet>67</a>// constructor. Native-mutated fields use UnsafeCell. The type identity is the
+<a href=#68 id=68 data-nosnippet>68</a>// registered specialized type, while the shared engine installs its vtable and
+<a href=#69 id=69 data-nosnippet>69</a>// owns the dispatcher. Default hooks receive that live runtime synchronously and
+<a href=#70 id=70 data-nosnippet>70</a>// return one owning None/interrupt/error token under the ordinary hook contract.
+<a href=#71 id=71 data-nosnippet>71</a></span><span class="kw">unsafe impl </span>StructuralVisitorBase <span class="kw">for </span>StructuralVisitorWithConstraintContextBase {
+<a href=#72 id=72 data-nosnippet>72</a>    <span class="kw">fn </span>new() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+<a href=#73 id=73 data-nosnippet>73</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+<a href=#74 id=74 data-nosnippet>74</a>            base: StructuralVisitorObj::default(),
+<a href=#75 id=75 data-nosnippet>75</a>            constraints: UnsafeCell::new(ConstraintContext::new()<span class="question-mark">?</span>),
+<a href=#76 id=76 data-nosnippet>76</a>            needs_child_context: UnsafeCell::new(<span class="bool-val">false</span>),
+<a href=#77 id=77 data-nosnippet>77</a>        })
+<a href=#78 id=78 data-nosnippet>78</a>    }
 <a href=#79 id=79 data-nosnippet>79</a>
-<a href=#80 id=80 data-nosnippet>80</a><span class="comment">// SAFETY: repr(C) mirrors the complete base in the matching native header.
-<a href=#81 id=81 data-nosnippet>81</a>// Stub generation cannot certify its private tail; the binding requires the
-<a href=#82 id=82 data-nosnippet>82</a>// matching native build. All fields begin with the same state as the native
-<a href=#83 id=83 data-nosnippet>83</a>// constructor. Native-mutated fields use UnsafeCell. The type identity is the
-<a href=#84 id=84 data-nosnippet>84</a>// registered specialized type, while the shared engine installs its vtable and
-<a href=#85 id=85 data-nosnippet>85</a>// owns the dispatcher. Default hooks receive that live runtime synchronously and
-<a href=#86 id=86 data-nosnippet>86</a>// return one owning None/interrupt/error token under the ordinary hook contract.
-<a href=#87 id=87 data-nosnippet>87</a></span><span class="kw">unsafe impl </span>StructuralVisitorBase <span class="kw">for </span>StructuralVisitorWithConstraintContextBase {
-<a href=#88 id=88 data-nosnippet>88</a>    <span class="kw">fn </span>new() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#89 id=89 data-nosnippet>89</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-<a href=#90 id=90 data-nosnippet>90</a>            base: StructuralVisitorObj::default(),
-<a href=#91 id=91 data-nosnippet>91</a>            constraints: UnsafeCell::new(ConstraintContext::new()<span class="question-mark">?</span>),
-<a href=#92 id=92 data-nosnippet>92</a>            needs_child_context: UnsafeCell::new(<span class="bool-val">false</span>),
-<a href=#93 id=93 data-nosnippet>93</a>        })
-<a href=#94 id=94 data-nosnippet>94</a>    }
-<a href=#95 id=95 data-nosnippet>95</a>
-<a href=#96 id=96 data-nosnippet>96</a>    <span class="kw">fn </span>type_index() -&gt; i32 {
-<a href=#97 id=97 data-nosnippet>97</a>        StructuralVisitorWithConstraintContextObj::type_index()
-<a href=#98 id=98 data-nosnippet>98</a>    }
-<a href=#99 id=99 data-nosnippet>99</a>
-<a href=#100 id=100 data-nosnippet>100</a>    <span class="attr">#[inline(always)]
-<a href=#101 id=101 data-nosnippet>101</a>    </span><span class="kw">unsafe fn </span>default_visit_raw(runtime: <span class="kw-2">*mut </span><span class="self">Self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; TVMFFIAny {
-<a href=#102 id=102 data-nosnippet>102</a>        <span class="kw">static </span>HOOKS: ColdInitLazyLock&lt;<span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;&gt; =
-<a href=#103 id=103 data-nosnippet>103</a>            ColdInitLazyLock::new(|| TypeAttrColumn::new(<span class="string">"__s_visit_with_constraint_context__"</span>));
-<a href=#104 id=104 data-nosnippet>104</a>        <span class="comment">// Copy the borrowed token before reentry. Packed dispatch acquires an
-<a href=#105 id=105 data-nosnippet>105</a>        // owning Function before invoking a callback that could register hooks.
-<a href=#106 id=106 data-nosnippet>106</a>        </span><span class="kw">let </span>hook = HOOKS
-<a href=#107 id=107 data-nosnippet>107</a>            .and_then(|column| column.get_raw_ffi_any(value.type_index()))
-<a href=#108 id=108 data-nosnippet>108</a>            .filter(|hook| hook.type_index != TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32);
-<a href=#109 id=109 data-nosnippet>109</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(hook) = hook {
-<a href=#110 id=110 data-nosnippet>110</a>            StructuralVisitorObj::call_structural_visit_hook_raw(
-<a href=#111 id=111 data-nosnippet>111</a>                runtime.cast(),
-<a href=#112 id=112 data-nosnippet>112</a>                <span class="kw-2">*</span>value.as_raw_ffi_any(),
-<a href=#113 id=113 data-nosnippet>113</a>                hook,
-<a href=#114 id=114 data-nosnippet>114</a>            )
-<a href=#115 id=115 data-nosnippet>115</a>        } <span class="kw">else </span>{
-<a href=#116 id=116 data-nosnippet>116</a>            <span class="comment">// Prefix-only default descent calls the installed vtable for each
-<a href=#117 id=117 data-nosnippet>117</a>            // child; it must not project an ordinary engine's dispatcher offset.
-<a href=#118 id=118 data-nosnippet>118</a>            </span>StructuralVisitorObj::default_visit_raw(runtime.cast(), value)
-<a href=#119 id=119 data-nosnippet>119</a>        }
-<a href=#120 id=120 data-nosnippet>120</a>    }
-<a href=#121 id=121 data-nosnippet>121</a>}
-<a href=#122 id=122 data-nosnippet>122</a>
-<a href=#123 id=123 data-nosnippet>123</a><span class="doccomment">/// Scoped access to the shared Rust engine with a constraint-aware base.
-<a href=#124 id=124 data-nosnippet>124</a>///
-<a href=#125 id=125 data-nosnippet>125</a>/// Pass the handler's `self` to recursive operations so the engine publishes the
-<a href=#126 id=126 data-nosnippet>126</a>/// actual exclusive dispatcher reborrow. Inspect premises via `view.base()`.
+<a href=#80 id=80 data-nosnippet>80</a>    <span class="kw">fn </span>type_index() -&gt; i32 {
+<a href=#81 id=81 data-nosnippet>81</a>        StructuralVisitorWithConstraintContextObj::type_index()
+<a href=#82 id=82 data-nosnippet>82</a>    }
+<a href=#83 id=83 data-nosnippet>83</a>
+<a href=#84 id=84 data-nosnippet>84</a>    <span class="attr">#[inline(always)]
+<a href=#85 id=85 data-nosnippet>85</a>    </span><span class="kw">unsafe fn </span>default_visit_raw(runtime: <span class="kw-2">*mut </span><span class="self">Self</span>, value: AnyView&lt;<span class="lifetime">'_</span>&gt;) -&gt; TVMFFIAny {
+<a href=#86 id=86 data-nosnippet>86</a>        <span class="kw">static </span>HOOKS: ColdInitLazyLock&lt;<span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;&gt; =
+<a href=#87 id=87 data-nosnippet>87</a>            ColdInitLazyLock::new(|| TypeAttrColumn::new(<span class="string">"__s_visit_with_constraint_context__"</span>));
+<a href=#88 id=88 data-nosnippet>88</a>        <span class="comment">// Copy the borrowed token before reentry. Packed dispatch acquires an
+<a href=#89 id=89 data-nosnippet>89</a>        // owning Function before invoking a callback that could register hooks.
+<a href=#90 id=90 data-nosnippet>90</a>        </span><span class="kw">let </span>hook = HOOKS
+<a href=#91 id=91 data-nosnippet>91</a>            .and_then(|column| column.get_raw_ffi_any(value.type_index()))
+<a href=#92 id=92 data-nosnippet>92</a>            .filter(|hook| hook.type_index != TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32);
+<a href=#93 id=93 data-nosnippet>93</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(hook) = hook {
+<a href=#94 id=94 data-nosnippet>94</a>            StructuralVisitorObj::call_structural_visit_hook_raw(
+<a href=#95 id=95 data-nosnippet>95</a>                runtime.cast(),
+<a href=#96 id=96 data-nosnippet>96</a>                <span class="kw-2">*</span>value.as_raw_ffi_any(),
+<a href=#97 id=97 data-nosnippet>97</a>                hook,
+<a href=#98 id=98 data-nosnippet>98</a>            )
+<a href=#99 id=99 data-nosnippet>99</a>        } <span class="kw">else </span>{
+<a href=#100 id=100 data-nosnippet>100</a>            <span class="comment">// Prefix-only default descent calls the installed vtable for each
+<a href=#101 id=101 data-nosnippet>101</a>            // child; it must not project an ordinary engine's dispatcher offset.
+<a href=#102 id=102 data-nosnippet>102</a>            </span>StructuralVisitorObj::default_visit_raw(runtime.cast(), value)
+<a href=#103 id=103 data-nosnippet>103</a>        }
+<a href=#104 id=104 data-nosnippet>104</a>    }
+<a href=#105 id=105 data-nosnippet>105</a>}
+<a href=#106 id=106 data-nosnippet>106</a>
+<a href=#107 id=107 data-nosnippet>107</a><span class="doccomment">/// The running constraint-aware visit, passed to each handler; `view.base().constraints()` gives
+<a href=#108 id=108 data-nosnippet>108</a>/// the facts in scope.
+<a href=#109 id=109 data-nosnippet>109</a>///
+<a href=#110 id=110 data-nosnippet>110</a>/// ```compile_fail
+<a href=#111 id=111 data-nosnippet>111</a>/// use tvm_tirx::tirx::structural_visit_with_constraint_context::StructuralVisitorWithConstraintContextView;
+<a href=#112 id=112 data-nosnippet>112</a>/// fn escape&lt;'a, D&gt;(v: StructuralVisitorWithConstraintContextView&lt;'a, D&gt;)
+<a href=#113 id=113 data-nosnippet>113</a>///     -&gt; StructuralVisitorWithConstraintContextView&lt;'static, D&gt; { v }
+<a href=#114 id=114 data-nosnippet>114</a>/// ```
+<a href=#115 id=115 data-nosnippet>115</a>///
+<a href=#116 id=116 data-nosnippet>116</a>/// ```compile_fail
+<a href=#117 id=117 data-nosnippet>117</a>/// use tvm_tirx::tirx::structural_visit_with_constraint_context::StructuralVisitorWithConstraintContextView;
+<a href=#118 id=118 data-nosnippet>118</a>/// use tvm_tirx::tvm_ffi::Any;
+<a href=#119 id=119 data-nosnippet>119</a>/// fn retain&lt;D&gt;(v: &amp;StructuralVisitorWithConstraintContextView&lt;'_, D&gt;) -&gt; Any {
+<a href=#120 id=120 data-nosnippet>120</a>///     v.base().into()
+<a href=#121 id=121 data-nosnippet>121</a>/// }
+<a href=#122 id=122 data-nosnippet>122</a>/// ```
+<a href=#123 id=123 data-nosnippet>123</a></span><span class="kw">pub type </span>StructuralVisitorWithConstraintContextView&lt;<span class="lifetime">'a</span>, D&gt; =
+<a href=#124 id=124 data-nosnippet>124</a>    StructuralVisitorView&lt;<span class="lifetime">'a</span>, D, StructuralVisitorWithConstraintContextBase&gt;;
+<a href=#125 id=125 data-nosnippet>125</a>
+<a href=#126 id=126 data-nosnippet>126</a><span class="doccomment">/// Visit `root` with `visitor`, which sees the facts of the bindings, ranges and guards in scope.
 <a href=#127 id=127 data-nosnippet>127</a>///
-<a href=#128 id=128 data-nosnippet>128</a>/// ```compile_fail
-<a href=#129 id=129 data-nosnippet>129</a>/// use tvm_tirx::tirx::structural_visit_with_constraint_context::StructuralVisitorWithConstraintContextView;
-<a href=#130 id=130 data-nosnippet>130</a>/// fn escape&lt;'a, D&gt;(v: StructuralVisitorWithConstraintContextView&lt;'a, D&gt;)
-<a href=#131 id=131 data-nosnippet>131</a>///     -&gt; StructuralVisitorWithConstraintContextView&lt;'static, D&gt; { v }
-<a href=#132 id=132 data-nosnippet>132</a>/// ```
-<a href=#133 id=133 data-nosnippet>133</a>///
-<a href=#134 id=134 data-nosnippet>134</a>/// ```compile_fail
-<a href=#135 id=135 data-nosnippet>135</a>/// use tvm_tirx::tirx::structural_visit_with_constraint_context::StructuralVisitorWithConstraintContextView;
-<a href=#136 id=136 data-nosnippet>136</a>/// use tvm_tirx::tvm_ffi::Any;
-<a href=#137 id=137 data-nosnippet>137</a>/// fn retain&lt;D&gt;(v: &amp;StructuralVisitorWithConstraintContextView&lt;'_, D&gt;) -&gt; Any {
-<a href=#138 id=138 data-nosnippet>138</a>///     v.base().into()
-<a href=#139 id=139 data-nosnippet>139</a>/// }
-<a href=#140 id=140 data-nosnippet>140</a>/// ```
-<a href=#141 id=141 data-nosnippet>141</a></span><span class="kw">pub type </span>StructuralVisitorWithConstraintContextView&lt;<span class="lifetime">'a</span>, D&gt; =
-<a href=#142 id=142 data-nosnippet>142</a>    StructuralVisitorView&lt;<span class="lifetime">'a</span>, D, StructuralVisitorWithConstraintContextBase&gt;;
-<a href=#143 id=143 data-nosnippet>143</a>
-<a href=#144 id=144 data-nosnippet>144</a><span class="doccomment">/// Visit with native binding, range and guard semantics through the shared Rust
-<a href=#145 id=145 data-nosnippet>145</a>/// engine. A matched dispatcher handler owns descent. Unmatched values use the
-<a href=#146 id=146 data-nosnippet>146</a>/// base's specialized hook or ordinary structural fallback.
-<a href=#147 id=147 data-nosnippet>147</a>///
-<a href=#148 id=148 data-nosnippet>148</a>/// ```
-<a href=#149 id=149 data-nosnippet>149</a>/// use tvm_tirx::tirx::structural_visit_with_constraint_context::{
-<a href=#150 id=150 data-nosnippet>150</a>///     structural_visit_with_constraint_context as visit,
-<a href=#151 id=151 data-nosnippet>151</a>///     StructuralVisitorWithConstraintContextView,
-<a href=#152 id=152 data-nosnippet>152</a>/// };
-<a href=#153 id=153 data-nosnippet>153</a>/// use tvm_tirx::tvm_ffi::{dispatch, AnyView, Result, VisitInterrupt};
-<a href=#154 id=154 data-nosnippet>154</a>///
-<a href=#155 id=155 data-nosnippet>155</a>/// #[derive(Default)]
-<a href=#156 id=156 data-nosnippet>156</a>/// struct Count(usize);
-<a href=#157 id=157 data-nosnippet>157</a>/// #[dispatch(visit, (AnyView&lt;'_&gt;, &amp;mut StructuralVisitorWithConstraintContextView&lt;'_, Self&gt;), Result&lt;Option&lt;VisitInterrupt&gt;&gt;)]
-<a href=#158 id=158 data-nosnippet>158</a>/// impl Count {
-<a href=#159 id=159 data-nosnippet>159</a>///     fn visit_number(&amp;mut self, _value: &amp;i64, visitor: &amp;mut StructuralVisitorWithConstraintContextView&lt;'_, Self&gt;)
-<a href=#160 id=160 data-nosnippet>160</a>///         -&gt; Result&lt;Option&lt;VisitInterrupt&gt;&gt; {
-<a href=#161 id=161 data-nosnippet>161</a>///         assert_eq!(visitor.base().constraints().local_size(), 0);
-<a href=#162 id=162 data-nosnippet>162</a>///         self.0 += 1;
-<a href=#163 id=163 data-nosnippet>163</a>///         Ok(None)
-<a href=#164 id=164 data-nosnippet>164</a>///     }
-<a href=#165 id=165 data-nosnippet>165</a>/// }
-<a href=#166 id=166 data-nosnippet>166</a>/// let mut count = Count::default();
-<a href=#167 id=167 data-nosnippet>167</a>/// visit(&amp;7_i64, &amp;mut count)?;
-<a href=#168 id=168 data-nosnippet>168</a>/// assert_eq!(count.0, 1);
-<a href=#169 id=169 data-nosnippet>169</a>/// # Ok::&lt;(), tvm_tirx::tvm_ffi::Error&gt;(())
-<a href=#170 id=170 data-nosnippet>170</a>/// ```
-<a href=#171 id=171 data-nosnippet>171</a>///
-<a href=#172 id=172 data-nosnippet>172</a>/// Callbacks must return failures through `Result` and must not panic: a panic
-<a href=#173 id=173 data-nosnippet>173</a>/// reaching the non-unwinding native callback boundary aborts the process.
-<a href=#174 id=174 data-nosnippet>174</a>/// Hooks and reflected metadata retain the ordinary visitor's trust obligations.
-<a href=#175 id=175 data-nosnippet>175</a></span><span class="kw">pub fn </span>structural_visit_with_constraint_context&lt;<span class="lifetime">'input</span>, R, H, M, D, O&gt;(
-<a href=#176 id=176 data-nosnippet>176</a>    root: R,
-<a href=#177 id=177 data-nosnippet>177</a>    visitor: H,
-<a href=#178 id=178 data-nosnippet>178</a>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
-<a href=#179 id=179 data-nosnippet>179</a><span class="kw">where
-<a href=#180 id=180 data-nosnippet>180</a>    </span>R: Into&lt;AnyView&lt;<span class="lifetime">'input</span>&gt;&gt;,
-<a href=#181 id=181 data-nosnippet>181</a>    O: BorrowMut&lt;D&gt;,
-<a href=#182 id=182 data-nosnippet>182</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; H: IntoDispatcher&lt;
+<a href=#128 id=128 data-nosnippet>128</a>/// A matched handler owns descent; other values are visited by default. Handlers return failures
+<a href=#129 id=129 data-nosnippet>129</a>/// through `Result` and must not panic: a panic at the native callback boundary aborts the process.
+<a href=#130 id=130 data-nosnippet>130</a>///
+<a href=#131 id=131 data-nosnippet>131</a>/// # Examples
+<a href=#132 id=132 data-nosnippet>132</a>///
+<a href=#133 id=133 data-nosnippet>133</a>/// ```
+<a href=#134 id=134 data-nosnippet>134</a>/// use tvm_tirx::ir::prim::op::PrimOps;
+<a href=#135 id=135 data-nosnippet>135</a>/// use tvm_tirx::ir::{Evaluate, EvaluateObj, For, ForKind, PrimType, Var, UNKNOWN_LOC};
+<a href=#136 id=136 data-nosnippet>136</a>/// use tvm_tirx::sym::{Analyzer, ProofStrength};
+<a href=#137 id=137 data-nosnippet>137</a>/// use tvm_tirx::tirx::structural_visit_with_constraint_context::{
+<a href=#138 id=138 data-nosnippet>138</a>///     structural_visit_with_constraint_context as visit,
+<a href=#139 id=139 data-nosnippet>139</a>///     StructuralVisitorWithConstraintContextView as View,
+<a href=#140 id=140 data-nosnippet>140</a>/// };
+<a href=#141 id=141 data-nosnippet>141</a>/// use tvm_tirx::tvm_ffi::{dispatch, AnyView, Result, VisitInterrupt};
+<a href=#142 id=142 data-nosnippet>142</a>///
+<a href=#143 id=143 data-nosnippet>143</a>/// #[derive(Default)]
+<a href=#144 id=144 data-nosnippet>144</a>/// struct BelowSixteen(Vec&lt;bool&gt;);
+<a href=#145 id=145 data-nosnippet>145</a>///
+<a href=#146 id=146 data-nosnippet>146</a>/// #[dispatch(visit, (AnyView&lt;'_&gt;, &amp;mut View&lt;'_, Self&gt;), Result&lt;Option&lt;VisitInterrupt&gt;&gt;)]
+<a href=#147 id=147 data-nosnippet>147</a>/// impl BelowSixteen {
+<a href=#148 id=148 data-nosnippet>148</a>///     fn visit_evaluate(
+<a href=#149 id=149 data-nosnippet>149</a>///         &amp;mut self,
+<a href=#150 id=150 data-nosnippet>150</a>///         node: &amp;EvaluateObj,
+<a href=#151 id=151 data-nosnippet>151</a>///         visitor: &amp;mut View&lt;'_, Self&gt;,
+<a href=#152 id=152 data-nosnippet>152</a>///     ) -&gt; Result&lt;Option&lt;VisitInterrupt&gt;&gt; {
+<a href=#153 id=153 data-nosnippet>153</a>///         let analyzer = Analyzer::new();
+<a href=#154 id=154 data-nosnippet>154</a>///         analyzer.sync_constraint_context(&amp;visitor.base().constraints())?;
+<a href=#155 id=155 data-nosnippet>155</a>///         self.0.push(analyzer.can_prove(node.value.less(16), ProofStrength::Default)?);
+<a href=#156 id=156 data-nosnippet>156</a>///         visitor.default_visit(self, node)
+<a href=#157 id=157 data-nosnippet>157</a>///     }
+<a href=#158 id=158 data-nosnippet>158</a>/// }
+<a href=#159 id=159 data-nosnippet>159</a>///
+<a href=#160 id=160 data-nosnippet>160</a>/// let i = Var::new("i", PrimType::int(32), UNKNOWN_LOC);
+<a href=#161 id=161 data-nosnippet>161</a>/// let body = Evaluate::new(&amp;i, UNKNOWN_LOC);
+<a href=#162 id=162 data-nosnippet>162</a>/// let root = For::new(&amp;i, 0, 16, 1, ForKind::Default, body, None, UNKNOWN_LOC)?;
+<a href=#163 id=163 data-nosnippet>163</a>/// let mut proofs = BelowSixteen::default();
+<a href=#164 id=164 data-nosnippet>164</a>/// visit(&amp;root, &amp;mut proofs)?;
+<a href=#165 id=165 data-nosnippet>165</a>/// assert_eq!(proofs.0, [true]);
+<a href=#166 id=166 data-nosnippet>166</a>/// # Ok::&lt;(), tvm_tirx::tvm_ffi::Error&gt;(())
+<a href=#167 id=167 data-nosnippet>167</a>/// ```
+<a href=#168 id=168 data-nosnippet>168</a></span><span class="kw">pub fn </span>structural_visit_with_constraint_context&lt;<span class="lifetime">'input</span>, R, H, M, D, O&gt;(
+<a href=#169 id=169 data-nosnippet>169</a>    root: R,
+<a href=#170 id=170 data-nosnippet>170</a>    visitor: H,
+<a href=#171 id=171 data-nosnippet>171</a>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
+<a href=#172 id=172 data-nosnippet>172</a><span class="kw">where
+<a href=#173 id=173 data-nosnippet>173</a>    </span>R: Into&lt;AnyView&lt;<span class="lifetime">'input</span>&gt;&gt;,
+<a href=#174 id=174 data-nosnippet>174</a>    O: BorrowMut&lt;D&gt;,
+<a href=#175 id=175 data-nosnippet>175</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; H: IntoDispatcher&lt;
+<a href=#176 id=176 data-nosnippet>176</a>        (AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>StructuralVisitorWithConstraintContextView&lt;<span class="lifetime">'r</span>, D&gt;),
+<a href=#177 id=177 data-nosnippet>177</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt;,
+<a href=#178 id=178 data-nosnippet>178</a>        M,
+<a href=#179 id=179 data-nosnippet>179</a>        Target = D,
+<a href=#180 id=180 data-nosnippet>180</a>        Output = O,
+<a href=#181 id=181 data-nosnippet>181</a>    &gt;,
+<a href=#182 id=182 data-nosnippet>182</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;
 <a href=#183 id=183 data-nosnippet>183</a>        (AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>StructuralVisitorWithConstraintContextView&lt;<span class="lifetime">'r</span>, D&gt;),
 <a href=#184 id=184 data-nosnippet>184</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt;,
-<a href=#185 id=185 data-nosnippet>185</a>        M,
-<a href=#186 id=186 data-nosnippet>186</a>        Target = D,
-<a href=#187 id=187 data-nosnippet>187</a>        Output = O,
-<a href=#188 id=188 data-nosnippet>188</a>    &gt;,
-<a href=#189 id=189 data-nosnippet>189</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;
-<a href=#190 id=190 data-nosnippet>190</a>        (AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>StructuralVisitorWithConstraintContextView&lt;<span class="lifetime">'r</span>, D&gt;),
-<a href=#191 id=191 data-nosnippet>191</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;&gt;,
-<a href=#192 id=192 data-nosnippet>192</a>    &gt;,
-<a href=#193 id=193 data-nosnippet>193</a>{
-<a href=#194 id=194 data-nosnippet>194</a>    StructuralVisitEngine::&lt;StructuralVisitorWithConstraintContextBase&gt;::visit_root(root, visitor)
-<a href=#195 id=195 data-nosnippet>195</a>}
+<a href=#185 id=185 data-nosnippet>185</a>    &gt;,
+<a href=#186 id=186 data-nosnippet>186</a>{
+<a href=#187 id=187 data-nosnippet>187</a>    StructuralVisitEngine::&lt;StructuralVisitorWithConstraintContextBase&gt;::visit_root(root, visitor)
+<a href=#188 id=188 data-nosnippet>188</a>}
 </code></pre></div></section></main></body></html>
