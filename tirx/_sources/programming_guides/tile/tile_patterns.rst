@@ -26,44 +26,46 @@ A CUDA tile operation repeats a chosen computation over a tensor region.
 operand views describe which values each thread handles and how many times
 it repeats that computation.
 
-Reading an Operand's Shape
---------------------------
+Choosing a Tile Operation
+-------------------------
 
-Suppose each of 64 threads processes twelve float32 values. A
-``ld.global.v4.b32`` instruction loads four 32-bit words at a time, so
-each thread needs three loads. We can describe this work with shape
-``(2, 32, 3, 4)``:
-
-.. code-block:: text
-
-    (2, 32, 3, 4)
-     └───┘  │  └─ atom: four words used by one instruction
-      group └──── repeat: three instructions per thread
+Both operations repeat a computation over the values described by the
+operands. They differ in how you specify that computation:
 
 .. list-table::
    :header-rows: 1
-   :widths: 20 80
+   :widths: 15 40 45
 
-   * - Part
-     - Meaning in this example
-   * - Group
-     - ``(2, 32)`` selects one of two warps and a lane within that warp.
-   * - Repeat
-     - ``(3,)`` repeats the chosen instruction three times for that thread.
-   * - Atom
-     - ``(4,)`` selects the four words transferred by ``.v4.b32``.
+   * - Operation
+     - You supply
+     - Each repetition
+   * - ``apply``
+     - A PTX instruction, such as ``T.ptx["ld.global.v4.b32"]`` or
+       ``T.ptx["add.rn.f32"]``.
+     - Executes that instruction on the values required by its operand form.
+   * - ``ewise``
+     - A scalar TIRx function, such as ``plus_one(value)``.
+     - Inlines the function for one element, potentially producing several
+       instructions.
 
-The instruction fixes the atom shape. The leading axes describe its
-repetitions and the threads that execute them. The register layout below
-maps the first two coordinates to ``warpid`` and ``laneid``, leaving
-``3 * 4 = 12`` local positions per thread.
+Use ``apply`` when you want a particular instruction, including its
+rounding or other variants. It supports arithmetic and matrix instructions
+as well as data movement. Use ``ewise`` to express a computation as a
+scalar function over register elements.
 
 A Load, Compute, and Store Example
 ----------------------------------
 
-The kernel uses this layout to load the values, add one to each, and
-store the results. ``scope="cta"`` tells the tile calls to use the
-leading ``(2, 32)`` axes for the threads in the block:
+Consider an add-one kernel with 64 threads, each handling twelve float32
+values. It makes three tile calls: ``apply`` to load the values into
+registers, ``ewise`` to add one to each value, and ``apply`` to store the
+results. The load and store use the ``.v4.b32`` instruction forms, which
+transfer four 32-bit words at a time.
+
+The tensors have shape ``(2, 32, 3, 4)``: two warps, 32 lanes per
+warp, and three groups of four values per thread. The register layout
+maps the first two axes to ``warpid`` and ``laneid``. ``scope="cta"``
+tells the tile calls to use those leading axes for the threads in the block:
 
 .. code-block:: python
 
@@ -79,11 +81,11 @@ leading ``(2, 32)`` axes for the threads in the block:
 
     @T.function
     def add_one_tile(
-        A: T.Tensor((2, 32, 3, 4), "float32", align=16),
-        B: T.Tensor((2, 32, 3, 4), "float32", align=16),
+        A: T.Tensor((2, 32, 3, 4), T.float32, align=16),
+        B: T.Tensor((2, 32, 3, 4), T.float32, align=16),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
-        registers = T.alloc_local((2, 32, 3, 4), "float32", layout=register_layout)
+        registers = T.alloc_local((2, 32, 3, 4), T.float32, layout=register_layout)
         T.cuda.tile.apply(T.ptx["ld.global.v4.b32"], registers, A, scope="cta")
         T.cuda.tile.ewise(plus_one, registers, registers, scope="cta")
         T.cuda.tile.apply(T.ptx["st.global.v4.b32"], B, registers, scope="cta")
@@ -106,6 +108,37 @@ We can compile and check the result:
     compiled(a, b)
     torch.testing.assert_close(b, a + 1)
 
+Reading an Operand's Shape
+--------------------------
+
+For ``apply``, operand axes describe the execution **group**, the
+instruction **repeats**, and the instruction's **atom**. The atom is the
+set of values used by one instruction; here it is four consecutive
+32-bit words. The same register view has a different interpretation
+for ``ewise``, which applies a scalar function to every element:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 20 25 30
+
+   * - Operation in this kernel
+     - Group
+     - Repeat
+     - Atom
+   * - ``apply`` with ``ld/st.global.v4.b32``
+     - ``(2, 32)``: warp and lane
+     - ``(3,)``: three instructions per thread
+     - ``(4,)``: four words per instruction
+   * - ``ewise(plus_one, ...)``
+     - ``(2, 32)``: warp and lane
+     - ``(3, 4)``: twelve scalar applications per thread
+     - One scalar element, with no trailing atom axis
+
+The chosen instruction fixes ``apply``'s atom shape. The operand view
+specifies how often to repeat it, and the layout maps the coordinates to
+threads and storage. ``ewise`` uses every coordinate after the group
+prefix for a scalar function application.
+
 Execution Scope and Scalar Functions
 ------------------------------------
 
@@ -116,9 +149,31 @@ has no group prefix. Other scopes and warp-collective instructions use
 the group shapes listed in the :ref:`coordinate reference
 <cuda-tile-operand-coordinates>`.
 
-``ewise`` uses one scalar value per invocation, so it has no trailing
-instruction atom. For the same register view, ``(2, 32)`` still selects a
-thread, while ``(3, 4)`` now specifies twelve scalar invocations.
+``ewise``'s function parameters and return type must match the input and
+destination elements. In ``ewise(plus_one, registers, registers, ...)``,
+the first ``registers`` is the destination and the second is the input;
+the result replaces each input value in place. A function can contain
+multiple scalar operations, as the SiLU example in
+:doc:`arithmetic` demonstrates.
+
+Using apply for Arithmetic
+--------------------------
+
+The add-one computation can also use an explicitly selected PTX
+instruction. In the kernel above, replace the ``ewise`` call with:
+
+.. code-block:: python
+
+    scalars = registers.view(2, 32, 3, 4, 1)
+    T.cuda.tile.apply(
+        T.ptx["add.rn.f32"], scalars, scalars, T.float32(1), scope="cta"
+    )
+
+``add.rn.f32`` uses a single-register atom, represented by the trailing
+``1``. The ``(3, 4)`` repeat axes issue twelve additions per thread,
+reusing the scalar constant ``1``. The view reuses the same register
+storage. Here ``apply`` selects the addition instruction and its rounding
+mode directly; ``ewise`` expresses the computation through ``plus_one``.
 
 Preparing Operand Views
 -----------------------

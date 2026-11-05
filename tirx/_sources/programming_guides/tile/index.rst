@@ -20,20 +20,20 @@
 Tile Operations
 ===============
 
-This guide shows how to use CUDA tile operations to apply a computation to
-tensor regions. ``T.cuda.tile.apply`` repeats a specified PTX instruction, such
-as a vector load or matrix multiplication. ``T.cuda.tile.ewise`` applies a
-scalar TIRx function to register elements. You choose the operand views,
+TIRx provides two CUDA tile operations: ``T.cuda.tile.apply`` and
+``T.cuda.tile.ewise``. ``apply`` repeats a specified PTX instruction, such as
+a vector load or matrix multiplication, while ``ewise`` applies a scalar
+TIRx function to register elements. You choose the operand views,
 instruction variants, and synchronization required by the kernel.
 
-Start with :doc:`tile_patterns` for a load, compute, and store example and
-an explanation of how operand axes divide the work across threads. The
-:doc:`instruction reference </reference/python/backend.cuda.tile.instructions>`
-lists each family's parameters, operand layouts, and alignment requirements.
+The guides below cover data movement, arithmetic, asynchronous transfers,
+and matrix instructions. Start with :doc:`tile_patterns` for a load,
+compute, and store example that shows how operand axes divide the work
+across threads.
 
-The guides below show how to use these interfaces for data movement,
-arithmetic, asynchronous transfers, and matrix instructions. Asynchronous
-examples include the completion protocol required by their instruction family.
+For each instruction family's parameters, operand layouts, and alignment
+requirements, see the
+:doc:`instruction reference </reference/python/backend.cuda.tile.instructions>`.
 
 .. toctree::
    :maxdepth: 1

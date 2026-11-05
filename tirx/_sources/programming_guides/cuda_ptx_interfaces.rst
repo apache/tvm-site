@@ -57,11 +57,11 @@ For example, a warp can sum its 32 input values with
     from tvm_tirx.script import tirx as T
 
     @T.function
-    def warp_reduce(A: T.Tensor((32,), "float32", align=16)):
+    def warp_reduce(A: T.Tensor((32,), T.float32, align=16)):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=32))
         lane_id = T.cuda.lane_id()
-        v = T.alloc_local((1,), "float32")
-        i = T.alloc_local((1,), "int32")
+        v = T.alloc_local((1,), T.float32)
+        i = T.alloc_local((1,), T.int32)
         v[0] = A[lane_id]
         i[0] = 16
         while i[0] >= 1:
@@ -100,7 +100,7 @@ This kernel uses ``add.rn.f32`` to add two float32 values in each thread;
     ):
         with T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=32)):
             tid = T.cuda.thread_idx("x")
-            result = T.local_scalar("float32")
+            result = T.local_scalar(T.float32)
             T.ptx.add.rn.f32(result, A[tid], B[tid])
             C[tid] = result
 
@@ -136,10 +136,10 @@ otherwise:
 
 
     @T.function
-    def relu_cuda(A: T.Tensor((256,), "float32"), B: T.Tensor((256,), "float32")):
+    def relu_cuda(A: T.Tensor((256,), T.float32), B: T.Tensor((256,), T.float32)):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=256))
         tx = T.cuda.thread_idx("x")
-        B[tx] = T.cuda.func_call("my_relu", A[tx], SRC, ty="float32")
+        B[tx] = T.cuda.func_call("my_relu", A[tx], SRC, ty=T.float32)
 
 The generated CUDA source includes ``my_relu`` and calls it for each
 element:

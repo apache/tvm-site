@@ -18,18 +18,13 @@
 Control Flow
 ============
 
-.. note::
-
-   All the code in this guide is in
-   `examples/programming_guides/control_flow.py
-   <https://github.com/apache/tvm-tirx/blob/main/examples/programming_guides/control_flow.py>`_.
-
 This guide shows how to write loops and conditions in TIRx kernels. TIRx uses
 Python's own control flow syntax: ``if``, ``elif``, ``else``, ``for``,
 ``while``, ``break``, and ``continue`` all mean what they mean in Python, and
 each thread executes them independently with its own values.
 
-The examples use the following imports and a symbolic length ``n``:
+The kernels below illustrate these control-flow constructs. They use the
+following imports and a symbolic tensor length ``n``:
 
 .. literalinclude:: ../../examples/programming_guides/control_flow.py
    :language: python
@@ -39,8 +34,8 @@ The examples use the following imports and a symbolic length ``n``:
 ``for`` Loops
 -------------
 
-A ``for`` loop over ``range(...)`` runs its body once per iteration, in order,
-within each thread. ``T.unroll(...)`` iterates in the same way but asks the
+A ``for`` loop over ``range(...)`` executes its iterations sequentially within
+each thread. ``T.unroll(...)`` iterates in the same way but asks the
 compiler to expand the loop into one copy of its body per iteration. The
 following kernel uses both to sum each row of an ``n x 64`` matrix, one row
 per thread:
@@ -92,6 +87,18 @@ local scalars, so they keep their updates from one iteration to the next.
 ``break`` exits the innermost loop, and ``continue`` skips to its next
 iteration, just as in Python. Both work in ``for`` and ``while`` loops, and
 each thread decides on its own when to break or continue.
+
+The following kernel scans each row, skips negative values, and stops at the
+first zero. Each thread sums the positive values encountered in its own row:
+
+.. literalinclude:: ../../examples/programming_guides/control_flow.py
+   :language: python
+   :start-after: # [break_continue.begin]
+   :end-before: # [break_continue.end]
+
+For a row ``[2, -1, 3, 0, 9, 9, 9, 9]``, ``continue`` skips ``-1`` and
+``break`` stops the loop at ``0``, so the thread writes ``5``. The store
+``B[row] = total`` still executes after ``break``; only the loop ends.
 
 ``if`` Statements
 -----------------

@@ -57,13 +57,13 @@ other threads, then reads the next thread's row:
 
     @T.function
     def read_next_row(
-        A: T.Tensor((64, 4), "float32", align=16),
-        B: T.Tensor((64, 4), "float32", align=16),
+        A: T.Tensor((64, 4), T.float32, align=16),
+        B: T.Tensor((64, 4), T.float32, align=16),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
         tid = T.cuda.thread_idx("x")
-        registers = T.alloc_local((4,), "float32", layout="default")
-        shared = T.alloc_shared((64, 4), "float32", align=16)
+        registers = T.alloc_local((4,), T.float32, layout="default")
+        shared = T.alloc_shared((64, 4), T.float32, align=16)
         T.cuda.tile.apply(T.ptx["ld.global.v4.b32"], registers, A.sub[tid, :])
         T.cuda.tile.apply(T.ptx["st.shared.v4.b32"], shared.sub[tid, :], registers)
         T.cuda.cta_sync()
@@ -108,7 +108,7 @@ for another read. Insert the following statements after its global load:
 
 .. code-block:: python
 
-    saved = T.alloc_local((4, 1), "float32", layout="default")
+    saved = T.alloc_local((4, 1), T.float32, layout="default")
     T.cuda.tile.apply(T.ptx["mov.b32"], saved, registers.view(4, 1))
 
 The view exposes four repeats, each ending in a single-register atom

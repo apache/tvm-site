@@ -44,13 +44,13 @@ all 32 lanes update one column each:
 
     @T.function
     def tma_add_one(
-        A: T.Tensor((8, 32), "float32", align=16),
-        B: T.Tensor((8, 32), "float32", align=16),
+        A: T.Tensor((8, 32), T.float32, align=16),
+        B: T.Tensor((8, 32), T.float32, align=16),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=32))
         lane = T.cuda.lane_id()
-        shared = T.alloc_shared((8, 32), "float32", layout="default", align=128)
-        mbar = T.alloc_shared((1,), "uint64", align=8)
+        shared = T.alloc_shared((8, 32), T.float32, layout="default", align=128)
+        mbar = T.alloc_shared((1,), T.uint64, align=8)
         if lane == 0:
             T.ptx.mbarrier.init.shared.b64(mbar.ptr_to([0]), T.uint32(1))
             T.ptx.mbarrier.arrive.expect_tx.shared.b64(mbar.ptr_to([0]), T.uint32(1024))

@@ -381,9 +381,11 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reading-an-operand-s-shape">Reading an Operand’s Shape</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-a-tile-operation">Choosing a Tile Operation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-load-compute-and-store-example">A Load, Compute, and Store Example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reading-an-operand-s-shape">Reading an Operand’s Shape</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#execution-scope-and-scalar-functions">Execution Scope and Scalar Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-apply-for-arithmetic">Using apply for Arithmetic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-operand-views">Preparing Operand Views</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synchronization-belongs-to-the-caller">Synchronization Belongs to the Caller</a></li>
 </ul>
@@ -404,50 +406,52 @@
 <code class="docutils literal notranslate"><span class="pre">T.cuda.tile.ewise</span></code> applies a scalar TIRx function to each element. The
 operand views describe which values each thread handles and how many times
 it repeats that computation.</p>
-<section id="reading-an-operand-s-shape">
-<h2>Reading an Operand’s Shape<a class="headerlink" href="#reading-an-operand-s-shape" title="Link to this heading">#</a></h2>
-<p>Suppose each of 64 threads processes twelve float32 values. A
-<code class="docutils literal notranslate"><span class="pre">ld.global.v4.b32</span></code> instruction loads four 32-bit words at a time, so
-each thread needs three loads. We can describe this work with shape
-<code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32,</span> <span class="pre">3,</span> <span class="pre">4)</span></code>:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(2, 32, 3, 4)
- └───┘  │  └─ atom: four words used by one instruction
-  group └──── repeat: three instructions per thread
-</pre></div>
-</div>
+<section id="choosing-a-tile-operation">
+<h2>Choosing a Tile Operation<a class="headerlink" href="#choosing-a-tile-operation" title="Link to this heading">#</a></h2>
+<p>Both operations repeat a computation over the values described by the
+operands. They differ in how you specify that computation:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 20.0%" />
-<col style="width: 80.0%" />
+<col style="width: 15.0%" />
+<col style="width: 40.0%" />
+<col style="width: 45.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Part</p></th>
-<th class="head"><p>Meaning in this example</p></th>
+<tr class="row-odd"><th class="head"><p>Operation</p></th>
+<th class="head"><p>You supply</p></th>
+<th class="head"><p>Each repetition</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Group</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32)</span></code> selects one of two warps and a lane within that warp.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code></p></td>
+<td><p>A PTX instruction, such as <code class="docutils literal notranslate"><span class="pre">T.ptx[&quot;ld.global.v4.b32&quot;]</span></code> or
+<code class="docutils literal notranslate"><span class="pre">T.ptx[&quot;add.rn.f32&quot;]</span></code>.</p></td>
+<td><p>Executes that instruction on the values required by its operand form.</p></td>
 </tr>
-<tr class="row-odd"><td><p>Repeat</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">(3,)</span></code> repeats the chosen instruction three times for that thread.</p></td>
-</tr>
-<tr class="row-even"><td><p>Atom</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">(4,)</span></code> selects the four words transferred by <code class="docutils literal notranslate"><span class="pre">.v4.b32</span></code>.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ewise</span></code></p></td>
+<td><p>A scalar TIRx function, such as <code class="docutils literal notranslate"><span class="pre">plus_one(value)</span></code>.</p></td>
+<td><p>Inlines the function for one element, potentially producing several
+instructions.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The instruction fixes the atom shape. The leading axes describe its
-repetitions and the threads that execute them. The register layout below
-maps the first two coordinates to <code class="docutils literal notranslate"><span class="pre">warpid</span></code> and <code class="docutils literal notranslate"><span class="pre">laneid</span></code>, leaving
-<code class="docutils literal notranslate"><span class="pre">3</span> <span class="pre">*</span> <span class="pre">4</span> <span class="pre">=</span> <span class="pre">12</span></code> local positions per thread.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">apply</span></code> when you want a particular instruction, including its
+rounding or other variants. It supports arithmetic and matrix instructions
+as well as data movement. Use <code class="docutils literal notranslate"><span class="pre">ewise</span></code> to express a computation as a
+scalar function over register elements.</p>
 </section>
 <section id="a-load-compute-and-store-example">
 <h2>A Load, Compute, and Store Example<a class="headerlink" href="#a-load-compute-and-store-example" title="Link to this heading">#</a></h2>
-<p>The kernel uses this layout to load the values, add one to each, and
-store the results. <code class="docutils literal notranslate"><span class="pre">scope=&quot;cta&quot;</span></code> tells the tile calls to use the
-leading <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32)</span></code> axes for the threads in the block:</p>
+<p>Consider an add-one kernel with 64 threads, each handling twelve float32
+values. It makes three tile calls: <code class="docutils literal notranslate"><span class="pre">apply</span></code> to load the values into
+registers, <code class="docutils literal notranslate"><span class="pre">ewise</span></code> to add one to each value, and <code class="docutils literal notranslate"><span class="pre">apply</span></code> to store the
+results. The load and store use the <code class="docutils literal notranslate"><span class="pre">.v4.b32</span></code> instruction forms, which
+transfer four 32-bit words at a time.</p>
+<p>The tensors have shape <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32,</span> <span class="pre">3,</span> <span class="pre">4)</span></code>: two warps, 32 lanes per
+warp, and three groups of four values per thread. The register layout
+maps the first two axes to <code class="docutils literal notranslate"><span class="pre">warpid</span></code> and <code class="docutils literal notranslate"><span class="pre">laneid</span></code>. <code class="docutils literal notranslate"><span class="pre">scope=&quot;cta&quot;</span></code>
+tells the tile calls to use those leading axes for the threads in the block:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">S</span><span class="p">,</span> <span class="n">TileLayout</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.axis</span><span class="w"> </span><span class="kn">import</span> <span class="n">laneid</span><span class="p">,</span> <span class="n">warpid</span>
@@ -460,11 +464,11 @@ leading <code class="docutils literal notranslate"><span class="pre">(2,</span> 
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_one_tile</span><span class="p">(</span>
-    <span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">"float32"</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
-    <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">"float32"</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
+    <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
 <span class="p">):</span>
     <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="mi">64</span><span class="p">))</span>
-    <span class="n">registers</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_local</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">"float32"</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">register_layout</span><span class="p">)</span>
+    <span class="n">registers</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_local</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">register_layout</span><span class="p">)</span>
     <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">"ld.global.v4.b32"</span><span class="p">],</span> <span class="n">registers</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"cta"</span><span class="p">)</span>
     <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">ewise</span><span class="p">(</span><span class="n">plus_one</span><span class="p">,</span> <span class="n">registers</span><span class="p">,</span> <span class="n">registers</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"cta"</span><span class="p">)</span>
     <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">"st.global.v4.b32"</span><span class="p">],</span> <span class="n">B</span><span class="p">,</span> <span class="n">registers</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"cta"</span><span class="p">)</span>
@@ -486,6 +490,46 @@ them, <code class="docutils literal notranslate"><span class="pre">ewise</span><
 </pre></div>
 </div>
 </section>
+<section id="reading-an-operand-s-shape">
+<h2>Reading an Operand’s Shape<a class="headerlink" href="#reading-an-operand-s-shape" title="Link to this heading">#</a></h2>
+<p>For <code class="docutils literal notranslate"><span class="pre">apply</span></code>, operand axes describe the execution <strong>group</strong>, the
+instruction <strong>repeats</strong>, and the instruction’s <strong>atom</strong>. The atom is the
+set of values used by one instruction; here it is four consecutive
+32-bit words. The same register view has a different interpretation
+for <code class="docutils literal notranslate"><span class="pre">ewise</span></code>, which applies a scalar function to every element:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 20.0%" />
+<col style="width: 25.0%" />
+<col style="width: 30.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Operation in this kernel</p></th>
+<th class="head"><p>Group</p></th>
+<th class="head"><p>Repeat</p></th>
+<th class="head"><p>Atom</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with <code class="docutils literal notranslate"><span class="pre">ld/st.global.v4.b32</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32)</span></code>: warp and lane</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(3,)</span></code>: three instructions per thread</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(4,)</span></code>: four words per instruction</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ewise(plus_one,</span> <span class="pre">...)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32)</span></code>: warp and lane</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">4)</span></code>: twelve scalar applications per thread</p></td>
+<td><p>One scalar element, with no trailing atom axis</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The chosen instruction fixes <code class="docutils literal notranslate"><span class="pre">apply</span></code>’s atom shape. The operand view
+specifies how often to repeat it, and the layout maps the coordinates to
+threads and storage. <code class="docutils literal notranslate"><span class="pre">ewise</span></code> uses every coordinate after the group
+prefix for a scalar function application.</p>
+</section>
 <section id="execution-scope-and-scalar-functions">
 <h2>Execution Scope and Scalar Functions<a class="headerlink" href="#execution-scope-and-scalar-functions" title="Link to this heading">#</a></h2>
 <p>The kernel’s <code class="docutils literal notranslate"><span class="pre">LaunchConfig</span></code> launches 64 threads; <code class="docutils literal notranslate"><span class="pre">scope=&quot;cta&quot;</span></code>
@@ -493,9 +537,28 @@ describes how the tile operands map to those threads. It does not launch
 additional threads or insert a barrier. At <code class="docutils literal notranslate"><span class="pre">scope=&quot;thread&quot;</span></code>, an operand
 has no group prefix. Other scopes and warp-collective instructions use
 the group shapes listed in the <a class="reference internal" href="../../reference/python/backend.cuda.tile.instructions.html#cuda-tile-operand-coordinates"><span class="std std-ref">coordinate reference</span></a>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ewise</span></code> uses one scalar value per invocation, so it has no trailing
-instruction atom. For the same register view, <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32)</span></code> still selects a
-thread, while <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">4)</span></code> now specifies twelve scalar invocations.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ewise</span></code>’s function parameters and return type must match the input and
+destination elements. In <code class="docutils literal notranslate"><span class="pre">ewise(plus_one,</span> <span class="pre">registers,</span> <span class="pre">registers,</span> <span class="pre">...)</span></code>,
+the first <code class="docutils literal notranslate"><span class="pre">registers</span></code> is the destination and the second is the input;
+the result replaces each input value in place. A function can contain
+multiple scalar operations, as the SiLU example in
+<a class="reference internal" href="arithmetic.html"><span class="doc">Arithmetic and Type Conversion</span></a> demonstrates.</p>
+</section>
+<section id="using-apply-for-arithmetic">
+<h2>Using apply for Arithmetic<a class="headerlink" href="#using-apply-for-arithmetic" title="Link to this heading">#</a></h2>
+<p>The add-one computation can also use an explicitly selected PTX
+instruction. In the kernel above, replace the <code class="docutils literal notranslate"><span class="pre">ewise</span></code> call with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scalars</span> <span class="o">=</span> <span class="n">registers</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">"add.rn.f32"</span><span class="p">],</span> <span class="n">scalars</span><span class="p">,</span> <span class="n">scalars</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"cta"</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">add.rn.f32</span></code> uses a single-register atom, represented by the trailing
+<code class="docutils literal notranslate"><span class="pre">1</span></code>. The <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">4)</span></code> repeat axes issue twelve additions per thread,
+reusing the scalar constant <code class="docutils literal notranslate"><span class="pre">1</span></code>. The view reuses the same register
+storage. Here <code class="docutils literal notranslate"><span class="pre">apply</span></code> selects the addition instruction and its rounding
+mode directly; <code class="docutils literal notranslate"><span class="pre">ewise</span></code> expresses the computation through <code class="docutils literal notranslate"><span class="pre">plus_one</span></code>.</p>
 </section>
 <section id="preparing-operand-views">
 <h2>Preparing Operand Views<a class="headerlink" href="#preparing-operand-views" title="Link to this heading">#</a></h2>
@@ -578,9 +641,11 @@ thread election or complete an asynchronous transfer.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reading-an-operand-s-shape">Reading an Operand’s Shape</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-a-tile-operation">Choosing a Tile Operation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-load-compute-and-store-example">A Load, Compute, and Store Example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reading-an-operand-s-shape">Reading an Operand’s Shape</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#execution-scope-and-scalar-functions">Execution Scope and Scalar Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-apply-for-arithmetic">Using apply for Arithmetic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-operand-views">Preparing Operand Views</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synchronization-belongs-to-the-caller">Synchronization Belongs to the Caller</a></li>
 </ul>

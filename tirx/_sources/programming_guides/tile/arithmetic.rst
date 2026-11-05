@@ -51,11 +51,11 @@ values to each of 64 threads:
 
     @T.function
     def affine_relu(
-        A: T.Tensor((2, 32, 4), "float32", align=16),
-        B: T.Tensor((2, 32, 4), "float32", align=16),
+        A: T.Tensor((2, 32, 4), T.float32, align=16),
+        B: T.Tensor((2, 32, 4), T.float32, align=16),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
-        registers = T.alloc_local((2, 32, 4), "float32", layout=register_layout)
+        registers = T.alloc_local((2, 32, 4), T.float32, layout=register_layout)
         T.cuda.tile.apply(T.ptx["ld.global.v4.b32"], registers, A, scope="cta")
         scalars = registers.view(2, 32, 4, 1)
         T.cuda.tile.apply(
@@ -130,19 +130,19 @@ register container, exposed below through a uint16 view:
 
     @T.function
     def to_float16(
-        A: T.Tensor((2, 32, 4), "float32", align=16),
-        B: T.Tensor((2, 32, 4), "float16", align=8),
+        A: T.Tensor((2, 32, 4), T.float32, align=16),
+        B: T.Tensor((2, 32, 4), T.float16, align=8),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
-        registers = T.alloc_local((2, 32, 4), "float32", layout=register_layout)
-        converted = T.alloc_local((2, 32, 4), "float16", layout=register_layout)
-        words = converted.view("uint16")
+        registers = T.alloc_local((2, 32, 4), T.float32, layout=register_layout)
+        converted = T.alloc_local((2, 32, 4), T.float16, layout=register_layout)
+        words = converted.view(T.uint16.dtype)
         T.cuda.tile.apply(T.ptx["ld.global.v4.b32"], registers, A, scope="cta")
         T.cuda.tile.apply(
             T.ptx["cvt.rn.f16.f32"],
             words.view(2, 32, 4, 1), registers.view(2, 32, 4, 1), scope="cta",
         )
-        T.cuda.tile.apply(T.ptx["st.global.v4.b16"], B.view("uint16"), words, scope="cta")
+        T.cuda.tile.apply(T.ptx["st.global.v4.b16"], B.view(T.uint16.dtype), words, scope="cta")
 
 ``cvt`` performs the numeric conversion. The uint16 views expose the
 resulting bits for the PTX operands and reuse the float16 storage. The

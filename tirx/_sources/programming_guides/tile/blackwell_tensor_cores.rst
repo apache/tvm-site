@@ -67,25 +67,25 @@ uses 64 columns, so the allocation and deallocation both specify 64.
     from tvm_tirx.backend.cuda.layout import mma_shared_layout, tmem_mma_operand_layout
     from tvm_tirx.tirx.layout import S, TileLayout
 
-    a_layout = mma_shared_layout("float16", 3, (128, 64))
-    b_layout = mma_shared_layout("float16", 3, (64, 64))
-    d_layout = tmem_mma_operand_layout("D", (128, 64), "float32", M=128, cta_group=1)
+    a_layout = mma_shared_layout(T.float16, 3, (128, 64))
+    b_layout = mma_shared_layout(T.float16, 3, (64, 64))
+    d_layout = tmem_mma_operand_layout("D", (128, 64), T.float32, M=128, cta_group=1)
     register_layout = TileLayout(S[(128, 64) : (1 @ tid_in_wg, 1)])
 
 
     @T.function
     def blackwell_matmul(
-        A: T.Tensor((128, 64), "float16"),
-        B: T.Tensor((64, 64), "float16"),
-        Out: T.Tensor((128, 64), "float32"),
+        A: T.Tensor((128, 64), T.float16),
+        B: T.Tensor((64, 64), T.float16),
+        Out: T.Tensor((128, 64), T.float32),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=128))
         tid = T.cuda.thread_idx("x")
         warp = T.cuda.warp_id()
-        a = T.alloc_shared((128, 64), "float16", layout=a_layout, align=1024)
-        b = T.alloc_shared((64, 64), "float16", layout=b_layout, align=1024)
-        address = T.alloc_shared((1,), "uint32", layout="default")
-        mbar = T.alloc_shared((1,), "uint64", layout="default", align=8)
+        a = T.alloc_shared((128, 64), T.float16, layout=a_layout, align=1024)
+        b = T.alloc_shared((64, 64), T.float16, layout=b_layout, align=1024)
+        address = T.alloc_shared((1,), T.uint32, layout="default")
+        mbar = T.alloc_shared((1,), T.uint64, layout="default", align=8)
         if warp == 0:
             T.ptx.tcgen05.alloc.cta_group__1.sync.aligned.shared__cta.b32(
                 T.address_of(address), T.uint32(64)
@@ -99,7 +99,7 @@ uses 64 columns, so the allocation and deallocation both specify 64.
         T.ptx.fence.proxy.async_.shared__cta()
         T.cuda.cta_sync()
         d = T.cuda.decl_tmem(
-            address[0], ty_args=[T.Tensor((128, 64), "float32", scope="tmem", layout=d_layout)]
+            address[0], ty_args=[T.Tensor((128, 64), T.float32, scope="tmem", layout=d_layout)]
         )
         av = a.rearrange("m (kr k) -> kr m k", k=16).view(1, 4, 128, 16)
         bv = b.rearrange("n (kr k) -> kr n k", k=16).view(1, 4, 64, 16)
@@ -117,7 +117,7 @@ uses 64 columns, so the allocation and deallocation both specify 64.
             )
         T.cuda.mbarrier_wait(mbar.ptr_to([0]), 0)
         T.ptx.tcgen05.fence__after_thread_sync()
-        frag = T.alloc_local((128, 64), "float32", layout=register_layout)
+        frag = T.alloc_local((128, 64), T.float32, layout=register_layout)
         T.cuda.tile.apply(
             T.ptx["tcgen05.ld.sync.aligned.32x32b.x64.b32"],
             frag.view(4, 32, 64),

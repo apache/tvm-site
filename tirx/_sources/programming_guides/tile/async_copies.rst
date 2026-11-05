@@ -41,12 +41,12 @@ then reads the next thread's row:
 
     @T.function
     def async_read_next_row(
-        A: T.Tensor((64, 4), "float32", align=16),
-        B: T.Tensor((64, 4), "float32", align=16),
+        A: T.Tensor((64, 4), T.float32, align=16),
+        B: T.Tensor((64, 4), T.float32, align=16),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
         tid = T.cuda.thread_idx("x")
-        shared = T.alloc_shared((64, 4), "float32", align=16)
+        shared = T.alloc_shared((64, 4), T.float32, align=16)
         T.cuda.tile.apply(
             T.ptx["cp.async.cg.shared.global"],
             shared.sub[tid, :], A.sub[tid, :], chunk_bytes=16,

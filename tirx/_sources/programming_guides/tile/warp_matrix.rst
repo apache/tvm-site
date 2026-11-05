@@ -86,14 +86,14 @@ lane mappings represented by these layouts.
 
     @T.function
     def warp_matmul(
-        A: T.Tensor((16, 16), "float16"),
-        B: T.Tensor((8, 16), "float16"),
-        Out: T.Tensor((16, 8), "float32"),
+        A: T.Tensor((16, 16), T.float16),
+        B: T.Tensor((8, 16), T.float16),
+        Out: T.Tensor((16, 8), T.float32),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=32))
         lane = T.cuda.lane_id()
-        a = T.alloc_shared((16, 16), "float16", layout="default", align=16)
-        b = T.alloc_shared((8, 16), "float16", layout="default", align=16)
+        a = T.alloc_shared((16, 16), T.float16, layout="default", align=16)
+        b = T.alloc_shared((8, 16), T.float16, layout="default", align=16)
         for q in range(8):
             index = lane + 32 * q
             a[index // 16, index % 16] = A[index // 16, index % 16]
@@ -101,13 +101,13 @@ lane mappings represented by these layouts.
             index = lane + 32 * q
             b[index // 16, index % 16] = B[index // 16, index % 16]
         T.cuda.cta_sync()
-        a_words = a.view("uint32").rearrange(
+        a_words = a.view(T.uint32.dtype).rearrange(
             "(group row) (chunk word) -> (chunk group) row word", group=2, chunk=2, word=4
         )
-        b_words = b.view("uint32").rearrange("row (chunk word) -> chunk row word", chunk=2)
-        ar = T.alloc_local((4,), "uint32", layout="default")
-        br = T.alloc_local((2,), "uint32", layout="default")
-        dr = T.alloc_local((4,), "float32", layout="default")
+        b_words = b.view(T.uint32.dtype).rearrange("row (chunk word) -> chunk row word", chunk=2)
+        ar = T.alloc_local((4,), T.uint32, layout="default")
+        br = T.alloc_local((2,), T.uint32, layout="default")
+        dr = T.alloc_local((4,), T.float32, layout="default")
         T.cuda.tile.apply(
             T.ptx["ldmatrix.sync.aligned.m8n8.x4.shared.b16"],
             ar.view(4, 8, 4, layout=a_load_layout), a_words, scope="warp",

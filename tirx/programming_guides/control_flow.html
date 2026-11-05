@@ -390,16 +390,12 @@
                   
   <section id="control-flow">
 <h1>Control Flow<a class="headerlink" href="#control-flow" title="Link to this heading">#</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>All the code in this guide is in
-<a class="reference external" href="https://github.com/apache/tvm-tirx/blob/main/examples/programming_guides/control_flow.py">examples/programming_guides/control_flow.py</a>.</p>
-</div>
 <p>This guide shows how to write loops and conditions in TIRx kernels. TIRx uses
 Python’s own control flow syntax: <code class="docutils literal notranslate"><span class="pre">if</span></code>, <code class="docutils literal notranslate"><span class="pre">elif</span></code>, <code class="docutils literal notranslate"><span class="pre">else</span></code>, <code class="docutils literal notranslate"><span class="pre">for</span></code>,
 <code class="docutils literal notranslate"><span class="pre">while</span></code>, <code class="docutils literal notranslate"><span class="pre">break</span></code>, and <code class="docutils literal notranslate"><span class="pre">continue</span></code> all mean what they mean in Python, and
 each thread executes them independently with its own values.</p>
-<p>The examples use the following imports and a symbolic length <code class="docutils literal notranslate"><span class="pre">n</span></code>:</p>
+<p>The kernels below illustrate these control-flow constructs. They use the
+following imports and a symbolic tensor length <code class="docutils literal notranslate"><span class="pre">n</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span>
@@ -410,8 +406,8 @@ each thread executes them independently with its own values.</p>
 </div>
 <section id="for-loops">
 <h2><code class="docutils literal notranslate"><span class="pre">for</span></code> Loops<a class="headerlink" href="#for-loops" title="Link to this heading">#</a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">for</span></code> loop over <code class="docutils literal notranslate"><span class="pre">range(...)</span></code> runs its body once per iteration, in order,
-within each thread. <code class="docutils literal notranslate"><span class="pre">T.unroll(...)</span></code> iterates in the same way but asks the
+<p>A <code class="docutils literal notranslate"><span class="pre">for</span></code> loop over <code class="docutils literal notranslate"><span class="pre">range(...)</span></code> executes its iterations sequentially within
+each thread. <code class="docutils literal notranslate"><span class="pre">T.unroll(...)</span></code> iterates in the same way but asks the
 compiler to expand the loop into one copy of its body per iteration. The
 following kernel uses both to sum each row of an <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">x</span> <span class="pre">64</span></code> matrix, one row
 per thread:</p>
@@ -481,6 +477,27 @@ local scalars, so they keep their updates from one iteration to the next.</p>
 <p><code class="docutils literal notranslate"><span class="pre">break</span></code> exits the innermost loop, and <code class="docutils literal notranslate"><span class="pre">continue</span></code> skips to its next
 iteration, just as in Python. Both work in <code class="docutils literal notranslate"><span class="pre">for</span></code> and <code class="docutils literal notranslate"><span class="pre">while</span></code> loops, and
 each thread decides on its own when to break or continue.</p>
+<p>The following kernel scans each row, skips negative values, and stops at the
+first zero. Each thread sums the positive values encountered in its own row:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_until_zero</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">)):</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">ceildiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="mi">128</span><span class="p">))</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="o">*</span> <span class="mi">128</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">total</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">value</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="n">total</span>
+</pre></div>
+</div>
+<p>For a row <code class="docutils literal notranslate"><span class="pre">[2,</span> <span class="pre">-1,</span> <span class="pre">3,</span> <span class="pre">0,</span> <span class="pre">9,</span> <span class="pre">9,</span> <span class="pre">9,</span> <span class="pre">9]</span></code>, <code class="docutils literal notranslate"><span class="pre">continue</span></code> skips <code class="docutils literal notranslate"><span class="pre">-1</span></code> and
+<code class="docutils literal notranslate"><span class="pre">break</span></code> stops the loop at <code class="docutils literal notranslate"><span class="pre">0</span></code>, so the thread writes <code class="docutils literal notranslate"><span class="pre">5</span></code>. The store
+<code class="docutils literal notranslate"><span class="pre">B[row]</span> <span class="pre">=</span> <span class="pre">total</span></code> still executes after <code class="docutils literal notranslate"><span class="pre">break</span></code>; only the loop ends.</p>
 </section>
 <section id="if-statements">
 <h2><code class="docutils literal notranslate"><span class="pre">if</span></code> Statements<a class="headerlink" href="#if-statements" title="Link to this heading">#</a></h2>

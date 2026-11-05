@@ -18,12 +18,6 @@
 Metaprogramming
 ===============
 
-.. note::
-
-   All the code in this guide is in
-   `examples/programming_guides/metaprogramming.py
-   <https://github.com/apache/tvm-tirx/blob/main/examples/programming_guides/metaprogramming.py>`_.
-
 Metaprogramming means writing code that constructs or specializes other code.
 In TIRx, ordinary Python functions can generate kernel definitions, inline
 helpers can insert reusable statements, and compile-time parameters can
@@ -34,7 +28,8 @@ This guide shows these three techniques: capturing Python values in kernel
 generators, reusing code with ``@T.inline``, and specializing ``@T.jit``
 functions.
 
-The examples use the following imports:
+To define and specialize kernels using these techniques, start with the
+following imports:
 
 .. literalinclude:: ../../examples/programming_guides/metaprogramming.py
    :language: python

@@ -22,7 +22,7 @@
 Types, Tensors, and Memory
 ==========================
 
-This guide looks at how CUDA kernels represent values and manage their storage.
+This guide covers data types, tensors, and memory spaces in CUDA kernels.
 A tensor's dtype describes its elements, and its scope selects the memory
 space. We will extend the add-one computation with vector accesses, shared
 storage, and thread-private values, then create views of existing data.
@@ -55,12 +55,8 @@ in generated CUDA source:
    * - ``float32x4``
      - ``float4``
 
-A ``float32x4`` value contains four float32 components, called lanes.
-CUDA C++ names this type ``float4``: each ``float`` is 32 bits, and ``4``
-is the number of components.
-
-We can extend the add-one kernel with vector accesses so each thread
-reads and updates four elements as a group:
+In the following add-one kernel, each thread reads four ``float32``
+elements into a ``float32x4`` value and updates them together:
 
 .. code-block:: python
 
@@ -68,19 +64,19 @@ reads and updates four elements as a group:
 
     @T.function
     def add_one_vector(
-        A: T.Tensor((256,), "float32", align=16),
-        B: T.Tensor((256,), "float32", align=16),
+        A: T.Tensor((256,), T.float32, align=16),
+        B: T.Tensor((256,), T.float32, align=16),
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
         tx = T.cuda.thread_idx("x")
-        vector_value = A[T.Ramp(tx * 4, 1, 4)]
+        vector_value: T.float32x4 = A[T.Ramp(tx * 4, 1, 4)]
         B[T.Ramp(tx * 4, 1, 4)] = vector_value + 1
 
 ``T.Ramp(tx * 4, 1, 4)`` selects the four consecutive indices ``4*tx``,
 ``4*tx + 1``, ``4*tx + 2``, and ``4*tx + 3``. Its arguments specify the
-starting index, stride, and lane count. Because ``A`` has float32 elements,
-the read at these four positions produces ``vector_value`` with inferred
-dtype ``float32x4``.
+starting index, stride, and number of elements (lanes). Because ``A`` has
+float32 elements, the read produces a four-lane value, matching the
+``T.float32x4`` annotation on ``vector_value``.
 
 ``vector_value + 1`` adds one to each lane. The store uses the same indices
 to write the four results to the corresponding float32 elements in ``B``.
@@ -93,7 +89,7 @@ vector loads and stores.
 Declaring Tensors
 -----------------
 
-A parameter such as ``A: T.Tensor((128,), "float32")`` describes a tensor
+A parameter such as ``A: T.Tensor((128,), T.float32)`` describes a tensor
 passed by the caller. Inside a kernel, ``T.alloc_shared`` and
 ``T.alloc_local`` allocate scratch tensors. Both are conveniences for
 ``T.alloc_tensor``, whose tensor type specifies the shape, dtype, and scope.
@@ -125,9 +121,9 @@ one shared tensor and declare another view of the same elements:
 
 .. code-block:: python
 
-    shared = T.alloc_shared((128,), "float32")
+    shared = T.alloc_shared((128,), T.float32)
     shared_view = T.decl_tensor(
-        shared.data, ty_args=[T.Tensor((128,), "float32", scope="shared")]
+        shared.data, ty_args=[T.Tensor((128,), T.float32, scope="shared")]
     )
 
 ``shared.data`` is the base pointer for ``shared_view``. Both names refer
@@ -152,10 +148,10 @@ neighbor, wrapping the last thread back to the first:
 .. code-block:: python
 
     @T.function
-    def shared_shift(A: T.Tensor((128,), "float32"), B: T.Tensor((128,), "float32")):
+    def shared_shift(A: T.Tensor((128,), T.float32), B: T.Tensor((128,), T.float32)):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=128))
         tx = T.cuda.thread_idx("x")
-        shared = T.alloc_shared((128,), "float32")
+        shared = T.alloc_shared((128,), T.float32)
         shared[tx] = A[tx]
         T.cuda.cta_sync()
         B[tx] = shared[(tx + 1) % 128]
@@ -184,12 +180,12 @@ uses it for the shared tensor:
 
     @T.function
     def shared_shift_dynamic(
-        A: T.Tensor((128,), "float32"), B: T.Tensor((128,), "float32")
+        A: T.Tensor((128,), T.float32), B: T.Tensor((128,), T.float32)
     ):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=128))
         tx = T.cuda.thread_idx("x")
         pool = SMEMPool()
-        shared = pool.alloc((128,), "float32")
+        shared = pool.alloc((128,), T.float32)
         pool.commit()
         shared[tx] = A[tx]
         T.cuda.cta_sync()
@@ -216,10 +212,10 @@ adding one and writing them back:
 .. code-block:: python
 
     @T.function
-    def add_one_local(A: T.Tensor((256,), "float32"), B: T.Tensor((256,), "float32")):
+    def add_one_local(A: T.Tensor((256,), T.float32), B: T.Tensor((256,), T.float32)):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
         tx = T.cuda.thread_idx("x")
-        values = T.alloc_local((4,), "float32")
+        values = T.alloc_local((4,), T.float32)
         for k in T.unroll(4):
             values[k] = A[tx * 4 + k]
         for k in T.unroll(4):
@@ -255,7 +251,7 @@ and writes one output for each sum:
 .. code-block:: python
 
     @T.function
-    def sum_four(A: T.Tensor((256,), "float32"), B: T.Tensor((64,), "float32")):
+    def sum_four(A: T.Tensor((256,), T.float32), B: T.Tensor((64,), T.float32)):
         T.device_entry(launch=T.cuda.LaunchConfig(grid=1, block=64))
         tx = T.cuda.thread_idx("x")
         base: T.let[T.int32] = tx * 4
@@ -303,7 +299,7 @@ same elements:
      - A view with the axes reordered
    * - ``A.rearrange(pattern, **sizes)``
      - A view that splits, reorders, or merges axes using a named pattern
-   * - ``A.view("uint32")``
+   * - ``A.view(T.uint32.dtype)``
      - A view of the same bytes as 32-bit unsigned words
 
 For a contiguous one-dimensional tensor ``A`` with 256 elements, we can
@@ -339,8 +335,8 @@ a device region, eight float16 elements can be viewed as four uint32 words:
 
 .. code-block:: python
 
-    half_values = T.alloc_local((8,), "float16")
-    packed_words = half_values.view("uint32")
+    half_values = T.alloc_local((8,), T.float16)
+    packed_words = half_values.view(T.uint32.dtype)
 
 ``packed_words`` has shape ``(4,)``. Each word contains the bits of two
 adjacent float16 elements. This is the representation used by instructions
