@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TIRx authoring layers</title>
+  <style>
+    /* Typography, cards, and blue accent follow the Modern GPU Programming for MLSys
+       diagrams: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys */
+    :root {
+      color-scheme: light;
+      --surface: #fff;
+      --text: #222;
+      --muted: #536276;
+      --frame: #b6bdc6;
+      --frame-bg: #f8fafc;
+      --tag: #475569;
+      --line: #64748b;
+      --neutral-border: #b6bdc6;
+      --layer-border: #5b9bd5;
+      --layer-bg: #eef5fc;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --surface: #14181e;
+      --text: #e5e9ef;
+      --muted: #b1bdcd;
+      --frame: #627084;
+      --frame-bg: #1c232c;
+      --tag: #475569;
+      --line: #a1afc1;
+      --neutral-border: #627084;
+      --layer-bg: #1d3043;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      padding: 14px 4px 4px;
+      background: var(--surface);
+      color: var(--text);
+      font: 13px/1.5 'Inter', 'SF Pro', 'Segoe UI', system-ui, sans-serif;
+    }
+    h1, h2, p { margin: 0; }
+    h2 { font-size: 14px; font-weight: 700; }
+    code { font: 12px/1.5 'SF Mono', 'Fira Code', Consolas, monospace; }
+    .diagram { max-width: 920px; margin: 0 auto; }
+    .program {
+      position: relative;
+      padding: 26px 18px 14px;
+      border: 2px solid var(--frame);
+      border-radius: 12px;
+      background: var(--frame-bg);
+    }
+    .program-label {
+      position: absolute;
+      top: -11px;
+      left: 16px;
+      padding: 1px 10px;
+      border-radius: 4px;
+      background: var(--tag);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .layers {
+      display: grid;
+      grid-template-columns: minmax(0, .85fr) minmax(0, 1.8fr);
+      grid-template-rows: auto 64px auto;
+      column-gap: 32px;
+    }
+    .card { border: 2px solid; border-radius: 8px; text-align: center; }
+    .core {
+      grid-column: 1;
+      grid-row: 1 / 4;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      padding: 18px 10px;
+      border-color: var(--layer-border);
+      background: var(--layer-bg);
+    }
+    .core code { display: block; margin-top: 4px; font-size: 15px; }
+    .constructs { display: grid; gap: 6px; }
+    .note { font-size: 11px; color: var(--muted); }
+    .tile {
+      grid-column: 2;
+      grid-row: 1;
+      padding: 14px 12px 12px;
+      border-color: var(--layer-border);
+      background: var(--layer-bg);
+    }
+    .operations { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+    .operation code { display: block; margin-bottom: 4px; font-weight: 600; }
+    .tile-note { border-top: 1px solid var(--layer-border); padding-top: 9px; }
+    .dispatch { grid-column: 2; grid-row: 2; position: relative; }
+    .dispatch::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 3px;
+      border-left: 1.5px solid var(--line);
+    }
+    .branch {
+      position: absolute;
+      top: 50%;
+      left: -30px;
+      width: calc(50% + 30px);
+      border-top: 1.5px solid var(--line);
+    }
+    .branch::before {
+      content: '';
+      position: absolute;
+      left: -2px;
+      top: -4.5px;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-right: 6px solid var(--line);
+    }
+    .dispatch::after, .lowering::after {
+      content: '';
+      position: absolute;
+      left: calc(50% - 3.25px);
+      bottom: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 6px solid var(--line);
+    }
+    .dispatch code {
+      position: absolute;
+      left: calc(50% + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .backend {
+      grid-column: 2;
+      grid-row: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 3px 16px;
+      padding: 10px;
+      border-color: var(--layer-border);
+      background: var(--layer-bg);
+    }
+    .backend h2 { font-size: 13px; }
+    .shared-ir { margin-top: 14px; color: var(--muted); text-align: center; font-size: 12px; }
+    .shared-ir strong { color: var(--text); font-weight: 600; }
+    .lowering { position: relative; height: 60px; }
+    .lowering::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 3px;
+      border-left: 1.5px solid var(--line);
+    }
+    .lowering span {
+      position: absolute;
+      left: calc(50% + 12px);
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .codegen {
+      width: 220px;
+      max-width: 80%;
+      margin: 0 auto;
+      padding: 9px 14px;
+      border-color: var(--neutral-border);
+      background: var(--surface);
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    @media (max-width: 620px) {
+      .program { padding: 24px 10px 12px; }
+      .layers { column-gap: 20px; grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); }
+      .branch { left: -18px; width: calc(50% + 18px); }
+      .operations { grid-template-columns: 1fr; gap: 12px; }
+      .tile { padding: 12px 6px 10px; }
+      .core { padding: 14px 6px; }
+      .constructs { font-size: 12px; }
+      .backend { padding: 8px 5px; }
+      .backend code { font-size: 11px; }
+      .dispatch code { left: calc(50% + 7px); font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="diagram" aria-labelledby="program-title" aria-describedby="diagram-description">
+    <p class="sr-only" id="diagram-description">
+      Core language constructs are used throughout a TIRx program. The optional
+      tile layer expands through TileDispatch into core statements and expressions
+      and native backend calls. Direct backend calls form a thin interface. All
+      constructs share one IR, followed by layout and further lowering and code generation.
+    </p>
+    <section class="program">
+      <h1 class="program-label" id="program-title">One TIRx program</h1>
+      <div class="layers">
+        <section class="card core" aria-labelledby="core-title">
+          <div><h2 id="core-title">Core language</h2><code>T.*</code></div>
+          <div class="constructs">
+            <p>Loops and branches</p>
+            <p>Scalar expressions</p>
+            <p>Tensor accesses</p>
+          </div>
+          <p class="note">Used throughout the program</p>
+        </section>
+        <section class="card tile" aria-labelledby="tile-title">
+          <h2 id="tile-title">Tile operations</h2>
+          <div class="operations">
+            <div class="operation">
+              <code>T.cuda.tile.apply</code>
+              <p class="note">Repeat a chosen PTX instruction</p>
+            </div>
+            <div class="operation">
+              <code>T.cuda.tile.ewise</code>
+              <p class="note">Inline a scalar function</p>
+            </div>
+          </div>
+          <p class="note tile-note">Tensor layouts and execution scope</p>
+        </section>
+        <div class="dispatch" aria-hidden="true"><span class="branch"></span><code>TileDispatch</code></div>
+        <section class="card backend" aria-labelledby="backend-title">
+          <h2 id="backend-title">Direct backend calls</h2>
+          <code>T.cuda.* / T.ptx.*</code>
+        </section>
+      </div>
+      <p class="shared-ir"><strong>Shared TIRx IR</strong> · statements, expressions and calls</p>
+    </section>
+    <div class="lowering"><span>Layout and further lowering</span></div>
+    <section class="card codegen"><h2>Code generation</h2></section>
+  </main>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const dark = matchMedia('(prefers-color-scheme: dark)');
+      root.dataset.theme = dark.matches ? 'dark' : 'light';
+      if (parent === window) {
+        dark.addEventListener('change', () => { root.dataset.theme = dark.matches ? 'dark' : 'light'; });
+        return;
+      }
+      const parentOrigin = document.referrer ? new URL(document.referrer).origin : '*';
+      const report = () => parent.postMessage({
+        type: 'tirx-authoring-layers:height', height: Math.ceil(document.body.getBoundingClientRect().height)
+      }, parentOrigin);
+      new ResizeObserver(report).observe(document.body);
+      addEventListener('message', (event) => {
+        if (event.source !== parent || (parentOrigin !== '*' && event.origin !== parentOrigin)) return;
+        if (event.data?.type !== 'tirx-authoring-layers:theme') return;
+        if (['light', 'dark'].includes(event.data.theme)) root.dataset.theme = event.data.theme;
+        report();
+      });
+      addEventListener('load', report);
+      report();
+    })();
+  </script>
+</body>
+</html>
