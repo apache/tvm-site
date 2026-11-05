@@ -75,39 +75,19 @@ TIRx programs use one TVMScript namespace alias:
 
    from tvm_tirx.script import tirx as T
 
-The namespace exposes three authoring layers. They share the same TIRx
-program, but enter the compiler at different levels:
+The core language supplies loops, branches, scalar expressions, and tensor
+accesses throughout a kernel. CUDA tile operations add an optional expansion
+layer over these constructs and native backend operations. All of them
+coexist in the same TIRx IR:
 
-.. list-table::
-   :header-rows: 1
-   :widths: 25 30 45
+.. raw:: html
 
-   * - Authoring layer
-     - Syntax
-     - Representation and lowering
-   * - Core language
-     - ``T.*``
-     - Creates TIRx statements, expressions, tensors, and control flow.
-   * - Backend operations
-     - ``T.cuda.*`` and ``T.ptx.*``
-     - Creates backend calls directly; these calls bypass tile operation
-       dispatch.
-   * - Tile operations
-     - ``T.cuda.tile.*``
-     - Creates a tile call that is replaced by a target-specific
-       implementation during tile operation dispatch.
-
-``tvm_tirx.script.tirx`` is the construction syntax for the TIRx IR, not a
-separate IR. Tile operation dispatch and layout and scope lowering replace
-high-level TIRx nodes with lower-level TIRx statements and calls:
-
-.. code-block:: text
-
-   T.* ───────────────────────────▶ TIRx statements and expressions ──┐
-   T.cuda.* / T.ptx.* ────────────▶ backend calls ────────────────────┤
-   T.cuda.tile.* ─▶ tile call ─▶ tile operation dispatch ─────────────┤
-                                                                      ▼
-                                        layout and scope lowering ─▶ codegen
+   <iframe data-tirx-authoring-layers
+           src="https://tvm.apache.org/images/docs/tirx/authoring_layers.html"
+           title="TIRx authoring layers: core language, tile operations, and backend calls"
+           style="display: block; width: 100%; height: 480px; border: 0;"
+           loading="lazy"></iframe>
+   <script defer src="https://tvm.apache.org/images/docs/tirx/authoring_layers_embed.js"></script>
 
 The model rests on three constructs:
 
