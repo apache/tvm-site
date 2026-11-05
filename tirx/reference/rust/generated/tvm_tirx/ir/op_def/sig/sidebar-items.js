@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["arg","call_attrs","ty_arg","var_args","var_of_type","var_ty_args"],"struct":["Arg","CallAttrs","PrimVar","TyArg","VarArgs","VarTyArgs"],"trait":["ArgType","Specs"]};
+window.SIDEBAR_ITEMS = {"fn":["arg","call_attrs","ty_arg","var_args","var_of_type","var_ty_args"],"struct":["Arg","CallAttrs","TyArg","VarArgs","VarTyArgs"],"trait":["ArgType","Specs"]};

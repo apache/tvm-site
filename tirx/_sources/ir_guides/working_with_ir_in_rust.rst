@@ -138,14 +138,21 @@ The output is:
 
    x * 2 + 1
 
-|Var::new|_ takes a name, a type, and a source location; ``UNKNOWN_LOC``
-means there is none. The operators ``*`` and ``+`` build IR directly
-from ``x``, and the literals ``2`` and ``1`` become constants of its type.
+|PrimVar::new|_ takes a name, a primitive type, and a source location;
+``UNKNOWN_LOC`` means there is none. The operators ``*`` and ``+`` build IR
+directly from ``x``, and the literals ``2`` and ``1`` become constants of
+its type.
 
-An operator can fail, for example on mismatched types, so ``ExprResult``
-carries the first error along, much like a chain of ``Result``\ s. The
-standard ``.try_into()`` conversion extracts an ``Expr``, and ``?`` passes
-an error on. |script|_ prints the node as TVMScript.
+As in C++, the operators take a ``PrimExpr``, an expression whose type is a
+``PrimType``. ``x`` is a ``PrimVar``, a variable of a primitive type, because a
+plain ``Var`` may have any type: it takes part in arithmetic only after
+``downcast_ref::<PrimVar>()`` or ``try_cast::<PrimVar>()`` checks it, and ``&var + 1``
+does not compile.
+
+An operator can still fail, for example on mismatched types, so
+``ExprResult`` carries the first error along, much like a chain of
+``Result``\ s. The standard ``.try_into()`` conversion extracts a
+``PrimExpr``, and ``?`` passes an error on. |script|_ prints the node as TVMScript.
 
 We now have an expression; next, let's see what kind of Rust value it is.
 
@@ -195,8 +202,8 @@ This is the newtype pattern. Simplified from the crate, the pair is:
    #[type_key = "prim.Add"]
    pub struct AddObj {
        base: ExprObj,
-       pub a: Expr,
-       pub b: Expr,
+       pub a: PrimExpr,
+       pub b: PrimExpr,
    }
 
    #[repr(C)]
@@ -773,7 +780,7 @@ Quick Reference
        borrowed object in an ``Option``
    * - ``.into()``
      - Upcasts a managed reference to a parent type
-   * - |Var::new|_, expression operators, ``.try_into()?``
+   * - |PrimVar::new|_, expression operators, ``.try_into()?``
      - Creates a node; builds an expression with operators
    * - |structural_walk|_\ ``(&func, callbacks, WalkOrder::PreOrder)``
      - Walks with typed callbacks that return ``WalkResult``
@@ -840,8 +847,8 @@ Quick Reference
 .. _StructuralVisitorWithConstraintContextView: ../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/type.StructuralVisitorWithConstraintContextView.html
 .. |match_any!| replace:: ``match_any!``
 .. _match_any!: ../reference/rust/generated/tvm_ffi/macro.match_any.html
-.. |Var::new| replace:: ``Var::new``
-.. _Var::new: ../reference/rust/generated/tvm_tirx/ir/expr/struct.Var.html#method.new
+.. |PrimVar::new| replace:: ``PrimVar::new``
+.. _PrimVar::new: ../reference/rust/generated/tvm_tirx/ir/expr/struct.PrimVar.html#method.new
 .. |downcast_ref| replace:: ``downcast_ref``
 .. _downcast_ref: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.downcast_ref
 .. |register_global_typed| replace:: ``Function::register_global_typed``
