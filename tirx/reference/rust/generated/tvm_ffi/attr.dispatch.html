@@ -1,41 +1,56 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Generate source-ordered runtime type dispatch from `prefix_*` handlers."><title>dispatch in tvm_ffi - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-b7b9f40b.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="tvm_ffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.95.0 (59807616e 2026-04-14)" data-channel="1.95.0" data-search-js="search-63369b7b.js" data-stringdex-js="stringdex-b897f86f.js" data-settings-js="settings-170eb4bf.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc attr"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">dispatch</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../tvm_ffi/index.html">tvm_ffi</a><span class="version">0.1.0-alpha.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">tvm_ffi</a></div><h1>Attribute Macro <span class="attr">dispatch</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"></span></div><pre class="rust item-decl"><code>#[dispatch]</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Generate source-ordered runtime type dispatch from <code>prefix_*</code> handlers.</p>
-<p><code>#[dispatch(prefix, (Carrier, Arg, ...), Ret)]</code> declares the complete input
-tuple and result type. The first input is <code>AnyView&lt;'_&gt;</code> or <code>MutationView&lt;'_&gt;</code>
-(including aliases); subsequent inputs are passed to matching handlers.
-The macro implements <code>Dispatcher&lt;(Carrier, Arg, ...), Option&lt;Ret&gt;&gt;</code> for the
-receiver reference (<code>&amp;T</code> or <code>&amp;mut T</code>). The inherent <code>.dispatch(value, ...)</code>
-method owns matching; <code>.dispatch_tuple((value, ...))</code> unpacks and forwards.
-Both methods always inline. A matched result is converted with <code>Into&lt;Ret&gt;</code>
-and wrapped in <code>Some</code>. When both the handler’s return type and <code>Ret</code> are
-written as <code>Result&lt;..&gt;</code>, the success value is converted with <code>Into</code> instead,
-so a <code>Result&lt;UnchangedOr&lt;Expr&gt;&gt;</code> or <code>Result&lt;i64&gt;</code> handler fits a
-<code>Result&lt;UnchangedOr&lt;Any&gt;&gt;</code> dispatcher. Only the outer <code>None</code> means no match;
-matched errors and inner <code>None</code> are final. Conversion uses ordinary trait
-implementations, without recursively converting results or wrapping values
-in <code>Ok</code>.</p>
-<p>Handlers match an owned FFI value, a borrowed object node, or an optional
-by-value <code>AnyView</code> catch-all, which must be last. Each handler receives its
-typed first value and may consume an initial prefix of the remaining declared
-arguments without cloning. Neither arguments nor results are deduced from a
-handler signature, and no handler needs to consume every declared argument.</p>
-<p>Handlers share the same receiver and method generic declarations and bounds.
-Pattern-only, unbounded lifetimes may differ between handlers. Shared method
-generics must occur in the receiver, declared tuple or declared return type.
-Named lifetimes come from those shared declarations or the enclosing impl;
-use the same name in input and output to return a borrow of that input.
-Elided input lifetimes are independent; elided output lifetimes borrow the
-receiver. <code>Self</code> in the declared types denotes the original implementor.
-Handler-level <code>cfg</code>/<code>cfg_attr</code> attributes are unsupported; configure the whole
-impl instead. A consuming <code>MutationView</code> retains mutation permission; its
-typed misses recover the same handle, and <code>AnyView</code> cannot grant it.</p>
-<p>Matching invokes the public <code>match_any!</code> macro and its exact-final-type
-lookup for eligible larger handler sets. Dispatch also matches scalar payloads
-and keeps owned argument conversions strict. Parameterized containers and
-other non-exact matchers retain ordered, fully checked conversion.</p>
-<p>The macro operates on inherent impls only. Traversal engines explicitly
-call the dispatcher and configure their own default recursion;
-no method prefix has a reserved traversal meaning.</p>
-<p>Generate one dispatcher per type. Method generics can select different
-argument and return types; use an expected result or explicit type arguments
-when inference is ambiguous.</p>
-</div></details></section></div></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Generate runtime type dispatch from the `prefix_*` methods of an impl."><title>dispatch in tvm_ffi - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-b7b9f40b.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="tvm_ffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.95.0 (59807616e 2026-04-14)" data-channel="1.95.0" data-search-js="search-63369b7b.js" data-stringdex-js="stringdex-b897f86f.js" data-settings-js="settings-170eb4bf.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc attr"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">dispatch</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../tvm_ffi/index.html">tvm_ffi</a><span class="version">0.1.0-alpha.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">dispatch</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#arguments" title="Arguments">Arguments</a></li><li><a href="#handlers" title="Handlers">Handlers</a></li><li><a href="#examples" title="Examples">Examples</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate tvm_<wbr>ffi</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">tvm_ffi</a></div><h1>Attribute Macro <span class="attr">dispatch</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"></span></div><pre class="rust item-decl"><code>#[dispatch]</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Generate runtime type dispatch from the <code>prefix_*</code> methods of an impl.</p>
+<p><code>#[dispatch(prefix, (First, Args...), Ret)]</code> on an inherent impl makes its
+<code>prefix_*</code> methods handlers and adds a <code>dispatch(first, args...) -&gt; Option&lt;Ret&gt;</code> method. <code>dispatch</code> calls the first handler, in source order,
+whose first parameter matches the runtime type of <code>first</code>, and returns
+<code>None</code> when no handler matches. The macro also implements <a href="extra/dispatch/trait.Dispatcher.html" title="trait tvm_ffi::extra::dispatch::Dispatcher"><code>Dispatcher</code></a>
+for <code>&amp;Self</code> or <code>&amp;mut Self</code>, so the type can drive <a href="extra/structural_walk/fn.structural_walk.html" title="fn tvm_ffi::extra::structural_walk::structural_walk"><code>structural_walk</code></a> and
+the other traversals, whose engines call it and run their own default
+recursion; no prefix has a reserved meaning.</p>
+<h2 id="arguments"><a class="doc-anchor" href="#arguments">§</a>Arguments</h2>
+<ul>
+<li><code>prefix</code> - The handler name prefix; <code>describe</code> selects <code>describe_int</code>,
+<code>describe_str</code> and so on.</li>
+<li><code>(First, Args...)</code> - The complete input tuple. <code>First</code>, the value to
+match, is <code>AnyView&lt;'_&gt;</code> or <a href="extra/structural_mutate/struct.MutationView.html" title="struct tvm_ffi::extra::structural_mutate::MutationView"><code>MutationView&lt;'_&gt;</code></a>, including aliases.
+<code>Args</code> are passed through: each handler takes a leading prefix of them
+without cloning, and need not take all of them.</li>
+<li><code>Ret</code> - The result type. A handler’s result is converted with
+<code>Into&lt;Ret&gt;</code>. When both the handler’s result and <code>Ret</code> are written
+<code>Result&lt;..&gt;</code>, the success value is converted instead, so a
+<code>Result&lt;UnchangedOr&lt;Expr&gt;&gt;</code> handler fits a <code>Result&lt;UnchangedOr&lt;Any&gt;&gt;</code>
+dispatcher.</li>
+</ul>
+<h2 id="handlers"><a class="doc-anchor" href="#handlers">§</a>Handlers</h2>
+<p>A handler’s first parameter selects what it matches, as for
+<a href="macro.match_any.html" title="macro tvm_ffi::match_any"><code>match_any!</code></a>: an owned FFI value such as <code>i64</code> or <code>Array&lt;Any&gt;</code>, converted
+strictly; <code>&amp;NodeObj</code>, which borrows the object node; <code>MutationView&lt;'_, T&gt;</code>,
+which keeps the permission to mutate in place; or <code>AnyView&lt;'_&gt;</code>, which
+matches every value and must be the last handler.</p>
+<p>Only the outer <code>None</code> means that no handler matched: a handler error, or a
+<code>None</code> inside <code>Ret</code>, is final. Handlers share one receiver, <code>&amp;self</code> or
+<code>&amp;mut self</code>, and the same method generics and bounds; shared generics must
+occur in the receiver, the input tuple or <code>Ret</code>. Use the same lifetime name
+in an input and <code>Ret</code> to return a borrow of that input; elided output
+lifetimes borrow the receiver. Handler-level <code>cfg</code> attributes are not
+supported; configure the whole impl instead. Generate one dispatcher per
+type; when inference is ambiguous, give the expected result type.</p>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>tvm_ffi::{dispatch, AnyView};
+
+<span class="kw">struct </span>Describer;
+
+<span class="attr">#[dispatch(describe, (AnyView&lt;<span class="lifetime">'_</span>&gt;,), String)]
+</span><span class="kw">impl </span>Describer {
+    <span class="kw">fn </span>describe_int(<span class="kw-2">&amp;</span><span class="self">self</span>, value: i64) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">"integer {value}"</span>)
+    }
+
+    <span class="kw">fn </span>describe_str(<span class="kw-2">&amp;</span><span class="self">self</span>, value: tvm_ffi::String) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">"string {}"</span>, value.as_str())
+    }
+}
+
+<span class="kw">let </span>text = tvm_ffi::String::from(<span class="string">"hi"</span>);
+<span class="macro">assert_eq!</span>(Describer.dispatch(AnyView::from(<span class="kw-2">&amp;</span><span class="number">1_i64</span>)).as_deref(), <span class="prelude-val">Some</span>(<span class="string">"integer 1"</span>));
+<span class="macro">assert_eq!</span>(Describer.dispatch(AnyView::from(<span class="kw-2">&amp;</span>text)).as_deref(), <span class="prelude-val">Some</span>(<span class="string">"string hi"</span>));
+<span class="macro">assert_eq!</span>(Describer.dispatch(AnyView::from(<span class="kw-2">&amp;</span><span class="number">1.5_f64</span>)), <span class="prelude-val">None</span>);</code></pre></div></div></details></section></div></main></body></html>

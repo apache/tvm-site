@@ -465,7 +465,7 @@ The parameter list of a callback decides what it receives:
        matches a node runs. Tuples hold up to 12 callbacks and can be
        nested.
 
-``WalkResult::interrupt_with`` stops the walk and returns a value, which
+``WalkResult::InterruptWith`` stops the walk and returns a value, which
 lets a walk search for a node:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
