@@ -24,7 +24,7 @@
 <a href=#24 id=24 data-nosnippet>24</a><span class="kw">use </span><span class="kw">crate</span>::collections::list::seq_cells;
 <a href=#25 id=25 data-nosnippet>25</a><span class="kw">use </span><span class="kw">crate</span>::derive::Object;
 <a href=#26 id=26 data-nosnippet>26</a><span class="kw">use </span><span class="kw">crate</span>::object::{Object, ObjectArc};
-<a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span><span class="kw">crate</span>::type_traits::{ContainerElement, RefFromAny};
+<a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span><span class="kw">crate</span>::type_traits::{ContainerElement, RefFromAnyUnchecked};
 <a href=#28 id=28 data-nosnippet>28</a><span class="kw">use </span>crate::{Any, AnyCompatible, AnyView, ObjectCoreWithExtraItems, ObjectRefCore};
 <a href=#29 id=29 data-nosnippet>29</a><span class="kw">use </span>tvm_ffi_sys::TVMFFITypeIndex <span class="kw">as </span>TypeIndex;
 <a href=#30 id=30 data-nosnippet>30</a><span class="kw">use </span>tvm_ffi_sys::{TVMFFIAny, TVMFFIObject};
@@ -262,7 +262,7 @@
 <a href=#262 id=262 data-nosnippet>262</a>
 <a href=#263 id=263 data-nosnippet>263</a></span><span class="doccomment">/// Lends `&amp;T` from the array's cell in place. Every cell of an `Array&lt;T&gt;`
 <a href=#264 id=264 data-nosnippet>264</a>/// holds a `T` (checked when the array is built), so only a debug check runs.
-<a href=#265 id=265 data-nosnippet>265</a></span><span class="kw">impl</span>&lt;T: ContainerElement + Clone + RefFromAny&gt; std::ops::Index&lt;usize&gt; <span class="kw">for </span>Array&lt;T&gt; {
+<a href=#265 id=265 data-nosnippet>265</a></span><span class="kw">impl</span>&lt;T: ContainerElement + Clone + RefFromAnyUnchecked&gt; std::ops::Index&lt;usize&gt; <span class="kw">for </span>Array&lt;T&gt; {
 <a href=#266 id=266 data-nosnippet>266</a>    <span class="kw">type </span>Output = T;
 <a href=#267 id=267 data-nosnippet>267</a>
 <a href=#268 id=268 data-nosnippet>268</a>    <span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="kw-2">&amp;</span>T {
@@ -277,7 +277,7 @@
 <a href=#277 id=277 data-nosnippet>277</a>        <span class="kw">unsafe </span>{
 <a href=#278 id=278 data-nosnippet>278</a>            <span class="kw">let </span>cell = <span class="kw-2">&amp;*</span>(container.data <span class="kw">as </span><span class="kw-2">*const </span>TVMFFIAny).add(index);
 <a href=#279 id=279 data-nosnippet>279</a>            <span class="macro">debug_assert!</span>(T::container_check_any_strict(cell));
-<a href=#280 id=280 data-nosnippet>280</a>            T::ref_from_any(cell)
+<a href=#280 id=280 data-nosnippet>280</a>            T::ref_from_any_unchecked(cell)
 <a href=#281 id=281 data-nosnippet>281</a>        }
 <a href=#282 id=282 data-nosnippet>282</a>    }
 <a href=#283 id=283 data-nosnippet>283</a>}
@@ -425,37 +425,57 @@
 <a href=#425 id=425 data-nosnippet>425</a>}
 <a href=#426 id=426 data-nosnippet>426</a>
 <a href=#427 id=427 data-nosnippet>427</a><span class="comment">// The cell's payload word is the single object pointer of the handle.
-<a href=#428 id=428 data-nosnippet>428</a></span><span class="kw">unsafe impl</span>&lt;T&gt; <span class="kw">crate</span>::type_traits::RefFromAny <span class="kw">for </span>Array&lt;T&gt;
+<a href=#428 id=428 data-nosnippet>428</a></span><span class="kw">unsafe impl</span>&lt;T&gt; <span class="kw">crate</span>::type_traits::RefFromAnyUnchecked <span class="kw">for </span>Array&lt;T&gt;
 <a href=#429 id=429 data-nosnippet>429</a><span class="kw">where
 <a href=#430 id=430 data-nosnippet>430</a>    </span>T: ContainerElement + Clone,
 <a href=#431 id=431 data-nosnippet>431</a>{
 <a href=#432 id=432 data-nosnippet>432</a>    <span class="attr">#[inline(always)]
-<a href=#433 id=433 data-nosnippet>433</a>    </span><span class="kw">unsafe fn </span>ref_from_any(cell: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
+<a href=#433 id=433 data-nosnippet>433</a>    </span><span class="kw">unsafe fn </span>ref_from_any_unchecked(cell: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
 <a href=#434 id=434 data-nosnippet>434</a>        <span class="kw-2">&amp;*</span>(<span class="macro">core::ptr::addr_of!</span>(cell.data_union) <span class="kw">as </span><span class="kw-2">*const </span><span class="self">Self</span>)
 <a href=#435 id=435 data-nosnippet>435</a>    }
 <a href=#436 id=436 data-nosnippet>436</a>}
 <a href=#437 id=437 data-nosnippet>437</a>
-<a href=#438 id=438 data-nosnippet>438</a><span class="kw">impl</span>&lt;T&gt; TryFrom&lt;Any&gt; <span class="kw">for </span>Array&lt;T&gt;
+<a href=#438 id=438 data-nosnippet>438</a><span class="kw">unsafe impl</span>&lt;T&gt; <span class="kw">crate</span>::type_traits::DowncastRefFromAny <span class="kw">for </span>Array&lt;T&gt;
 <a href=#439 id=439 data-nosnippet>439</a><span class="kw">where
 <a href=#440 id=440 data-nosnippet>440</a>    </span>T: ContainerElement + Clone,
 <a href=#441 id=441 data-nosnippet>441</a>{
-<a href=#442 id=442 data-nosnippet>442</a>    <span class="kw">type </span>Error = <span class="kw">crate</span>::error::Error;
-<a href=#443 id=443 data-nosnippet>443</a>
-<a href=#444 id=444 data-nosnippet>444</a>    <span class="kw">fn </span>try_from(value: Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
-<a href=#445 id=445 data-nosnippet>445</a>        <span class="kw">let </span>temp: TryFromTemp&lt;<span class="self">Self</span>&gt; = TryFromTemp::try_from(value)<span class="question-mark">?</span>;
-<a href=#446 id=446 data-nosnippet>446</a>        <span class="prelude-val">Ok</span>(TryFromTemp::into_value(temp))
-<a href=#447 id=447 data-nosnippet>447</a>    }
-<a href=#448 id=448 data-nosnippet>448</a>}
-<a href=#449 id=449 data-nosnippet>449</a>
-<a href=#450 id=450 data-nosnippet>450</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; TryFrom&lt;AnyView&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>Array&lt;T&gt;
-<a href=#451 id=451 data-nosnippet>451</a><span class="kw">where
-<a href=#452 id=452 data-nosnippet>452</a>    </span>T: ContainerElement + Clone,
-<a href=#453 id=453 data-nosnippet>453</a>{
-<a href=#454 id=454 data-nosnippet>454</a>    <span class="kw">type </span>Error = <span class="kw">crate</span>::error::Error;
-<a href=#455 id=455 data-nosnippet>455</a>
-<a href=#456 id=456 data-nosnippet>456</a>    <span class="kw">fn </span>try_from(value: AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
-<a href=#457 id=457 data-nosnippet>457</a>        <span class="kw">let </span>temp: TryFromTemp&lt;<span class="self">Self</span>&gt; = TryFromTemp::try_from(value)<span class="question-mark">?</span>;
-<a href=#458 id=458 data-nosnippet>458</a>        <span class="prelude-val">Ok</span>(TryFromTemp::into_value(temp))
-<a href=#459 id=459 data-nosnippet>459</a>    }
-<a href=#460 id=460 data-nosnippet>460</a>}
+<a href=#442 id=442 data-nosnippet>442</a>    <span class="attr">#[inline(always)]
+<a href=#443 id=443 data-nosnippet>443</a>    </span><span class="kw">unsafe fn </span>downcast_ref_from_any(cell: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="self">Self</span>&gt; {
+<a href=#444 id=444 data-nosnippet>444</a>        <span class="kw">crate</span>::type_traits::downcast_ref_from_any_in_place::&lt;<span class="self">Self</span>&gt;(cell)
+<a href=#445 id=445 data-nosnippet>445</a>    }
+<a href=#446 id=446 data-nosnippet>446</a>}
+<a href=#447 id=447 data-nosnippet>447</a>
+<a href=#448 id=448 data-nosnippet>448</a><span class="kw">unsafe impl</span>&lt;T&gt; <span class="kw">crate</span>::type_traits::DowncastRefFromObject <span class="kw">for </span>Array&lt;T&gt;
+<a href=#449 id=449 data-nosnippet>449</a><span class="kw">where
+<a href=#450 id=450 data-nosnippet>450</a>    </span>T: ContainerElement + Clone,
+<a href=#451 id=451 data-nosnippet>451</a>{
+<a href=#452 id=452 data-nosnippet>452</a>    <span class="attr">#[inline(always)]
+<a href=#453 id=453 data-nosnippet>453</a>    </span><span class="kw">unsafe fn </span>downcast_ref_from_object(place: <span class="kw-2">&amp;*mut </span>TVMFFIObject) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="self">Self</span>&gt; {
+<a href=#454 id=454 data-nosnippet>454</a>        <span class="kw">crate</span>::type_traits::downcast_ref_from_object_in_place::&lt;<span class="self">Self</span>&gt;(place)
+<a href=#455 id=455 data-nosnippet>455</a>    }
+<a href=#456 id=456 data-nosnippet>456</a>}
+<a href=#457 id=457 data-nosnippet>457</a>
+<a href=#458 id=458 data-nosnippet>458</a><span class="kw">impl</span>&lt;T&gt; TryFrom&lt;Any&gt; <span class="kw">for </span>Array&lt;T&gt;
+<a href=#459 id=459 data-nosnippet>459</a><span class="kw">where
+<a href=#460 id=460 data-nosnippet>460</a>    </span>T: ContainerElement + Clone,
+<a href=#461 id=461 data-nosnippet>461</a>{
+<a href=#462 id=462 data-nosnippet>462</a>    <span class="kw">type </span>Error = <span class="kw">crate</span>::error::Error;
+<a href=#463 id=463 data-nosnippet>463</a>
+<a href=#464 id=464 data-nosnippet>464</a>    <span class="kw">fn </span>try_from(value: Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+<a href=#465 id=465 data-nosnippet>465</a>        <span class="kw">let </span>temp: TryFromTemp&lt;<span class="self">Self</span>&gt; = TryFromTemp::try_from(value)<span class="question-mark">?</span>;
+<a href=#466 id=466 data-nosnippet>466</a>        <span class="prelude-val">Ok</span>(TryFromTemp::into_value(temp))
+<a href=#467 id=467 data-nosnippet>467</a>    }
+<a href=#468 id=468 data-nosnippet>468</a>}
+<a href=#469 id=469 data-nosnippet>469</a>
+<a href=#470 id=470 data-nosnippet>470</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; TryFrom&lt;AnyView&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>Array&lt;T&gt;
+<a href=#471 id=471 data-nosnippet>471</a><span class="kw">where
+<a href=#472 id=472 data-nosnippet>472</a>    </span>T: ContainerElement + Clone,
+<a href=#473 id=473 data-nosnippet>473</a>{
+<a href=#474 id=474 data-nosnippet>474</a>    <span class="kw">type </span>Error = <span class="kw">crate</span>::error::Error;
+<a href=#475 id=475 data-nosnippet>475</a>
+<a href=#476 id=476 data-nosnippet>476</a>    <span class="kw">fn </span>try_from(value: AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+<a href=#477 id=477 data-nosnippet>477</a>        <span class="kw">let </span>temp: TryFromTemp&lt;<span class="self">Self</span>&gt; = TryFromTemp::try_from(value)<span class="question-mark">?</span>;
+<a href=#478 id=478 data-nosnippet>478</a>        <span class="prelude-val">Ok</span>(TryFromTemp::into_value(temp))
+<a href=#479 id=479 data-nosnippet>479</a>    }
+<a href=#480 id=480 data-nosnippet>480</a>}
 </code></pre></div></section></main></body></html>

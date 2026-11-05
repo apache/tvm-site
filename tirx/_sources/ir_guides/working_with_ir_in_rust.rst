@@ -249,8 +249,8 @@ requested ``prim.Mul``.
 
    ``try_cast`` consumes the managed reference it converts, so we clone
    ``value`` before the first cast; the clone costs one reference-count
-   increment. For read-only inspection, ``value.downcast_ref::<AddObj>()``
-   returns ``Option<&AddObj>`` without consuming or cloning the reference.
+   increment. For read-only inspection, ``value.downcast_ref::<Add>()``
+   returns ``Option<&Add>`` without consuming or cloning the reference.
    ``Any`` and ``AnyView`` provide the same borrowed downcast.
 
 Casting to one type at a time gets tedious when a node can be one of
@@ -355,9 +355,9 @@ generates a ``match_any!`` and a ``Dispatcher`` implementation:
        pub fn dispatch(&self, value: AnyView<'_>, nested: bool) -> Option<String> {
            match_any! {
                value {
-                   AddObj(ref node) => Some(self.print_add(node, nested).into()),
-                   VarObj(ref node) => Some(self.print_var(node).into()),
-                   IntImmObj(ref node) => Some(self.print_imm(node).into()),
+                   Add(ref node) => Some(self.print_add(node, nested).into()),
+                   Var(ref node) => Some(self.print_var(node).into()),
+                   IntImm(ref node) => Some(self.print_imm(node).into()),
                    _ => None,
                }
            }
@@ -453,8 +453,8 @@ The parameter list of a callback decides what it receives:
      - Receives
    * - ``|store: TensorStore|``
      - Each write, as a managed reference.
-   * - ``|store: &TensorStoreObj|``
-     - Each write, as a borrowed object, without changing its reference
+   * - ``|store: &TensorStore|``
+     - Each write, borrowed in place, without changing its reference
        count.
    * - ``|value: AnyView<'_>|``
      - Every value the walk reaches.
