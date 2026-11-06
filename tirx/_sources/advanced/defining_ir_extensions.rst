@@ -73,31 +73,28 @@ real and imaginary parts, as in ``TensorType``:
 
 .. note::
 
-   **What does def_object_ref! do?**
+   **What does #[derive(ObjectRef)] do?**
 
-   ``def_object_ref!(ObjRef, Parent, Obj)`` defines ``ObjRef``, the reference
-   type of the object type ``Obj``, as the C++ macro
-   ``TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE`` does. An ``ObjRef`` holds
-   a reference-counted pointer to an ``Obj``, and the macro gives it these
-   conversions:
+   ``#[derive(ObjectRef)]`` makes ``ComplexType``, whose one field is an
+   ``ObjectArc<ComplexTypeObj>``, the reference type of the object type
+   ``ComplexTypeObj``, as the C++ macro
+   ``TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE`` does. A reference holds a
+   reference-counted pointer to its object, and the derive gives it:
 
-   - an ``Obj`` converts into an ``ObjRef`` with ``into()``;
-   - an ``ObjRef`` dereferences to its ``Obj``, so its fields read directly;
-   - an ``ObjRef`` converts into ``Parent``, the reference to the parent
-     object, with ``into()``.
-
-   A visibility such as ``pub`` before ``ObjRef`` applies to the reference.
-   Here, ``def_object_ref!(pub ComplexType, Type, ComplexTypeObj)`` defines the
-   public reference ``ComplexType``: ``ty.dtype`` reads the field of a
-   ``ComplexType``, and a ``ComplexType`` converts into a ``Type`` wherever one
-   is expected, such as the result of type inference.
+   - ``Deref`` to the object, so its fields read directly: ``ty.dtype``;
+   - a private ``from_object``, which wraps a new ``ComplexTypeObj`` for the
+     type's own code, such as type inference;
+   - with ``#[object_ref(parent = Type)]``, the conversion of a
+     ``ComplexType`` into a ``Type``, the reference to the parent object, with
+     ``into()`` wherever one is expected, such as the result of type
+     inference.
 
 In Rust, as in C++, the type is defined in two parts: ``ComplexTypeObj`` is the
 object that holds the fields, and ``ComplexType`` is a reference-counted
 reference to it, which IR nodes store and functions pass around.
 ``base: TypeObj`` makes the object an IR type, and ``rs_object`` registers its
 fields for reflection, through which Python and IR JSON loading construct the
-type as they construct a C++ one. ``def_object_ref!`` defines the reference.
+type as they construct a C++ one. ``#[derive(ObjectRef)]`` defines the reference.
 
 The ``static_init_block!`` registers the type when the library loads.
 

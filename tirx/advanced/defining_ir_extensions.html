@@ -427,7 +427,11 @@ real and imaginary parts, as in <code class="docutils literal notranslate"><span
 <span class="w">    </span><span class="n">base</span><span class="p">:</span><span class="w"> </span><span class="nc">TypeObj</span><span class="p">,</span>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">dtype</span><span class="p">:</span><span class="w"> </span><span class="nc">PrimType</span><span class="p">,</span>
 <span class="p">}</span>
-<span class="n">def_object_ref</span><span class="o">!</span><span class="p">(</span><span class="k">pub</span><span class="w"> </span><span class="n">ComplexType</span><span class="p">,</span><span class="w"> </span><span class="n">Type</span><span class="p">,</span><span class="w"> </span><span class="n">ComplexTypeObj</span><span class="p">);</span>
+<span class="cp">#[derive(Clone, tvm_ffi::derive::ObjectRef)]</span>
+<span class="cp">#[object_ref(parent = Type)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">ComplexType</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">data</span><span class="p">:</span><span class="w"> </span><span class="nc">tvm_ffi</span><span class="p">::</span><span class="n">ObjectArc</span><span class="o">&lt;</span><span class="n">ComplexTypeObj</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
 
 <span class="n">tvm_ffi</span><span class="p">::</span><span class="n">static_init_block</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">register_type</span><span class="p">::</span><span class="o">&lt;</span><span class="n">ComplexType</span><span class="o">&gt;</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
@@ -447,30 +451,28 @@ real and imaginary parts, as in <code class="docutils literal notranslate"><span
 </div></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><strong>What does def_object_ref! do?</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">def_object_ref!(ObjRef,</span> <span class="pre">Parent,</span> <span class="pre">Obj)</span></code> defines <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code>, the reference
-type of the object type <code class="docutils literal notranslate"><span class="pre">Obj</span></code>, as the C++ macro
-<code class="docutils literal notranslate"><span class="pre">TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE</span></code> does. An <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> holds
-a reference-counted pointer to an <code class="docutils literal notranslate"><span class="pre">Obj</span></code>, and the macro gives it these
-conversions:</p>
+<p><strong>What does #[derive(ObjectRef)] do?</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">#[derive(ObjectRef)]</span></code> makes <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>, whose one field is an
+<code class="docutils literal notranslate"><span class="pre">ObjectArc&lt;ComplexTypeObj&gt;</span></code>, the reference type of the object type
+<code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code>, as the C++ macro
+<code class="docutils literal notranslate"><span class="pre">TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE</span></code> does. A reference holds a
+reference-counted pointer to its object, and the derive gives it:</p>
 <ul class="simple">
-<li><p>an <code class="docutils literal notranslate"><span class="pre">Obj</span></code> converts into an <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> with <code class="docutils literal notranslate"><span class="pre">into()</span></code>;</p></li>
-<li><p>an <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> dereferences to its <code class="docutils literal notranslate"><span class="pre">Obj</span></code>, so its fields read directly;</p></li>
-<li><p>an <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> converts into <code class="docutils literal notranslate"><span class="pre">Parent</span></code>, the reference to the parent
-object, with <code class="docutils literal notranslate"><span class="pre">into()</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Deref</span></code> to the object, so its fields read directly: <code class="docutils literal notranslate"><span class="pre">ty.dtype</span></code>;</p></li>
+<li><p>a private <code class="docutils literal notranslate"><span class="pre">from_object</span></code>, which wraps a new <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> for the
+type’s own code, such as type inference;</p></li>
+<li><p>with <code class="docutils literal notranslate"><span class="pre">#[object_ref(parent</span> <span class="pre">=</span> <span class="pre">Type)]</span></code>, the conversion of a
+<code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> into a <code class="docutils literal notranslate"><span class="pre">Type</span></code>, the reference to the parent object, with
+<code class="docutils literal notranslate"><span class="pre">into()</span></code> wherever one is expected, such as the result of type
+inference.</p></li>
 </ul>
-<p>A visibility such as <code class="docutils literal notranslate"><span class="pre">pub</span></code> before <code class="docutils literal notranslate"><span class="pre">ObjRef</span></code> applies to the reference.
-Here, <code class="docutils literal notranslate"><span class="pre">def_object_ref!(pub</span> <span class="pre">ComplexType,</span> <span class="pre">Type,</span> <span class="pre">ComplexTypeObj)</span></code> defines the
-public reference <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>: <code class="docutils literal notranslate"><span class="pre">ty.dtype</span></code> reads the field of a
-<code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>, and a <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> converts into a <code class="docutils literal notranslate"><span class="pre">Type</span></code> wherever one
-is expected, such as the result of type inference.</p>
 </div>
 <p>In Rust, as in C++, the type is defined in two parts: <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> is the
 object that holds the fields, and <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> is a reference-counted
 reference to it, which IR nodes store and functions pass around.
 <code class="docutils literal notranslate"><span class="pre">base:</span> <span class="pre">TypeObj</span></code> makes the object an IR type, and <code class="docutils literal notranslate"><span class="pre">rs_object</span></code> registers its
 fields for reflection, through which Python and IR JSON loading construct the
-type as they construct a C++ one. <code class="docutils literal notranslate"><span class="pre">def_object_ref!</span></code> defines the reference.</p>
+type as they construct a C++ one. <code class="docutils literal notranslate"><span class="pre">#[derive(ObjectRef)]</span></code> defines the reference.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code> registers the type when the library loads.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -600,7 +602,7 @@ and computes the result type:</p>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">elem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float_part</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">ty</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">im</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float_part</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">ty</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 <span class="w">    </span><span class="n">require</span><span class="p">(</span><span class="n">elem</span><span class="p">.</span><span class="n">dtype</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">im</span><span class="p">.</span><span class="n">dtype</span><span class="p">,</span><span class="w"> </span><span class="s">"my_ext.complex expects parts of the same type"</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">ComplexType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ComplexTypeObj</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">TypeObj</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">call</span><span class="p">.</span><span class="n">loc</span><span class="p">.</span><span class="n">clone</span><span class="p">()),</span><span class="w"> </span><span class="n">elem</span><span class="p">).</span><span class="n">into</span><span class="p">();</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ComplexType</span><span class="p">::</span><span class="n">from_object</span><span class="p">(</span><span class="n">ComplexTypeObj</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">TypeObj</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">call</span><span class="p">.</span><span class="n">loc</span><span class="p">.</span><span class="n">clone</span><span class="p">()),</span><span class="w"> </span><span class="n">elem</span><span class="p">));</span>
 <span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">ty</span><span class="p">.</span><span class="n">into</span><span class="p">())</span>
 <span class="p">}</span>
 </pre></div>

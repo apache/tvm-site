@@ -53,7 +53,7 @@
 <a href=#53 id=53 data-nosnippet>53</a>    <span class="kw">type </span>Source = <span class="kw">crate</span>::match_any_internal::ViewSource&lt;<span class="lifetime">'a</span>&gt;;
 <a href=#54 id=54 data-nosnippet>54</a>}
 <a href=#55 id=55 data-nosnippet>55</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; DispatchInput <span class="kw">for </span><span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'a</span>, T&gt; {
-<a href=#56 id=56 data-nosnippet>56</a>    <span class="kw">type </span>Source = <span class="kw">crate</span>::match_any_internal::CapabilitySource&lt;<span class="lifetime">'a</span>&gt;;
+<a href=#56 id=56 data-nosnippet>56</a>    <span class="kw">type </span>Source = <span class="kw">crate</span>::match_any_internal::MutationSource&lt;<span class="lifetime">'a</span>&gt;;
 <a href=#57 id=57 data-nosnippet>57</a>}
 <a href=#58 id=58 data-nosnippet>58</a>
 <a href=#59 id=59 data-nosnippet>59</a><span class="comment">// Generated alias bounds must not make recovery depend on a temporary borrow.
@@ -70,298 +70,332 @@
 <a href=#70 id=70 data-nosnippet>70</a>    <span class="kw">type </span>Recovery = ();
 <a href=#71 id=71 data-nosnippet>71</a>}
 <a href=#72 id=72 data-nosnippet>72</a>
-<a href=#73 id=73 data-nosnippet>73</a><span class="kw">use </span><span class="kw">super</span>::structural_common::impl_callback_chain_tuple_arities;
-<a href=#74 id=74 data-nosnippet>74</a><span class="kw">use </span>std::{borrow::BorrowMut, marker::PhantomData};
-<a href=#75 id=75 data-nosnippet>75</a>
-<a href=#76 id=76 data-nosnippet>76</a><span class="doccomment">/// Inferred selectors for dispatcher normalization.
-<a href=#77 id=77 data-nosnippet>77</a>///
-<a href=#78 id=78 data-nosnippet>78</a>/// Entry points infer one marker from the input. Callback markers select argument
-<a href=#79 id=79 data-nosnippet>79</a>/// matching and a leading argument count; tuple markers contain each link's marker.
-<a href=#80 id=80 data-nosnippet>80</a>/// Normalization stores the input once, before traversal, without cloning it.
-<a href=#81 id=81 data-nosnippet>81</a></span><span class="kw">pub mod </span>marker {
-<a href=#82 id=82 data-nosnippet>82</a>    <span class="kw">use </span>std::marker::PhantomData;
-<a href=#83 id=83 data-nosnippet>83</a>    <span class="doccomment">/// Store an owned dispatcher with the exact target argument and result types.
-<a href=#84 id=84 data-nosnippet>84</a>    </span><span class="kw">pub enum </span>FromOwned {}
-<a href=#85 id=85 data-nosnippet>85</a>    <span class="doccomment">/// Store a mutable borrow of an exact-signature dispatcher.
-<a href=#86 id=86 data-nosnippet>86</a>    </span><span class="kw">pub enum </span>FromBorrowed {}
-<a href=#87 id=87 data-nosnippet>87</a>    <span class="doccomment">/// Match a callback's first argument using `Shape`, then pass its first `N`
-<a href=#88 id=88 data-nosnippet>88</a>    /// arguments. `N` ranges from one through four, including the matched value.
-<a href=#89 id=89 data-nosnippet>89</a>    </span><span class="kw">pub struct </span>FromCallback&lt;<span class="kw">const </span>N: usize, Shape&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; Shape&gt;);
-<a href=#90 id=90 data-nosnippet>90</a>    <span class="doccomment">/// Try tuple links in order. `Markers` is their marker tuple, including nested
-<a href=#91 id=91 data-nosnippet>91</a>    /// tuples; `Args` selects how arguments are reborrowed between links.
-<a href=#92 id=92 data-nosnippet>92</a>    </span><span class="kw">pub struct </span>FromTuple&lt;Markers, Args = CopyArgs&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; (Markers, Args)&gt;);
-<a href=#93 id=93 data-nosnippet>93</a>    <span class="doccomment">/// Replay copyable observer arguments; this does not copy dispatcher storage.
-<a href=#94 id=94 data-nosnippet>94</a>    </span><span class="kw">pub enum </span>CopyArgs {}
-<a href=#95 id=95 data-nosnippet>95</a>    <span class="doccomment">/// Sequentially reborrow a mutable second argument for each tuple link.
-<a href=#96 id=96 data-nosnippet>96</a>    </span><span class="kw">pub enum </span>MutArg {}
-<a href=#97 id=97 data-nosnippet>97</a>    <span class="doccomment">/// Match and convert the first `AnyView` to the FFI value type `T`.
-<a href=#98 id=98 data-nosnippet>98</a>    </span><span class="kw">pub struct </span>Value&lt;T&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; T&gt;);
-<a href=#99 id=99 data-nosnippet>99</a>    <span class="doccomment">/// Match a borrowed object node `&amp;T` without retaining it, unlike the
-<a href=#100 id=100 data-nosnippet>100</a>    /// by-value conversion selected by [`Value&lt;T&gt;`].
-<a href=#101 id=101 data-nosnippet>101</a>    </span><span class="kw">pub struct </span>BorrowedObject&lt;T&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; T&gt;);
-<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// Pass the first `AnyView` without a runtime type filter.
-<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">pub enum </span>AnyView {}
-<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// Match a mutation capability for `T`, retaining its scoped permission.
-<a href=#105 id=105 data-nosnippet>105</a>    </span><span class="kw">pub struct </span>Mutation&lt;T = <span class="kw">crate</span>::Any&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; T&gt;);
-<a href=#106 id=106 data-nosnippet>106</a>}
-<a href=#107 id=107 data-nosnippet>107</a>
-<a href=#108 id=108 data-nosnippet>108</a><span class="doccomment">/// Convert an input to a reusable [`Dispatcher`].
-<a href=#109 id=109 data-nosnippet>109</a>///
-<a href=#110 id=110 data-nosnippet>110</a>/// `Args` is the complete target argument tuple, `Ret` its complete result, and
-<a href=#111 id=111 data-nosnippet>111</a>/// `M` the inferred input-form marker. `Target` is the actual dispatcher type;
-<a href=#112 id=112 data-nosnippet>112</a>/// `Output` owns or borrows it and provides `BorrowMut&lt;Target&gt;`. Owned `D` and
-<a href=#113 id=113 data-nosnippet>113</a>/// borrowed `&amp;mut D` inputs both preserve target `D`; callbacks and tuples use an
-<a href=#114 id=114 data-nosnippet>114</a>/// adapter as their target. This keeps recursive view types tied to the dispatcher.
-<a href=#115 id=115 data-nosnippet>115</a>///
-<a href=#116 id=116 data-nosnippet>116</a>/// Inputs may be owned dispatchers, mutable dispatcher borrows, callbacks, or
-<a href=#117 id=117 data-nosnippet>117</a>/// nested tuples mixing these forms. Dispatchers require the exact argument and
-<a href=#118 id=118 data-nosnippet>118</a>/// result signature. Callbacks may accept a leading prefix of one to four
-<a href=#119 id=119 data-nosnippet>119</a>/// arguments; structural callbacks match an FFI value, an object-node borrow, or
-<a href=#120 id=120 data-nosnippet>120</a>/// `AnyView`; mutation callbacks match a typed `MutationView`. Callable values
-<a href=#121 id=121 data-nosnippet>121</a>/// and their shared or mutable borrows are stored as supplied, subject to their `FnMut` implementation. Only an outer `None` tries
-<a href=#122 id=122 data-nosnippet>122</a>/// the next tuple link; a matched error or inner `None` stops the chain.
-<a href=#123 id=123 data-nosnippet>123</a>///
-<a href=#124 id=124 data-nosnippet>124</a>/// Supply the target argument and result types when calling the conversion directly;
-<a href=#125 id=125 data-nosnippet>125</a>/// the input-form marker remains inferred.
-<a href=#126 id=126 data-nosnippet>126</a>///
-<a href=#127 id=127 data-nosnippet>127</a>/// ```
-<a href=#128 id=128 data-nosnippet>128</a>/// use tvm_ffi::{Any, AnyView, Dispatcher, IntoDispatcher, Result};
-<a href=#129 id=129 data-nosnippet>129</a>/// let callbacks = (|value: i64| Any::from(value + 1), |_value: AnyView&lt;'_&gt;| Any::new());
-<a href=#130 id=130 data-nosnippet>130</a>/// let mut dispatcher = IntoDispatcher::&lt;(AnyView&lt;'_&gt;,), Option&lt;Result&lt;Any&gt;&gt;, _&gt;::into_dispatcher(callbacks);
-<a href=#131 id=131 data-nosnippet>131</a>/// let result: Option&lt;Result&lt;Any&gt;&gt; = dispatcher.dispatch_tuple((AnyView::from(&amp;41_i64),));
-<a href=#132 id=132 data-nosnippet>132</a>/// let result = result.unwrap()?;
-<a href=#133 id=133 data-nosnippet>133</a>/// assert_eq!(i64::try_from(result)?, 42);
-<a href=#134 id=134 data-nosnippet>134</a>/// # Ok::&lt;(), tvm_ffi::Error&gt;(())
-<a href=#135 id=135 data-nosnippet>135</a>/// ```
-<a href=#136 id=136 data-nosnippet>136</a></span><span class="kw">pub trait </span>IntoDispatcher&lt;Args, Ret, M&gt; {
-<a href=#137 id=137 data-nosnippet>137</a>    <span class="doccomment">/// Actual dispatcher type, independent of its owned or borrowed storage.
-<a href=#138 id=138 data-nosnippet>138</a>    </span><span class="kw">type </span>Target;
-<a href=#139 id=139 data-nosnippet>139</a>    <span class="doccomment">/// Storage normalized once at entry, retaining the target's identity.
-<a href=#140 id=140 data-nosnippet>140</a>    </span><span class="kw">type </span>Output: BorrowMut&lt;<span class="self">Self</span>::Target&gt;;
-<a href=#141 id=141 data-nosnippet>141</a>    <span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output;
-<a href=#142 id=142 data-nosnippet>142</a>}
-<a href=#143 id=143 data-nosnippet>143</a>
-<a href=#144 id=144 data-nosnippet>144</a><span class="doccomment">/// Normalized callback or tuple storage; direct dispatchers retain their own type.
-<a href=#145 id=145 data-nosnippet>145</a></span><span class="attr">#[doc(hidden)]
-<a href=#146 id=146 data-nosnippet>146</a></span><span class="kw">pub struct </span>DispatchAdapter&lt;F, M&gt; {
-<a href=#147 id=147 data-nosnippet>147</a>    input: F,
-<a href=#148 id=148 data-nosnippet>148</a>    marker: PhantomData&lt;<span class="kw">fn</span>() -&gt; M&gt;,
-<a href=#149 id=149 data-nosnippet>149</a>}
-<a href=#150 id=150 data-nosnippet>150</a>
-<a href=#151 id=151 data-nosnippet>151</a><span class="kw">impl</span>&lt;D, Args, Ret&gt; IntoDispatcher&lt;Args, Ret, marker::FromOwned&gt; <span class="kw">for </span>D
-<a href=#152 id=152 data-nosnippet>152</a><span class="kw">where
-<a href=#153 id=153 data-nosnippet>153</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
-<a href=#154 id=154 data-nosnippet>154</a>{
-<a href=#155 id=155 data-nosnippet>155</a>    <span class="kw">type </span>Target = D;
-<a href=#156 id=156 data-nosnippet>156</a>    <span class="kw">type </span>Output = D;
-<a href=#157 id=157 data-nosnippet>157</a>    <span class="attr">#[inline(always)]
-<a href=#158 id=158 data-nosnippet>158</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
-<a href=#159 id=159 data-nosnippet>159</a>        <span class="self">self
-<a href=#160 id=160 data-nosnippet>160</a>    </span>}
-<a href=#161 id=161 data-nosnippet>161</a>}
-<a href=#162 id=162 data-nosnippet>162</a>
-<a href=#163 id=163 data-nosnippet>163</a><span class="kw">impl</span>&lt;<span class="lifetime">'d</span>, D, Args, Ret&gt; IntoDispatcher&lt;Args, Ret, marker::FromBorrowed&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'d </span><span class="kw-2">mut </span>D
-<a href=#164 id=164 data-nosnippet>164</a><span class="kw">where
-<a href=#165 id=165 data-nosnippet>165</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
-<a href=#166 id=166 data-nosnippet>166</a>{
-<a href=#167 id=167 data-nosnippet>167</a>    <span class="kw">type </span>Target = D;
-<a href=#168 id=168 data-nosnippet>168</a>    <span class="kw">type </span>Output = <span class="kw-2">&amp;</span><span class="lifetime">'d </span><span class="kw-2">mut </span>D;
-<a href=#169 id=169 data-nosnippet>169</a>    <span class="attr">#[inline(always)]
-<a href=#170 id=170 data-nosnippet>170</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
-<a href=#171 id=171 data-nosnippet>171</a>        <span class="self">self
-<a href=#172 id=172 data-nosnippet>172</a>    </span>}
-<a href=#173 id=173 data-nosnippet>173</a>}
-<a href=#174 id=174 data-nosnippet>174</a>
-<a href=#175 id=175 data-nosnippet>175</a><span class="kw">impl</span>&lt;F, Args, Ret, <span class="kw">const </span>N: usize, Shape&gt; IntoDispatcher&lt;Args, Ret, marker::FromCallback&lt;N, Shape&gt;&gt;
-<a href=#176 id=176 data-nosnippet>176</a>    <span class="kw">for </span>F
-<a href=#177 id=177 data-nosnippet>177</a><span class="kw">where
-<a href=#178 id=178 data-nosnippet>178</a>    </span>F: DispatchLink&lt;Args, Ret, marker::FromCallback&lt;N, Shape&gt;&gt;,
-<a href=#179 id=179 data-nosnippet>179</a>{
-<a href=#180 id=180 data-nosnippet>180</a>    <span class="kw">type </span>Target = DispatchAdapter&lt;F, marker::FromCallback&lt;N, Shape&gt;&gt;;
-<a href=#181 id=181 data-nosnippet>181</a>    <span class="kw">type </span>Output = <span class="self">Self</span>::Target;
-<a href=#182 id=182 data-nosnippet>182</a>    <span class="attr">#[inline(always)]
-<a href=#183 id=183 data-nosnippet>183</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
-<a href=#184 id=184 data-nosnippet>184</a>        DispatchAdapter {
-<a href=#185 id=185 data-nosnippet>185</a>            input: <span class="self">self</span>,
-<a href=#186 id=186 data-nosnippet>186</a>            marker: PhantomData,
-<a href=#187 id=187 data-nosnippet>187</a>        }
-<a href=#188 id=188 data-nosnippet>188</a>    }
-<a href=#189 id=189 data-nosnippet>189</a>}
-<a href=#190 id=190 data-nosnippet>190</a>
-<a href=#191 id=191 data-nosnippet>191</a><span class="kw">impl</span>&lt;F, Args, Ret, Markers, Reborrow&gt;
-<a href=#192 id=192 data-nosnippet>192</a>    IntoDispatcher&lt;Args, Ret, marker::FromTuple&lt;Markers, Reborrow&gt;&gt; <span class="kw">for </span>F
-<a href=#193 id=193 data-nosnippet>193</a><span class="kw">where
-<a href=#194 id=194 data-nosnippet>194</a>    </span>F: DispatchLink&lt;Args, Ret, marker::FromTuple&lt;Markers, Reborrow&gt;&gt;,
-<a href=#195 id=195 data-nosnippet>195</a>{
-<a href=#196 id=196 data-nosnippet>196</a>    <span class="kw">type </span>Target = DispatchAdapter&lt;F, marker::FromTuple&lt;Markers, Reborrow&gt;&gt;;
-<a href=#197 id=197 data-nosnippet>197</a>    <span class="kw">type </span>Output = <span class="self">Self</span>::Target;
-<a href=#198 id=198 data-nosnippet>198</a>    <span class="attr">#[inline(always)]
-<a href=#199 id=199 data-nosnippet>199</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
-<a href=#200 id=200 data-nosnippet>200</a>        DispatchAdapter {
-<a href=#201 id=201 data-nosnippet>201</a>            input: <span class="self">self</span>,
-<a href=#202 id=202 data-nosnippet>202</a>            marker: PhantomData,
-<a href=#203 id=203 data-nosnippet>203</a>        }
-<a href=#204 id=204 data-nosnippet>204</a>    }
-<a href=#205 id=205 data-nosnippet>205</a>}
-<a href=#206 id=206 data-nosnippet>206</a>
-<a href=#207 id=207 data-nosnippet>207</a><span class="doccomment">/// Implementation boundary shared by callback and tuple adapters.
-<a href=#208 id=208 data-nosnippet>208</a></span><span class="attr">#[doc(hidden)]
-<a href=#209 id=209 data-nosnippet>209</a></span><span class="kw">pub trait </span>DispatchLink&lt;Args, Ret, M&gt; {
-<a href=#210 id=210 data-nosnippet>210</a>    <span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; Ret;
-<a href=#211 id=211 data-nosnippet>211</a>}
-<a href=#212 id=212 data-nosnippet>212</a>
-<a href=#213 id=213 data-nosnippet>213</a><span class="kw">impl</span>&lt;F, Args, Ret, M&gt; Dispatcher&lt;Args, Ret&gt; <span class="kw">for </span><span class="kw-2">&amp;mut </span>DispatchAdapter&lt;F, M&gt;
-<a href=#214 id=214 data-nosnippet>214</a><span class="kw">where
-<a href=#215 id=215 data-nosnippet>215</a>    </span>F: DispatchLink&lt;Args, Ret, M&gt;,
-<a href=#216 id=216 data-nosnippet>216</a>{
-<a href=#217 id=217 data-nosnippet>217</a>    <span class="attr">#[inline(always)]
-<a href=#218 id=218 data-nosnippet>218</a>    </span><span class="kw">fn </span>dispatch_tuple(<span class="self">self</span>, args: Args) -&gt; Ret {
-<a href=#219 id=219 data-nosnippet>219</a>        <span class="self">self</span>.input.dispatch_link(args)
-<a href=#220 id=220 data-nosnippet>220</a>    }
-<a href=#221 id=221 data-nosnippet>221</a>}
-<a href=#222 id=222 data-nosnippet>222</a>
-<a href=#223 id=223 data-nosnippet>223</a><span class="kw">impl</span>&lt;D, Args, Ret&gt; DispatchLink&lt;Args, Ret, marker::FromOwned&gt; <span class="kw">for </span>D
-<a href=#224 id=224 data-nosnippet>224</a><span class="kw">where
-<a href=#225 id=225 data-nosnippet>225</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
-<a href=#226 id=226 data-nosnippet>226</a>{
-<a href=#227 id=227 data-nosnippet>227</a>    <span class="attr">#[inline(always)]
-<a href=#228 id=228 data-nosnippet>228</a>    </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; Ret {
-<a href=#229 id=229 data-nosnippet>229</a>        <span class="self">self</span>.dispatch_tuple(args)
-<a href=#230 id=230 data-nosnippet>230</a>    }
-<a href=#231 id=231 data-nosnippet>231</a>}
-<a href=#232 id=232 data-nosnippet>232</a><span class="kw">impl</span>&lt;D, Args, Ret&gt; DispatchLink&lt;Args, Ret, marker::FromBorrowed&gt; <span class="kw">for </span><span class="kw-2">&amp;mut </span>D
-<a href=#233 id=233 data-nosnippet>233</a><span class="kw">where
-<a href=#234 id=234 data-nosnippet>234</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
-<a href=#235 id=235 data-nosnippet>235</a>{
-<a href=#236 id=236 data-nosnippet>236</a>    <span class="attr">#[inline(always)]
-<a href=#237 id=237 data-nosnippet>237</a>    </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; Ret {
-<a href=#238 id=238 data-nosnippet>238</a>        (<span class="kw-2">&amp;mut **</span><span class="self">self</span>).dispatch_tuple(args)
-<a href=#239 id=239 data-nosnippet>239</a>    }
-<a href=#240 id=240 data-nosnippet>240</a>}
-<a href=#241 id=241 data-nosnippet>241</a>
-<a href=#242 id=242 data-nosnippet>242</a><span class="doccomment">/// Operation-specific callback result conversion; matching and chaining are shared.
-<a href=#243 id=243 data-nosnippet>243</a></span><span class="attr">#[doc(hidden)]
-<a href=#244 id=244 data-nosnippet>244</a></span><span class="kw">pub trait </span>CallbackResult&lt;R&gt; {
-<a href=#245 id=245 data-nosnippet>245</a>    <span class="kw">fn </span>callback_result(<span class="self">self</span>) -&gt; R;
-<a href=#246 id=246 data-nosnippet>246</a>}
-<a href=#247 id=247 data-nosnippet>247</a>
-<a href=#248 id=248 data-nosnippet>248</a><span class="macro">macro_rules!</span> callback_prefix {
-<a href=#249 id=249 data-nosnippet>249</a>    (<span class="macro-nonterminal">$n</span>:literal; ($(<span class="macro-nonterminal">$A</span>:ident:<span class="macro-nonterminal">$a</span>:ident),<span class="kw-2">*</span>); ($(<span class="macro-nonterminal">$B</span>:ident:<span class="macro-nonterminal">$b</span>:ident),<span class="kw-2">*</span>)) =&gt; {
-<a href=#250 id=250 data-nosnippet>250</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, T, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
-<a href=#251 id=251 data-nosnippet>251</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::Value&lt;T&gt;&gt;&gt; <span class="kw">for </span>F
-<a href=#252 id=252 data-nosnippet>252</a>        <span class="kw">where </span>F: FnMut(T, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O, T: <span class="kw">crate</span>::type_traits::AnyCompatible,
-<a href=#253 id=253 data-nosnippet>253</a>              O: CallbackResult&lt;R&gt;,
-<a href=#254 id=254 data-nosnippet>254</a>        {
-<a href=#255 id=255 data-nosnippet>255</a>            <span class="attr">#[inline(always)]
-<a href=#256 id=256 data-nosnippet>256</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
-<a href=#257 id=257 data-nosnippet>257</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
-<a href=#258 id=258 data-nosnippet>258</a>                <span class="comment">// Strict: a handler matches only its exact type (a `bool` handler
-<a href=#259 id=259 data-nosnippet>259</a>                // never catches an int), so this does not convert.
-<a href=#260 id=260 data-nosnippet>260</a>                </span><span class="kw">let </span>cell = value.as_raw_ffi_any();
-<a href=#261 id=261 data-nosnippet>261</a>                <span class="comment">// SAFETY: the view's cell is valid for the call, and the copy runs
-<a href=#262 id=262 data-nosnippet>262</a>                // only after the strict check.
-<a href=#263 id=263 data-nosnippet>263</a>                </span><span class="kw">let </span>typed = <span class="kw">unsafe </span>{
-<a href=#264 id=264 data-nosnippet>264</a>                    T::check_any_strict(cell).then(|| T::copy_from_any_view_after_check(cell))
-<a href=#265 id=265 data-nosnippet>265</a>                };
-<a href=#266 id=266 data-nosnippet>266</a>                typed.map(|typed| <span class="self">self</span>(typed, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
-<a href=#267 id=267 data-nosnippet>267</a>            }
-<a href=#268 id=268 data-nosnippet>268</a>        }
-<a href=#269 id=269 data-nosnippet>269</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, T, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
-<a href=#270 id=270 data-nosnippet>270</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::BorrowedObject&lt;T&gt;&gt;&gt; <span class="kw">for </span>F
-<a href=#271 id=271 data-nosnippet>271</a>        <span class="kw">where </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'node</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'node </span>T, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O,
-<a href=#272 id=272 data-nosnippet>272</a>              T: <span class="kw">crate</span>::type_traits::DowncastRefFromAny + <span class="lifetime">'static</span>,
-<a href=#273 id=273 data-nosnippet>273</a>              O: CallbackResult&lt;R&gt;,
-<a href=#274 id=274 data-nosnippet>274</a>        {
-<a href=#275 id=275 data-nosnippet>275</a>            <span class="attr">#[inline(always)]
-<a href=#276 id=276 data-nosnippet>276</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
-<a href=#277 id=277 data-nosnippet>277</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
-<a href=#278 id=278 data-nosnippet>278</a>                value.downcast_ref::&lt;T&gt;().map(|node| <span class="self">self</span>(node, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
-<a href=#279 id=279 data-nosnippet>279</a>            }
-<a href=#280 id=280 data-nosnippet>280</a>        }
-<a href=#281 id=281 data-nosnippet>281</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
-<a href=#282 id=282 data-nosnippet>282</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::AnyView&gt;&gt; <span class="kw">for </span>F
-<a href=#283 id=283 data-nosnippet>283</a>        <span class="kw">where </span>F: FnMut(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O, O: CallbackResult&lt;R&gt;,
-<a href=#284 id=284 data-nosnippet>284</a>        {
-<a href=#285 id=285 data-nosnippet>285</a>            <span class="attr">#[inline(always)]
-<a href=#286 id=286 data-nosnippet>286</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
-<a href=#287 id=287 data-nosnippet>287</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
-<a href=#288 id=288 data-nosnippet>288</a>                <span class="prelude-val">Some</span>(<span class="self">self</span>(value, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
-<a href=#289 id=289 data-nosnippet>289</a>            }
-<a href=#290 id=290 data-nosnippet>290</a>        }
-<a href=#291 id=291 data-nosnippet>291</a>    };
-<a href=#292 id=292 data-nosnippet>292</a>}
-<a href=#293 id=293 data-nosnippet>293</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (); ());
-<a href=#294 id=294 data-nosnippet>294</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (A1:a1); ());
-<a href=#295 id=295 data-nosnippet>295</a><span class="macro">callback_prefix!</span>(<span class="number">2</span>; (A1:a1); (A1:a1));
-<a href=#296 id=296 data-nosnippet>296</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2); ());
-<a href=#297 id=297 data-nosnippet>297</a><span class="macro">callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2); (A1:a1));
-<a href=#298 id=298 data-nosnippet>298</a><span class="macro">callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2); (A1:a1, A2:a2));
-<a href=#299 id=299 data-nosnippet>299</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2, A3:a3); ());
-<a href=#300 id=300 data-nosnippet>300</a><span class="macro">callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2, A3:a3); (A1:a1));
-<a href=#301 id=301 data-nosnippet>301</a><span class="macro">callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2));
-<a href=#302 id=302 data-nosnippet>302</a><span class="macro">callback_prefix!</span>(<span class="number">4</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2, A3:a3));
-<a href=#303 id=303 data-nosnippet>303</a>
-<a href=#304 id=304 data-nosnippet>304</a><span class="macro">macro_rules!</span> mutation_callback_prefix {
-<a href=#305 id=305 data-nosnippet>305</a>    (<span class="macro-nonterminal">$n</span>:literal; ($(<span class="macro-nonterminal">$A</span>:ident:<span class="macro-nonterminal">$a</span>:ident),<span class="kw-2">*</span>); ($(<span class="macro-nonterminal">$B</span>:ident:<span class="macro-nonterminal">$b</span>:ident),<span class="kw-2">*</span>)) =&gt; {
-<a href=#306 id=306 data-nosnippet>306</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, T, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
-<a href=#307 id=307 data-nosnippet>307</a>            DispatchLink&lt;(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::Mutation&lt;T&gt;&gt;&gt; <span class="kw">for </span>F
-<a href=#308 id=308 data-nosnippet>308</a>        <span class="kw">where </span>F: FnMut(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>, T&gt;, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O,
-<a href=#309 id=309 data-nosnippet>309</a>              T: <span class="kw">crate</span>::type_traits::ContainerElement, O: CallbackResult&lt;R&gt;,
-<a href=#310 id=310 data-nosnippet>310</a>        {
-<a href=#311 id=311 data-nosnippet>311</a>            <span class="attr">#[inline(always)]
-<a href=#312 id=312 data-nosnippet>312</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
-<a href=#313 id=313 data-nosnippet>313</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
-<a href=#314 id=314 data-nosnippet>314</a>                value.downcast::&lt;T&gt;().ok().map(|typed| <span class="self">self</span>(typed, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
-<a href=#315 id=315 data-nosnippet>315</a>            }
-<a href=#316 id=316 data-nosnippet>316</a>        }
-<a href=#317 id=317 data-nosnippet>317</a>    };
-<a href=#318 id=318 data-nosnippet>318</a>}
-<a href=#319 id=319 data-nosnippet>319</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (); ());
-<a href=#320 id=320 data-nosnippet>320</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (A1:a1); ());
-<a href=#321 id=321 data-nosnippet>321</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">2</span>; (A1:a1); (A1:a1));
-<a href=#322 id=322 data-nosnippet>322</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2); ());
-<a href=#323 id=323 data-nosnippet>323</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2); (A1:a1));
-<a href=#324 id=324 data-nosnippet>324</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2); (A1:a1, A2:a2));
-<a href=#325 id=325 data-nosnippet>325</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2, A3:a3); ());
-<a href=#326 id=326 data-nosnippet>326</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2, A3:a3); (A1:a1));
-<a href=#327 id=327 data-nosnippet>327</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2));
-<a href=#328 id=328 data-nosnippet>328</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">4</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2, A3:a3));
-<a href=#329 id=329 data-nosnippet>329</a>
-<a href=#330 id=330 data-nosnippet>330</a><span class="comment">// Concrete tuple storage bounds keep trait inference from recursively inventing
-<a href=#331 id=331 data-nosnippet>331</a>// unknown adapter receiver layers. Tuple arity is independent of callback arity.
-<a href=#332 id=332 data-nosnippet>332</a></span><span class="macro">macro_rules!</span> dispatch_tuple_links {
-<a href=#333 id=333 data-nosnippet>333</a>    ($((<span class="macro-nonterminal">$F</span>:ident, <span class="macro-nonterminal">$M</span>:ident, <span class="macro-nonterminal">$idx</span>:tt)),+) =&gt; {
-<a href=#334 id=334 data-nosnippet>334</a>        <span class="kw">impl</span>&lt;Args: Copy, R, $(<span class="macro-nonterminal">$F</span>, <span class="macro-nonterminal">$M</span>,)+&gt;
-<a href=#335 id=335 data-nosnippet>335</a>            DispatchLink&lt;Args, <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromTuple&lt;($(<span class="macro-nonterminal">$M</span>,)+)&gt;&gt; <span class="kw">for </span>($(<span class="macro-nonterminal">$F</span>,)+)
-<a href=#336 id=336 data-nosnippet>336</a>        <span class="kw">where </span>$(<span class="macro-nonterminal">$F</span>: DispatchLink&lt;Args, <span class="prelude-ty">Option</span>&lt;R&gt;, <span class="macro-nonterminal">$M</span>&gt;,)+
-<a href=#337 id=337 data-nosnippet>337</a>        {
-<a href=#338 id=338 data-nosnippet>338</a>            <span class="attr">#[inline(always)]
-<a href=#339 id=339 data-nosnippet>339</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
-<a href=#340 id=340 data-nosnippet>340</a>                $(<span class="kw">if let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.<span class="macro-nonterminal">$idx</span>.dispatch_link(args) { <span class="kw">return </span><span class="prelude-val">Some</span>(result); })+
-<a href=#341 id=341 data-nosnippet>341</a>                <span class="prelude-val">None
-<a href=#342 id=342 data-nosnippet>342</a>            </span>}
-<a href=#343 id=343 data-nosnippet>343</a>        }
-<a href=#344 id=344 data-nosnippet>344</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, C, R, $(<span class="macro-nonterminal">$F</span>, <span class="macro-nonterminal">$M</span>,)+&gt;
-<a href=#345 id=345 data-nosnippet>345</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromTuple&lt;($(<span class="macro-nonterminal">$M</span>,)+), marker::MutArg&gt;&gt; <span class="kw">for </span>($(<span class="macro-nonterminal">$F</span>,)+)
-<a href=#346 id=346 data-nosnippet>346</a>        <span class="kw">where </span>$(<span class="kw">for</span>&lt;<span class="lifetime">'borrow</span>&gt; <span class="macro-nonterminal">$F</span>: DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'borrow </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, <span class="macro-nonterminal">$M</span>&gt;,)+
-<a href=#347 id=347 data-nosnippet>347</a>        {
-<a href=#348 id=348 data-nosnippet>348</a>            <span class="attr">#[inline(always)]
-<a href=#349 id=349 data-nosnippet>349</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, context): (AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
-<a href=#350 id=350 data-nosnippet>350</a>                $(<span class="kw">if let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.<span class="macro-nonterminal">$idx</span>.dispatch_link((value, <span class="kw-2">&amp;mut *</span>context)) { <span class="kw">return </span><span class="prelude-val">Some</span>(result); })+
-<a href=#351 id=351 data-nosnippet>351</a>                <span class="prelude-val">None
-<a href=#352 id=352 data-nosnippet>352</a>            </span>}
-<a href=#353 id=353 data-nosnippet>353</a>        }
-<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, C, R, $(<span class="macro-nonterminal">$F</span>, <span class="macro-nonterminal">$M</span>,)+&gt;
-<a href=#355 id=355 data-nosnippet>355</a>            DispatchLink&lt;(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromTuple&lt;($(<span class="macro-nonterminal">$M</span>,)+), marker::MutArg&gt;&gt; <span class="kw">for </span>($(<span class="macro-nonterminal">$F</span>,)+)
-<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">where </span>$(<span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'borrow</span>&gt; <span class="macro-nonterminal">$F</span>: DispatchLink&lt;(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'value</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'borrow </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, <span class="macro-nonterminal">$M</span>&gt;,)+
-<a href=#357 id=357 data-nosnippet>357</a>        {
-<a href=#358 id=358 data-nosnippet>358</a>            <span class="attr">#[inline(always)]
-<a href=#359 id=359 data-nosnippet>359</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (<span class="kw-2">mut </span>value, context): (<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
-<a href=#360 id=360 data-nosnippet>360</a>                $(<span class="kw">if let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.<span class="macro-nonterminal">$idx</span>.dispatch_link((value.reborrow(), <span class="kw-2">&amp;mut *</span>context)) { <span class="kw">return </span><span class="prelude-val">Some</span>(result); })+
-<a href=#361 id=361 data-nosnippet>361</a>                <span class="prelude-val">None
-<a href=#362 id=362 data-nosnippet>362</a>            </span>}
-<a href=#363 id=363 data-nosnippet>363</a>        }
-<a href=#364 id=364 data-nosnippet>364</a>    };
-<a href=#365 id=365 data-nosnippet>365</a>}
-<a href=#366 id=366 data-nosnippet>366</a><span class="macro">impl_callback_chain_tuple_arities!</span>(dispatch_tuple_links);
+<a href=#73 id=73 data-nosnippet>73</a><span class="kw">use </span>std::{borrow::BorrowMut, marker::PhantomData};
+<a href=#74 id=74 data-nosnippet>74</a>
+<a href=#75 id=75 data-nosnippet>75</a><span class="doccomment">/// Inferred selectors for dispatcher normalization.
+<a href=#76 id=76 data-nosnippet>76</a>///
+<a href=#77 id=77 data-nosnippet>77</a>/// Entry points infer one marker from the input. Callback markers select argument
+<a href=#78 id=78 data-nosnippet>78</a>/// matching and a leading argument count; tuple markers contain each link's marker.
+<a href=#79 id=79 data-nosnippet>79</a>/// Normalization stores the input once, before traversal, without cloning it.
+<a href=#80 id=80 data-nosnippet>80</a></span><span class="kw">pub mod </span>marker {
+<a href=#81 id=81 data-nosnippet>81</a>    <span class="kw">use </span>std::marker::PhantomData;
+<a href=#82 id=82 data-nosnippet>82</a>    <span class="doccomment">/// Store an owned dispatcher with the exact target argument and result types.
+<a href=#83 id=83 data-nosnippet>83</a>    </span><span class="kw">pub enum </span>FromOwned {}
+<a href=#84 id=84 data-nosnippet>84</a>    <span class="doccomment">/// Store a mutable borrow of an exact-signature dispatcher.
+<a href=#85 id=85 data-nosnippet>85</a>    </span><span class="kw">pub enum </span>FromBorrowed {}
+<a href=#86 id=86 data-nosnippet>86</a>    <span class="doccomment">/// Match a callback's first argument using `Shape`, then pass its first `N`
+<a href=#87 id=87 data-nosnippet>87</a>    /// arguments. `N` ranges from one through four, including the matched value.
+<a href=#88 id=88 data-nosnippet>88</a>    </span><span class="kw">pub struct </span>FromCallback&lt;<span class="kw">const </span>N: usize, Shape&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; Shape&gt;);
+<a href=#89 id=89 data-nosnippet>89</a>    <span class="doccomment">/// Try tuple links in order. `Markers` is their marker tuple, including nested
+<a href=#90 id=90 data-nosnippet>90</a>    /// tuples; `Args` selects how arguments are reborrowed between links.
+<a href=#91 id=91 data-nosnippet>91</a>    </span><span class="kw">pub struct </span>FromTuple&lt;Markers, Args = CopyArgs&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; (Markers, Args)&gt;);
+<a href=#92 id=92 data-nosnippet>92</a>    <span class="doccomment">/// Replay copyable observer arguments; this does not copy dispatcher storage.
+<a href=#93 id=93 data-nosnippet>93</a>    </span><span class="kw">pub enum </span>CopyArgs {}
+<a href=#94 id=94 data-nosnippet>94</a>    <span class="doccomment">/// Sequentially reborrow a mutable second argument for each tuple link.
+<a href=#95 id=95 data-nosnippet>95</a>    </span><span class="kw">pub enum </span>MutArg {}
+<a href=#96 id=96 data-nosnippet>96</a>    <span class="doccomment">/// Match and convert the first `AnyView` to the FFI value type `T`.
+<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="kw">pub struct </span>Value&lt;T&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; T&gt;);
+<a href=#98 id=98 data-nosnippet>98</a>    <span class="doccomment">/// Match a borrowed object node `&amp;T` without retaining it, unlike the
+<a href=#99 id=99 data-nosnippet>99</a>    /// by-value conversion selected by [`Value&lt;T&gt;`].
+<a href=#100 id=100 data-nosnippet>100</a>    </span><span class="kw">pub struct </span>BorrowedObject&lt;T&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; T&gt;);
+<a href=#101 id=101 data-nosnippet>101</a>    <span class="doccomment">/// Pass the first `AnyView` without a runtime type filter.
+<a href=#102 id=102 data-nosnippet>102</a>    </span><span class="kw">pub enum </span>AnyView {}
+<a href=#103 id=103 data-nosnippet>103</a>    <span class="doccomment">/// Match a mutation view for `T`, keeping its in-place mode.
+<a href=#104 id=104 data-nosnippet>104</a>    </span><span class="kw">pub struct </span>Mutation&lt;T = <span class="kw">crate</span>::Any&gt;(PhantomData&lt;<span class="kw">fn</span>() -&gt; T&gt;);
+<a href=#105 id=105 data-nosnippet>105</a>}
+<a href=#106 id=106 data-nosnippet>106</a>
+<a href=#107 id=107 data-nosnippet>107</a><span class="doccomment">/// Convert an input to a reusable [`Dispatcher`].
+<a href=#108 id=108 data-nosnippet>108</a>///
+<a href=#109 id=109 data-nosnippet>109</a>/// `Args` is the complete target argument tuple, `Ret` its complete result, and
+<a href=#110 id=110 data-nosnippet>110</a>/// `M` the inferred input-form marker. `Target` is the actual dispatcher type;
+<a href=#111 id=111 data-nosnippet>111</a>/// `Output` owns or borrows it and provides `BorrowMut&lt;Target&gt;`. Owned `D` and
+<a href=#112 id=112 data-nosnippet>112</a>/// borrowed `&amp;mut D` inputs both preserve target `D`; callbacks and tuples use an
+<a href=#113 id=113 data-nosnippet>113</a>/// adapter as their target. This keeps recursive view types tied to the dispatcher.
+<a href=#114 id=114 data-nosnippet>114</a>///
+<a href=#115 id=115 data-nosnippet>115</a>/// Inputs may be owned dispatchers, mutable dispatcher borrows, callbacks, or
+<a href=#116 id=116 data-nosnippet>116</a>/// nested tuples mixing these forms. Dispatchers require the exact argument and
+<a href=#117 id=117 data-nosnippet>117</a>/// result signature. Callbacks may accept a leading prefix of one to four
+<a href=#118 id=118 data-nosnippet>118</a>/// arguments; structural callbacks match an FFI value, an object-node borrow, or
+<a href=#119 id=119 data-nosnippet>119</a>/// `AnyView`; mutation callbacks match a typed `MutationView`. Callable values
+<a href=#120 id=120 data-nosnippet>120</a>/// and their shared or mutable borrows are stored as supplied, subject to their `FnMut` implementation. Only an outer `None` tries
+<a href=#121 id=121 data-nosnippet>121</a>/// the next tuple link; a matched error or inner `None` stops the chain.
+<a href=#122 id=122 data-nosnippet>122</a>///
+<a href=#123 id=123 data-nosnippet>123</a>/// Supply the target argument and result types when calling the conversion directly;
+<a href=#124 id=124 data-nosnippet>124</a>/// the input-form marker remains inferred.
+<a href=#125 id=125 data-nosnippet>125</a>///
+<a href=#126 id=126 data-nosnippet>126</a>/// ```
+<a href=#127 id=127 data-nosnippet>127</a>/// use tvm_ffi::{Any, AnyView, Dispatcher, IntoDispatcher, Result};
+<a href=#128 id=128 data-nosnippet>128</a>/// let callbacks = (|value: i64| Any::from(value + 1), |_value: AnyView&lt;'_&gt;| Any::new());
+<a href=#129 id=129 data-nosnippet>129</a>/// let mut dispatcher = IntoDispatcher::&lt;(AnyView&lt;'_&gt;,), Option&lt;Result&lt;Any&gt;&gt;, _&gt;::into_dispatcher(callbacks);
+<a href=#130 id=130 data-nosnippet>130</a>/// let result: Option&lt;Result&lt;Any&gt;&gt; = dispatcher.dispatch_tuple((AnyView::from(&amp;41_i64),));
+<a href=#131 id=131 data-nosnippet>131</a>/// let result = result.unwrap()?;
+<a href=#132 id=132 data-nosnippet>132</a>/// assert_eq!(i64::try_from(result)?, 42);
+<a href=#133 id=133 data-nosnippet>133</a>/// # Ok::&lt;(), tvm_ffi::Error&gt;(())
+<a href=#134 id=134 data-nosnippet>134</a>/// ```
+<a href=#135 id=135 data-nosnippet>135</a></span><span class="kw">pub trait </span>IntoDispatcher&lt;Args, Ret, M&gt; {
+<a href=#136 id=136 data-nosnippet>136</a>    <span class="doccomment">/// Actual dispatcher type, independent of its owned or borrowed storage.
+<a href=#137 id=137 data-nosnippet>137</a>    </span><span class="kw">type </span>Target;
+<a href=#138 id=138 data-nosnippet>138</a>    <span class="doccomment">/// Storage normalized once at entry, retaining the target's identity.
+<a href=#139 id=139 data-nosnippet>139</a>    </span><span class="kw">type </span>Output: BorrowMut&lt;<span class="self">Self</span>::Target&gt;;
+<a href=#140 id=140 data-nosnippet>140</a>    <span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output;
+<a href=#141 id=141 data-nosnippet>141</a>}
+<a href=#142 id=142 data-nosnippet>142</a>
+<a href=#143 id=143 data-nosnippet>143</a><span class="doccomment">/// Normalized callback or tuple storage; direct dispatchers retain their own type.
+<a href=#144 id=144 data-nosnippet>144</a></span><span class="attr">#[doc(hidden)]
+<a href=#145 id=145 data-nosnippet>145</a></span><span class="kw">pub struct </span>DispatchAdapter&lt;F, M&gt; {
+<a href=#146 id=146 data-nosnippet>146</a>    input: F,
+<a href=#147 id=147 data-nosnippet>147</a>    marker: PhantomData&lt;<span class="kw">fn</span>() -&gt; M&gt;,
+<a href=#148 id=148 data-nosnippet>148</a>}
+<a href=#149 id=149 data-nosnippet>149</a>
+<a href=#150 id=150 data-nosnippet>150</a><span class="kw">impl</span>&lt;D, Args, Ret&gt; IntoDispatcher&lt;Args, Ret, marker::FromOwned&gt; <span class="kw">for </span>D
+<a href=#151 id=151 data-nosnippet>151</a><span class="kw">where
+<a href=#152 id=152 data-nosnippet>152</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
+<a href=#153 id=153 data-nosnippet>153</a>{
+<a href=#154 id=154 data-nosnippet>154</a>    <span class="kw">type </span>Target = D;
+<a href=#155 id=155 data-nosnippet>155</a>    <span class="kw">type </span>Output = D;
+<a href=#156 id=156 data-nosnippet>156</a>    <span class="attr">#[inline(always)]
+<a href=#157 id=157 data-nosnippet>157</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+<a href=#158 id=158 data-nosnippet>158</a>        <span class="self">self
+<a href=#159 id=159 data-nosnippet>159</a>    </span>}
+<a href=#160 id=160 data-nosnippet>160</a>}
+<a href=#161 id=161 data-nosnippet>161</a>
+<a href=#162 id=162 data-nosnippet>162</a><span class="kw">impl</span>&lt;<span class="lifetime">'d</span>, D, Args, Ret&gt; IntoDispatcher&lt;Args, Ret, marker::FromBorrowed&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'d </span><span class="kw-2">mut </span>D
+<a href=#163 id=163 data-nosnippet>163</a><span class="kw">where
+<a href=#164 id=164 data-nosnippet>164</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
+<a href=#165 id=165 data-nosnippet>165</a>{
+<a href=#166 id=166 data-nosnippet>166</a>    <span class="kw">type </span>Target = D;
+<a href=#167 id=167 data-nosnippet>167</a>    <span class="kw">type </span>Output = <span class="kw-2">&amp;</span><span class="lifetime">'d </span><span class="kw-2">mut </span>D;
+<a href=#168 id=168 data-nosnippet>168</a>    <span class="attr">#[inline(always)]
+<a href=#169 id=169 data-nosnippet>169</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+<a href=#170 id=170 data-nosnippet>170</a>        <span class="self">self
+<a href=#171 id=171 data-nosnippet>171</a>    </span>}
+<a href=#172 id=172 data-nosnippet>172</a>}
+<a href=#173 id=173 data-nosnippet>173</a>
+<a href=#174 id=174 data-nosnippet>174</a><span class="kw">impl</span>&lt;F, Args, Ret, <span class="kw">const </span>N: usize, Shape&gt; IntoDispatcher&lt;Args, Ret, marker::FromCallback&lt;N, Shape&gt;&gt;
+<a href=#175 id=175 data-nosnippet>175</a>    <span class="kw">for </span>F
+<a href=#176 id=176 data-nosnippet>176</a><span class="kw">where
+<a href=#177 id=177 data-nosnippet>177</a>    </span>F: DispatchLink&lt;Args, Ret, marker::FromCallback&lt;N, Shape&gt;&gt;,
+<a href=#178 id=178 data-nosnippet>178</a>{
+<a href=#179 id=179 data-nosnippet>179</a>    <span class="kw">type </span>Target = DispatchAdapter&lt;F, marker::FromCallback&lt;N, Shape&gt;&gt;;
+<a href=#180 id=180 data-nosnippet>180</a>    <span class="kw">type </span>Output = <span class="self">Self</span>::Target;
+<a href=#181 id=181 data-nosnippet>181</a>    <span class="attr">#[inline(always)]
+<a href=#182 id=182 data-nosnippet>182</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+<a href=#183 id=183 data-nosnippet>183</a>        DispatchAdapter {
+<a href=#184 id=184 data-nosnippet>184</a>            input: <span class="self">self</span>,
+<a href=#185 id=185 data-nosnippet>185</a>            marker: PhantomData,
+<a href=#186 id=186 data-nosnippet>186</a>        }
+<a href=#187 id=187 data-nosnippet>187</a>    }
+<a href=#188 id=188 data-nosnippet>188</a>}
+<a href=#189 id=189 data-nosnippet>189</a>
+<a href=#190 id=190 data-nosnippet>190</a><span class="kw">impl</span>&lt;F, Args, Ret, Markers, Reborrow&gt;
+<a href=#191 id=191 data-nosnippet>191</a>    IntoDispatcher&lt;Args, Ret, marker::FromTuple&lt;Markers, Reborrow&gt;&gt; <span class="kw">for </span>F
+<a href=#192 id=192 data-nosnippet>192</a><span class="kw">where
+<a href=#193 id=193 data-nosnippet>193</a>    </span>F: DispatchLink&lt;Args, Ret, marker::FromTuple&lt;Markers, Reborrow&gt;&gt;,
+<a href=#194 id=194 data-nosnippet>194</a>{
+<a href=#195 id=195 data-nosnippet>195</a>    <span class="kw">type </span>Target = DispatchAdapter&lt;F, marker::FromTuple&lt;Markers, Reborrow&gt;&gt;;
+<a href=#196 id=196 data-nosnippet>196</a>    <span class="kw">type </span>Output = <span class="self">Self</span>::Target;
+<a href=#197 id=197 data-nosnippet>197</a>    <span class="attr">#[inline(always)]
+<a href=#198 id=198 data-nosnippet>198</a>    </span><span class="kw">fn </span>into_dispatcher(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+<a href=#199 id=199 data-nosnippet>199</a>        DispatchAdapter {
+<a href=#200 id=200 data-nosnippet>200</a>            input: <span class="self">self</span>,
+<a href=#201 id=201 data-nosnippet>201</a>            marker: PhantomData,
+<a href=#202 id=202 data-nosnippet>202</a>        }
+<a href=#203 id=203 data-nosnippet>203</a>    }
+<a href=#204 id=204 data-nosnippet>204</a>}
+<a href=#205 id=205 data-nosnippet>205</a>
+<a href=#206 id=206 data-nosnippet>206</a><span class="doccomment">/// Implementation boundary shared by callback and tuple adapters.
+<a href=#207 id=207 data-nosnippet>207</a></span><span class="attr">#[doc(hidden)]
+<a href=#208 id=208 data-nosnippet>208</a></span><span class="kw">pub trait </span>DispatchLink&lt;Args, Ret, M&gt; {
+<a href=#209 id=209 data-nosnippet>209</a>    <span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; Ret;
+<a href=#210 id=210 data-nosnippet>210</a>}
+<a href=#211 id=211 data-nosnippet>211</a>
+<a href=#212 id=212 data-nosnippet>212</a><span class="kw">impl</span>&lt;F, Args, Ret, M&gt; Dispatcher&lt;Args, Ret&gt; <span class="kw">for </span><span class="kw-2">&amp;mut </span>DispatchAdapter&lt;F, M&gt;
+<a href=#213 id=213 data-nosnippet>213</a><span class="kw">where
+<a href=#214 id=214 data-nosnippet>214</a>    </span>F: DispatchLink&lt;Args, Ret, M&gt;,
+<a href=#215 id=215 data-nosnippet>215</a>{
+<a href=#216 id=216 data-nosnippet>216</a>    <span class="attr">#[inline(always)]
+<a href=#217 id=217 data-nosnippet>217</a>    </span><span class="kw">fn </span>dispatch_tuple(<span class="self">self</span>, args: Args) -&gt; Ret {
+<a href=#218 id=218 data-nosnippet>218</a>        <span class="self">self</span>.input.dispatch_link(args)
+<a href=#219 id=219 data-nosnippet>219</a>    }
+<a href=#220 id=220 data-nosnippet>220</a>}
+<a href=#221 id=221 data-nosnippet>221</a>
+<a href=#222 id=222 data-nosnippet>222</a><span class="kw">impl</span>&lt;D, Args, Ret&gt; DispatchLink&lt;Args, Ret, marker::FromOwned&gt; <span class="kw">for </span>D
+<a href=#223 id=223 data-nosnippet>223</a><span class="kw">where
+<a href=#224 id=224 data-nosnippet>224</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
+<a href=#225 id=225 data-nosnippet>225</a>{
+<a href=#226 id=226 data-nosnippet>226</a>    <span class="attr">#[inline(always)]
+<a href=#227 id=227 data-nosnippet>227</a>    </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; Ret {
+<a href=#228 id=228 data-nosnippet>228</a>        <span class="self">self</span>.dispatch_tuple(args)
+<a href=#229 id=229 data-nosnippet>229</a>    }
+<a href=#230 id=230 data-nosnippet>230</a>}
+<a href=#231 id=231 data-nosnippet>231</a><span class="kw">impl</span>&lt;D, Args, Ret&gt; DispatchLink&lt;Args, Ret, marker::FromBorrowed&gt; <span class="kw">for </span><span class="kw-2">&amp;mut </span>D
+<a href=#232 id=232 data-nosnippet>232</a><span class="kw">where
+<a href=#233 id=233 data-nosnippet>233</a>    for</span>&lt;<span class="lifetime">'s</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;Args, Ret&gt;,
+<a href=#234 id=234 data-nosnippet>234</a>{
+<a href=#235 id=235 data-nosnippet>235</a>    <span class="attr">#[inline(always)]
+<a href=#236 id=236 data-nosnippet>236</a>    </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; Ret {
+<a href=#237 id=237 data-nosnippet>237</a>        (<span class="kw-2">&amp;mut **</span><span class="self">self</span>).dispatch_tuple(args)
+<a href=#238 id=238 data-nosnippet>238</a>    }
+<a href=#239 id=239 data-nosnippet>239</a>}
+<a href=#240 id=240 data-nosnippet>240</a>
+<a href=#241 id=241 data-nosnippet>241</a><span class="doccomment">/// Operation-specific callback result conversion; matching and chaining are shared.
+<a href=#242 id=242 data-nosnippet>242</a></span><span class="attr">#[doc(hidden)]
+<a href=#243 id=243 data-nosnippet>243</a></span><span class="kw">pub trait </span>CallbackResult&lt;R&gt; {
+<a href=#244 id=244 data-nosnippet>244</a>    <span class="kw">fn </span>callback_result(<span class="self">self</span>) -&gt; R;
+<a href=#245 id=245 data-nosnippet>245</a>}
+<a href=#246 id=246 data-nosnippet>246</a>
+<a href=#247 id=247 data-nosnippet>247</a><span class="macro">macro_rules!</span> callback_prefix {
+<a href=#248 id=248 data-nosnippet>248</a>    (<span class="macro-nonterminal">$n</span>:literal; ($(<span class="macro-nonterminal">$A</span>:ident:<span class="macro-nonterminal">$a</span>:ident),<span class="kw-2">*</span>); ($(<span class="macro-nonterminal">$B</span>:ident:<span class="macro-nonterminal">$b</span>:ident),<span class="kw-2">*</span>)) =&gt; {
+<a href=#249 id=249 data-nosnippet>249</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, T, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
+<a href=#250 id=250 data-nosnippet>250</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::Value&lt;T&gt;&gt;&gt; <span class="kw">for </span>F
+<a href=#251 id=251 data-nosnippet>251</a>        <span class="kw">where </span>F: FnMut(T, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O, T: <span class="kw">crate</span>::type_traits::AnyCompatible,
+<a href=#252 id=252 data-nosnippet>252</a>              O: CallbackResult&lt;R&gt;,
+<a href=#253 id=253 data-nosnippet>253</a>        {
+<a href=#254 id=254 data-nosnippet>254</a>            <span class="attr">#[inline(always)]
+<a href=#255 id=255 data-nosnippet>255</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
+<a href=#256 id=256 data-nosnippet>256</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
+<a href=#257 id=257 data-nosnippet>257</a>                <span class="comment">// Strict: a handler matches only its exact type (a `bool` handler
+<a href=#258 id=258 data-nosnippet>258</a>                // never catches an int), so this does not convert.
+<a href=#259 id=259 data-nosnippet>259</a>                </span><span class="kw">let </span>cell = value.as_raw_ffi_any();
+<a href=#260 id=260 data-nosnippet>260</a>                <span class="comment">// SAFETY: the view's cell is valid for the call, and the copy runs
+<a href=#261 id=261 data-nosnippet>261</a>                // only after the strict check.
+<a href=#262 id=262 data-nosnippet>262</a>                </span><span class="kw">let </span>typed = <span class="kw">unsafe </span>{
+<a href=#263 id=263 data-nosnippet>263</a>                    T::check_any_strict(cell).then(|| T::copy_from_any_view_after_check(cell))
+<a href=#264 id=264 data-nosnippet>264</a>                };
+<a href=#265 id=265 data-nosnippet>265</a>                typed.map(|typed| <span class="self">self</span>(typed, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
+<a href=#266 id=266 data-nosnippet>266</a>            }
+<a href=#267 id=267 data-nosnippet>267</a>        }
+<a href=#268 id=268 data-nosnippet>268</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, T, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
+<a href=#269 id=269 data-nosnippet>269</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::BorrowedObject&lt;T&gt;&gt;&gt; <span class="kw">for </span>F
+<a href=#270 id=270 data-nosnippet>270</a>        <span class="kw">where </span>F: <span class="kw">for</span>&lt;<span class="lifetime">'node</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">'node </span>T, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O,
+<a href=#271 id=271 data-nosnippet>271</a>              T: <span class="kw">crate</span>::type_traits::DowncastRefFromAny + <span class="lifetime">'static</span>,
+<a href=#272 id=272 data-nosnippet>272</a>              O: CallbackResult&lt;R&gt;,
+<a href=#273 id=273 data-nosnippet>273</a>        {
+<a href=#274 id=274 data-nosnippet>274</a>            <span class="attr">#[inline(always)]
+<a href=#275 id=275 data-nosnippet>275</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
+<a href=#276 id=276 data-nosnippet>276</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
+<a href=#277 id=277 data-nosnippet>277</a>                value.downcast_ref::&lt;T&gt;().map(|node| <span class="self">self</span>(node, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
+<a href=#278 id=278 data-nosnippet>278</a>            }
+<a href=#279 id=279 data-nosnippet>279</a>        }
+<a href=#280 id=280 data-nosnippet>280</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
+<a href=#281 id=281 data-nosnippet>281</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::AnyView&gt;&gt; <span class="kw">for </span>F
+<a href=#282 id=282 data-nosnippet>282</a>        <span class="kw">where </span>F: FnMut(AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O, O: CallbackResult&lt;R&gt;,
+<a href=#283 id=283 data-nosnippet>283</a>        {
+<a href=#284 id=284 data-nosnippet>284</a>            <span class="attr">#[inline(always)]
+<a href=#285 id=285 data-nosnippet>285</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (AnyView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
+<a href=#286 id=286 data-nosnippet>286</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
+<a href=#287 id=287 data-nosnippet>287</a>                <span class="prelude-val">Some</span>(<span class="self">self</span>(value, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
+<a href=#288 id=288 data-nosnippet>288</a>            }
+<a href=#289 id=289 data-nosnippet>289</a>        }
+<a href=#290 id=290 data-nosnippet>290</a>    };
+<a href=#291 id=291 data-nosnippet>291</a>}
+<a href=#292 id=292 data-nosnippet>292</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (); ());
+<a href=#293 id=293 data-nosnippet>293</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (A1:a1); ());
+<a href=#294 id=294 data-nosnippet>294</a><span class="macro">callback_prefix!</span>(<span class="number">2</span>; (A1:a1); (A1:a1));
+<a href=#295 id=295 data-nosnippet>295</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2); ());
+<a href=#296 id=296 data-nosnippet>296</a><span class="macro">callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2); (A1:a1));
+<a href=#297 id=297 data-nosnippet>297</a><span class="macro">callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2); (A1:a1, A2:a2));
+<a href=#298 id=298 data-nosnippet>298</a><span class="macro">callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2, A3:a3); ());
+<a href=#299 id=299 data-nosnippet>299</a><span class="macro">callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2, A3:a3); (A1:a1));
+<a href=#300 id=300 data-nosnippet>300</a><span class="macro">callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2));
+<a href=#301 id=301 data-nosnippet>301</a><span class="macro">callback_prefix!</span>(<span class="number">4</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2, A3:a3));
+<a href=#302 id=302 data-nosnippet>302</a>
+<a href=#303 id=303 data-nosnippet>303</a><span class="macro">macro_rules!</span> mutation_callback_prefix {
+<a href=#304 id=304 data-nosnippet>304</a>    (<span class="macro-nonterminal">$n</span>:literal; ($(<span class="macro-nonterminal">$A</span>:ident:<span class="macro-nonterminal">$a</span>:ident),<span class="kw-2">*</span>); ($(<span class="macro-nonterminal">$B</span>:ident:<span class="macro-nonterminal">$b</span>:ident),<span class="kw-2">*</span>)) =&gt; {
+<a href=#305 id=305 data-nosnippet>305</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, F, T, O, R, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>&gt;
+<a href=#306 id=306 data-nosnippet>306</a>            DispatchLink&lt;(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromCallback&lt;<span class="macro-nonterminal">$n</span>, marker::Mutation&lt;T&gt;&gt;&gt; <span class="kw">for </span>F
+<a href=#307 id=307 data-nosnippet>307</a>        <span class="kw">where </span>F: FnMut(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>, T&gt;, $(<span class="macro-nonterminal">$B</span>,)<span class="kw-2">*</span>) -&gt; O,
+<a href=#308 id=308 data-nosnippet>308</a>              T: <span class="kw">crate</span>::type_traits::ContainerElement, O: CallbackResult&lt;R&gt;,
+<a href=#309 id=309 data-nosnippet>309</a>        {
+<a href=#310 id=310 data-nosnippet>310</a>            <span class="attr">#[inline(always)]
+<a href=#311 id=311 data-nosnippet>311</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, $(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>): (<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, $(<span class="macro-nonterminal">$A</span>,)<span class="kw-2">*</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
+<a href=#312 id=312 data-nosnippet>312</a>                $(<span class="kw">let _ </span>= <span class="kw-2">&amp;</span><span class="macro-nonterminal">$a</span>;)*
+<a href=#313 id=313 data-nosnippet>313</a>                value.downcast::&lt;T&gt;().ok().map(|typed| <span class="self">self</span>(typed, $(<span class="macro-nonterminal">$b</span>,)<span class="kw-2">*</span>).callback_result())
+<a href=#314 id=314 data-nosnippet>314</a>            }
+<a href=#315 id=315 data-nosnippet>315</a>        }
+<a href=#316 id=316 data-nosnippet>316</a>    };
+<a href=#317 id=317 data-nosnippet>317</a>}
+<a href=#318 id=318 data-nosnippet>318</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (); ());
+<a href=#319 id=319 data-nosnippet>319</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (A1:a1); ());
+<a href=#320 id=320 data-nosnippet>320</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">2</span>; (A1:a1); (A1:a1));
+<a href=#321 id=321 data-nosnippet>321</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2); ());
+<a href=#322 id=322 data-nosnippet>322</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2); (A1:a1));
+<a href=#323 id=323 data-nosnippet>323</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2); (A1:a1, A2:a2));
+<a href=#324 id=324 data-nosnippet>324</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">1</span>; (A1:a1, A2:a2, A3:a3); ());
+<a href=#325 id=325 data-nosnippet>325</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">2</span>; (A1:a1, A2:a2, A3:a3); (A1:a1));
+<a href=#326 id=326 data-nosnippet>326</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">3</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2));
+<a href=#327 id=327 data-nosnippet>327</a><span class="macro">mutation_callback_prefix!</span>(<span class="number">4</span>; (A1:a1, A2:a2, A3:a3); (A1:a1, A2:a2, A3:a3));
+<a href=#328 id=328 data-nosnippet>328</a>
+<a href=#329 id=329 data-nosnippet>329</a><span class="comment">// Concrete tuple storage bounds keep trait inference from recursively inventing
+<a href=#330 id=330 data-nosnippet>330</a>// unknown adapter receiver layers. Tuple arity is independent of callback arity.
+<a href=#331 id=331 data-nosnippet>331</a></span><span class="macro">macro_rules!</span> dispatch_tuple_links {
+<a href=#332 id=332 data-nosnippet>332</a>    ($((<span class="macro-nonterminal">$F</span>:ident, <span class="macro-nonterminal">$M</span>:ident, <span class="macro-nonterminal">$idx</span>:tt)),+) =&gt; {
+<a href=#333 id=333 data-nosnippet>333</a>        <span class="kw">impl</span>&lt;Args: Copy, R, $(<span class="macro-nonterminal">$F</span>, <span class="macro-nonterminal">$M</span>,)+&gt;
+<a href=#334 id=334 data-nosnippet>334</a>            DispatchLink&lt;Args, <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromTuple&lt;($(<span class="macro-nonterminal">$M</span>,)+)&gt;&gt; <span class="kw">for </span>($(<span class="macro-nonterminal">$F</span>,)+)
+<a href=#335 id=335 data-nosnippet>335</a>        <span class="kw">where </span>$(<span class="macro-nonterminal">$F</span>: DispatchLink&lt;Args, <span class="prelude-ty">Option</span>&lt;R&gt;, <span class="macro-nonterminal">$M</span>&gt;,)+
+<a href=#336 id=336 data-nosnippet>336</a>        {
+<a href=#337 id=337 data-nosnippet>337</a>            <span class="attr">#[inline(always)]
+<a href=#338 id=338 data-nosnippet>338</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: Args) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
+<a href=#339 id=339 data-nosnippet>339</a>                $(<span class="kw">if let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.<span class="macro-nonterminal">$idx</span>.dispatch_link(args) { <span class="kw">return </span><span class="prelude-val">Some</span>(result); })+
+<a href=#340 id=340 data-nosnippet>340</a>                <span class="prelude-val">None
+<a href=#341 id=341 data-nosnippet>341</a>            </span>}
+<a href=#342 id=342 data-nosnippet>342</a>        }
+<a href=#343 id=343 data-nosnippet>343</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, C, R, $(<span class="macro-nonterminal">$F</span>, <span class="macro-nonterminal">$M</span>,)+&gt;
+<a href=#344 id=344 data-nosnippet>344</a>            DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromTuple&lt;($(<span class="macro-nonterminal">$M</span>,)+), marker::MutArg&gt;&gt; <span class="kw">for </span>($(<span class="macro-nonterminal">$F</span>,)+)
+<a href=#345 id=345 data-nosnippet>345</a>        <span class="kw">where </span>$(<span class="kw">for</span>&lt;<span class="lifetime">'borrow</span>&gt; <span class="macro-nonterminal">$F</span>: DispatchLink&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'borrow </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, <span class="macro-nonterminal">$M</span>&gt;,)+
+<a href=#346 id=346 data-nosnippet>346</a>        {
+<a href=#347 id=347 data-nosnippet>347</a>            <span class="attr">#[inline(always)]
+<a href=#348 id=348 data-nosnippet>348</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (value, context): (AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
+<a href=#349 id=349 data-nosnippet>349</a>                $(<span class="kw">if let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.<span class="macro-nonterminal">$idx</span>.dispatch_link((value, <span class="kw-2">&amp;mut *</span>context)) { <span class="kw">return </span><span class="prelude-val">Some</span>(result); })+
+<a href=#350 id=350 data-nosnippet>350</a>                <span class="prelude-val">None
+<a href=#351 id=351 data-nosnippet>351</a>            </span>}
+<a href=#352 id=352 data-nosnippet>352</a>        }
+<a href=#353 id=353 data-nosnippet>353</a>        <span class="kw">impl</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, C, R, $(<span class="macro-nonterminal">$F</span>, <span class="macro-nonterminal">$M</span>,)+&gt;
+<a href=#354 id=354 data-nosnippet>354</a>            DispatchLink&lt;(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, marker::FromTuple&lt;($(<span class="macro-nonterminal">$M</span>,)+), marker::MutArg&gt;&gt; <span class="kw">for </span>($(<span class="macro-nonterminal">$F</span>,)+)
+<a href=#355 id=355 data-nosnippet>355</a>        <span class="kw">where </span>$(<span class="kw">for</span>&lt;<span class="lifetime">'value</span>, <span class="lifetime">'borrow</span>&gt; <span class="macro-nonterminal">$F</span>: DispatchLink&lt;(<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'value</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'borrow </span><span class="kw-2">mut </span>C), <span class="prelude-ty">Option</span>&lt;R&gt;, <span class="macro-nonterminal">$M</span>&gt;,)+
+<a href=#356 id=356 data-nosnippet>356</a>        {
+<a href=#357 id=357 data-nosnippet>357</a>            <span class="attr">#[inline(always)]
+<a href=#358 id=358 data-nosnippet>358</a>            </span><span class="kw">fn </span>dispatch_link(<span class="kw-2">&amp;mut </span><span class="self">self</span>, (<span class="kw-2">mut </span>value, context): (<span class="kw">crate</span>::MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>C)) -&gt; <span class="prelude-ty">Option</span>&lt;R&gt; {
+<a href=#359 id=359 data-nosnippet>359</a>                $(<span class="kw">if let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.<span class="macro-nonterminal">$idx</span>.dispatch_link((value.reborrow(), <span class="kw-2">&amp;mut *</span>context)) { <span class="kw">return </span><span class="prelude-val">Some</span>(result); })+
+<a href=#360 id=360 data-nosnippet>360</a>                <span class="prelude-val">None
+<a href=#361 id=361 data-nosnippet>361</a>            </span>}
+<a href=#362 id=362 data-nosnippet>362</a>        }
+<a href=#363 id=363 data-nosnippet>363</a>    };
+<a href=#364 id=364 data-nosnippet>364</a>}
+<a href=#365 id=365 data-nosnippet>365</a><span class="comment">// Generate the tuple arities supported by the standard library (1 through 12).
+<a href=#366 id=366 data-nosnippet>366</a></span><span class="macro">macro_rules!</span> impl_callback_chain_tuple_arities {
+<a href=#367 id=367 data-nosnippet>367</a>    (<span class="macro-nonterminal">$impl_chain</span>:ident) =&gt; {
+<a href=#368 id=368 data-nosnippet>368</a>        <span class="macro">impl_callback_chain_tuple_arities!</span>(
+<a href=#369 id=369 data-nosnippet>369</a>            @prefixes <span class="macro-nonterminal">$impl_chain</span>;
+<a href=#370 id=370 data-nosnippet>370</a>            [];
+<a href=#371 id=371 data-nosnippet>371</a>            (F0, M0, <span class="number">0</span>),
+<a href=#372 id=372 data-nosnippet>372</a>            (F1, M1, <span class="number">1</span>),
+<a href=#373 id=373 data-nosnippet>373</a>            (F2, M2, <span class="number">2</span>),
+<a href=#374 id=374 data-nosnippet>374</a>            (F3, M3, <span class="number">3</span>),
+<a href=#375 id=375 data-nosnippet>375</a>            (F4, M4, <span class="number">4</span>),
+<a href=#376 id=376 data-nosnippet>376</a>            (F5, M5, <span class="number">5</span>),
+<a href=#377 id=377 data-nosnippet>377</a>            (F6, M6, <span class="number">6</span>),
+<a href=#378 id=378 data-nosnippet>378</a>            (F7, M7, <span class="number">7</span>),
+<a href=#379 id=379 data-nosnippet>379</a>            (F8, M8, <span class="number">8</span>),
+<a href=#380 id=380 data-nosnippet>380</a>            (F9, M9, <span class="number">9</span>),
+<a href=#381 id=381 data-nosnippet>381</a>            (F10, M10, <span class="number">10</span>),
+<a href=#382 id=382 data-nosnippet>382</a>            (F11, M11, <span class="number">11</span>)
+<a href=#383 id=383 data-nosnippet>383</a>        );
+<a href=#384 id=384 data-nosnippet>384</a>    };
+<a href=#385 id=385 data-nosnippet>385</a>    (@prefixes <span class="macro-nonterminal">$impl_chain</span>:ident; [$(<span class="macro-nonterminal">$prefix</span>:tt)<span class="kw-2">*</span>];) =&gt; {};
+<a href=#386 id=386 data-nosnippet>386</a>    (
+<a href=#387 id=387 data-nosnippet>387</a>        @prefixes <span class="macro-nonterminal">$impl_chain</span>:ident;
+<a href=#388 id=388 data-nosnippet>388</a>        [$(<span class="macro-nonterminal">$prefix</span>:tt)<span class="kw-2">*</span>];
+<a href=#389 id=389 data-nosnippet>389</a>        <span class="macro-nonterminal">$next</span>:tt $(, <span class="macro-nonterminal">$rest</span>:tt)*
+<a href=#390 id=390 data-nosnippet>390</a>    ) =&gt; {
+<a href=#391 id=391 data-nosnippet>391</a>        <span class="macro-nonterminal">$impl_chain</span>!($(<span class="macro-nonterminal">$prefix</span>)* <span class="macro-nonterminal">$next</span>);
+<a href=#392 id=392 data-nosnippet>392</a>        <span class="macro">impl_callback_chain_tuple_arities!</span>(
+<a href=#393 id=393 data-nosnippet>393</a>            @prefixes <span class="macro-nonterminal">$impl_chain</span>;
+<a href=#394 id=394 data-nosnippet>394</a>            [$(<span class="macro-nonterminal">$prefix</span>)* <span class="macro-nonterminal">$next</span>,];
+<a href=#395 id=395 data-nosnippet>395</a>            $(<span class="macro-nonterminal">$rest</span>),*
+<a href=#396 id=396 data-nosnippet>396</a>        );
+<a href=#397 id=397 data-nosnippet>397</a>    };
+<a href=#398 id=398 data-nosnippet>398</a>}
+<a href=#399 id=399 data-nosnippet>399</a>
+<a href=#400 id=400 data-nosnippet>400</a><span class="macro">impl_callback_chain_tuple_arities!</span>(dispatch_tuple_links);
 </code></pre></div></section></main></body></html>
