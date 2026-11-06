@@ -22,8 +22,229 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Blackwell matrix multiplication and TMEM lifetime</title>
-  <link rel="stylesheet" href="matrix_dataflow.css">
-  <script defer src="matrix_dataflow.js"></script>
+  <style>
+    /* Match the typography, blue cards, and neutral frame in authoring_layers.html. */
+    :root {
+      color-scheme: light;
+      --surface: #fff;
+      --text: #222;
+      --muted: #536276;
+      --frame: #b6bdc6;
+      --frame-bg: #f8fafc;
+      --tag: #475569;
+      --line: #64748b;
+      --layer-border: #5b9bd5;
+      --layer-bg: #eef5fc;
+      --a-bg: #e2effc;
+      --a-border: #7a9fc7;
+      --b-bg: #eee7f8;
+      --b-border: #a38bc2;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --surface: #14181e;
+      --text: #e5e9ef;
+      --muted: #b1bdcd;
+      --frame: #627084;
+      --frame-bg: #1c232c;
+      --line: #a1afc1;
+      --layer-bg: #1d3043;
+      --a-bg: #243c54;
+      --a-border: #7cadd7;
+      --b-bg: #3c304e;
+      --b-border: #b09bd0;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      padding: 14px 4px 4px;
+      background: var(--surface);
+      color: var(--text);
+      font: 13px/1.5 'Inter', 'SF Pro', 'Segoe UI', system-ui, sans-serif;
+    }
+    h1, h2, p { margin: 0; }
+    h2 { font-size: 14px; font-weight: 700; }
+    code { font: 12px/1.5 'SF Mono', 'Fira Code', Consolas, monospace; }
+    .diagram {
+      position: relative;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 26px 18px 16px;
+      border: 2px solid var(--frame);
+      border-radius: 12px;
+      background: var(--frame-bg);
+    }
+    .compact-diagram { max-width: 680px; }
+    .scope {
+      position: absolute;
+      top: -11px;
+      left: 16px;
+      padding: 1px 10px;
+      border-radius: 4px;
+      background: var(--tag);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .card {
+      padding: 10px 14px;
+      border: 2px solid var(--layer-border);
+      border-radius: 8px;
+      background: var(--layer-bg);
+      text-align: center;
+    }
+    .card h2 + p, .card h2 + .pair { margin-top: 4px; }
+    .endpoint { border-color: var(--frame); background: var(--surface); }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .pair > :first-child { padding-right: 12px; }
+    .pair > :last-child { padding-left: 12px; border-left: 1px solid var(--frame); }
+    .card:not(.endpoint) .pair:not(.operands) > :last-child { border-color: var(--layer-border); }
+    .card h2 + .pair.operands { margin-top: 8px; }
+    .pair.operands > p {
+      margin: 0 6px;
+      padding: 6px 8px;
+      border: 1px solid var(--operand-border);
+      border-radius: 6px;
+      background: var(--operand-bg);
+    }
+    .operand-a { --operand-bg: var(--a-bg); --operand-border: var(--a-border); }
+    .operand-b { --operand-bg: var(--b-bg); --operand-border: var(--b-border); }
+    .operand-detail { display: block; }
+    .note { color: var(--muted); font-size: 11px; }
+    .note code { font-size: inherit; }
+    .packing, .coverage { margin-top: 6px; }
+    .equation { margin-bottom: 14px; text-align: center; }
+    .equation code { font-size: 15px; font-weight: 600; }
+    .parallel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      padding: 0 16px;
+    }
+    .sync-note {
+      grid-column: 1 / -1;
+      position: relative;
+      padding: 10px 0 0;
+      text-align: center;
+    }
+    .sync-note::before, .sync-note::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-left: 1.5px solid var(--line);
+    }
+    .sync-note::before { left: 25%; }
+    .sync-note::after { left: 75%; }
+    .sync-note .operation { display: inline-block; z-index: 1; }
+    .merge {
+      height: 20px;
+      margin: 0 calc(25% + 8px);
+      border: solid var(--line);
+      border-width: 0 1.5px 1.5px;
+    }
+    .connector {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 8px 0 13px;
+      text-align: center;
+    }
+    .connector::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 3px;
+      border-left: 1.5px solid var(--line);
+    }
+    .connector::after {
+      content: '';
+      position: absolute;
+      left: calc(50% - 3.25px);
+      bottom: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 6px solid var(--line);
+    }
+    .operation {
+      position: relative;
+      max-width: 100%;
+      padding: 1px 10px;
+      background: var(--frame-bg);
+    }
+    .operation > code, .operation > strong { font-weight: 600; }
+    .handoff { gap: 12px; }
+    .lifetime {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .lifetime > section {
+      padding: 5px 8px;
+      border: 1px solid var(--frame);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .lifetime h2 { font-size: 12px; }
+    .blackwell-diagram .handoff { gap: 10px; }
+    .release {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid var(--frame);
+      text-align: center;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    /* Use the same compact vertical layout for both matrix examples. */
+    @media (min-width: 640px) {
+      .compact-diagram { padding: 20px 10px 12px; }
+      .compact-diagram .equation { margin-bottom: 8px; }
+      .compact-diagram .card { padding-block: 6px; }
+      .compact-diagram .card h2 + .pair.operands { margin-top: 4px; }
+      .compact-diagram .pair.operands > p { padding-block: 4px; }
+      .compact-diagram .operand-detail { display: inline-block; }
+      .compact-diagram .operand-detail::before { content: ' · '; }
+      .compact-diagram .connector { min-height: 34px; padding: 3px 0 10px; }
+      .compact-diagram .sync-note { padding-top: 6px; }
+      .compact-diagram .compact-operation {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: center;
+        gap: 0 8px;
+      }
+      .compact-diagram .merge { height: 12px; }
+      .compact-diagram .packing, .compact-diagram .coverage { margin-top: 4px; }
+      .compact-diagram .single-output h2,
+      .compact-diagram .single-output > p:not(.note) { display: inline; }
+      .compact-diagram .single-output > p:not(.note) { margin-left: 8px; }
+      .blackwell-diagram .release { margin-top: 8px; padding-top: 6px; }
+      .blackwell-diagram .release h2 { font-size: 12px; }
+    }
+    @media (max-width: 480px) {
+      .diagram { padding: 24px 10px 12px; }
+      .card { padding: 9px 8px; }
+      .pair > :first-child { padding-right: 8px; }
+      .pair > :last-child { padding-left: 8px; }
+      .operation { padding: 2px 6px; }
+      .lifetime { gap: 8px 12px; }
+      .parallel { padding: 0 10px; }
+      .merge { margin-inline: calc(25% + 5px); }
+    }
+  </style>
 </head>
 <body>
   <main class="diagram compact-diagram blackwell-diagram" aria-labelledby="scope" aria-describedby="description">
@@ -120,5 +341,30 @@
       <p class="note">After a CTA barrier, warp 0 relinquishes the permit and deallocates 64 columns.</p>
     </section>
   </main>
+  <script>
+    // Report the diagram's natural height and receive the documentation theme.
+    (() => {
+      const root = document.documentElement;
+      const dark = matchMedia('(prefers-color-scheme: dark)');
+      root.dataset.theme = dark.matches ? 'dark' : 'light';
+      if (parent === window) {
+        dark.addEventListener('change', () => { root.dataset.theme = dark.matches ? 'dark' : 'light'; });
+        return;
+      }
+      const parentOrigin = document.referrer ? new URL(document.referrer).origin : '*';
+      const report = () => parent.postMessage({
+        type: 'tirx-matrix-dataflow:height', height: Math.ceil(document.body.getBoundingClientRect().height)
+      }, parentOrigin);
+      new ResizeObserver(report).observe(document.body);
+      addEventListener('message', (event) => {
+        if (event.source !== parent || (parentOrigin !== '*' && event.origin !== parentOrigin)) return;
+        if (event.data?.type !== 'tirx-matrix-dataflow:theme') return;
+        if (['light', 'dark'].includes(event.data.theme)) root.dataset.theme = event.data.theme;
+        report();
+      });
+      addEventListener('load', report);
+      report();
+    })();
+  </script>
 </body>
 </html>
