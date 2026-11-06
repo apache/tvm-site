@@ -121,7 +121,7 @@
 <a href=#121 id=121 data-nosnippet>121</a>
 <a href=#122 id=122 data-nosnippet>122</a><span class="doccomment">/// A dtype as C++ prints it, such as `int32`.
 <a href=#123 id=123 data-nosnippet>123</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>dtype_name(dtype: DLDataType) -&gt; std::string::String {
-<a href=#124 id=124 data-nosnippet>124</a>    DLDataTypeExt::to_string(<span class="kw-2">&amp;</span>dtype).as_str().to_string()
+<a href=#124 id=124 data-nosnippet>124</a>    dtype.to_string()
 <a href=#125 id=125 data-nosnippet>125</a>}
 <a href=#126 id=126 data-nosnippet>126</a>
 <a href=#127 id=127 data-nosnippet>127</a><span class="doccomment">/// The registered key of a type index (C++ `TypeIndexToTypeKey`).
@@ -216,7 +216,7 @@
 <a href=#216 id=216 data-nosnippet>216</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>prim_type(expr: <span class="kw-2">&amp;</span>(<span class="kw">impl </span>AsRef&lt;Expr&gt; + <span class="question-mark">?</span>Sized)) -&gt; <span class="prelude-ty">Result</span>&lt;PrimType&gt; {
 <a href=#217 id=217 data-nosnippet>217</a>    <span class="kw">let </span>expr = expr.as_ref();
 <a href=#218 id=218 data-nosnippet>218</a>    <span class="kw">match </span>expr.ty.downcast_ref::&lt;PrimTypeObj&gt;() {
-<a href=#219 id=219 data-nosnippet>219</a>        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(tvm_ffi::ObjectRefCast::try_cast(expr.ty.clone()).expect(<span class="string">"a PrimType"</span>)),
+<a href=#219 id=219 data-nosnippet>219</a>        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(expr.ty.downcast_ref::&lt;PrimType&gt;().cloned().expect(<span class="string">"a PrimType"</span>)),
 <a href=#220 id=220 data-nosnippet>220</a>        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(not_a_prim_expr(expr)),
 <a href=#221 id=221 data-nosnippet>221</a>    }
 <a href=#222 id=222 data-nosnippet>222</a>}
@@ -302,7 +302,7 @@
 <a href=#302 id=302 data-nosnippet>302</a>    <span class="comment">// SAFETY: an `ffi.Array` is the object header followed by `TVMFFISeqCell`, and `array` keeps
 <a href=#303 id=303 data-nosnippet>303</a>    // its `size` elements alive.
 <a href=#304 id=304 data-nosnippet>304</a>    </span><span class="kw">unsafe </span>{
-<a href=#305 id=305 data-nosnippet>305</a>        <span class="kw">let </span>cell = <span class="kw-2">&amp;*</span>(ObjectArc::as_raw(ObjectRefCore::data(array)) <span class="kw">as </span><span class="kw-2">*const </span>SeqCell);
+<a href=#305 id=305 data-nosnippet>305</a>        <span class="kw">let </span>cell = <span class="kw-2">&amp;*</span>(ObjectArc::as_ptr(ObjectRefCore::data(array)) <span class="kw">as </span><span class="kw-2">*const </span>SeqCell);
 <a href=#306 id=306 data-nosnippet>306</a>        <span class="kw">if </span>cell.size == <span class="number">0 </span>{
 <a href=#307 id=307 data-nosnippet>307</a>            <span class="kw">return </span><span class="kw-2">&amp;</span>[];
 <a href=#308 id=308 data-nosnippet>308</a>        }
@@ -348,7 +348,7 @@
 <a href=#348 id=348 data-nosnippet>348</a>            <span class="comment">// SAFETY: `node` keeps the object alive for the call, and the adapter returns an
 <a href=#349 id=349 data-nosnippet>349</a>            // owned value.
 <a href=#350 id=350 data-nosnippet>350</a>            </span><span class="self">Self</span>::Adapter(adapter) =&gt; <span class="kw">unsafe </span>{
-<a href=#351 id=351 data-nosnippet>351</a>                <span class="kw">let </span>node = ObjectArc::as_raw(ObjectRefCore::data(node)) <span class="kw">as </span><span class="kw-2">*const </span>c_void;
+<a href=#351 id=351 data-nosnippet>351</a>                <span class="kw">let </span>node = ObjectArc::as_ptr(ObjectRefCore::data(node)) <span class="kw">as </span><span class="kw-2">*const </span>c_void;
 <a href=#352 id=352 data-nosnippet>352</a>                Any::from_raw_ffi_any(adapter(node))
 <a href=#353 id=353 data-nosnippet>353</a>            },
 <a href=#354 id=354 data-nosnippet>354</a>            <span class="self">Self</span>::Packed(function) =&gt; function.call_packed(<span class="kw-2">&amp;</span>[AnyView::from(node)])<span class="question-mark">?</span>,
@@ -402,8 +402,8 @@
 <a href=#402 id=402 data-nosnippet>402</a>        <span class="kw-2">*const *const </span>TVMFFIObject,
 <a href=#403 id=403 data-nosnippet>403</a>    ) -&gt; TVMFFIAny;
 <a href=#404 id=404 data-nosnippet>404</a>    <span class="kw">fn </span>object&lt;T: ObjectRefCore&gt;(value: <span class="kw-2">&amp;</span>T) -&gt; <span class="kw-2">*const </span>TVMFFIObject {
-<a href=#405 id=405 data-nosnippet>405</a>        <span class="comment">// SAFETY: the pointer is only read while `value` keeps the object alive.
-<a href=#406 id=406 data-nosnippet>406</a>        </span><span class="kw">unsafe </span>{ ObjectArc::as_raw(ObjectRefCore::data(value)) <span class="kw">as </span><span class="kw-2">*const </span>TVMFFIObject }
+<a href=#405 id=405 data-nosnippet>405</a>        <span class="comment">// The pointer is only read while `value` keeps the object alive.
+<a href=#406 id=406 data-nosnippet>406</a>        </span>ObjectArc::as_ptr(ObjectRefCore::data(value)) <span class="kw">as </span><span class="kw-2">*const </span>TVMFFIObject
 <a href=#407 id=407 data-nosnippet>407</a>    }
 <a href=#408 id=408 data-nosnippet>408</a>    <span class="kw">let </span>address: <span class="kw-2">*mut </span>c_void = hook.try_into()<span class="question-mark">?</span>;
 <a href=#409 id=409 data-nosnippet>409</a>    <span class="kw">let </span>(a, b, c) = (object(a), object(b), object(c));

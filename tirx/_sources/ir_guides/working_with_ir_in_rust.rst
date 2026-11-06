@@ -111,7 +111,7 @@ key constructs are:
        directly, clone cheaply
    * - ``.into()``
      - Convert to a parent type
-   * - |try_cast|_
+   * - |downcast|_
      - Convert to a child type, with a checked ``Result``
    * - |match_any!|_
      - Branch on the node type
@@ -146,7 +146,7 @@ its type.
 As in C++, the operators take a ``PrimExpr``, an expression whose type is a
 ``PrimType``. ``x`` is a ``PrimVar``, a variable of a primitive type, because a
 plain ``Var`` may have any type: it takes part in arithmetic only after
-``downcast_ref::<PrimVar>()`` or ``try_cast::<PrimVar>()`` checks it, and ``&var + 1``
+``downcast_ref::<PrimVar>()`` or ``downcast::<PrimVar>()`` checks it, and ``&var + 1``
 does not compile.
 
 An operator can still fail, for example on mismatched types, so
@@ -162,7 +162,7 @@ Objects and Managed References
 **Every node type comes as a pair: an underlying object and a named
 managed reference.** The top of
 ``x * 2 + 1`` is an addition, so let's convert the expression to ``Add``
-with ``try_cast``, which the next subsection explains, and read its two
+with ``try_into``, which the next subsection explains, and read its two
 operands:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
@@ -229,9 +229,10 @@ Casts
 **Casts move a managed reference up and down the type hierarchy.** A
 function that takes any expression wants an ``Expr``, while reading the
 operands needs an ``Add``. ``.into()`` converts to a parent type through
-``From``/``Into`` and cannot fail. ``.try_cast()`` converts to a child
-type: like ``TryFrom``, it checks the node's actual type and returns a
-``Result``.
+``From``/``Into`` and cannot fail. ``.try_into()``, or ``T::try_from``,
+converts to a child type: it checks the node's actual type and fails with a
+``TypeError`` naming both types, ready for ``?``. ``try_from(&value)``
+borrows and clones only on success.
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -248,17 +249,18 @@ The output is:
 ``value`` is an ``Expr`` again, but the node behind it is still an
 addition, so the cast back to ``Add`` succeeds.
 
-What if we guess wrong? The cast to ``Mul`` returns an ``Err``, and its
-message names both type keys: the actual type ``prim.Add`` and the
-requested ``prim.Mul``.
+What if we guess wrong? The cast to ``Mul`` fails with a ``TypeError`` that
+names both type keys: the actual type ``prim.Add`` and the requested
+``prim.Mul``.
 
 .. note::
 
-   ``try_cast`` consumes the managed reference it converts, so we clone
-   ``value`` before the first cast; the clone costs one reference-count
-   increment. For read-only inspection, ``value.downcast_ref::<Add>()``
-   returns ``Option<&Add>`` without consuming or cloning the reference.
-   ``Any`` and ``AnyView`` provide the same borrowed downcast.
+   To try several types in turn, ``value.downcast::<Add>()`` takes the
+   reference and hands it back unchanged in ``Err``, as
+   ``Box<dyn Any>::downcast`` does in the standard library. For read-only
+   inspection, ``value.downcast_ref::<Add>()`` returns ``Option<&Add>``
+   without consuming or cloning the reference. ``Any`` and ``AnyView``
+   provide the same borrowed downcast.
 
 Casting to one type at a time gets tedious when a node can be one of
 many; that is what matching is for.
@@ -775,7 +777,7 @@ Quick Reference
      - What it does
    * - |match_any!|_
      - Branches on the node type; the first matching arm runs
-   * - |try_cast|_, |downcast_ref|_
+   * - |downcast|_, |downcast_ref|_
      - Downcasts to one type, as a managed reference in a ``Result`` or a
        borrowed object in an ``Option``
    * - ``.into()``
@@ -813,8 +815,8 @@ Quick Reference
 .. _Add: ../reference/rust/generated/tvm_tirx/ir/prim/expr/struct.Add.html
 .. |script| replace:: ``script``
 .. _script: ../reference/rust/generated/tvm_tirx/script/fn.script.html
-.. |try_cast| replace:: ``.try_cast()``
-.. _try_cast: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCast.html
+.. |downcast| replace:: ``.downcast()``
+.. _downcast: ../reference/rust/generated/tvm_ffi/object/trait.ObjectRefCore.html#method.downcast
 .. |structural_walk| replace:: ``structural_walk``
 .. _structural_walk: ../reference/rust/generated/tvm_ffi/extra/structural_walk/fn.structural_walk.html
 .. |structural_map| replace:: ``structural_map``

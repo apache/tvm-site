@@ -68,6 +68,8 @@ Program Listing for File target_kind.h
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindUniqueInstance;
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("target.TargetKind", TargetKindObj, ffi::Object);
+     // Shared instances are mutated in place, so the class is mutable.
+     static constexpr bool _type_mutable = true;
    
     private:
      ConfigSchema schema_;

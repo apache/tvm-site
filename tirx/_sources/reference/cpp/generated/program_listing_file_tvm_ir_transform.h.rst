@@ -329,6 +329,8 @@ Program Listing for File transform.h
            .def_ro("config", &PassContextObj::config);
      }
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("transform.PassContext", PassContextObj, ffi::Object);
+     // Shared instances are mutated in place, so the class is mutable.
+     static constexpr bool _type_mutable = true;
    };
    
    inline PassContext::PassContext(ffi::UnsafeInit tag, ffi::ObjectPtr<PassContextObj> n)

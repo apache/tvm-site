@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["TypeIndex"],"struct":["Object","ObjectArc","ObjectIdentity","ObjectRef"],"trait":["IntoObjectRef","ObjectCore","ObjectCoreWithExtraItems","ObjectRefCast","ObjectRefCore"]};
+window.SIDEBAR_ITEMS = {"enum":["TypeIndex"],"fn":["fmt_object_ref"],"struct":["Object","ObjectArc","ObjectIdentity","ObjectRef"],"trait":["ImmutableObject","IntoObjectRef","ObjectCore","ObjectCoreWithExtraItems","ObjectRefCore"]};
