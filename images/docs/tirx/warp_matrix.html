@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Warp matrix multiplication data flow</title>
+  <link rel="stylesheet" href="matrix_dataflow.css">
+  <script defer src="matrix_dataflow.js"></script>
+</head>
+<body>
+  <main class="diagram compact-diagram warp-diagram" aria-labelledby="scope" aria-describedby="description">
+    <h1 class="scope" id="scope">One warp · 32 lanes</h1>
+    <p class="sr-only" id="description">
+      The warp computes Out = A @ B.T. All 32 lanes copy float16 inputs A and B
+      from global to shared memory, then synchronize at a CTA barrier. Separate
+      ldmatrix instructions load A into ar and B into br. These register fragments
+      feed one warp-wide mma.sync operation. Each lane stores four float32 results,
+      together forming the complete 16 by 8 output tile in global memory.
+    </p>
+    <p class="equation"><code>Out = A @ B.T</code></p>
+    <section class="card endpoint">
+      <h2>Inputs · global memory</h2>
+      <div class="pair operands">
+        <p class="operand-a"><code>A</code> · 16 × 16 · float16</p>
+        <p class="operand-b"><code>B</code> · 8 × 16 · float16</p>
+      </div>
+    </section>
+    <div class="parallel" aria-label="Cooperative copy of A and B to shared memory">
+      <div class="connector">
+        <div class="operation">Copy A</div>
+      </div>
+      <div class="connector">
+        <div class="operation">Copy B</div>
+      </div>
+    </div>
+    <section class="card">
+      <h2>Shared memory</h2>
+      <div class="pair operands">
+        <p class="operand-a"><strong>Shared copy of A (<code>a</code>)</strong><span class="operand-detail">16 × 16 · float16</span></p>
+        <p class="operand-b"><strong>Shared copy of B (<code>b</code>)</strong><span class="operand-detail">8 × 16 · float16</span></p>
+      </div>
+    </section>
+    <div class="parallel">
+      <div class="sync-note">
+        <div class="operation compact-operation">
+          <strong>CTA barrier</strong>
+          <p class="note">All 32 lanes synchronize before loading</p>
+        </div>
+      </div>
+      <div class="connector">
+        <div class="operation"><code>ldmatrix.x4</code></div>
+      </div>
+      <div class="connector">
+        <div class="operation"><code>ldmatrix.x2</code></div>
+      </div>
+    </div>
+    <section class="card">
+      <h2>Input register fragments</h2>
+      <div class="pair operands">
+        <p class="operand-a"><strong>A fragment (<code>ar</code>)</strong><span class="operand-detail">4 uint32 words per lane</span></p>
+        <p class="operand-b"><strong>B fragment (<code>br</code>)</strong><span class="operand-detail">2 uint32 words per lane</span></p>
+      </div>
+      <p class="note packing">Each uint32 word packs two float16 elements.</p>
+    </section>
+    <div class="merge" aria-hidden="true"></div>
+    <div class="connector">
+      <div class="operation compact-operation">
+        <code>mma.sync · m16n8k16</code>
+        <p class="note">All 32 lanes participate · initial accumulator = 0</p>
+      </div>
+    </div>
+    <section class="card single-output">
+      <h2>Output register fragments</h2>
+      <p><code>dr</code> · 4 float32 values per lane</p>
+      <p class="note coverage">32 lanes × 4 values = one 16 × 8 output tile</p>
+    </section>
+    <div class="connector">
+      <div class="operation">Each lane stores its four results</div>
+    </div>
+    <section class="card endpoint single-output">
+      <h2>Out · global memory</h2>
+      <p>16 × 8 · float32</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blackwell matrix multiplication and TMEM lifetime</title>
+  <link rel="stylesheet" href="matrix_dataflow.css">
+  <script defer src="matrix_dataflow.js"></script>
+</head>
+<body>
+  <main class="diagram compact-diagram blackwell-diagram" aria-labelledby="scope" aria-describedby="description">
+    <h1 class="scope" id="scope">One CTA · 128 threads</h1>
+    <p class="sr-only" id="description">
+      The CTA computes Out = A @ B.T. Warp 0 allocates TMEM and thread 0
+      initializes the completion barrier mbar. All 128 threads copy A to shared
+      memory a; threads 0 through 63 copy B to shared memory b. All threads
+      execute a proxy fence and synchronize. Thread 0 issues four MMA
+      instructions that read a and b directly and accumulate into TMEM d,
+      then commits them to mbar. All threads wait and execute the thread-sync
+      fence. All four warps load TMEM into register fragments frag and wait for
+      the loads. Each thread stores one row of Out. A CTA barrier precedes
+      TMEM release by warp 0.
+    </p>
+    <p class="equation"><code>Out = A @ B.T</code></p>
+    <div class="lifetime">
+      <section>
+        <h2>Allocate TMEM</h2>
+        <p class="note">Warp 0 · 64 columns</p>
+      </section>
+      <section>
+        <h2>Initialize barrier</h2>
+        <p class="note">Thread 0 · <code>mbar</code></p>
+      </section>
+    </div>
+    <section class="card endpoint">
+      <h2>Inputs · global memory</h2>
+      <div class="pair operands">
+        <p class="operand-a"><code>A</code> · 128 × 64 · float16</p>
+        <p class="operand-b"><code>B</code> · 64 × 64 · float16</p>
+      </div>
+    </section>
+    <div class="parallel" aria-label="Cooperative copy of A and B to shared memory">
+      <div class="connector">
+        <div class="operation compact-operation">Copy A <span class="note">All 128 threads</span></div>
+      </div>
+      <div class="connector">
+        <div class="operation compact-operation">Copy B <span class="note">Threads 0–63</span></div>
+      </div>
+    </div>
+    <section class="card">
+      <h2>Shared memory</h2>
+      <div class="pair operands">
+        <p class="operand-a"><strong>Shared copy of A (<code>a</code>)</strong><span class="operand-detail">128 × 64 · float16</span></p>
+        <p class="operand-b"><strong>Shared copy of B (<code>b</code>)</strong><span class="operand-detail">64 × 64 · float16</span></p>
+      </div>
+    </section>
+    <div class="parallel">
+      <div class="sync-note">
+        <div class="operation compact-operation">
+          <strong>Proxy fence + CTA barrier</strong>
+          <p class="note">All 128 threads · shared inputs ready for MMA</p>
+        </div>
+      </div>
+    </div>
+    <div class="merge" aria-hidden="true"></div>
+    <div class="connector">
+      <div class="operation compact-operation">
+        <code>tcgen05.mma</code>
+        <p class="note">Thread 0 · four K = 16 slices</p>
+      </div>
+    </div>
+    <section class="card single-output">
+      <h2>Accumulator · TMEM</h2>
+      <p><code>d</code> · 128 × 64 · float32</p>
+      <p class="note coverage">The first slice starts a fresh result; the next three accumulate.</p>
+    </section>
+    <div class="connector handoff">
+      <div class="operation">
+        <strong>Wait for MMA completion</strong>
+        <p class="note">Thread 0 commits to <code>mbar</code>; all 128 threads wait, then fence.</p>
+        <p class="note"><code>tcgen05.fence::after_thread_sync</code></p>
+      </div>
+      <div class="operation">
+        <p><code>tcgen05.ld</code> + <code>tcgen05.wait::ld</code></p>
+        <p class="note">All four warps · load TMEM into registers, then wait for the loads.</p>
+      </div>
+    </div>
+    <section class="card single-output">
+      <h2>Output register fragments</h2>
+      <p><code>frag</code> · 64 float32 values per thread</p>
+      <p class="note coverage">128 threads × 64 values = one 128 × 64 output tile</p>
+    </section>
+    <div class="connector">
+      <div class="operation">Each thread stores one output row</div>
+    </div>
+    <section class="card endpoint single-output">
+      <h2>Out · global memory</h2>
+      <p>128 × 64 · float32</p>
+    </section>
+    <section class="release">
+      <h2>Release TMEM</h2>
+      <p class="note">After a CTA barrier, warp 0 relinquishes the permit and deallocates 64 columns.</p>
+    </section>
+  </main>
+</body>
+</html>
