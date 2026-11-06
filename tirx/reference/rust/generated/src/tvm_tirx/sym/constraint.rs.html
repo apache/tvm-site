@@ -34,7 +34,7 @@
 <a href=#34 id=34 data-nosnippet>34</a>//! use tvm_tirx::sym::{Analyzer, ConstraintContext, PredicateConstraint, ProofStrength};
 <a href=#35 id=35 data-nosnippet>35</a>//!
 <a href=#36 id=36 data-nosnippet>36</a>//! let x = PrimVar::new("x", PrimType::int(32), UNKNOWN_LOC);
-<a href=#37 id=37 data-nosnippet>37</a>//! let outer = ConstraintContext::new()?;
+<a href=#37 id=37 data-nosnippet>37</a>//! let outer = ConstraintContext::new();
 <a href=#38 id=38 data-nosnippet>38</a>//! outer.append(&amp;PredicateConstraint::new(ge(&amp;x, 0)?, false).into())?;
 <a href=#39 id=39 data-nosnippet>39</a>//! let inner = outer.snapshot()?;
 <a href=#40 id=40 data-nosnippet>40</a>//! inner.append(&amp;PredicateConstraint::new(lt(&amp;x, 16)?, false).into())?;
@@ -332,112 +332,113 @@
 <a href=#332 id=332 data-nosnippet>332</a>}
 <a href=#333 id=333 data-nosnippet>333</a>
 <a href=#334 id=334 data-nosnippet>334</a><span class="kw">impl </span>ConstraintContext {
-<a href=#335 id=335 data-nosnippet>335</a>    <span class="doccomment">/// Create an empty root context, with the complete native-compatible layout.
-<a href=#336 id=336 data-nosnippet>336</a>    </span><span class="kw">pub fn </span>new() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#337 id=337 data-nosnippet>337</a>        <span class="self">Self</span>::allocate(<span class="prelude-val">None</span>, <span class="number">0</span>)
-<a href=#338 id=338 data-nosnippet>338</a>    }
-<a href=#339 id=339 data-nosnippet>339</a>
-<a href=#340 id=340 data-nosnippet>340</a>    <span class="doccomment">/// Create an empty child that captures the first `parent_prefix_size` local entries of
-<a href=#341 id=341 data-nosnippet>341</a>    /// `parent`.
-<a href=#342 id=342 data-nosnippet>342</a>    ///
-<a href=#343 id=343 data-nosnippet>343</a>    /// Earlier ancestor prefixes are inherited unchanged; later appends to the parent are excluded.
-<a href=#344 id=344 data-nosnippet>344</a>    ///
-<a href=#345 id=345 data-nosnippet>345</a>    /// # Errors
-<a href=#346 id=346 data-nosnippet>346</a>    ///
-<a href=#347 id=347 data-nosnippet>347</a>    /// Returns an error if `parent_prefix_size` is negative or larger than the parent's local size.
-<a href=#348 id=348 data-nosnippet>348</a>    </span><span class="kw">pub fn </span>with_parent_prefix_size(parent: <span class="self">Self</span>, parent_prefix_size: i64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#349 id=349 data-nosnippet>349</a>        <span class="kw">if </span>parent_prefix_size &lt; <span class="number">0 </span>|| parent_prefix_size &gt; parent.local_size() {
-<a href=#350 id=350 data-nosnippet>350</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::new(
-<a href=#351 id=351 data-nosnippet>351</a>                VALUE_ERROR,
-<a href=#352 id=352 data-nosnippet>352</a>                <span class="string">"Constraint context parent local prefix is out of bounds"</span>,
-<a href=#353 id=353 data-nosnippet>353</a>                <span class="string">""</span>,
-<a href=#354 id=354 data-nosnippet>354</a>            ));
-<a href=#355 id=355 data-nosnippet>355</a>        }
-<a href=#356 id=356 data-nosnippet>356</a>        <span class="self">Self</span>::allocate(<span class="prelude-val">Some</span>(parent.base), parent_prefix_size)
-<a href=#357 id=357 data-nosnippet>357</a>    }
-<a href=#358 id=358 data-nosnippet>358</a>
-<a href=#359 id=359 data-nosnippet>359</a>    <span class="kw">fn </span>allocate(parent: <span class="prelude-ty">Option</span>&lt;ObjectArc&lt;ConstraintContextObj&gt;&gt;, prefix: i64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#360 id=360 data-nosnippet>360</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-<a href=#361 id=361 data-nosnippet>361</a>            base: ObjectArc::new(ConstraintContextObj {
-<a href=#362 id=362 data-nosnippet>362</a>                base: Object::new(),
-<a href=#363 id=363 data-nosnippet>363</a>                parent,
-<a href=#364 id=364 data-nosnippet>364</a>                parent_prefix_size: prefix,
-<a href=#365 id=365 data-nosnippet>365</a>                <span class="comment">// Start with an empty Rust array. Native Append owns all growth;
-<a href=#366 id=366 data-nosnippet>366</a>                // never install a nonempty Rust allocation in this mutable field.
-<a href=#367 id=367 data-nosnippet>367</a>                </span>constraints: UnsafeCell::new(Array::default()),
-<a href=#368 id=368 data-nosnippet>368</a>            }),
-<a href=#369 id=369 data-nosnippet>369</a>        })
-<a href=#370 id=370 data-nosnippet>370</a>    }
-<a href=#371 id=371 data-nosnippet>371</a>}
-<a href=#372 id=372 data-nosnippet>372</a>
-<a href=#373 id=373 data-nosnippet>373</a><span class="kw">impl </span>ConstraintContextObj {
-<a href=#374 id=374 data-nosnippet>374</a>    <span class="doccomment">/// Append `constraint` to the local entries (`sym.ConstraintContextAppend`).
-<a href=#375 id=375 data-nosnippet>375</a>    ///
-<a href=#376 id=376 data-nosnippet>376</a>    /// Do not append to the active context of a running native visitor.
-<a href=#377 id=377 data-nosnippet>377</a>    </span><span class="kw">pub fn </span>append(<span class="kw-2">&amp;</span><span class="self">self</span>, constraint: <span class="kw-2">&amp;</span>Constraint) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-<a href=#378 id=378 data-nosnippet>378</a>        <span class="macro">tvm_ffi::cached_global_func!</span>(<span class="string">"sym.ConstraintContextAppend"</span>)
-<a href=#379 id=379 data-nosnippet>379</a>            .call_packed(<span class="kw-2">&amp;</span>[AnyView::from(<span class="self">self</span>), AnyView::from(constraint)])<span class="question-mark">?</span>;
-<a href=#380 id=380 data-nosnippet>380</a>        <span class="prelude-val">Ok</span>(())
-<a href=#381 id=381 data-nosnippet>381</a>    }
-<a href=#382 id=382 data-nosnippet>382</a>
-<a href=#383 id=383 data-nosnippet>383</a>    <span class="doccomment">/// Return the number of local entries, excluding captured ancestors.
-<a href=#384 id=384 data-nosnippet>384</a>    </span><span class="kw">pub fn </span>local_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i64 {
-<a href=#385 id=385 data-nosnippet>385</a>        <span class="comment">// No callback or mutation occurs during this short borrow.
-<a href=#386 id=386 data-nosnippet>386</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).len() <span class="kw">as </span>i64 }
-<a href=#387 id=387 data-nosnippet>387</a>    }
-<a href=#388 id=388 data-nosnippet>388</a>
-<a href=#389 id=389 data-nosnippet>389</a>    <span class="doccomment">/// Capture the visible prefix in an independently extensible child.
-<a href=#390 id=390 data-nosnippet>390</a>    </span><span class="kw">pub fn </span>snapshot(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;ConstraintContext&gt; {
-<a href=#391 id=391 data-nosnippet>391</a>        <span class="kw">let </span>parent = ConstraintContext::try_from(AnyView::from(<span class="self">self</span>))
-<a href=#392 id=392 data-nosnippet>392</a>            .expect(<span class="string">"context has its registered native type"</span>);
-<a href=#393 id=393 data-nosnippet>393</a>        ConstraintContext::with_parent_prefix_size(parent, <span class="self">self</span>.local_size())
-<a href=#394 id=394 data-nosnippet>394</a>    }
-<a href=#395 id=395 data-nosnippet>395</a>
-<a href=#396 id=396 data-nosnippet>396</a>    <span class="kw">fn </span>local_array(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Array&lt;Constraint&gt; {
-<a href=#397 id=397 data-nosnippet>397</a>        <span class="comment">// Hold an owning clone before any callback; native append then uses COW.
-<a href=#398 id=398 data-nosnippet>398</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).clone() }
-<a href=#399 id=399 data-nosnippet>399</a>    }
-<a href=#400 id=400 data-nosnippet>400</a>
-<a href=#401 id=401 data-nosnippet>401</a>    <span class="doccomment">/// Call `callback` on each visible constraint, in inherited and then local order.
-<a href=#402 id=402 data-nosnippet>402</a>    ///
-<a href=#403 id=403 data-nosnippet>403</a>    /// The callback may append without entering this iteration; each borrowed constraint is valid
-<a href=#404 id=404 data-nosnippet>404</a>    /// only during its callback.
-<a href=#405 id=405 data-nosnippet>405</a>    </span><span class="kw">pub fn </span>for_each(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>callback: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>Constraint)) {
-<a href=#406 id=406 data-nosnippet>406</a>        <span class="kw">let </span>retained = ConstraintContext::try_from(AnyView::from(<span class="self">self</span>))
-<a href=#407 id=407 data-nosnippet>407</a>            .expect(<span class="string">"context has its registered native type"</span>);
-<a href=#408 id=408 data-nosnippet>408</a>        retained.for_each_prefix(retained.local_size(), <span class="kw-2">&amp;mut </span>callback);
-<a href=#409 id=409 data-nosnippet>409</a>    }
-<a href=#410 id=410 data-nosnippet>410</a>
-<a href=#411 id=411 data-nosnippet>411</a>    <span class="kw">fn </span>for_each_prefix(<span class="kw-2">&amp;</span><span class="self">self</span>, prefix: i64, callback: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>Constraint)) {
-<a href=#412 id=412 data-nosnippet>412</a>        <span class="kw">let </span>local = <span class="self">self</span>.local_array();
-<a href=#413 id=413 data-nosnippet>413</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = <span class="kw-2">&amp;</span><span class="self">self</span>.parent {
-<a href=#414 id=414 data-nosnippet>414</a>            parent.for_each_prefix(<span class="self">self</span>.parent_prefix_size, callback);
-<a href=#415 id=415 data-nosnippet>415</a>        }
-<a href=#416 id=416 data-nosnippet>416</a>        <span class="kw">for </span>constraint <span class="kw">in </span>local.iter().take(prefix <span class="kw">as </span>usize) {
-<a href=#417 id=417 data-nosnippet>417</a>            callback(constraint);
-<a href=#418 id=418 data-nosnippet>418</a>        }
-<a href=#419 id=419 data-nosnippet>419</a>    }
-<a href=#420 id=420 data-nosnippet>420</a>
-<a href=#421 id=421 data-nosnippet>421</a>    <span class="doccomment">/// Return the visible constraints in inherited and then local order, as an independent array.
-<a href=#422 id=422 data-nosnippet>422</a>    ///
-<a href=#423 id=423 data-nosnippet>423</a>    /// Later appends do not change it; constraint nodes and expressions remain shared.
-<a href=#424 id=424 data-nosnippet>424</a>    </span><span class="kw">pub fn </span>to_array(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Array&lt;Constraint&gt; {
-<a href=#425 id=425 data-nosnippet>425</a>        <span class="kw">if </span><span class="self">self</span>.parent.is_none() {
-<a href=#426 id=426 data-nosnippet>426</a>            <span class="kw">return </span><span class="self">self</span>.local_array();
-<a href=#427 id=427 data-nosnippet>427</a>        }
-<a href=#428 id=428 data-nosnippet>428</a>        <span class="kw">let </span><span class="kw-2">mut </span>facts = Vec::new();
-<a href=#429 id=429 data-nosnippet>429</a>        <span class="self">self</span>.for_each(|fact| facts.push(fact.clone()));
-<a href=#430 id=430 data-nosnippet>430</a>        Array::from_vec(facts)
-<a href=#431 id=431 data-nosnippet>431</a>    }
-<a href=#432 id=432 data-nosnippet>432</a>}
-<a href=#433 id=433 data-nosnippet>433</a>
-<a href=#434 id=434 data-nosnippet>434</a><span class="comment">// These verify the Rust mirror against the matching x86_64 header layout, not
-<a href=#435 id=435 data-nosnippet>435</a>// an arbitrary loaded binary's hidden fields. Stub generation cannot certify them.
-<a href=#436 id=436 data-nosnippet>436</a></span><span class="kw">const _</span>: () = {
-<a href=#437 id=437 data-nosnippet>437</a>    <span class="macro">assert!</span>(size_of::&lt;ConstraintContextObj&gt;() == <span class="number">48</span>);
-<a href=#438 id=438 data-nosnippet>438</a>    <span class="macro">assert!</span>(align_of::&lt;ConstraintContextObj&gt;() == <span class="number">8</span>);
-<a href=#439 id=439 data-nosnippet>439</a>    <span class="macro">assert!</span>(<span class="macro">offset_of!</span>(ConstraintContextObj, parent) == <span class="number">24</span>);
-<a href=#440 id=440 data-nosnippet>440</a>    <span class="macro">assert!</span>(<span class="macro">offset_of!</span>(ConstraintContextObj, parent_prefix_size) == <span class="number">32</span>);
-<a href=#441 id=441 data-nosnippet>441</a>    <span class="macro">assert!</span>(<span class="macro">offset_of!</span>(ConstraintContextObj, constraints) == <span class="number">40</span>);
-<a href=#442 id=442 data-nosnippet>442</a>};
+<a href=#335 id=335 data-nosnippet>335</a>    <span class="doccomment">/// Create an empty root context, with the complete native-compatible layout (C++
+<a href=#336 id=336 data-nosnippet>336</a>    /// `ConstraintContext()`).
+<a href=#337 id=337 data-nosnippet>337</a>    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+<a href=#338 id=338 data-nosnippet>338</a>        <span class="self">Self</span>::allocate(<span class="prelude-val">None</span>, <span class="number">0</span>)
+<a href=#339 id=339 data-nosnippet>339</a>    }
+<a href=#340 id=340 data-nosnippet>340</a>
+<a href=#341 id=341 data-nosnippet>341</a>    <span class="doccomment">/// Create an empty child that captures the first `parent_prefix_size` local entries of
+<a href=#342 id=342 data-nosnippet>342</a>    /// `parent`.
+<a href=#343 id=343 data-nosnippet>343</a>    ///
+<a href=#344 id=344 data-nosnippet>344</a>    /// Earlier ancestor prefixes are inherited unchanged; later appends to the parent are excluded.
+<a href=#345 id=345 data-nosnippet>345</a>    ///
+<a href=#346 id=346 data-nosnippet>346</a>    /// # Errors
+<a href=#347 id=347 data-nosnippet>347</a>    ///
+<a href=#348 id=348 data-nosnippet>348</a>    /// Returns an error if `parent_prefix_size` is negative or larger than the parent's local size.
+<a href=#349 id=349 data-nosnippet>349</a>    </span><span class="kw">pub fn </span>with_parent_prefix_size(parent: <span class="self">Self</span>, parent_prefix_size: i64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+<a href=#350 id=350 data-nosnippet>350</a>        <span class="kw">if </span>parent_prefix_size &lt; <span class="number">0 </span>|| parent_prefix_size &gt; parent.local_size() {
+<a href=#351 id=351 data-nosnippet>351</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::new(
+<a href=#352 id=352 data-nosnippet>352</a>                VALUE_ERROR,
+<a href=#353 id=353 data-nosnippet>353</a>                <span class="string">"Constraint context parent local prefix is out of bounds"</span>,
+<a href=#354 id=354 data-nosnippet>354</a>                <span class="string">""</span>,
+<a href=#355 id=355 data-nosnippet>355</a>            ));
+<a href=#356 id=356 data-nosnippet>356</a>        }
+<a href=#357 id=357 data-nosnippet>357</a>        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::allocate(<span class="prelude-val">Some</span>(parent.base), parent_prefix_size))
+<a href=#358 id=358 data-nosnippet>358</a>    }
+<a href=#359 id=359 data-nosnippet>359</a>
+<a href=#360 id=360 data-nosnippet>360</a>    <span class="kw">fn </span>allocate(parent: <span class="prelude-ty">Option</span>&lt;ObjectArc&lt;ConstraintContextObj&gt;&gt;, prefix: i64) -&gt; <span class="self">Self </span>{
+<a href=#361 id=361 data-nosnippet>361</a>        <span class="self">Self </span>{
+<a href=#362 id=362 data-nosnippet>362</a>            base: ObjectArc::new(ConstraintContextObj {
+<a href=#363 id=363 data-nosnippet>363</a>                base: Object::new(),
+<a href=#364 id=364 data-nosnippet>364</a>                parent,
+<a href=#365 id=365 data-nosnippet>365</a>                parent_prefix_size: prefix,
+<a href=#366 id=366 data-nosnippet>366</a>                <span class="comment">// Start with an empty Rust array. Native Append owns all growth;
+<a href=#367 id=367 data-nosnippet>367</a>                // never install a nonempty Rust allocation in this mutable field.
+<a href=#368 id=368 data-nosnippet>368</a>                </span>constraints: UnsafeCell::new(Array::default()),
+<a href=#369 id=369 data-nosnippet>369</a>            }),
+<a href=#370 id=370 data-nosnippet>370</a>        }
+<a href=#371 id=371 data-nosnippet>371</a>    }
+<a href=#372 id=372 data-nosnippet>372</a>}
+<a href=#373 id=373 data-nosnippet>373</a>
+<a href=#374 id=374 data-nosnippet>374</a><span class="kw">impl </span>ConstraintContextObj {
+<a href=#375 id=375 data-nosnippet>375</a>    <span class="doccomment">/// Append `constraint` to the local entries (`sym.ConstraintContextAppend`).
+<a href=#376 id=376 data-nosnippet>376</a>    ///
+<a href=#377 id=377 data-nosnippet>377</a>    /// Do not append to the active context of a running native visitor.
+<a href=#378 id=378 data-nosnippet>378</a>    </span><span class="kw">pub fn </span>append(<span class="kw-2">&amp;</span><span class="self">self</span>, constraint: <span class="kw-2">&amp;</span>Constraint) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+<a href=#379 id=379 data-nosnippet>379</a>        <span class="macro">tvm_ffi::cached_global_func!</span>(<span class="string">"sym.ConstraintContextAppend"</span>)
+<a href=#380 id=380 data-nosnippet>380</a>            .call_packed(<span class="kw-2">&amp;</span>[AnyView::from(<span class="self">self</span>), AnyView::from(constraint)])<span class="question-mark">?</span>;
+<a href=#381 id=381 data-nosnippet>381</a>        <span class="prelude-val">Ok</span>(())
+<a href=#382 id=382 data-nosnippet>382</a>    }
+<a href=#383 id=383 data-nosnippet>383</a>
+<a href=#384 id=384 data-nosnippet>384</a>    <span class="doccomment">/// Return the number of local entries, excluding captured ancestors.
+<a href=#385 id=385 data-nosnippet>385</a>    </span><span class="kw">pub fn </span>local_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i64 {
+<a href=#386 id=386 data-nosnippet>386</a>        <span class="comment">// No callback or mutation occurs during this short borrow.
+<a href=#387 id=387 data-nosnippet>387</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).len() <span class="kw">as </span>i64 }
+<a href=#388 id=388 data-nosnippet>388</a>    }
+<a href=#389 id=389 data-nosnippet>389</a>
+<a href=#390 id=390 data-nosnippet>390</a>    <span class="doccomment">/// Capture the visible prefix in an independently extensible child.
+<a href=#391 id=391 data-nosnippet>391</a>    </span><span class="kw">pub fn </span>snapshot(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;ConstraintContext&gt; {
+<a href=#392 id=392 data-nosnippet>392</a>        <span class="kw">let </span>parent = ConstraintContext::try_from(AnyView::from(<span class="self">self</span>))
+<a href=#393 id=393 data-nosnippet>393</a>            .expect(<span class="string">"context has its registered native type"</span>);
+<a href=#394 id=394 data-nosnippet>394</a>        ConstraintContext::with_parent_prefix_size(parent, <span class="self">self</span>.local_size())
+<a href=#395 id=395 data-nosnippet>395</a>    }
+<a href=#396 id=396 data-nosnippet>396</a>
+<a href=#397 id=397 data-nosnippet>397</a>    <span class="kw">fn </span>local_array(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Array&lt;Constraint&gt; {
+<a href=#398 id=398 data-nosnippet>398</a>        <span class="comment">// Hold an owning clone before any callback; native append then uses COW.
+<a href=#399 id=399 data-nosnippet>399</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).clone() }
+<a href=#400 id=400 data-nosnippet>400</a>    }
+<a href=#401 id=401 data-nosnippet>401</a>
+<a href=#402 id=402 data-nosnippet>402</a>    <span class="doccomment">/// Call `callback` on each visible constraint, in inherited and then local order.
+<a href=#403 id=403 data-nosnippet>403</a>    ///
+<a href=#404 id=404 data-nosnippet>404</a>    /// The callback may append without entering this iteration; each borrowed constraint is valid
+<a href=#405 id=405 data-nosnippet>405</a>    /// only during its callback.
+<a href=#406 id=406 data-nosnippet>406</a>    </span><span class="kw">pub fn </span>for_each(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>callback: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>Constraint)) {
+<a href=#407 id=407 data-nosnippet>407</a>        <span class="kw">let </span>retained = ConstraintContext::try_from(AnyView::from(<span class="self">self</span>))
+<a href=#408 id=408 data-nosnippet>408</a>            .expect(<span class="string">"context has its registered native type"</span>);
+<a href=#409 id=409 data-nosnippet>409</a>        retained.for_each_prefix(retained.local_size(), <span class="kw-2">&amp;mut </span>callback);
+<a href=#410 id=410 data-nosnippet>410</a>    }
+<a href=#411 id=411 data-nosnippet>411</a>
+<a href=#412 id=412 data-nosnippet>412</a>    <span class="kw">fn </span>for_each_prefix(<span class="kw-2">&amp;</span><span class="self">self</span>, prefix: i64, callback: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>Constraint)) {
+<a href=#413 id=413 data-nosnippet>413</a>        <span class="kw">let </span>local = <span class="self">self</span>.local_array();
+<a href=#414 id=414 data-nosnippet>414</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = <span class="kw-2">&amp;</span><span class="self">self</span>.parent {
+<a href=#415 id=415 data-nosnippet>415</a>            parent.for_each_prefix(<span class="self">self</span>.parent_prefix_size, callback);
+<a href=#416 id=416 data-nosnippet>416</a>        }
+<a href=#417 id=417 data-nosnippet>417</a>        <span class="kw">for </span>constraint <span class="kw">in </span>local.iter().take(prefix <span class="kw">as </span>usize) {
+<a href=#418 id=418 data-nosnippet>418</a>            callback(constraint);
+<a href=#419 id=419 data-nosnippet>419</a>        }
+<a href=#420 id=420 data-nosnippet>420</a>    }
+<a href=#421 id=421 data-nosnippet>421</a>
+<a href=#422 id=422 data-nosnippet>422</a>    <span class="doccomment">/// Return the visible constraints in inherited and then local order, as an independent array.
+<a href=#423 id=423 data-nosnippet>423</a>    ///
+<a href=#424 id=424 data-nosnippet>424</a>    /// Later appends do not change it; constraint nodes and expressions remain shared.
+<a href=#425 id=425 data-nosnippet>425</a>    </span><span class="kw">pub fn </span>to_array(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Array&lt;Constraint&gt; {
+<a href=#426 id=426 data-nosnippet>426</a>        <span class="kw">if </span><span class="self">self</span>.parent.is_none() {
+<a href=#427 id=427 data-nosnippet>427</a>            <span class="kw">return </span><span class="self">self</span>.local_array();
+<a href=#428 id=428 data-nosnippet>428</a>        }
+<a href=#429 id=429 data-nosnippet>429</a>        <span class="kw">let </span><span class="kw-2">mut </span>facts = Vec::new();
+<a href=#430 id=430 data-nosnippet>430</a>        <span class="self">self</span>.for_each(|fact| facts.push(fact.clone()));
+<a href=#431 id=431 data-nosnippet>431</a>        Array::from_vec(facts)
+<a href=#432 id=432 data-nosnippet>432</a>    }
+<a href=#433 id=433 data-nosnippet>433</a>}
+<a href=#434 id=434 data-nosnippet>434</a>
+<a href=#435 id=435 data-nosnippet>435</a><span class="comment">// These verify the Rust mirror against the matching x86_64 header layout, not
+<a href=#436 id=436 data-nosnippet>436</a>// an arbitrary loaded binary's hidden fields. Stub generation cannot certify them.
+<a href=#437 id=437 data-nosnippet>437</a></span><span class="kw">const _</span>: () = {
+<a href=#438 id=438 data-nosnippet>438</a>    <span class="macro">assert!</span>(size_of::&lt;ConstraintContextObj&gt;() == <span class="number">48</span>);
+<a href=#439 id=439 data-nosnippet>439</a>    <span class="macro">assert!</span>(align_of::&lt;ConstraintContextObj&gt;() == <span class="number">8</span>);
+<a href=#440 id=440 data-nosnippet>440</a>    <span class="macro">assert!</span>(<span class="macro">offset_of!</span>(ConstraintContextObj, parent) == <span class="number">24</span>);
+<a href=#441 id=441 data-nosnippet>441</a>    <span class="macro">assert!</span>(<span class="macro">offset_of!</span>(ConstraintContextObj, parent_prefix_size) == <span class="number">32</span>);
+<a href=#442 id=442 data-nosnippet>442</a>    <span class="macro">assert!</span>(<span class="macro">offset_of!</span>(ConstraintContextObj, constraints) == <span class="number">40</span>);
+<a href=#443 id=443 data-nosnippet>443</a>};
 </code></pre></div></section></main></body></html>
