@@ -30,46 +30,46 @@ From Shared Memory to a Matrix Product
 All 32 lanes cooperate on one ``16 x 8`` output tile. The data follows
 this path:
 
-.. code-block:: text
+.. raw:: html
 
-    float16 inputs -> shared memory -> ldmatrix -> register fragments
-                                                       |
-                                                   mma.sync
-                                                       |
-                                      float32 registers -> Out
+   <iframe data-tirx-matrix-dataflow
+           src="https://tvm.apache.org/images/docs/tirx/warp_matrix.html"
+           title="Warp matrix multiplication: shared memory, register fragments, and output"
+           style="display: block; width: 100%; height: 600px; border: 0;"
+           loading="lazy"></iframe>
+   <script>
+     // Keep both matrix diagrams sized and themed with their documentation pages.
+     (() => {
+       const dark = matchMedia('(prefers-color-scheme: dark)');
+       document.querySelectorAll('iframe[data-tirx-matrix-dataflow]').forEach((frame) => {
+         if (frame.dataset.ready) return;
+         frame.dataset.ready = 'true';
+         const origin = new URL(frame.src, document.baseURI).origin;
+         const syncTheme = () => {
+           const selected = document.documentElement.dataset.theme;
+           const theme = ['light', 'dark'].includes(selected) ? selected : (dark.matches ? 'dark' : 'light');
+           frame.contentWindow.postMessage({ type: 'tirx-matrix-dataflow:theme', theme }, origin);
+         };
+         addEventListener('message', (event) => {
+           if (event.source !== frame.contentWindow || event.origin !== origin) return;
+           const data = event.data;
+           if (data?.type !== 'tirx-matrix-dataflow:height') return;
+           if (!Number.isFinite(data.height) || data.height < 100 || data.height > 3000) return;
+           frame.style.height = Math.ceil(data.height) + 'px';
+         });
+         new MutationObserver(syncTheme).observe(document.documentElement, {
+           attributes: true, attributeFilter: ['data-theme']
+         });
+         dark.addEventListener('change', syncTheme);
+         frame.addEventListener('load', syncTheme);
+         syncTheme();
+       });
+     })();
+   </script>
 
-Each lane holds part of a matrix, called its register fragment. In this
-example, the fragments have the following sizes:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Registers in each lane
-     - Contents
-     - Complete matrix across the warp
-   * - ``ar``: four uint32 words
-     - Eight float16 elements, packed in pairs
-     - A: ``(16, 16)``
-   * - ``br``: two uint32 words
-     - Four float16 elements, packed in pairs
-     - B: ``(8, 16)``
-   * - ``dr``: four float32 values
-     - Four output elements
-     - Out: ``(16, 8)``
-
-The instruction fixes which elements belong to each lane. The
-``ldmatrix`` views use coordinates ``(matrix, row, packed_word)``: each
-``8 x 8`` half matrix has eight rows of four words. A contains four such
-matrices and B contains two, giving view shapes ``(4, 8, 4)`` and
-``(2, 8, 4)``. The load layouts place their words in ``ar`` and ``br``.
-
-The ``*_mma_layout`` views describe those same registers with MMA operand
-coordinates. For example, A's ``(1, 1, 16, 8)`` view has one M repeat,
-one K repeat, 16 rows, and eight packed words per row. These views let
-both instructions use the same fragments without moving values between
-lanes. The
-:ref:`warp MMA reference <cuda-tile-contract-mma-sync>` gives the fixed
-lane mappings represented by these layouts.
+A register fragment is the part of a matrix held in one lane's registers.
+The kernel below uses ``ar`` and ``br`` for the input fragments and ``dr``
+for the output fragment:
 
 .. code-block:: python
 
@@ -126,22 +126,24 @@ lane mappings represented by these layouts.
         for r in range(4):
             Out[lane // 4 + 8 * (r // 2), 2 * (lane % 4) + r % 2] = dr[r]
 
-Each thread first copies part of A and B to shared memory. The CTA barrier
-ensures those stores are visible before ``ldmatrix`` reads them. The
-``uint32`` views pack two float16 elements into each instruction operand;
-they preserve the bits rather than convert the values to integers.
+The threads copy ``A`` and ``B`` into shared-memory buffers ``a`` and ``b``,
+then synchronize before ``ldmatrix`` reads them.
 
-``ldmatrix.x4`` loads the four A matrices, and ``ldmatrix.x2`` loads the
-two B matrices. Both instructions require all 32 lanes to participate.
+The ``uint32`` views reinterpret pairs of float16 values as 32-bit words.
+``rearrange`` expresses the shared-memory views in
+``(matrix, row, packed_word)`` coordinates for ``ldmatrix``.
+All 32 lanes participate in ``ldmatrix.x4`` to load A into ``ar`` and
+``ldmatrix.x2`` to load B into ``br``.
 
-The MMA call takes ``D, A, B, C`` in that order. Its views include repeat
-axes of length one before the matrix dimensions. The selected
-``m16n8k16`` instruction computes the whole product in one issue, with
-``T.float32(0)`` as the initial C value. Each lane receives four output
-elements in ``dr``; the final loop writes them to their matrix positions.
-For lane 0, ``dr[0]`` through ``dr[3]`` belong to ``Out[0, 0]``,
-``Out[0, 1]``, ``Out[8, 0]``, and ``Out[8, 1]``. The other lanes use the
-same coordinate formula to cover the remaining output elements.
+The load and MMA layouts describe the same register fragments in each
+instruction's coordinates. This lets ``mma.sync`` reuse the loaded values
+without moving them between lanes. The :ref:`warp MMA reference
+<cuda-tile-contract-mma-sync>` gives the fixed lane mappings.
+
+The MMA call takes ``D, A, B, C``, with ``T.float32(0)`` as the initial C
+value. The ``m16n8k16`` instruction computes the product in one issue,
+leaving four float32 results per lane in ``dr``. The final loop stores
+them at their corresponding positions in ``Out``.
 
 We can compile the kernel and compare its result with a float32 matrix
 product:
