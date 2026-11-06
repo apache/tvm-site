@@ -323,84 +323,105 @@
 <a href=#323 id=323 data-nosnippet>323</a>        </span><span class="prelude-val">Some</span>(<span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>(handle <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_ as </span><span class="kw-2">*const </span>object::ObjectRef) })
 <a href=#324 id=324 data-nosnippet>324</a>    }
 <a href=#325 id=325 data-nosnippet>325</a>
-<a href=#326 id=326 data-nosnippet>326</a>    <span class="doccomment">/// Get the traceback of the error in the order of most recent call last, as
-<a href=#327 id=327 data-nosnippet>327</a>    /// Python prints it.
-<a href=#328 id=328 data-nosnippet>328</a>    ///
-<a href=#329 id=329 data-nosnippet>329</a>    /// # Returns
-<a href=#330 id=330 data-nosnippet>330</a>    ///
-<a href=#331 id=331 data-nosnippet>331</a>    /// The traceback of the error.
-<a href=#332 id=332 data-nosnippet>332</a>    </span><span class="kw">pub fn </span>traceback_most_recent_call_last(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-<a href=#333 id=333 data-nosnippet>333</a>        <span class="kw">let </span>backtrace = <span class="self">self</span>.backtrace();
-<a href=#334 id=334 data-nosnippet>334</a>        <span class="kw">let </span>backtrace_lines = backtrace.split(<span class="string">'\n'</span>);
-<a href=#335 id=335 data-nosnippet>335</a>        <span class="kw">let </span><span class="kw-2">mut </span>traceback = String::new();
-<a href=#336 id=336 data-nosnippet>336</a>        <span class="kw">for </span>line <span class="kw">in </span>backtrace_lines.rev() {
-<a href=#337 id=337 data-nosnippet>337</a>            traceback.push_str(line);
-<a href=#338 id=338 data-nosnippet>338</a>            traceback.push(<span class="string">'\n'</span>);
-<a href=#339 id=339 data-nosnippet>339</a>        }
-<a href=#340 id=340 data-nosnippet>340</a>        traceback
-<a href=#341 id=341 data-nosnippet>341</a>    }
-<a href=#342 id=342 data-nosnippet>342</a>
-<a href=#343 id=343 data-nosnippet>343</a>    <span class="doccomment">/// Append the backtrace to the error.
-<a href=#344 id=344 data-nosnippet>344</a>    ///
-<a href=#345 id=345 data-nosnippet>345</a>    /// [`attach_context!`](crate::attach_context) appends the current source
-<a href=#346 id=346 data-nosnippet>346</a>    /// location this way. The error is updated in place when it is not shared, and
-<a href=#347 id=347 data-nosnippet>347</a>    /// copied otherwise.
-<a href=#348 id=348 data-nosnippet>348</a>    ///
-<a href=#349 id=349 data-nosnippet>349</a>    /// # Arguments
-<a href=#350 id=350 data-nosnippet>350</a>    ///
-<a href=#351 id=351 data-nosnippet>351</a>    /// * `this` - The error to append the backtrace to.
-<a href=#352 id=352 data-nosnippet>352</a>    /// * `backtrace` - The backtrace to append.
-<a href=#353 id=353 data-nosnippet>353</a>    ///
-<a href=#354 id=354 data-nosnippet>354</a>    /// # Returns
-<a href=#355 id=355 data-nosnippet>355</a>    ///
-<a href=#356 id=356 data-nosnippet>356</a>    /// The error with the appended backtrace.
-<a href=#357 id=357 data-nosnippet>357</a>    </span><span class="kw">pub fn </span>with_appended_backtrace(this: <span class="self">Self</span>, backtrace: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
-<a href=#358 id=358 data-nosnippet>358</a>        <span class="kw">if </span>ObjectArc::strong_count(<span class="kw-2">&amp;</span>this.data) == <span class="number">1 </span>{
-<a href=#359 id=359 data-nosnippet>359</a>            <span class="comment">// this is the only reference to the error
-<a href=#360 id=360 data-nosnippet>360</a>            // we can safely mutate the error
-<a href=#361 id=361 data-nosnippet>361</a>            </span><span class="kw">unsafe </span>{
-<a href=#362 id=362 data-nosnippet>362</a>                <span class="kw">let </span>backtrace_data = TVMFFIByteArray::from_str(backtrace);
-<a href=#363 id=363 data-nosnippet>363</a>                (this.data.cell.update_backtrace)(
-<a href=#364 id=364 data-nosnippet>364</a>                    ObjectArc::as_ptr(<span class="kw-2">&amp;</span>this.data) <span class="kw">as </span><span class="kw-2">*mut </span>ErrorObj <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
-<a href=#365 id=365 data-nosnippet>365</a>                    <span class="kw-2">&amp;</span>backtrace_data,
-<a href=#366 id=366 data-nosnippet>366</a>                    kTVMFFIBacktraceUpdateModeAppend <span class="kw">as </span>i32,
-<a href=#367 id=367 data-nosnippet>367</a>                );
-<a href=#368 id=368 data-nosnippet>368</a>                this
-<a href=#369 id=369 data-nosnippet>369</a>            }
-<a href=#370 id=370 data-nosnippet>370</a>        } <span class="kw">else </span>{
-<a href=#371 id=371 data-nosnippet>371</a>            <span class="comment">// we need to create a new error because there is more than one unique reference
-<a href=#372 id=372 data-nosnippet>372</a>            // to the error
-<a href=#373 id=373 data-nosnippet>373</a>            </span><span class="kw">let </span><span class="kw-2">mut </span>new_backtrace = String::new();
-<a href=#374 id=374 data-nosnippet>374</a>            new_backtrace.push_str(this.backtrace());
-<a href=#375 id=375 data-nosnippet>375</a>            new_backtrace.push_str(backtrace);
-<a href=#376 id=376 data-nosnippet>376</a>            <span class="self">Self</span>::new_with_cause_and_extra_context(
-<a href=#377 id=377 data-nosnippet>377</a>                this.kind(),
-<a href=#378 id=378 data-nosnippet>378</a>                this.message(),
-<a href=#379 id=379 data-nosnippet>379</a>                <span class="kw-2">&amp;</span>new_backtrace,
-<a href=#380 id=380 data-nosnippet>380</a>                this.cause_chain(),
-<a href=#381 id=381 data-nosnippet>381</a>                this.extra_context(),
-<a href=#382 id=382 data-nosnippet>382</a>            )
-<a href=#383 id=383 data-nosnippet>383</a>        }
-<a href=#384 id=384 data-nosnippet>384</a>    }
-<a href=#385 id=385 data-nosnippet>385</a>}
-<a href=#386 id=386 data-nosnippet>386</a>
-<a href=#387 id=387 data-nosnippet>387</a><span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>Error {
-<a href=#388 id=388 data-nosnippet>388</a>    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
-<a href=#389 id=389 data-nosnippet>389</a>        <span class="macro">write!</span>(
-<a href=#390 id=390 data-nosnippet>390</a>            f,
-<a href=#391 id=391 data-nosnippet>391</a>            <span class="string">"Traceback (most recent call last):\n{}{}: {}"</span>,
-<a href=#392 id=392 data-nosnippet>392</a>            <span class="self">self</span>.traceback_most_recent_call_last(),
-<a href=#393 id=393 data-nosnippet>393</a>            <span class="self">self</span>.kind().as_str(),
-<a href=#394 id=394 data-nosnippet>394</a>            <span class="self">self</span>.message()
-<a href=#395 id=395 data-nosnippet>395</a>        )
-<a href=#396 id=396 data-nosnippet>396</a>    }
-<a href=#397 id=397 data-nosnippet>397</a>}
-<a href=#398 id=398 data-nosnippet>398</a>
-<a href=#399 id=399 data-nosnippet>399</a><span class="kw">impl </span>std::fmt::Debug <span class="kw">for </span>Error {
-<a href=#400 id=400 data-nosnippet>400</a>    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
-<a href=#401 id=401 data-nosnippet>401</a>        std::fmt::Display::fmt(<span class="self">self</span>, f)
-<a href=#402 id=402 data-nosnippet>402</a>    }
-<a href=#403 id=403 data-nosnippet>403</a>}
-<a href=#404 id=404 data-nosnippet>404</a>
-<a href=#405 id=405 data-nosnippet>405</a><span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {}
+<a href=#326 id=326 data-nosnippet>326</a>    <span class="doccomment">/// The `extra_context` slot, to update in place. A shared error is first
+<a href=#327 id=327 data-nosnippet>327</a>    /// replaced by a shallow copy, so the update reaches no other holder.
+<a href=#328 id=328 data-nosnippet>328</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>extra_context_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;object::ObjectRef&gt; {
+<a href=#329 id=329 data-nosnippet>329</a>        <span class="kw">if </span>ObjectArc::strong_count(<span class="kw-2">&amp;</span><span class="self">self</span>.data) != <span class="number">1 </span>{
+<a href=#330 id=330 data-nosnippet>330</a>            <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::new_with_cause_and_extra_context(
+<a href=#331 id=331 data-nosnippet>331</a>                <span class="self">self</span>.kind(),
+<a href=#332 id=332 data-nosnippet>332</a>                <span class="self">self</span>.message(),
+<a href=#333 id=333 data-nosnippet>333</a>                <span class="self">self</span>.backtrace(),
+<a href=#334 id=334 data-nosnippet>334</a>                <span class="self">self</span>.cause_chain(),
+<a href=#335 id=335 data-nosnippet>335</a>                <span class="self">self</span>.extra_context(),
+<a href=#336 id=336 data-nosnippet>336</a>            );
+<a href=#337 id=337 data-nosnippet>337</a>        }
+<a href=#338 id=338 data-nosnippet>338</a>        <span class="comment">// SAFETY: this handle is the only reference, and the slot owns a nullable
+<a href=#339 id=339 data-nosnippet>339</a>        // object handle, which is exactly an `Option&lt;ObjectRef&gt;`.
+<a href=#340 id=340 data-nosnippet>340</a>        </span><span class="kw">unsafe </span>{
+<a href=#341 id=341 data-nosnippet>341</a>            <span class="kw">let </span>error = ObjectArc::as_mut_ptr(<span class="kw-2">&amp;mut </span><span class="self">self</span>.data);
+<a href=#342 id=342 data-nosnippet>342</a>            <span class="kw-2">&amp;mut *</span><span class="macro">std::ptr::addr_of_mut!</span>((<span class="kw-2">*</span>error).cell.extra_context)
+<a href=#343 id=343 data-nosnippet>343</a>                .cast::&lt;<span class="prelude-ty">Option</span>&lt;object::ObjectRef&gt;&gt;()
+<a href=#344 id=344 data-nosnippet>344</a>        }
+<a href=#345 id=345 data-nosnippet>345</a>    }
+<a href=#346 id=346 data-nosnippet>346</a>
+<a href=#347 id=347 data-nosnippet>347</a>    <span class="doccomment">/// Get the traceback of the error in the order of most recent call last, as
+<a href=#348 id=348 data-nosnippet>348</a>    /// Python prints it.
+<a href=#349 id=349 data-nosnippet>349</a>    ///
+<a href=#350 id=350 data-nosnippet>350</a>    /// # Returns
+<a href=#351 id=351 data-nosnippet>351</a>    ///
+<a href=#352 id=352 data-nosnippet>352</a>    /// The traceback of the error.
+<a href=#353 id=353 data-nosnippet>353</a>    </span><span class="kw">pub fn </span>traceback_most_recent_call_last(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">let </span>backtrace = <span class="self">self</span>.backtrace();
+<a href=#355 id=355 data-nosnippet>355</a>        <span class="kw">let </span>backtrace_lines = backtrace.split(<span class="string">'\n'</span>);
+<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">let </span><span class="kw-2">mut </span>traceback = String::new();
+<a href=#357 id=357 data-nosnippet>357</a>        <span class="kw">for </span>line <span class="kw">in </span>backtrace_lines.rev() {
+<a href=#358 id=358 data-nosnippet>358</a>            traceback.push_str(line);
+<a href=#359 id=359 data-nosnippet>359</a>            traceback.push(<span class="string">'\n'</span>);
+<a href=#360 id=360 data-nosnippet>360</a>        }
+<a href=#361 id=361 data-nosnippet>361</a>        traceback
+<a href=#362 id=362 data-nosnippet>362</a>    }
+<a href=#363 id=363 data-nosnippet>363</a>
+<a href=#364 id=364 data-nosnippet>364</a>    <span class="doccomment">/// Append the backtrace to the error.
+<a href=#365 id=365 data-nosnippet>365</a>    ///
+<a href=#366 id=366 data-nosnippet>366</a>    /// [`attach_context!`](crate::attach_context) appends the current source
+<a href=#367 id=367 data-nosnippet>367</a>    /// location this way. The error is updated in place when it is not shared, and
+<a href=#368 id=368 data-nosnippet>368</a>    /// copied otherwise.
+<a href=#369 id=369 data-nosnippet>369</a>    ///
+<a href=#370 id=370 data-nosnippet>370</a>    /// # Arguments
+<a href=#371 id=371 data-nosnippet>371</a>    ///
+<a href=#372 id=372 data-nosnippet>372</a>    /// * `this` - The error to append the backtrace to.
+<a href=#373 id=373 data-nosnippet>373</a>    /// * `backtrace` - The backtrace to append.
+<a href=#374 id=374 data-nosnippet>374</a>    ///
+<a href=#375 id=375 data-nosnippet>375</a>    /// # Returns
+<a href=#376 id=376 data-nosnippet>376</a>    ///
+<a href=#377 id=377 data-nosnippet>377</a>    /// The error with the appended backtrace.
+<a href=#378 id=378 data-nosnippet>378</a>    </span><span class="kw">pub fn </span>with_appended_backtrace(this: <span class="self">Self</span>, backtrace: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+<a href=#379 id=379 data-nosnippet>379</a>        <span class="kw">if </span>ObjectArc::strong_count(<span class="kw-2">&amp;</span>this.data) == <span class="number">1 </span>{
+<a href=#380 id=380 data-nosnippet>380</a>            <span class="comment">// this is the only reference to the error
+<a href=#381 id=381 data-nosnippet>381</a>            // we can safely mutate the error
+<a href=#382 id=382 data-nosnippet>382</a>            </span><span class="kw">unsafe </span>{
+<a href=#383 id=383 data-nosnippet>383</a>                <span class="kw">let </span>backtrace_data = TVMFFIByteArray::from_str(backtrace);
+<a href=#384 id=384 data-nosnippet>384</a>                (this.data.cell.update_backtrace)(
+<a href=#385 id=385 data-nosnippet>385</a>                    ObjectArc::as_ptr(<span class="kw-2">&amp;</span>this.data) <span class="kw">as </span><span class="kw-2">*mut </span>ErrorObj <span class="kw">as </span><span class="kw-2">*mut </span>c_void,
+<a href=#386 id=386 data-nosnippet>386</a>                    <span class="kw-2">&amp;</span>backtrace_data,
+<a href=#387 id=387 data-nosnippet>387</a>                    kTVMFFIBacktraceUpdateModeAppend <span class="kw">as </span>i32,
+<a href=#388 id=388 data-nosnippet>388</a>                );
+<a href=#389 id=389 data-nosnippet>389</a>                this
+<a href=#390 id=390 data-nosnippet>390</a>            }
+<a href=#391 id=391 data-nosnippet>391</a>        } <span class="kw">else </span>{
+<a href=#392 id=392 data-nosnippet>392</a>            <span class="comment">// we need to create a new error because there is more than one unique reference
+<a href=#393 id=393 data-nosnippet>393</a>            // to the error
+<a href=#394 id=394 data-nosnippet>394</a>            </span><span class="kw">let </span><span class="kw-2">mut </span>new_backtrace = String::new();
+<a href=#395 id=395 data-nosnippet>395</a>            new_backtrace.push_str(this.backtrace());
+<a href=#396 id=396 data-nosnippet>396</a>            new_backtrace.push_str(backtrace);
+<a href=#397 id=397 data-nosnippet>397</a>            <span class="self">Self</span>::new_with_cause_and_extra_context(
+<a href=#398 id=398 data-nosnippet>398</a>                this.kind(),
+<a href=#399 id=399 data-nosnippet>399</a>                this.message(),
+<a href=#400 id=400 data-nosnippet>400</a>                <span class="kw-2">&amp;</span>new_backtrace,
+<a href=#401 id=401 data-nosnippet>401</a>                this.cause_chain(),
+<a href=#402 id=402 data-nosnippet>402</a>                this.extra_context(),
+<a href=#403 id=403 data-nosnippet>403</a>            )
+<a href=#404 id=404 data-nosnippet>404</a>        }
+<a href=#405 id=405 data-nosnippet>405</a>    }
+<a href=#406 id=406 data-nosnippet>406</a>}
+<a href=#407 id=407 data-nosnippet>407</a>
+<a href=#408 id=408 data-nosnippet>408</a><span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>Error {
+<a href=#409 id=409 data-nosnippet>409</a>    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+<a href=#410 id=410 data-nosnippet>410</a>        <span class="macro">write!</span>(
+<a href=#411 id=411 data-nosnippet>411</a>            f,
+<a href=#412 id=412 data-nosnippet>412</a>            <span class="string">"Traceback (most recent call last):\n{}{}: {}"</span>,
+<a href=#413 id=413 data-nosnippet>413</a>            <span class="self">self</span>.traceback_most_recent_call_last(),
+<a href=#414 id=414 data-nosnippet>414</a>            <span class="self">self</span>.kind().as_str(),
+<a href=#415 id=415 data-nosnippet>415</a>            <span class="self">self</span>.message()
+<a href=#416 id=416 data-nosnippet>416</a>        )
+<a href=#417 id=417 data-nosnippet>417</a>    }
+<a href=#418 id=418 data-nosnippet>418</a>}
+<a href=#419 id=419 data-nosnippet>419</a>
+<a href=#420 id=420 data-nosnippet>420</a><span class="kw">impl </span>std::fmt::Debug <span class="kw">for </span>Error {
+<a href=#421 id=421 data-nosnippet>421</a>    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+<a href=#422 id=422 data-nosnippet>422</a>        std::fmt::Display::fmt(<span class="self">self</span>, f)
+<a href=#423 id=423 data-nosnippet>423</a>    }
+<a href=#424 id=424 data-nosnippet>424</a>}
+<a href=#425 id=425 data-nosnippet>425</a>
+<a href=#426 id=426 data-nosnippet>426</a><span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {}
 </code></pre></div></section></main></body></html>

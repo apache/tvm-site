@@ -63,7 +63,7 @@ Program Listing for File stmt_functor.h
        try {
          return (*vtable_)(node, this, std::forward<Args>(args)...);
        } catch (ffi::Error& error) {
-         ffi::detail::UpdateVisitErrorContext(error, node);
+         ffi::detail::UpdateVisitErrorContext(&error, node);
          throw;
        }
      }

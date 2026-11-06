@@ -313,76 +313,74 @@
 <a href=#313 id=313 data-nosnippet>313</a>    }
 <a href=#314 id=314 data-nosnippet>314</a>}
 <a href=#315 id=315 data-nosnippet>315</a>
-<a href=#316 id=316 data-nosnippet>316</a><span class="comment">// SAFETY: `ir.ArgumentInfo` is not `_type_mutable`: a shared instance is never
-<a href=#317 id=317 data-nosnippet>317</a>// mutated, as C++ changes it only through copy-on-write.
-<a href=#318 id=318 data-nosnippet>318</a></span><span class="kw">unsafe impl </span>tvm_ffi::object::ImmutableObject <span class="kw">for </span>ArgumentInfoObj {}
-<a href=#319 id=319 data-nosnippet>319</a><span class="comment">// tvm-ffi-stubgen(end)
-<a href=#320 id=320 data-nosnippet>320</a>
-<a href=#321 id=321 data-nosnippet>321</a>// The crate has no `ffi.List` binding, so the column is read through the `TVMFFISeqCell` that
-<a href=#322 id=322 data-nosnippet>322</a>// `ffi.List` shares with `ffi.Array` (`c_api.h`).
-<a href=#323 id=323 data-nosnippet>323</a></span><span class="doccomment">/// A live attribute column of the operator registry, C++ `OpAttrMap&lt;T&gt;`, returned by
-<a href=#324 id=324 data-nosnippet>324</a>/// [`Op::attr_map`].
-<a href=#325 id=325 data-nosnippet>325</a>///
-<a href=#326 id=326 data-nosnippet>326</a>/// It holds the registry's own column, so values registered later stay visible and the map can be
-<a href=#327 id=327 data-nosnippet>327</a>/// cached. A lookup reads the entry without an FFI call.
-<a href=#328 id=328 data-nosnippet>328</a></span><span class="kw">pub struct </span>OpAttrMap&lt;T&gt; {
-<a href=#329 id=329 data-nosnippet>329</a>    column: tvm_ffi::object::ObjectRef,
-<a href=#330 id=330 data-nosnippet>330</a>    name: String,
-<a href=#331 id=331 data-nosnippet>331</a>    _value: std::marker::PhantomData&lt;T&gt;,
-<a href=#332 id=332 data-nosnippet>332</a>}
-<a href=#333 id=333 data-nosnippet>333</a>
-<a href=#334 id=334 data-nosnippet>334</a><span class="kw">impl</span>&lt;T&gt; OpAttrMap&lt;T&gt; {
-<a href=#335 id=335 data-nosnippet>335</a>    <span class="doccomment">/// The entry of `op` in the column, unless it has none.
-<a href=#336 id=336 data-nosnippet>336</a>    </span><span class="kw">fn </span>entry(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>OpObj) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>tvm_ffi::tvm_ffi_sys::TVMFFIAny&gt; {
-<a href=#337 id=337 data-nosnippet>337</a>        <span class="comment">// SAFETY: `column` is an `ffi.List` (checked by `Op::attr_map`) that `self` keeps alive.
-<a href=#338 id=338 data-nosnippet>338</a>        // The cell is read on every lookup because growth may move the element buffer.
-<a href=#339 id=339 data-nosnippet>339</a>        </span><span class="kw">let </span>cell = <span class="kw">unsafe </span>{
-<a href=#340 id=340 data-nosnippet>340</a>            <span class="kw">let </span>data = tvm_ffi::object::ObjectRefCore::data(<span class="kw-2">&amp;</span><span class="self">self</span>.column);
-<a href=#341 id=341 data-nosnippet>341</a>            <span class="kw-2">&amp;*</span>(ObjectArc::as_ptr(data) <span class="kw">as </span><span class="kw-2">*const </span>support::SeqCell)
-<a href=#342 id=342 data-nosnippet>342</a>        };
-<a href=#343 id=343 data-nosnippet>343</a>        <span class="kw">let </span>index = op.index <span class="kw">as </span>usize;
-<a href=#344 id=344 data-nosnippet>344</a>        <span class="kw">if </span>index &gt;= cell.size <span class="kw">as </span>usize {
-<a href=#345 id=345 data-nosnippet>345</a>            <span class="kw">return </span><span class="prelude-val">None</span>;
-<a href=#346 id=346 data-nosnippet>346</a>        }
-<a href=#347 id=347 data-nosnippet>347</a>        <span class="comment">// SAFETY: `index` is within the `size` initialized entries.
-<a href=#348 id=348 data-nosnippet>348</a>        </span><span class="kw">let </span>entry = <span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>cell.data.add(index) };
-<a href=#349 id=349 data-nosnippet>349</a>        (entry.type_index != tvm_ffi::tvm_ffi_sys::TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32)
-<a href=#350 id=350 data-nosnippet>350</a>            .then_some(entry)
-<a href=#351 id=351 data-nosnippet>351</a>    }
-<a href=#352 id=352 data-nosnippet>352</a>
-<a href=#353 id=353 data-nosnippet>353</a>    <span class="doccomment">/// The value `op` registers in this column, of whatever type, or `None`.
-<a href=#354 id=354 data-nosnippet>354</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_any(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>OpObj) -&gt; <span class="prelude-ty">Option</span>&lt;Any&gt; {
-<a href=#355 id=355 data-nosnippet>355</a>        <span class="self">self</span>.entry(op).map(|entry| {
-<a href=#356 id=356 data-nosnippet>356</a>            <span class="comment">// SAFETY: the borrowed entry is copied, never released.
-<a href=#357 id=357 data-nosnippet>357</a>            </span><span class="kw">let </span>entry = std::mem::ManuallyDrop::new(<span class="kw">unsafe </span>{ Any::from_raw_ffi_any(<span class="kw-2">*</span>entry) });
-<a href=#358 id=358 data-nosnippet>358</a>            (<span class="kw-2">*</span>entry).clone()
-<a href=#359 id=359 data-nosnippet>359</a>        })
-<a href=#360 id=360 data-nosnippet>360</a>    }
-<a href=#361 id=361 data-nosnippet>361</a>}
-<a href=#362 id=362 data-nosnippet>362</a>
-<a href=#363 id=363 data-nosnippet>363</a><span class="kw">impl</span>&lt;T: tvm_ffi::type_traits::AnyCompatible&gt; OpAttrMap&lt;T&gt; {
-<a href=#364 id=364 data-nosnippet>364</a>    <span class="doccomment">/// Return the value registered for `op`, or `None` when it has none, as C++
-<a href=#365 id=365 data-nosnippet>365</a>    /// `OpAttrMap::get(op, None)` does.
+<a href=#316 id=316 data-nosnippet>316</a><span class="kw">unsafe impl </span>tvm_ffi::object::ImmutableObject <span class="kw">for </span>ArgumentInfoObj {}
+<a href=#317 id=317 data-nosnippet>317</a><span class="comment">// tvm-ffi-stubgen(end)
+<a href=#318 id=318 data-nosnippet>318</a>
+<a href=#319 id=319 data-nosnippet>319</a>// The crate has no `ffi.List` binding, so the column is read through the `TVMFFISeqCell` that
+<a href=#320 id=320 data-nosnippet>320</a>// `ffi.List` shares with `ffi.Array` (`c_api.h`).
+<a href=#321 id=321 data-nosnippet>321</a></span><span class="doccomment">/// A live attribute column of the operator registry, C++ `OpAttrMap&lt;T&gt;`, returned by
+<a href=#322 id=322 data-nosnippet>322</a>/// [`Op::attr_map`].
+<a href=#323 id=323 data-nosnippet>323</a>///
+<a href=#324 id=324 data-nosnippet>324</a>/// It holds the registry's own column, so values registered later stay visible and the map can be
+<a href=#325 id=325 data-nosnippet>325</a>/// cached. A lookup reads the entry without an FFI call.
+<a href=#326 id=326 data-nosnippet>326</a></span><span class="kw">pub struct </span>OpAttrMap&lt;T&gt; {
+<a href=#327 id=327 data-nosnippet>327</a>    column: tvm_ffi::object::ObjectRef,
+<a href=#328 id=328 data-nosnippet>328</a>    name: String,
+<a href=#329 id=329 data-nosnippet>329</a>    _value: std::marker::PhantomData&lt;T&gt;,
+<a href=#330 id=330 data-nosnippet>330</a>}
+<a href=#331 id=331 data-nosnippet>331</a>
+<a href=#332 id=332 data-nosnippet>332</a><span class="kw">impl</span>&lt;T&gt; OpAttrMap&lt;T&gt; {
+<a href=#333 id=333 data-nosnippet>333</a>    <span class="doccomment">/// The entry of `op` in the column, unless it has none.
+<a href=#334 id=334 data-nosnippet>334</a>    </span><span class="kw">fn </span>entry(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>OpObj) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>tvm_ffi::tvm_ffi_sys::TVMFFIAny&gt; {
+<a href=#335 id=335 data-nosnippet>335</a>        <span class="comment">// SAFETY: `column` is an `ffi.List` (checked by `Op::attr_map`) that `self` keeps alive.
+<a href=#336 id=336 data-nosnippet>336</a>        // The cell is read on every lookup because growth may move the element buffer.
+<a href=#337 id=337 data-nosnippet>337</a>        </span><span class="kw">let </span>cell = <span class="kw">unsafe </span>{
+<a href=#338 id=338 data-nosnippet>338</a>            <span class="kw">let </span>data = tvm_ffi::object::ObjectRefCore::data(<span class="kw-2">&amp;</span><span class="self">self</span>.column);
+<a href=#339 id=339 data-nosnippet>339</a>            <span class="kw-2">&amp;*</span>(ObjectArc::as_ptr(data) <span class="kw">as </span><span class="kw-2">*const </span>support::SeqCell)
+<a href=#340 id=340 data-nosnippet>340</a>        };
+<a href=#341 id=341 data-nosnippet>341</a>        <span class="kw">let </span>index = op.index <span class="kw">as </span>usize;
+<a href=#342 id=342 data-nosnippet>342</a>        <span class="kw">if </span>index &gt;= cell.size <span class="kw">as </span>usize {
+<a href=#343 id=343 data-nosnippet>343</a>            <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#344 id=344 data-nosnippet>344</a>        }
+<a href=#345 id=345 data-nosnippet>345</a>        <span class="comment">// SAFETY: `index` is within the `size` initialized entries.
+<a href=#346 id=346 data-nosnippet>346</a>        </span><span class="kw">let </span>entry = <span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>cell.data.add(index) };
+<a href=#347 id=347 data-nosnippet>347</a>        (entry.type_index != tvm_ffi::tvm_ffi_sys::TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32)
+<a href=#348 id=348 data-nosnippet>348</a>            .then_some(entry)
+<a href=#349 id=349 data-nosnippet>349</a>    }
+<a href=#350 id=350 data-nosnippet>350</a>
+<a href=#351 id=351 data-nosnippet>351</a>    <span class="doccomment">/// The value `op` registers in this column, of whatever type, or `None`.
+<a href=#352 id=352 data-nosnippet>352</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_any(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>OpObj) -&gt; <span class="prelude-ty">Option</span>&lt;Any&gt; {
+<a href=#353 id=353 data-nosnippet>353</a>        <span class="self">self</span>.entry(op).map(|entry| {
+<a href=#354 id=354 data-nosnippet>354</a>            <span class="comment">// SAFETY: the borrowed entry is copied, never released.
+<a href=#355 id=355 data-nosnippet>355</a>            </span><span class="kw">let </span>entry = std::mem::ManuallyDrop::new(<span class="kw">unsafe </span>{ Any::from_raw_ffi_any(<span class="kw-2">*</span>entry) });
+<a href=#356 id=356 data-nosnippet>356</a>            (<span class="kw-2">*</span>entry).clone()
+<a href=#357 id=357 data-nosnippet>357</a>        })
+<a href=#358 id=358 data-nosnippet>358</a>    }
+<a href=#359 id=359 data-nosnippet>359</a>}
+<a href=#360 id=360 data-nosnippet>360</a>
+<a href=#361 id=361 data-nosnippet>361</a><span class="kw">impl</span>&lt;T: tvm_ffi::type_traits::AnyCompatible&gt; OpAttrMap&lt;T&gt; {
+<a href=#362 id=362 data-nosnippet>362</a>    <span class="doccomment">/// Return the value registered for `op`, or `None` when it has none, as C++
+<a href=#363 id=363 data-nosnippet>363</a>    /// `OpAttrMap::get(op, None)` does.
+<a href=#364 id=364 data-nosnippet>364</a>    ///
+<a href=#365 id=365 data-nosnippet>365</a>    /// # Errors
 <a href=#366 id=366 data-nosnippet>366</a>    ///
-<a href=#367 id=367 data-nosnippet>367</a>    /// # Errors
-<a href=#368 id=368 data-nosnippet>368</a>    ///
-<a href=#369 id=369 data-nosnippet>369</a>    /// Returns a `TypeError` if the value is not a `T`.
-<a href=#370 id=370 data-nosnippet>370</a>    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>OpObj) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt; {
-<a href=#371 id=371 data-nosnippet>371</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.entry(op) <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) };
-<a href=#372 id=372 data-nosnippet>372</a>        <span class="comment">// SAFETY: `entry` is a live element of the column.
-<a href=#373 id=373 data-nosnippet>373</a>        </span><span class="kw">match unsafe </span>{ T::try_cast_from_any_view(entry) } {
-<a href=#374 id=374 data-nosnippet>374</a>            <span class="prelude-val">Ok</span>(value) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(value)),
-<a href=#375 id=375 data-nosnippet>375</a>            <span class="prelude-val">Err</span>(()) =&gt; <span class="prelude-val">Err</span>(tvm_ffi::Error::new(
-<a href=#376 id=376 data-nosnippet>376</a>                tvm_ffi::TYPE_ERROR,
-<a href=#377 id=377 data-nosnippet>377</a>                <span class="kw-2">&amp;</span><span class="macro">format!</span>(
-<a href=#378 id=378 data-nosnippet>378</a>                    <span class="string">"Op attribute {} of {} has unexpected type {}"</span>,
-<a href=#379 id=379 data-nosnippet>379</a>                    <span class="self">self</span>.name.as_str(),
-<a href=#380 id=380 data-nosnippet>380</a>                    op.name.as_str(),
-<a href=#381 id=381 data-nosnippet>381</a>                    T::get_mismatch_type_info(entry)
-<a href=#382 id=382 data-nosnippet>382</a>                ),
-<a href=#383 id=383 data-nosnippet>383</a>                <span class="string">""</span>,
-<a href=#384 id=384 data-nosnippet>384</a>            )),
-<a href=#385 id=385 data-nosnippet>385</a>        }
-<a href=#386 id=386 data-nosnippet>386</a>    }
-<a href=#387 id=387 data-nosnippet>387</a>}
+<a href=#367 id=367 data-nosnippet>367</a>    /// Returns a `TypeError` if the value is not a `T`.
+<a href=#368 id=368 data-nosnippet>368</a>    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>OpObj) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt; {
+<a href=#369 id=369 data-nosnippet>369</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.entry(op) <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) };
+<a href=#370 id=370 data-nosnippet>370</a>        <span class="comment">// SAFETY: `entry` is a live element of the column.
+<a href=#371 id=371 data-nosnippet>371</a>        </span><span class="kw">match unsafe </span>{ T::try_cast_from_any_view(entry) } {
+<a href=#372 id=372 data-nosnippet>372</a>            <span class="prelude-val">Ok</span>(value) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(value)),
+<a href=#373 id=373 data-nosnippet>373</a>            <span class="prelude-val">Err</span>(()) =&gt; <span class="prelude-val">Err</span>(tvm_ffi::Error::new(
+<a href=#374 id=374 data-nosnippet>374</a>                tvm_ffi::TYPE_ERROR,
+<a href=#375 id=375 data-nosnippet>375</a>                <span class="kw-2">&amp;</span><span class="macro">format!</span>(
+<a href=#376 id=376 data-nosnippet>376</a>                    <span class="string">"Op attribute {} of {} has unexpected type {}"</span>,
+<a href=#377 id=377 data-nosnippet>377</a>                    <span class="self">self</span>.name.as_str(),
+<a href=#378 id=378 data-nosnippet>378</a>                    op.name.as_str(),
+<a href=#379 id=379 data-nosnippet>379</a>                    T::get_mismatch_type_info(entry)
+<a href=#380 id=380 data-nosnippet>380</a>                ),
+<a href=#381 id=381 data-nosnippet>381</a>                <span class="string">""</span>,
+<a href=#382 id=382 data-nosnippet>382</a>            )),
+<a href=#383 id=383 data-nosnippet>383</a>        }
+<a href=#384 id=384 data-nosnippet>384</a>    }
+<a href=#385 id=385 data-nosnippet>385</a>}
 </code></pre></div></section></main></body></html>

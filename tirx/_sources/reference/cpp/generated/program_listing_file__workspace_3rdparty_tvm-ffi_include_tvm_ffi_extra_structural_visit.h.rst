@@ -216,7 +216,7 @@ Program Listing for File structural_visit.h
    // Keep the raw result in registers on success; only error decoration takes its address.
    TVM_FFI_COLD_CODE inline TVMFFIAny AttachStructuralVisitErrorContextRaw(TVMFFIAny result,
                                                                            AnyView value) noexcept {
-     UpdateVisitErrorContext(result, value);
+     UpdateVisitErrorContext(&result, value);
      return result;
    }
    
@@ -436,8 +436,7 @@ Program Listing for File structural_visit.h
          TryLinks(value, &result, std::index_sequence_for<Callbacks...>{});
          if (TVM_FFI_PREDICT_FALSE(detail::StructuralVisitNeedEarlyReturn(result))) {
            if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
-             Error err = result.error();
-             detail::UpdateVisitErrorContext(err, value);
+             detail::UpdateVisitErrorContext(&result, value);
            }
            return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
          }
@@ -470,8 +469,7 @@ Program Listing for File structural_visit.h
          TryLinks(value, &result, std::index_sequence_for<Callbacks...>{});
          if (TVM_FFI_PREDICT_FALSE(detail::StructuralVisitNeedEarlyReturn(result))) {
            if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
-             Error err = result.error();
-             detail::UpdateVisitErrorContext(err, value);
+             detail::UpdateVisitErrorContext(&result, value);
            }
            return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
          }
