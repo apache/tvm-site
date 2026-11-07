@@ -454,9 +454,8 @@ real and imaginary parts, as in <code class="docutils literal notranslate"><span
 <p><strong>What does #[derive(ObjectRef)] do?</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">#[derive(ObjectRef)]</span></code> makes <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>, whose one field is an
 <code class="docutils literal notranslate"><span class="pre">ObjectArc&lt;ComplexTypeObj&gt;</span></code>, the reference type of the object type
-<code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code>, as the C++ macro
-<code class="docutils literal notranslate"><span class="pre">TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE</span></code> does. A reference holds a
-reference-counted pointer to its object, and the derive gives it:</p>
+<code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code>. A reference holds a reference-counted pointer to its
+object, and the derive gives it:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Deref</span></code> to the object, so its fields read directly: <code class="docutils literal notranslate"><span class="pre">ty.dtype</span></code>;</p></li>
 <li><p>a private <code class="docutils literal notranslate"><span class="pre">from_object</span></code>, which wraps a new <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> for the
@@ -467,31 +466,31 @@ type’s own code, such as type inference;</p></li>
 inference.</p></li>
 </ul>
 </div>
-<p>In Rust, as in C++, the type is defined in two parts: <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> is the
-object that holds the fields, and <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> is a reference-counted
-reference to it, which IR nodes store and functions pass around.
-<code class="docutils literal notranslate"><span class="pre">base_:</span> <span class="pre">TypeObj</span></code> makes the object an IR type, and <code class="docutils literal notranslate"><span class="pre">rs_object</span></code> registers its
-fields for reflection, through which Python and IR JSON loading construct the
-type as they construct a C++ one. <code class="docutils literal notranslate"><span class="pre">#[derive(ObjectRef)]</span></code> defines the reference.</p>
+<p>In Rust, the type is defined in two parts: <code class="docutils literal notranslate"><span class="pre">ComplexTypeObj</span></code> is the object that
+holds the fields, and <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> is a reference-counted reference to it,
+which IR nodes store and functions pass around. <code class="docutils literal notranslate"><span class="pre">base_:</span> <span class="pre">TypeObj</span></code> makes the
+object an IR type, and <code class="docutils literal notranslate"><span class="pre">rs_object</span></code> registers its fields for reflection,
+through which Python and IR JSON loading construct the type as they construct
+a built-in one. <code class="docutils literal notranslate"><span class="pre">#[derive(ObjectRef)]</span></code> defines the reference.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">static_init_block!</span></code> registers the type when the library loads.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>What does static_init_block! do?</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">static_init_block!</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></code> runs its body when the program or library that
-holds it loads, as a C++ <code class="docutils literal notranslate"><span class="pre">TVM_FFI_STATIC_INIT_BLOCK</span></code> does. The body
-registers what the library defines, such as types, operators, and global
-functions, and Python sees these registrations once it loads the library.
+holds it loads. The body registers what the library defines, such as types,
+operators, and global functions, and Python sees these registrations once it
+loads the library.
 The body is the body of a function that returns <code class="docutils literal notranslate"><span class="pre">Result&lt;()&gt;</span></code>, so <code class="docutils literal notranslate"><span class="pre">?</span></code>
 stops it at its first error.</p>
 <p>Here, <code class="docutils literal notranslate"><span class="pre">register_type::&lt;ComplexType&gt;()</span></code> registers <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code> as an IR
 type, so that Python constructs it from its fields and IR JSON holds it, as
-for a C++ type.</p>
+for a built-in type.</p>
 </div>
 <p>In Python, one class is enough. <code class="docutils literal notranslate"><span class="pre">py_class</span></code> from <code class="docutils literal notranslate"><span class="pre">tvm_ffi.dataclasses</span></code>
 registers it as an IR object: <code class="docutils literal notranslate"><span class="pre">my_ext.ComplexType</span></code> is its type key,
 <code class="docutils literal notranslate"><span class="pre">ir.Type</span></code> its parent, and the annotated <code class="docutils literal notranslate"><span class="pre">dtype</span></code> its field. The class gets a
 constructor, <code class="docutils literal notranslate"><span class="pre">ComplexType(dtype)</span></code>, and its field takes part in structural
-equality, printing, and IR JSON, as the fields of a C++ type do. The global
+equality, printing, and IR JSON, as the fields of a built-in type do. The global
 function <code class="docutils literal notranslate"><span class="pre">ir.expose_type</span></code> then publishes the type, as <code class="docutils literal notranslate"><span class="pre">register_type</span></code> does
 in Rust.</p>
 <p>Either way, Python sees the type as <code class="docutils literal notranslate"><span class="pre">my_ext.Complex</span></code>. A <code class="docutils literal notranslate"><span class="pre">ComplexType</span></code>
@@ -660,9 +659,9 @@ that pair. This lets the rules apply to the step-by-step function from
 </pre></div>
 </div>
 <p>Only scalar arithmetic remains. To apply the rules, the pass tests whether a
-call’s <code class="docutils literal notranslate"><span class="pre">op</span></code> is one of the four operators. The Rust pass looks them up by name,
-as C++ does with <code class="docutils literal notranslate"><span class="pre">Op::Get</span></code>. The operators are registered when the library
-loads, and <code class="docutils literal notranslate"><span class="pre">Op::get</span></code> returns the registry’s single object for a name.
+call’s <code class="docutils literal notranslate"><span class="pre">op</span></code> is one of the four operators. The Rust pass looks them up by name.
+The operators are registered when the library loads, and <code class="docutils literal notranslate"><span class="pre">Op::get</span></code> returns
+the registry’s single object for a name.
 <code class="docutils literal notranslate"><span class="pre">call.op.same_as(&amp;Op::get(&quot;my_ext.cmul&quot;)?)</span></code> therefore tests whether a call’s
 <code class="docutils literal notranslate"><span class="pre">op</span></code> is <code class="docutils literal notranslate"><span class="pre">my_ext.cmul</span></code> by comparing pointers. The Python pass compares with
 the operators that <code class="docutils literal notranslate"><span class="pre">Op.register</span></code> returned, as in <code class="docutils literal notranslate"><span class="pre">call.op.same_as(CMUL)</span></code>.

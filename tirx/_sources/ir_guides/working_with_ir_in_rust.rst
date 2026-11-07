@@ -143,7 +143,7 @@ The output is:
 directly from ``x``, and the literals ``2`` and ``1`` become constants of
 its type.
 
-As in C++, the operators take a ``PrimExpr``, an expression whose type is a
+The operators take a ``PrimExpr``, an expression whose type is a
 ``PrimType``. ``x`` is a ``PrimVar``, a variable of a primitive type, because a
 plain ``Var`` may have any type: it takes part in arithmetic only after
 ``downcast_ref::<PrimVar>()`` or ``downcast::<PrimVar>()`` checks it, and ``&var + 1``
@@ -215,8 +215,8 @@ This is the newtype pattern. Simplified from the crate, the pair is:
 Rust has no inheritance; instead, ``#[repr(C)]`` puts the parent's object,
 ``ExprObj``, first in ``AddObj``, so every addition is also an expression.
 ``Add`` implements ``Deref`` to ``AddObj``, which is why ``add.a`` works.
-``AddObj`` has the same memory layout as its C++ counterpart, so
-``add.a`` is a direct field read, as efficient as in C++.
+``AddObj`` has the same memory layout as the native object, so
+``add.a`` is a direct field read.
 
 **Nodes are immutable.** As with data behind an ``Arc``, a managed
 reference gives read access only; to change a node, we build a new one.
@@ -791,7 +791,7 @@ Quick Reference
      - Receives the definition region kind
    * - |structural_equal|_\ ``(&a, &b)``
      - Compares by structure
-   * - |dispatch|_\ ``(prefix, (Carrier, ...), ResultType)``
+   * - |dispatch|_\ ``(prefix, (First, Args...), Ret)``
      - Generates ``dispatch``, a ``match_any!`` over the ``prefix_*``
        methods of a struct
    * - |structural_visit|_, |structural_mutate|_
@@ -848,8 +848,6 @@ Quick Reference
 .. _structural_walk_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_walk_with_constraint_context/fn.structural_walk_with_constraint_context.html
 .. |structural_mutate_with_constraint_context| replace:: ``structural_mutate_with_constraint_context``
 .. _structural_mutate_with_constraint_context: ../reference/rust/generated/tvm_tirx/tirx/structural_mutate_with_constraint_context/fn.structural_mutate_with_constraint_context.html
-.. |StructuralVisitorWithConstraintContextView| replace:: ``StructuralVisitorWithConstraintContextView``
-.. _StructuralVisitorWithConstraintContextView: ../reference/rust/generated/tvm_tirx/tirx/structural_visit_with_constraint_context/type.StructuralVisitorWithConstraintContextView.html
 .. |match_any!| replace:: ``match_any!``
 .. _match_any!: ../reference/rust/generated/tvm_ffi/macro.match_any.html
 .. |PrimVar::new| replace:: ``PrimVar::new``

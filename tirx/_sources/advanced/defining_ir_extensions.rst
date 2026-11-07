@@ -77,9 +77,8 @@ real and imaginary parts, as in ``TensorType``:
 
    ``#[derive(ObjectRef)]`` makes ``ComplexType``, whose one field is an
    ``ObjectArc<ComplexTypeObj>``, the reference type of the object type
-   ``ComplexTypeObj``, as the C++ macro
-   ``TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE`` does. A reference holds a
-   reference-counted pointer to its object, and the derive gives it:
+   ``ComplexTypeObj``. A reference holds a reference-counted pointer to its
+   object, and the derive gives it:
 
    - ``Deref`` to the object, so its fields read directly: ``ty.dtype``;
    - a private ``from_object``, which wraps a new ``ComplexTypeObj`` for the
@@ -89,12 +88,12 @@ real and imaginary parts, as in ``TensorType``:
      ``into()`` wherever one is expected, such as the result of type
      inference.
 
-In Rust, as in C++, the type is defined in two parts: ``ComplexTypeObj`` is the
-object that holds the fields, and ``ComplexType`` is a reference-counted
-reference to it, which IR nodes store and functions pass around.
-``base_: TypeObj`` makes the object an IR type, and ``rs_object`` registers its
-fields for reflection, through which Python and IR JSON loading construct the
-type as they construct a C++ one. ``#[derive(ObjectRef)]`` defines the reference.
+In Rust, the type is defined in two parts: ``ComplexTypeObj`` is the object that
+holds the fields, and ``ComplexType`` is a reference-counted reference to it,
+which IR nodes store and functions pass around. ``base_: TypeObj`` makes the
+object an IR type, and ``rs_object`` registers its fields for reflection,
+through which Python and IR JSON loading construct the type as they construct
+a built-in one. ``#[derive(ObjectRef)]`` defines the reference.
 
 The ``static_init_block!`` registers the type when the library loads.
 
@@ -103,21 +102,21 @@ The ``static_init_block!`` registers the type when the library loads.
    **What does static_init_block! do?**
 
    ``static_init_block! { ... }`` runs its body when the program or library that
-   holds it loads, as a C++ ``TVM_FFI_STATIC_INIT_BLOCK`` does. The body
-   registers what the library defines, such as types, operators, and global
-   functions, and Python sees these registrations once it loads the library.
+   holds it loads. The body registers what the library defines, such as types,
+   operators, and global functions, and Python sees these registrations once it
+   loads the library.
    The body is the body of a function that returns ``Result<()>``, so ``?``
    stops it at its first error.
 
    Here, ``register_type::<ComplexType>()`` registers ``ComplexType`` as an IR
    type, so that Python constructs it from its fields and IR JSON holds it, as
-   for a C++ type.
+   for a built-in type.
 
 In Python, one class is enough. ``py_class`` from ``tvm_ffi.dataclasses``
 registers it as an IR object: ``my_ext.ComplexType`` is its type key,
 ``ir.Type`` its parent, and the annotated ``dtype`` its field. The class gets a
 constructor, ``ComplexType(dtype)``, and its field takes part in structural
-equality, printing, and IR JSON, as the fields of a C++ type do. The global
+equality, printing, and IR JSON, as the fields of a built-in type do. The global
 function ``ir.expose_type`` then publishes the type, as ``register_type`` does
 in Rust.
 
@@ -267,9 +266,9 @@ that pair. This lets the rules apply to the step-by-step function from
    Im[i] = product_im
 
 Only scalar arithmetic remains. To apply the rules, the pass tests whether a
-call's ``op`` is one of the four operators. The Rust pass looks them up by name,
-as C++ does with ``Op::Get``. The operators are registered when the library
-loads, and ``Op::get`` returns the registry's single object for a name.
+call's ``op`` is one of the four operators. The Rust pass looks them up by name.
+The operators are registered when the library loads, and ``Op::get`` returns
+the registry's single object for a name.
 ``call.op.same_as(&Op::get("my_ext.cmul")?)`` therefore tests whether a call's
 ``op`` is ``my_ext.cmul`` by comparing pointers. The Python pass compares with
 the operators that ``Op.register`` returned, as in ``call.op.same_as(CMUL)``.
