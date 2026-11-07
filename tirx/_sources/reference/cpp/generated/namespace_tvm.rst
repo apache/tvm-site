@@ -426,15 +426,15 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a3d91d7a3e6dbe231127a2a915b498ee7`
 
-- :ref:`exhale_function_namespacetvm_1a77f31264db739e9277fb7fb673b0a558`
-
 - :ref:`exhale_function_namespacetvm_1a43b037a5aac55dcd56848c4857dba3dd`
+
+- :ref:`exhale_function_namespacetvm_1a77f31264db739e9277fb7fb673b0a558`
 
 - :ref:`exhale_function_namespacetvm_1a3eb9244782eaa685611c9e851816eddf`
 
-- :ref:`exhale_function_namespacetvm_1a63438696915e2a27d98071ff906f5339`
-
 - :ref:`exhale_function_namespacetvm_1a8a0bc412728b3698f7f76c6ad5cd72f5`
+
+- :ref:`exhale_function_namespacetvm_1a63438696915e2a27d98071ff906f5339`
 
 - :ref:`exhale_function_namespacetvm_1a24e781698f74f6087db5cba4c6168434`
 
@@ -844,9 +844,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1aae1dcfef78728c5490d3c107b4abac5a`
 
-- :ref:`exhale_function_namespacetvm_1abccc3d3e96ee608022b148ffa05034eb`
-
 - :ref:`exhale_function_namespacetvm_1a550c2a251b2a6fd2a72172fe3db75d40`
+
+- :ref:`exhale_function_namespacetvm_1abccc3d3e96ee608022b148ffa05034eb`
 
 - :ref:`exhale_function_namespacetvm_1a8c7a3555362a34c57e7eda751b699d6a`
 

@@ -524,7 +524,7 @@
 <a href=#524 id=524 data-nosnippet>524</a>        <span class="kw">if </span>data.type_index == TypeIndex::kTVMFFIByteArrayPtr <span class="kw">as </span>i32 {
 <a href=#525 id=525 data-nosnippet>525</a>            <span class="comment">// deep copy from bytearray ptr
 <a href=#526 id=526 data-nosnippet>526</a>            </span><span class="kw">let </span>bytes = <span class="kw-2">&amp;*</span>(data.data_union.v_ptr <span class="kw">as </span><span class="kw-2">*const </span>TVMFFIByteArray);
-<a href=#527 id=527 data-nosnippet>527</a>            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::from(std::slice::from_raw_parts(
+<a href=#527 id=527 data-nosnippet>527</a>            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::from(<span class="kw">crate</span>::util::slice_from_nullable_raw_parts(
 <a href=#528 id=528 data-nosnippet>528</a>                bytes.data, bytes.size,
 <a href=#529 id=529 data-nosnippet>529</a>            )))
 <a href=#530 id=530 data-nosnippet>530</a>        } <span class="kw">else if </span>data.type_index == TypeIndex::kTVMFFISmallBytes <span class="kw">as </span>i32 {
@@ -576,18 +576,17 @@
 <a href=#576 id=576 data-nosnippet>576</a>
 <a href=#577 id=577 data-nosnippet>577</a>    <span class="kw">unsafe fn </span>try_cast_from_any_view(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ()&gt; {
 <a href=#578 id=578 data-nosnippet>578</a>        <span class="kw">if </span>data.type_index == TypeIndex::kTVMFFIRawStr <span class="kw">as </span>i32 {
-<a href=#579 id=579 data-nosnippet>579</a>            <span class="comment">// 1. Create a CStr wrapper from the raw pointer.
-<a href=#580 id=580 data-nosnippet>580</a>            </span><span class="kw">let </span>c_str =
-<a href=#581 id=581 data-nosnippet>581</a>                std::ffi::CStr::from_ptr(data.data_union.v_c_str <span class="kw">as </span><span class="kw-2">*const </span>std::os::raw::c_char);
-<a href=#582 id=582 data-nosnippet>582</a>            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::from(c_str.to_str().expect(<span class="string">"Invalid UTF-8"</span>)))
-<a href=#583 id=583 data-nosnippet>583</a>        } <span class="kw">else if </span>data.type_index == TypeIndex::kTVMFFISmallStr <span class="kw">as </span>i32 {
-<a href=#584 id=584 data-nosnippet>584</a>            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ data: <span class="kw-2">*</span>data })
-<a href=#585 id=585 data-nosnippet>585</a>        } <span class="kw">else if </span>data.type_index == TypeIndex::kTVMFFIStr <span class="kw">as </span>i32 {
-<a href=#586 id=586 data-nosnippet>586</a>            <span class="kw">unsafe </span>{ unsafe_::inc_ref(data.data_union.v_obj) }
-<a href=#587 id=587 data-nosnippet>587</a>            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ data: <span class="kw-2">*</span>data })
-<a href=#588 id=588 data-nosnippet>588</a>        } <span class="kw">else </span>{
-<a href=#589 id=589 data-nosnippet>589</a>            <span class="prelude-val">Err</span>(())
-<a href=#590 id=590 data-nosnippet>590</a>        }
-<a href=#591 id=591 data-nosnippet>591</a>    }
-<a href=#592 id=592 data-nosnippet>592</a>}
+<a href=#579 id=579 data-nosnippet>579</a>            <span class="kw">let </span>c_str =
+<a href=#580 id=580 data-nosnippet>580</a>                std::ffi::CStr::from_ptr(data.data_union.v_c_str <span class="kw">as </span><span class="kw-2">*const </span>std::os::raw::c_char);
+<a href=#581 id=581 data-nosnippet>581</a>            c_str.to_str().map(<span class="self">Self</span>::from).map_err(|<span class="kw">_</span>| ())
+<a href=#582 id=582 data-nosnippet>582</a>        } <span class="kw">else if </span>data.type_index == TypeIndex::kTVMFFISmallStr <span class="kw">as </span>i32 {
+<a href=#583 id=583 data-nosnippet>583</a>            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ data: <span class="kw-2">*</span>data })
+<a href=#584 id=584 data-nosnippet>584</a>        } <span class="kw">else if </span>data.type_index == TypeIndex::kTVMFFIStr <span class="kw">as </span>i32 {
+<a href=#585 id=585 data-nosnippet>585</a>            <span class="kw">unsafe </span>{ unsafe_::inc_ref(data.data_union.v_obj) }
+<a href=#586 id=586 data-nosnippet>586</a>            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ data: <span class="kw-2">*</span>data })
+<a href=#587 id=587 data-nosnippet>587</a>        } <span class="kw">else </span>{
+<a href=#588 id=588 data-nosnippet>588</a>            <span class="prelude-val">Err</span>(())
+<a href=#589 id=589 data-nosnippet>589</a>        }
+<a href=#590 id=590 data-nosnippet>590</a>    }
+<a href=#591 id=591 data-nosnippet>591</a>}
 </code></pre></div></section></main></body></html>
