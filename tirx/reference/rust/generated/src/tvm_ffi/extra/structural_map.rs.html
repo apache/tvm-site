@@ -178,50 +178,53 @@
 <a href=#178 id=178 data-nosnippet>178</a>/// this function consumes `root`, an error does not return the partly mapped
 <a href=#179 id=179 data-nosnippet>179</a>/// root to the caller.
 <a href=#180 id=180 data-nosnippet>180</a>///
-<a href=#181 id=181 data-nosnippet>181</a>/// A callback must not modify an `ffi.List` or `ffi.Dict` that holds the
-<a href=#182 id=182 data-nosnippet>182</a>/// value it receives or one of that value's ancestors: the traversal borrows
-<a href=#183 id=183 data-nosnippet>183</a>/// their cells while the callback runs. A callback that returns an `Error`
-<a href=#184 id=184 data-nosnippet>184</a>/// object as its value fails the traversal with a `TypeError`.
-<a href=#185 id=185 data-nosnippet>185</a>///
-<a href=#186 id=186 data-nosnippet>186</a>/// # Arguments
-<a href=#187 id=187 data-nosnippet>187</a>///
-<a href=#188 id=188 data-nosnippet>188</a>/// * `root` - Owned value to transform, convertible into an [`Any`]. Clone it
-<a href=#189 id=189 data-nosnippet>189</a>///   first to preserve the original through copy-on-write behavior.
-<a href=#190 id=190 data-nosnippet>190</a>/// * `mapper` - Mutable dispatcher, closure, or first-match callback tuple
-<a href=#191 id=191 data-nosnippet>191</a>///   implementing [`IntoDispatcher`]. Callbacks return replacements; unmatched
-<a href=#192 id=192 data-nosnippet>192</a>///   values retain their value while default traversal maps their children.
-<a href=#193 id=193 data-nosnippet>193</a>/// * `order` - [`WalkOrder::PreOrder`] applies the callback before traversing the
-<a href=#194 id=194 data-nosnippet>194</a>///   replacement's children; [`WalkOrder::PostOrder`] maps children before
-<a href=#195 id=195 data-nosnippet>195</a>///   applying the callback to their parent.
-<a href=#196 id=196 data-nosnippet>196</a>///
-<a href=#197 id=197 data-nosnippet>197</a>/// # Examples
-<a href=#198 id=198 data-nosnippet>198</a>///
-<a href=#199 id=199 data-nosnippet>199</a>/// Increment integer leaves while keeping a shared original unchanged:
-<a href=#200 id=200 data-nosnippet>200</a>///
-<a href=#201 id=201 data-nosnippet>201</a>/// ```
-<a href=#202 id=202 data-nosnippet>202</a>/// use tvm_ffi::{structural_map, Array, WalkOrder};
+<a href=#181 id=181 data-nosnippet>181</a>/// Callbacks must report failures through [`Result`] and must not panic: a panic
+<a href=#182 id=182 data-nosnippet>182</a>/// reaching the non-unwinding native callback boundary aborts the process.
+<a href=#183 id=183 data-nosnippet>183</a>///
+<a href=#184 id=184 data-nosnippet>184</a>/// A callback must not modify an `ffi.List` or `ffi.Dict` that holds the
+<a href=#185 id=185 data-nosnippet>185</a>/// value it receives or one of that value's ancestors: the traversal borrows
+<a href=#186 id=186 data-nosnippet>186</a>/// their cells while the callback runs. A callback that returns an `Error`
+<a href=#187 id=187 data-nosnippet>187</a>/// object as its value fails the traversal with a `TypeError`.
+<a href=#188 id=188 data-nosnippet>188</a>///
+<a href=#189 id=189 data-nosnippet>189</a>/// # Arguments
+<a href=#190 id=190 data-nosnippet>190</a>///
+<a href=#191 id=191 data-nosnippet>191</a>/// * `root` - Owned value to transform, convertible into an [`Any`]. Clone it
+<a href=#192 id=192 data-nosnippet>192</a>///   first to preserve the original through copy-on-write behavior.
+<a href=#193 id=193 data-nosnippet>193</a>/// * `mapper` - Mutable dispatcher, closure, or first-match callback tuple
+<a href=#194 id=194 data-nosnippet>194</a>///   implementing [`IntoDispatcher`]. Callbacks return replacements; unmatched
+<a href=#195 id=195 data-nosnippet>195</a>///   values retain their value while default traversal maps their children.
+<a href=#196 id=196 data-nosnippet>196</a>/// * `order` - [`WalkOrder::PreOrder`] applies the callback before traversing the
+<a href=#197 id=197 data-nosnippet>197</a>///   replacement's children; [`WalkOrder::PostOrder`] maps children before
+<a href=#198 id=198 data-nosnippet>198</a>///   applying the callback to their parent.
+<a href=#199 id=199 data-nosnippet>199</a>///
+<a href=#200 id=200 data-nosnippet>200</a>/// # Examples
+<a href=#201 id=201 data-nosnippet>201</a>///
+<a href=#202 id=202 data-nosnippet>202</a>/// Increment integer leaves while keeping a shared original unchanged:
 <a href=#203 id=203 data-nosnippet>203</a>///
-<a href=#204 id=204 data-nosnippet>204</a>/// let root = Array::from_vec(vec![1_i64, 2, 3]);
-<a href=#205 id=205 data-nosnippet>205</a>/// let mapped = structural_map(root.clone(), |value: i64| value + 1, WalkOrder::PostOrder)?;
-<a href=#206 id=206 data-nosnippet>206</a>/// let mapped = Array::&lt;i64&gt;::try_from(mapped)?;
-<a href=#207 id=207 data-nosnippet>207</a>/// assert_eq!(mapped.iter().copied().collect::&lt;Vec&lt;_&gt;&gt;(), vec![2, 3, 4]);
-<a href=#208 id=208 data-nosnippet>208</a>/// assert_eq!(root.iter().copied().collect::&lt;Vec&lt;_&gt;&gt;(), vec![1, 2, 3]);
-<a href=#209 id=209 data-nosnippet>209</a>/// # Ok::&lt;(), tvm_ffi::Error&gt;(())
-<a href=#210 id=210 data-nosnippet>210</a>/// ```
-<a href=#211 id=211 data-nosnippet>211</a></span><span class="kw">pub fn </span>structural_map&lt;R, M, H, D, O&gt;(root: R, mapper: H, order: WalkOrder) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
-<a href=#212 id=212 data-nosnippet>212</a><span class="kw">where
-<a href=#213 id=213 data-nosnippet>213</a>    </span>R: Into&lt;Any&gt;,
-<a href=#214 id=214 data-nosnippet>214</a>    O: BorrowMut&lt;D&gt;,
-<a href=#215 id=215 data-nosnippet>215</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>&gt; H: IntoDispatcher&lt;
-<a href=#216 id=216 data-nosnippet>216</a>        (AnyView&lt;<span class="lifetime">'v</span>&gt;, DefRegionKind),
-<a href=#217 id=217 data-nosnippet>217</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;,
-<a href=#218 id=218 data-nosnippet>218</a>        M,
-<a href=#219 id=219 data-nosnippet>219</a>        Target = D,
-<a href=#220 id=220 data-nosnippet>220</a>        Output = O,
-<a href=#221 id=221 data-nosnippet>221</a>    &gt;,
-<a href=#222 id=222 data-nosnippet>222</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D:
-<a href=#223 id=223 data-nosnippet>223</a>        Dispatcher&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, DefRegionKind), <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;&gt;,
-<a href=#224 id=224 data-nosnippet>224</a>{
-<a href=#225 id=225 data-nosnippet>225</a>    run_mapper(root.into(), mapper.into_dispatcher().borrow_mut(), order)
-<a href=#226 id=226 data-nosnippet>226</a>}
+<a href=#204 id=204 data-nosnippet>204</a>/// ```
+<a href=#205 id=205 data-nosnippet>205</a>/// use tvm_ffi::{structural_map, Array, WalkOrder};
+<a href=#206 id=206 data-nosnippet>206</a>///
+<a href=#207 id=207 data-nosnippet>207</a>/// let root = Array::from_vec(vec![1_i64, 2, 3]);
+<a href=#208 id=208 data-nosnippet>208</a>/// let mapped = structural_map(root.clone(), |value: i64| value + 1, WalkOrder::PostOrder)?;
+<a href=#209 id=209 data-nosnippet>209</a>/// let mapped = Array::&lt;i64&gt;::try_from(mapped)?;
+<a href=#210 id=210 data-nosnippet>210</a>/// assert_eq!(mapped.iter().copied().collect::&lt;Vec&lt;_&gt;&gt;(), vec![2, 3, 4]);
+<a href=#211 id=211 data-nosnippet>211</a>/// assert_eq!(root.iter().copied().collect::&lt;Vec&lt;_&gt;&gt;(), vec![1, 2, 3]);
+<a href=#212 id=212 data-nosnippet>212</a>/// # Ok::&lt;(), tvm_ffi::Error&gt;(())
+<a href=#213 id=213 data-nosnippet>213</a>/// ```
+<a href=#214 id=214 data-nosnippet>214</a></span><span class="kw">pub fn </span>structural_map&lt;R, M, H, D, O&gt;(root: R, mapper: H, order: WalkOrder) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+<a href=#215 id=215 data-nosnippet>215</a><span class="kw">where
+<a href=#216 id=216 data-nosnippet>216</a>    </span>R: Into&lt;Any&gt;,
+<a href=#217 id=217 data-nosnippet>217</a>    O: BorrowMut&lt;D&gt;,
+<a href=#218 id=218 data-nosnippet>218</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>&gt; H: IntoDispatcher&lt;
+<a href=#219 id=219 data-nosnippet>219</a>        (AnyView&lt;<span class="lifetime">'v</span>&gt;, DefRegionKind),
+<a href=#220 id=220 data-nosnippet>220</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;,
+<a href=#221 id=221 data-nosnippet>221</a>        M,
+<a href=#222 id=222 data-nosnippet>222</a>        Target = D,
+<a href=#223 id=223 data-nosnippet>223</a>        Output = O,
+<a href=#224 id=224 data-nosnippet>224</a>    &gt;,
+<a href=#225 id=225 data-nosnippet>225</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D:
+<a href=#226 id=226 data-nosnippet>226</a>        Dispatcher&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, DefRegionKind), <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;&gt;,
+<a href=#227 id=227 data-nosnippet>227</a>{
+<a href=#228 id=228 data-nosnippet>228</a>    run_mapper(root.into(), mapper.into_dispatcher().borrow_mut(), order)
+<a href=#229 id=229 data-nosnippet>229</a>}
 </code></pre></div></section></main></body></html>

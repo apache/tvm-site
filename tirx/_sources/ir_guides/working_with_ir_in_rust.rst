@@ -200,6 +200,7 @@ This is the newtype pattern. Simplified from the crate, the pair is:
    #[repr(C)]
    #[derive(Object)]
    #[type_key = "prim.Add"]
+   #[type_immutable]
    pub struct AddObj {
        base_: ExprObj,
        pub a: PrimExpr,
