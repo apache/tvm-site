@@ -2210,84 +2210,85 @@
 <a href=#2210 id=2210 data-nosnippet>2210</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(var_ty) = var.ty.downcast_ref::&lt;PrimTypeObj&gt;() <span class="kw">else </span>{
 <a href=#2211 id=2211 data-nosnippet>2211</a>            <span class="kw">let </span>message = <span class="macro">format!</span>(
 <a href=#2212 id=2212 data-nosnippet>2212</a>                <span class="string">"Cannot treat type `{}` as type `ir.PrimType`"</span>,
-<a href=#2213 id=2213 data-nosnippet>2213</a>                support::type_key(AnyView::from(<span class="kw-2">&amp;</span>var.ty).type_index())
-<a href=#2214 id=2214 data-nosnippet>2214</a>            );
-<a href=#2215 id=2215 data-nosnippet>2215</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(tvm_ffi::Error::new(tvm_ffi::TYPE_ERROR, <span class="kw-2">&amp;</span>message, <span class="string">""</span>));
-<a href=#2216 id=2216 data-nosnippet>2216</a>        };
-<a href=#2217 id=2217 data-nosnippet>2217</a>        <span class="kw">if </span>value_dtype != var_ty.dtype {
-<a href=#2218 id=2218 data-nosnippet>2218</a>            <span class="kw">let </span>condition = <span class="string">"value.ty() == var-&gt;ty.as_or_throw&lt;PrimType&gt;()"</span>;
-<a href=#2219 id=2219 data-nosnippet>2219</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::INTERNAL_ERROR, condition, <span class="string">""</span>));
-<a href=#2220 id=2220 data-nosnippet>2220</a>        }
-<a href=#2221 id=2221 data-nosnippet>2221</a>        <span class="kw">let </span>ty = body.prim_ty().clone();
-<a href=#2222 id=2222 data-nosnippet>2222</a>        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::from_fields(loc.into(), ty, var, value, body))
-<a href=#2223 id=2223 data-nosnippet>2223</a>    }
-<a href=#2224 id=2224 data-nosnippet>2224</a>}
-<a href=#2225 id=2225 data-nosnippet>2225</a>
-<a href=#2226 id=2226 data-nosnippet>2226</a><span class="comment">// ---------------------------------------------------------------------------------------------
-<a href=#2227 id=2227 data-nosnippet>2227</a>// What the node constructors check
-<a href=#2228 id=2228 data-nosnippet>2228</a>
-<a href=#2229 id=2229 data-nosnippet>2229</a></span><span class="doccomment">/// What the constructor of a binary node checks of its operands, and the type it gives the node.
-<a href=#2230 id=2230 data-nosnippet>2230</a></span><span class="attr">#[derive(Clone, Copy)]
-<a href=#2231 id=2231 data-nosnippet>2231</a></span><span class="kw">enum </span>Operands {
-<a href=#2232 id=2232 data-nosnippet>2232</a>    <span class="doccomment">/// `Add`, `Min`, ...: operands of one type, which is the node's.
-<a href=#2233 id=2233 data-nosnippet>2233</a>    </span>Arith,
-<a href=#2234 id=2234 data-nosnippet>2234</a>    <span class="doccomment">/// `LShift`, `BitwiseAnd`, ...: as `Arith`, of an integer type, or boolean if allowed.
-<a href=#2235 id=2235 data-nosnippet>2235</a>    </span>Bitwise { allow_bool: bool },
-<a href=#2236 id=2236 data-nosnippet>2236</a>    <span class="doccomment">/// `EQ`, `LT`, ...: operands of one type; the node is boolean.
-<a href=#2237 id=2237 data-nosnippet>2237</a>    </span>Compare,
-<a href=#2238 id=2238 data-nosnippet>2238</a>}
-<a href=#2239 id=2239 data-nosnippet>2239</a>
-<a href=#2240 id=2240 data-nosnippet>2240</a><span class="doccomment">/// The type of the binary node `node` of `a` and `b`, after checking the operands.
-<a href=#2241 id=2241 data-nosnippet>2241</a></span><span class="kw">fn </span>binary_type(node: <span class="kw-2">&amp;</span>str, operands: Operands, a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; <span class="prelude-ty">Result</span>&lt;PrimType&gt; {
-<a href=#2242 id=2242 data-nosnippet>2242</a>    <span class="kw">let </span>(a_ty, b_dtype) = (a.prim_ty(), b.prim_ty().dtype);
-<a href=#2243 id=2243 data-nosnippet>2243</a>    <span class="kw">let </span>a_dtype = a_ty.dtype;
-<a href=#2244 id=2244 data-nosnippet>2244</a>    <span class="kw">if </span>a_dtype != b_dtype {
-<a href=#2245 id=2245 data-nosnippet>2245</a>        <span class="kw">let </span>message = <span class="macro">format!</span>(
-<a href=#2246 id=2246 data-nosnippet>2246</a>            <span class="string">"mismatched types. {} vs. {}\n"</span>,
-<a href=#2247 id=2247 data-nosnippet>2247</a>            support::dtype_name(a_dtype),
-<a href=#2248 id=2248 data-nosnippet>2248</a>            support::dtype_name(b_dtype)
-<a href=#2249 id=2249 data-nosnippet>2249</a>        );
-<a href=#2250 id=2250 data-nosnippet>2250</a>        <span class="kw">let </span>condition = <span class="string">"a_ty-&gt;dtype == b_ty-&gt;dtype"</span>;
-<a href=#2251 id=2251 data-nosnippet>2251</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::TYPE_ERROR, condition, <span class="kw-2">&amp;</span>message));
-<a href=#2252 id=2252 data-nosnippet>2252</a>    }
-<a href=#2253 id=2253 data-nosnippet>2253</a>    <span class="kw">match </span>operands {
-<a href=#2254 id=2254 data-nosnippet>2254</a>        Operands::Arith =&gt; <span class="prelude-val">Ok</span>(a_ty.clone()),
-<a href=#2255 id=2255 data-nosnippet>2255</a>        Operands::Bitwise { allow_bool } =&gt; {
-<a href=#2256 id=2256 data-nosnippet>2256</a>            <span class="kw">if </span>a_ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLInt, DLDataTypeCode::kDLUInt])
-<a href=#2257 id=2257 data-nosnippet>2257</a>                || (allow_bool &amp;&amp; a_ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLBool]))
-<a href=#2258 id=2258 data-nosnippet>2258</a>            {
-<a href=#2259 id=2259 data-nosnippet>2259</a>                <span class="kw">return </span><span class="prelude-val">Ok</span>(a_ty.clone());
-<a href=#2260 id=2260 data-nosnippet>2260</a>            }
-<a href=#2261 id=2261 data-nosnippet>2261</a>            <span class="kw">let </span>condition = <span class="macro">format!</span>(
-<a href=#2262 id=2262 data-nosnippet>2262</a>                <span class="string">"a.ty().MatchesCode(DLDataTypeCode::kDLInt, DLDataTypeCode::kDLUInt) || \
-<a href=#2263 id=2263 data-nosnippet>2263</a>                 ({allow_bool} &amp;&amp; a.ty().MatchesCode(DLDataTypeCode::kDLBool))"
-<a href=#2264 id=2264 data-nosnippet>2264</a>            </span>);
-<a href=#2265 id=2265 data-nosnippet>2265</a>            <span class="kw">let </span>operands = <span class="kw">if </span>allow_bool { <span class="string">"integer or boolean" </span>} <span class="kw">else </span>{ <span class="string">"integer" </span>};
-<a href=#2266 id=2266 data-nosnippet>2266</a>            <span class="kw">let </span>message = <span class="macro">format!</span>(<span class="string">"{node} requires {operands} operands"</span>);
-<a href=#2267 id=2267 data-nosnippet>2267</a>            <span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::TYPE_ERROR, <span class="kw-2">&amp;</span>condition, <span class="kw-2">&amp;</span>message))
-<a href=#2268 id=2268 data-nosnippet>2268</a>        }
-<a href=#2269 id=2269 data-nosnippet>2269</a>        Operands::Compare =&gt; bool_type(a_ty),
-<a href=#2270 id=2270 data-nosnippet>2270</a>    }
-<a href=#2271 id=2271 data-nosnippet>2271</a>}
-<a href=#2272 id=2272 data-nosnippet>2272</a>
-<a href=#2273 id=2273 data-nosnippet>2273</a><span class="doccomment">/// The boolean type with the lanes of `operand`.
-<a href=#2274 id=2274 data-nosnippet>2274</a></span><span class="kw">fn </span>bool_type(operand: <span class="kw-2">&amp;</span>PrimType) -&gt; <span class="prelude-ty">Result</span>&lt;PrimType&gt; {
-<a href=#2275 id=2275 data-nosnippet>2275</a>    <span class="kw">use </span><span class="kw">crate</span>::ir::dtype;
-<a href=#2276 id=2276 data-nosnippet>2276</a>    PrimType::try_from(dtype::with_lanes(dtype::bool(), operand.dtype.lanes))
-<a href=#2277 id=2277 data-nosnippet>2277</a>}
-<a href=#2278 id=2278 data-nosnippet>2278</a>
-<a href=#2279 id=2279 data-nosnippet>2279</a><span class="doccomment">/// The type of the logical node of `a` and `b`, after checking that the operands are booleans of
-<a href=#2280 id=2280 data-nosnippet>2280</a>/// one type.
-<a href=#2281 id=2281 data-nosnippet>2281</a></span><span class="kw">fn </span>logical_type(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; <span class="prelude-ty">Result</span>&lt;PrimType&gt; {
-<a href=#2282 id=2282 data-nosnippet>2282</a>    <span class="kw">for </span>(ty, operand) <span class="kw">in </span>[(a.prim_ty(), <span class="string">"a_ty"</span>), (b.prim_ty(), <span class="string">"b_ty"</span>)] {
-<a href=#2283 id=2283 data-nosnippet>2283</a>        <span class="kw">if </span>!ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLBool]) {
-<a href=#2284 id=2284 data-nosnippet>2284</a>            <span class="kw">let </span>condition = <span class="macro">format!</span>(<span class="string">"{operand}.MatchesCode(DLDataTypeCode::kDLBool)"</span>);
-<a href=#2285 id=2285 data-nosnippet>2285</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::INTERNAL_ERROR, <span class="kw-2">&amp;</span>condition, <span class="string">""</span>));
-<a href=#2286 id=2286 data-nosnippet>2286</a>        }
-<a href=#2287 id=2287 data-nosnippet>2287</a>    }
-<a href=#2288 id=2288 data-nosnippet>2288</a>    <span class="kw">if </span>a.prim_ty().dtype != b.prim_ty().dtype {
-<a href=#2289 id=2289 data-nosnippet>2289</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::TYPE_ERROR, <span class="string">"a_ty == b_ty"</span>, <span class="string">"mismatched types"</span>));
-<a href=#2290 id=2290 data-nosnippet>2290</a>    }
-<a href=#2291 id=2291 data-nosnippet>2291</a>    bool_type(a.prim_ty())
-<a href=#2292 id=2292 data-nosnippet>2292</a>}
+<a href=#2213 id=2213 data-nosnippet>2213</a>                tvm_ffi::reflection::type_key(AnyView::from(<span class="kw-2">&amp;</span>var.ty).type_index())
+<a href=#2214 id=2214 data-nosnippet>2214</a>                    .unwrap_or_default()
+<a href=#2215 id=2215 data-nosnippet>2215</a>            );
+<a href=#2216 id=2216 data-nosnippet>2216</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(tvm_ffi::Error::new(tvm_ffi::TYPE_ERROR, <span class="kw-2">&amp;</span>message, <span class="string">""</span>));
+<a href=#2217 id=2217 data-nosnippet>2217</a>        };
+<a href=#2218 id=2218 data-nosnippet>2218</a>        <span class="kw">if </span>value_dtype != var_ty.dtype {
+<a href=#2219 id=2219 data-nosnippet>2219</a>            <span class="kw">let </span>condition = <span class="string">"value.ty() == var-&gt;ty.as_or_throw&lt;PrimType&gt;()"</span>;
+<a href=#2220 id=2220 data-nosnippet>2220</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::INTERNAL_ERROR, condition, <span class="string">""</span>));
+<a href=#2221 id=2221 data-nosnippet>2221</a>        }
+<a href=#2222 id=2222 data-nosnippet>2222</a>        <span class="kw">let </span>ty = body.prim_ty().clone();
+<a href=#2223 id=2223 data-nosnippet>2223</a>        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::from_fields(loc.into(), ty, var, value, body))
+<a href=#2224 id=2224 data-nosnippet>2224</a>    }
+<a href=#2225 id=2225 data-nosnippet>2225</a>}
+<a href=#2226 id=2226 data-nosnippet>2226</a>
+<a href=#2227 id=2227 data-nosnippet>2227</a><span class="comment">// ---------------------------------------------------------------------------------------------
+<a href=#2228 id=2228 data-nosnippet>2228</a>// What the node constructors check
+<a href=#2229 id=2229 data-nosnippet>2229</a>
+<a href=#2230 id=2230 data-nosnippet>2230</a></span><span class="doccomment">/// What the constructor of a binary node checks of its operands, and the type it gives the node.
+<a href=#2231 id=2231 data-nosnippet>2231</a></span><span class="attr">#[derive(Clone, Copy)]
+<a href=#2232 id=2232 data-nosnippet>2232</a></span><span class="kw">enum </span>Operands {
+<a href=#2233 id=2233 data-nosnippet>2233</a>    <span class="doccomment">/// `Add`, `Min`, ...: operands of one type, which is the node's.
+<a href=#2234 id=2234 data-nosnippet>2234</a>    </span>Arith,
+<a href=#2235 id=2235 data-nosnippet>2235</a>    <span class="doccomment">/// `LShift`, `BitwiseAnd`, ...: as `Arith`, of an integer type, or boolean if allowed.
+<a href=#2236 id=2236 data-nosnippet>2236</a>    </span>Bitwise { allow_bool: bool },
+<a href=#2237 id=2237 data-nosnippet>2237</a>    <span class="doccomment">/// `EQ`, `LT`, ...: operands of one type; the node is boolean.
+<a href=#2238 id=2238 data-nosnippet>2238</a>    </span>Compare,
+<a href=#2239 id=2239 data-nosnippet>2239</a>}
+<a href=#2240 id=2240 data-nosnippet>2240</a>
+<a href=#2241 id=2241 data-nosnippet>2241</a><span class="doccomment">/// The type of the binary node `node` of `a` and `b`, after checking the operands.
+<a href=#2242 id=2242 data-nosnippet>2242</a></span><span class="kw">fn </span>binary_type(node: <span class="kw-2">&amp;</span>str, operands: Operands, a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; <span class="prelude-ty">Result</span>&lt;PrimType&gt; {
+<a href=#2243 id=2243 data-nosnippet>2243</a>    <span class="kw">let </span>(a_ty, b_dtype) = (a.prim_ty(), b.prim_ty().dtype);
+<a href=#2244 id=2244 data-nosnippet>2244</a>    <span class="kw">let </span>a_dtype = a_ty.dtype;
+<a href=#2245 id=2245 data-nosnippet>2245</a>    <span class="kw">if </span>a_dtype != b_dtype {
+<a href=#2246 id=2246 data-nosnippet>2246</a>        <span class="kw">let </span>message = <span class="macro">format!</span>(
+<a href=#2247 id=2247 data-nosnippet>2247</a>            <span class="string">"mismatched types. {} vs. {}\n"</span>,
+<a href=#2248 id=2248 data-nosnippet>2248</a>            support::dtype_name(a_dtype),
+<a href=#2249 id=2249 data-nosnippet>2249</a>            support::dtype_name(b_dtype)
+<a href=#2250 id=2250 data-nosnippet>2250</a>        );
+<a href=#2251 id=2251 data-nosnippet>2251</a>        <span class="kw">let </span>condition = <span class="string">"a_ty-&gt;dtype == b_ty-&gt;dtype"</span>;
+<a href=#2252 id=2252 data-nosnippet>2252</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::TYPE_ERROR, condition, <span class="kw-2">&amp;</span>message));
+<a href=#2253 id=2253 data-nosnippet>2253</a>    }
+<a href=#2254 id=2254 data-nosnippet>2254</a>    <span class="kw">match </span>operands {
+<a href=#2255 id=2255 data-nosnippet>2255</a>        Operands::Arith =&gt; <span class="prelude-val">Ok</span>(a_ty.clone()),
+<a href=#2256 id=2256 data-nosnippet>2256</a>        Operands::Bitwise { allow_bool } =&gt; {
+<a href=#2257 id=2257 data-nosnippet>2257</a>            <span class="kw">if </span>a_ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLInt, DLDataTypeCode::kDLUInt])
+<a href=#2258 id=2258 data-nosnippet>2258</a>                || (allow_bool &amp;&amp; a_ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLBool]))
+<a href=#2259 id=2259 data-nosnippet>2259</a>            {
+<a href=#2260 id=2260 data-nosnippet>2260</a>                <span class="kw">return </span><span class="prelude-val">Ok</span>(a_ty.clone());
+<a href=#2261 id=2261 data-nosnippet>2261</a>            }
+<a href=#2262 id=2262 data-nosnippet>2262</a>            <span class="kw">let </span>condition = <span class="macro">format!</span>(
+<a href=#2263 id=2263 data-nosnippet>2263</a>                <span class="string">"a.ty().MatchesCode(DLDataTypeCode::kDLInt, DLDataTypeCode::kDLUInt) || \
+<a href=#2264 id=2264 data-nosnippet>2264</a>                 ({allow_bool} &amp;&amp; a.ty().MatchesCode(DLDataTypeCode::kDLBool))"
+<a href=#2265 id=2265 data-nosnippet>2265</a>            </span>);
+<a href=#2266 id=2266 data-nosnippet>2266</a>            <span class="kw">let </span>operands = <span class="kw">if </span>allow_bool { <span class="string">"integer or boolean" </span>} <span class="kw">else </span>{ <span class="string">"integer" </span>};
+<a href=#2267 id=2267 data-nosnippet>2267</a>            <span class="kw">let </span>message = <span class="macro">format!</span>(<span class="string">"{node} requires {operands} operands"</span>);
+<a href=#2268 id=2268 data-nosnippet>2268</a>            <span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::TYPE_ERROR, <span class="kw-2">&amp;</span>condition, <span class="kw-2">&amp;</span>message))
+<a href=#2269 id=2269 data-nosnippet>2269</a>        }
+<a href=#2270 id=2270 data-nosnippet>2270</a>        Operands::Compare =&gt; bool_type(a_ty),
+<a href=#2271 id=2271 data-nosnippet>2271</a>    }
+<a href=#2272 id=2272 data-nosnippet>2272</a>}
+<a href=#2273 id=2273 data-nosnippet>2273</a>
+<a href=#2274 id=2274 data-nosnippet>2274</a><span class="doccomment">/// The boolean type with the lanes of `operand`.
+<a href=#2275 id=2275 data-nosnippet>2275</a></span><span class="kw">fn </span>bool_type(operand: <span class="kw-2">&amp;</span>PrimType) -&gt; <span class="prelude-ty">Result</span>&lt;PrimType&gt; {
+<a href=#2276 id=2276 data-nosnippet>2276</a>    <span class="kw">use </span><span class="kw">crate</span>::ir::dtype;
+<a href=#2277 id=2277 data-nosnippet>2277</a>    PrimType::try_from(dtype::with_lanes(dtype::bool(), operand.dtype.lanes))
+<a href=#2278 id=2278 data-nosnippet>2278</a>}
+<a href=#2279 id=2279 data-nosnippet>2279</a>
+<a href=#2280 id=2280 data-nosnippet>2280</a><span class="doccomment">/// The type of the logical node of `a` and `b`, after checking that the operands are booleans of
+<a href=#2281 id=2281 data-nosnippet>2281</a>/// one type.
+<a href=#2282 id=2282 data-nosnippet>2282</a></span><span class="kw">fn </span>logical_type(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; <span class="prelude-ty">Result</span>&lt;PrimType&gt; {
+<a href=#2283 id=2283 data-nosnippet>2283</a>    <span class="kw">for </span>(ty, operand) <span class="kw">in </span>[(a.prim_ty(), <span class="string">"a_ty"</span>), (b.prim_ty(), <span class="string">"b_ty"</span>)] {
+<a href=#2284 id=2284 data-nosnippet>2284</a>        <span class="kw">if </span>!ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLBool]) {
+<a href=#2285 id=2285 data-nosnippet>2285</a>            <span class="kw">let </span>condition = <span class="macro">format!</span>(<span class="string">"{operand}.MatchesCode(DLDataTypeCode::kDLBool)"</span>);
+<a href=#2286 id=2286 data-nosnippet>2286</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::INTERNAL_ERROR, <span class="kw-2">&amp;</span>condition, <span class="string">""</span>));
+<a href=#2287 id=2287 data-nosnippet>2287</a>        }
+<a href=#2288 id=2288 data-nosnippet>2288</a>    }
+<a href=#2289 id=2289 data-nosnippet>2289</a>    <span class="kw">if </span>a.prim_ty().dtype != b.prim_ty().dtype {
+<a href=#2290 id=2290 data-nosnippet>2290</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(support::check_failed(tvm_ffi::TYPE_ERROR, <span class="string">"a_ty == b_ty"</span>, <span class="string">"mismatched types"</span>));
+<a href=#2291 id=2291 data-nosnippet>2291</a>    }
+<a href=#2292 id=2292 data-nosnippet>2292</a>    bool_type(a.prim_ty())
+<a href=#2293 id=2293 data-nosnippet>2293</a>}
 </code></pre></div></section></main></body></html>

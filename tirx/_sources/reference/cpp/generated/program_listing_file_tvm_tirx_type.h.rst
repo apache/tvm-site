@@ -85,8 +85,6 @@ Program Listing for File type.h
    
      PtrType DataPtrType() const { return PtrType(dtype, scope); }
    
-     TVM_TIRX_DLL bool IsScalar(bool alloc_or_decl = true) const;
-   
      TVM_TIRX_DLL ffi::Optional<int64_t> ConstantAllocationSize() const;
    
      TVM_TIRX_DLL ffi::Array<PrimExpr> ElemOffset(ffi::Array<PrimExpr> index) const;

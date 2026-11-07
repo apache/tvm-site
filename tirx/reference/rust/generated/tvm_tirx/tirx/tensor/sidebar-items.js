@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["tensor_is_scalar"],"struct":["TensorType","TensorTypeObj","TensorVar"]};
+window.SIDEBAR_ITEMS = {"struct":["TensorType","TensorTypeObj","TensorVar"]};
