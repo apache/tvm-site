@@ -41,7 +41,7 @@
 <a href=#41 id=41 data-nosnippet>41</a>///
 <a href=#42 id=42 data-nosnippet>42</a>/// `StructuralVisitorView::base` cannot outlive its view:
 <a href=#43 id=43 data-nosnippet>43</a>/// ```compile_fail
-<a href=#44 id=44 data-nosnippet>44</a>/// use tvm_ffi::{StructuralVisitorObj, StructuralVisitorView};
+<a href=#44 id=44 data-nosnippet>44</a>/// use tvm_ffi::extra::structural_visit::{StructuralVisitorObj, StructuralVisitorView};
 <a href=#45 id=45 data-nosnippet>45</a>/// fn retain&lt;D&gt;(view: &amp;StructuralVisitorView&lt;'_, D&gt;) -&gt; &amp;'static StructuralVisitorObj {
 <a href=#46 id=46 data-nosnippet>46</a>///     view.base()
 <a href=#47 id=47 data-nosnippet>47</a>/// }
@@ -49,59 +49,63 @@
 <a href=#49 id=49 data-nosnippet>49</a>///
 <a href=#50 id=50 data-nosnippet>50</a>/// The visitor prefix cannot be converted into an owning FFI value:
 <a href=#51 id=51 data-nosnippet>51</a>///
-<a href=#52 id=52 data-nosnippet>52</a>/// ```compile_fail
-<a href=#53 id=53 data-nosnippet>53</a>/// use tvm_ffi::{Any, StructuralVisitorView};
-<a href=#54 id=54 data-nosnippet>54</a>/// fn retain&lt;D&gt;(view: &amp;StructuralVisitorView&lt;'_, D&gt;) -&gt; Any {
-<a href=#55 id=55 data-nosnippet>55</a>///     Any::from(view.base())
-<a href=#56 id=56 data-nosnippet>56</a>/// }
-<a href=#57 id=57 data-nosnippet>57</a>/// ```
-<a href=#58 id=58 data-nosnippet>58</a>///
-<a href=#59 id=59 data-nosnippet>59</a>/// A node borrowed through a copied `MutationView` cannot survive consumption of the view:
-<a href=#60 id=60 data-nosnippet>60</a>/// ```compile_fail,E0505
-<a href=#61 id=61 data-nosnippet>61</a>/// use tvm_ffi::{StructuralMutatorView, MutationView};
-<a href=#62 id=62 data-nosnippet>62</a>/// fn invalid&lt;D&gt;(value: MutationView&lt;'_&gt;, dispatch: &amp;mut D, mutator: &amp;mut StructuralMutatorView&lt;'_, D&gt;) {
-<a href=#63 id=63 data-nosnippet>63</a>///     let view = value.as_any_view();
-<a href=#64 id=64 data-nosnippet>64</a>///     let copy = view;
-<a href=#65 id=65 data-nosnippet>65</a>///     let node = copy.downcast_ref::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
-<a href=#66 id=66 data-nosnippet>66</a>///     mutator.default_mutate(dispatch, value).unwrap();
-<a href=#67 id=67 data-nosnippet>67</a>///     println!("{}", node.size);
-<a href=#68 id=68 data-nosnippet>68</a>/// }
-<a href=#69 id=69 data-nosnippet>69</a>/// ```
-<a href=#70 id=70 data-nosnippet>70</a>///
-<a href=#71 id=71 data-nosnippet>71</a>/// Moving the handle into a nested callback cannot bypass that borrow:
-<a href=#72 id=72 data-nosnippet>72</a>/// ```compile_fail,E0505
-<a href=#73 id=73 data-nosnippet>73</a>/// use tvm_ffi::{dispatch, structural_mutate, Any, MutationView, StructuralMutatorView, Result, UnchangedOr};
-<a href=#74 id=74 data-nosnippet>74</a>/// struct Inner&lt;'a&gt;(Option&lt;MutationView&lt;'a&gt;&gt;);
-<a href=#75 id=75 data-nosnippet>75</a>/// #[dispatch(mutate, (MutationView&lt;'_&gt;, &amp;mut StructuralMutatorView&lt;'_, Self&gt;), Result&lt;UnchangedOr&lt;Any&gt;&gt;)]
-<a href=#76 id=76 data-nosnippet>76</a>/// impl&lt;'a&gt; Inner&lt;'a&gt; {
-<a href=#77 id=77 data-nosnippet>77</a>///     fn mutate_bool(&amp;mut self, _: bool, mutator: &amp;mut StructuralMutatorView&lt;'_, Self&gt;) -&gt; Result&lt;UnchangedOr&lt;Any&gt;&gt; {
-<a href=#78 id=78 data-nosnippet>78</a>///         let pending = self.0.take().unwrap();
-<a href=#79 id=79 data-nosnippet>79</a>///         mutator.default_mutate(self, pending)
-<a href=#80 id=80 data-nosnippet>80</a>///     }
-<a href=#81 id=81 data-nosnippet>81</a>/// }
-<a href=#82 id=82 data-nosnippet>82</a>/// fn invalid(value: MutationView&lt;'_&gt;) {
-<a href=#83 id=83 data-nosnippet>83</a>///     let view = value.as_any_view();
-<a href=#84 id=84 data-nosnippet>84</a>///     let node = view.downcast_ref::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
-<a href=#85 id=85 data-nosnippet>85</a>///     structural_mutate(true, Inner(Some(value))).unwrap();
-<a href=#86 id=86 data-nosnippet>86</a>///     println!("{}", node.size);
-<a href=#87 id=87 data-nosnippet>87</a>/// }
-<a href=#88 id=88 data-nosnippet>88</a>/// ```
-<a href=#89 id=89 data-nosnippet>89</a>///
-<a href=#90 id=90 data-nosnippet>90</a>/// A copied inspection view also cannot survive low-level default mutation:
-<a href=#91 id=91 data-nosnippet>91</a>/// ```compile_fail,E0505
-<a href=#92 id=92 data-nosnippet>92</a>/// use tvm_ffi::{dispatch, Any, MutationView, StructuralMutatorView, Result, Unchanged, UnchangedOr};
-<a href=#93 id=93 data-nosnippet>93</a>/// struct Pass;
-<a href=#94 id=94 data-nosnippet>94</a>/// #[dispatch(mutate, (MutationView&lt;'_&gt;, &amp;mut StructuralMutatorView&lt;'_, Self&gt;), Result&lt;UnchangedOr&lt;Any&gt;&gt;)]
-<a href=#95 id=95 data-nosnippet>95</a>/// impl Pass {
-<a href=#96 id=96 data-nosnippet>96</a>///     fn mutate_any(&amp;mut self, value: MutationView&lt;'_&gt;, mutator: &amp;mut StructuralMutatorView&lt;'_, Self&gt;) -&gt; Result&lt;UnchangedOr&lt;Any&gt;&gt; {
-<a href=#97 id=97 data-nosnippet>97</a>///         let view = value.as_any_view();
-<a href=#98 id=98 data-nosnippet>98</a>///         let copy = view;
-<a href=#99 id=99 data-nosnippet>99</a>///         mutator.default_mutate(self, value).unwrap();
-<a href=#100 id=100 data-nosnippet>100</a>///         println!("{}", copy.type_index());
-<a href=#101 id=101 data-nosnippet>101</a>///         Ok(Unchanged.into())
-<a href=#102 id=102 data-nosnippet>102</a>///     }
-<a href=#103 id=103 data-nosnippet>103</a>/// }
-<a href=#104 id=104 data-nosnippet>104</a>/// ```
-<a href=#105 id=105 data-nosnippet>105</a></span><span class="attr">#[cfg(doctest)]
-<a href=#106 id=106 data-nosnippet>106</a></span><span class="kw">pub struct </span>StructuralViewBorrowChecks;
+<a href=#52 id=52 data-nosnippet>52</a>/// ```compile_fail,E0277
+<a href=#53 id=53 data-nosnippet>53</a>/// use tvm_ffi::Any;
+<a href=#54 id=54 data-nosnippet>54</a>/// use tvm_ffi::extra::structural_visit::StructuralVisitorView;
+<a href=#55 id=55 data-nosnippet>55</a>/// fn retain&lt;D&gt;(view: &amp;StructuralVisitorView&lt;'_, D&gt;) -&gt; Any {
+<a href=#56 id=56 data-nosnippet>56</a>///     Any::from(view.base())
+<a href=#57 id=57 data-nosnippet>57</a>/// }
+<a href=#58 id=58 data-nosnippet>58</a>/// ```
+<a href=#59 id=59 data-nosnippet>59</a>///
+<a href=#60 id=60 data-nosnippet>60</a>/// A node borrowed through a copied `MutationView` cannot survive consumption of the view:
+<a href=#61 id=61 data-nosnippet>61</a>/// ```compile_fail,E0505
+<a href=#62 id=62 data-nosnippet>62</a>/// use tvm_ffi::MutationView;
+<a href=#63 id=63 data-nosnippet>63</a>/// use tvm_ffi::extra::structural_mutate::StructuralMutatorView;
+<a href=#64 id=64 data-nosnippet>64</a>/// fn invalid&lt;D&gt;(value: MutationView&lt;'_&gt;, dispatch: &amp;mut D, mutator: &amp;mut StructuralMutatorView&lt;'_, D&gt;) {
+<a href=#65 id=65 data-nosnippet>65</a>///     let view = value.as_any_view();
+<a href=#66 id=66 data-nosnippet>66</a>///     let copy = view;
+<a href=#67 id=67 data-nosnippet>67</a>///     let node = copy.downcast_ref::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
+<a href=#68 id=68 data-nosnippet>68</a>///     mutator.default_mutate(dispatch, value).unwrap();
+<a href=#69 id=69 data-nosnippet>69</a>///     println!("{}", node.size);
+<a href=#70 id=70 data-nosnippet>70</a>/// }
+<a href=#71 id=71 data-nosnippet>71</a>/// ```
+<a href=#72 id=72 data-nosnippet>72</a>///
+<a href=#73 id=73 data-nosnippet>73</a>/// Moving the handle into a nested callback cannot bypass that borrow:
+<a href=#74 id=74 data-nosnippet>74</a>/// ```compile_fail,E0505
+<a href=#75 id=75 data-nosnippet>75</a>/// use tvm_ffi::{dispatch, structural_mutate, Any, MutationView, Result, UnchangedOr};
+<a href=#76 id=76 data-nosnippet>76</a>/// use tvm_ffi::extra::structural_mutate::StructuralMutatorView;
+<a href=#77 id=77 data-nosnippet>77</a>/// struct Inner&lt;'a&gt;(Option&lt;MutationView&lt;'a&gt;&gt;);
+<a href=#78 id=78 data-nosnippet>78</a>/// #[dispatch(mutate, (MutationView&lt;'_&gt;, &amp;mut StructuralMutatorView&lt;'_, Self&gt;), Result&lt;UnchangedOr&lt;Any&gt;&gt;)]
+<a href=#79 id=79 data-nosnippet>79</a>/// impl&lt;'a&gt; Inner&lt;'a&gt; {
+<a href=#80 id=80 data-nosnippet>80</a>///     fn mutate_bool(&amp;mut self, _: bool, mutator: &amp;mut StructuralMutatorView&lt;'_, Self&gt;) -&gt; Result&lt;UnchangedOr&lt;Any&gt;&gt; {
+<a href=#81 id=81 data-nosnippet>81</a>///         let pending = self.0.take().unwrap();
+<a href=#82 id=82 data-nosnippet>82</a>///         mutator.default_mutate(self, pending)
+<a href=#83 id=83 data-nosnippet>83</a>///     }
+<a href=#84 id=84 data-nosnippet>84</a>/// }
+<a href=#85 id=85 data-nosnippet>85</a>/// fn invalid(value: MutationView&lt;'_&gt;) {
+<a href=#86 id=86 data-nosnippet>86</a>///     let view = value.as_any_view();
+<a href=#87 id=87 data-nosnippet>87</a>///     let node = view.downcast_ref::&lt;tvm_ffi::collections::array::ArrayObj&gt;().unwrap();
+<a href=#88 id=88 data-nosnippet>88</a>///     structural_mutate(true, Inner(Some(value))).unwrap();
+<a href=#89 id=89 data-nosnippet>89</a>///     println!("{}", node.size);
+<a href=#90 id=90 data-nosnippet>90</a>/// }
+<a href=#91 id=91 data-nosnippet>91</a>/// ```
+<a href=#92 id=92 data-nosnippet>92</a>///
+<a href=#93 id=93 data-nosnippet>93</a>/// A copied inspection view also cannot survive low-level default mutation:
+<a href=#94 id=94 data-nosnippet>94</a>/// ```compile_fail,E0505
+<a href=#95 id=95 data-nosnippet>95</a>/// use tvm_ffi::{dispatch, Any, MutationView, Result, Unchanged, UnchangedOr};
+<a href=#96 id=96 data-nosnippet>96</a>/// use tvm_ffi::extra::structural_mutate::StructuralMutatorView;
+<a href=#97 id=97 data-nosnippet>97</a>/// struct Pass;
+<a href=#98 id=98 data-nosnippet>98</a>/// #[dispatch(mutate, (MutationView&lt;'_&gt;, &amp;mut StructuralMutatorView&lt;'_, Self&gt;), Result&lt;UnchangedOr&lt;Any&gt;&gt;)]
+<a href=#99 id=99 data-nosnippet>99</a>/// impl Pass {
+<a href=#100 id=100 data-nosnippet>100</a>///     fn mutate_any(&amp;mut self, value: MutationView&lt;'_&gt;, mutator: &amp;mut StructuralMutatorView&lt;'_, Self&gt;) -&gt; Result&lt;UnchangedOr&lt;Any&gt;&gt; {
+<a href=#101 id=101 data-nosnippet>101</a>///         let view = value.as_any_view();
+<a href=#102 id=102 data-nosnippet>102</a>///         let copy = view;
+<a href=#103 id=103 data-nosnippet>103</a>///         mutator.default_mutate(self, value).unwrap();
+<a href=#104 id=104 data-nosnippet>104</a>///         println!("{}", copy.type_index());
+<a href=#105 id=105 data-nosnippet>105</a>///         Ok(Unchanged.into())
+<a href=#106 id=106 data-nosnippet>106</a>///     }
+<a href=#107 id=107 data-nosnippet>107</a>/// }
+<a href=#108 id=108 data-nosnippet>108</a>/// ```
+<a href=#109 id=109 data-nosnippet>109</a></span><span class="attr">#[cfg(doctest)]
+<a href=#110 id=110 data-nosnippet>110</a></span><span class="kw">pub struct </span>StructuralViewBorrowChecks;
 </code></pre></div></section></main></body></html>

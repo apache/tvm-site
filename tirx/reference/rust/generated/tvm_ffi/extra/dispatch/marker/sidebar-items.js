@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AnyView","CopyArgs","FromBorrowed","FromOwned","MutArg"],"struct":["BorrowedObject","FromCallback","FromTuple","Mutation","Value"]};

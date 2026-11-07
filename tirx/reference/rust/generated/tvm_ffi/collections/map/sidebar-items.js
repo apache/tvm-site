@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Map","MapIter","MapObj"],"type":["MapItems","MapKeys","MapValues"]};
+window.SIDEBAR_ITEMS = {"struct":["Iter","Keys","Map","MapObj","Values"]};

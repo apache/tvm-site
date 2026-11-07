@@ -136,10 +136,53 @@
 <a href=#136 id=136 data-nosnippet>136</a>
 <a href=#137 id=137 data-nosnippet>137</a>    <span class="kw">unsafe fn </span>try_cast_from_any_view(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ()&gt; {
 <a href=#138 id=138 data-nosnippet>138</a>        <span class="kw">if </span>data.type_index == TypeIndex::kTVMFFIDevice <span class="kw">as </span>i32 {
-<a href=#139 id=139 data-nosnippet>139</a>            <span class="prelude-val">Ok</span>(data.data_union.v_device)
-<a href=#140 id=140 data-nosnippet>140</a>        } <span class="kw">else </span>{
-<a href=#141 id=141 data-nosnippet>141</a>            <span class="prelude-val">Err</span>(())
-<a href=#142 id=142 data-nosnippet>142</a>        }
+<a href=#139 id=139 data-nosnippet>139</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(data.data_union.v_device);
+<a href=#140 id=140 data-nosnippet>140</a>        }
+<a href=#141 id=141 data-nosnippet>141</a>        <span class="kw">let </span>text = &lt;<span class="kw">crate</span>::String <span class="kw">as </span>AnyCompatible&gt;::try_cast_from_any_view(data)<span class="question-mark">?</span>;
+<a href=#142 id=142 data-nosnippet>142</a>        parse_device(text.as_str()).ok_or(())
 <a href=#143 id=143 data-nosnippet>143</a>    }
 <a href=#144 id=144 data-nosnippet>144</a>}
+<a href=#145 id=145 data-nosnippet>145</a>
+<a href=#146 id=146 data-nosnippet>146</a><span class="doccomment">/// The device a string such as `"cuda:1"` names, as C++ converts one: a
+<a href=#147 id=147 data-nosnippet>147</a>/// device name, an optional `:index`, and anything after a space ignored.
+<a href=#148 id=148 data-nosnippet>148</a></span><span class="attr">#[cold]
+<a href=#149 id=149 data-nosnippet>149</a></span><span class="kw">fn </span>parse_device(text: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;DLDevice&gt; {
+<a href=#150 id=150 data-nosnippet>150</a>    <span class="kw">use </span>tvm_ffi_sys::dlpack::DLDeviceType::<span class="kw-2">*</span>;
+<a href=#151 id=151 data-nosnippet>151</a>    <span class="kw">let </span>text = text.split(<span class="string">' '</span>).next().unwrap_or_default();
+<a href=#152 id=152 data-nosnippet>152</a>    <span class="kw">let </span>(name, index) = <span class="kw">match </span>text.split_once(<span class="string">':'</span>) {
+<a href=#153 id=153 data-nosnippet>153</a>        <span class="prelude-val">Some</span>((name, index)) =&gt; (name, <span class="prelude-val">Some</span>(index)),
+<a href=#154 id=154 data-nosnippet>154</a>        <span class="prelude-val">None </span>=&gt; (text, <span class="prelude-val">None</span>),
+<a href=#155 id=155 data-nosnippet>155</a>    };
+<a href=#156 id=156 data-nosnippet>156</a>    <span class="kw">let </span>device_type = <span class="kw">match </span>name {
+<a href=#157 id=157 data-nosnippet>157</a>        <span class="string">"cpu" </span>=&gt; kDLCPU,
+<a href=#158 id=158 data-nosnippet>158</a>        <span class="string">"cuda" </span>=&gt; kDLCUDA,
+<a href=#159 id=159 data-nosnippet>159</a>        <span class="string">"opencl" </span>=&gt; kDLOpenCL,
+<a href=#160 id=160 data-nosnippet>160</a>        <span class="string">"vulkan" </span>=&gt; kDLVulkan,
+<a href=#161 id=161 data-nosnippet>161</a>        <span class="string">"metal" </span>| <span class="string">"mps" </span>=&gt; kDLMetal,
+<a href=#162 id=162 data-nosnippet>162</a>        <span class="string">"vpi" </span>=&gt; kDLVPI,
+<a href=#163 id=163 data-nosnippet>163</a>        <span class="string">"rocm" </span>=&gt; kDLROCM,
+<a href=#164 id=164 data-nosnippet>164</a>        <span class="string">"ext_dev" </span>=&gt; kDLExtDev,
+<a href=#165 id=165 data-nosnippet>165</a>        <span class="string">"oneapi" </span>| <span class="string">"xpu" </span>=&gt; kDLOneAPI,
+<a href=#166 id=166 data-nosnippet>166</a>        <span class="string">"hexagon" </span>=&gt; kDLHexagon,
+<a href=#167 id=167 data-nosnippet>167</a>        <span class="string">"wgpu" </span>| <span class="string">"webgpu" </span>=&gt; kDLWebGPU,
+<a href=#168 id=168 data-nosnippet>168</a>        <span class="string">"maia" </span>=&gt; kDLMAIA,
+<a href=#169 id=169 data-nosnippet>169</a>        <span class="string">"trn" </span>=&gt; kDLTrn,
+<a href=#170 id=170 data-nosnippet>170</a>        <span class="string">"tpu" </span>=&gt; kDLTPU,
+<a href=#171 id=171 data-nosnippet>171</a>        <span class="string">"tpu_host" </span>=&gt; kDLTPUHost,
+<a href=#172 id=172 data-nosnippet>172</a>        <span class="string">"ascend" </span>=&gt; kDLAscend,
+<a href=#173 id=173 data-nosnippet>173</a>        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
+<a href=#174 id=174 data-nosnippet>174</a>    };
+<a href=#175 id=175 data-nosnippet>175</a>    <span class="kw">let </span>device_id = <span class="kw">match </span>index {
+<a href=#176 id=176 data-nosnippet>176</a>        <span class="comment">// Digits only, as C++ parses them: no sign.
+<a href=#177 id=177 data-nosnippet>177</a>        </span><span class="prelude-val">Some</span>(index) <span class="kw">if </span>!index.is_empty() &amp;&amp; index.bytes().all(|b| b.is_ascii_digit()) =&gt; {
+<a href=#178 id=178 data-nosnippet>178</a>            index.parse::&lt;i32&gt;().ok()<span class="question-mark">?
+<a href=#179 id=179 data-nosnippet>179</a>        </span>}
+<a href=#180 id=180 data-nosnippet>180</a>        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
+<a href=#181 id=181 data-nosnippet>181</a>        <span class="prelude-val">None </span>=&gt; <span class="number">0</span>,
+<a href=#182 id=182 data-nosnippet>182</a>    };
+<a href=#183 id=183 data-nosnippet>183</a>    <span class="prelude-val">Some</span>(DLDevice {
+<a href=#184 id=184 data-nosnippet>184</a>        device_type: device_type <span class="kw">as </span>i32,
+<a href=#185 id=185 data-nosnippet>185</a>        device_id,
+<a href=#186 id=186 data-nosnippet>186</a>    })
+<a href=#187 id=187 data-nosnippet>187</a>}
 </code></pre></div></section></main></body></html>

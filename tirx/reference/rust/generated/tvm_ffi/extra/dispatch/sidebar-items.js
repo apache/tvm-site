@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["marker"],"trait":["Dispatcher","IntoDispatcher"]};
+window.SIDEBAR_ITEMS = {"trait":["Dispatcher","IntoDispatcher"]};

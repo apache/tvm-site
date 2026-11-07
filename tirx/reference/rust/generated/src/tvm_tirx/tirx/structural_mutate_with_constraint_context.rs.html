@@ -25,175 +25,179 @@
 <a href=#25 id=25 data-nosnippet>25</a><span class="kw">use </span>std::cell::UnsafeCell;
 <a href=#26 id=26 data-nosnippet>26</a>
 <a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span>tvm_ffi::extra::cold_init_lazy_lock::ColdInitLazyLock;
-<a href=#28 id=28 data-nosnippet>28</a><span class="kw">use </span>tvm_ffi::extra::structural_mutate::{StructuralMutateEngine, StructuralMutatorBase};
-<a href=#29 id=29 data-nosnippet>29</a><span class="kw">use </span>tvm_ffi::reflection::TypeAttrColumn;
-<a href=#30 id=30 data-nosnippet>30</a><span class="kw">use </span>tvm_ffi::object::ObjectRef;
-<a href=#31 id=31 data-nosnippet>31</a><span class="kw">use </span>tvm_ffi::tvm_ffi_sys::{TVMFFIAny, TVMFFITypeIndex};
-<a href=#32 id=32 data-nosnippet>32</a><span class="kw">use </span>tvm_ffi::{
-<a href=#33 id=33 data-nosnippet>33</a>    Any, Dispatcher, InplaceMode, IntoDispatcher, MutationView, ObjectArc, ObjectCore,
-<a href=#34 id=34 data-nosnippet>34</a>    ObjectRefCore, <span class="prelude-ty">Result</span>, StructuralMutatorObj, StructuralMutatorView, UnchangedOr,
-<a href=#35 id=35 data-nosnippet>35</a>};
-<a href=#36 id=36 data-nosnippet>36</a>
-<a href=#37 id=37 data-nosnippet>37</a><span class="kw">use </span><span class="kw">super</span>::StructuralMutatorWithConstraintContextObj;
-<a href=#38 id=38 data-nosnippet>38</a><span class="kw">use </span><span class="kw">crate</span>::sym::ConstraintContext;
+<a href=#28 id=28 data-nosnippet>28</a><span class="kw">use </span>tvm_ffi::extra::structural_mutate::{
+<a href=#29 id=29 data-nosnippet>29</a>    InplaceMode, StructuralMutateEngine, StructuralMutatorBase, StructuralMutatorObj,
+<a href=#30 id=30 data-nosnippet>30</a>    StructuralMutatorView,
+<a href=#31 id=31 data-nosnippet>31</a>};
+<a href=#32 id=32 data-nosnippet>32</a><span class="kw">use </span>tvm_ffi::reflection::TypeAttrColumn;
+<a href=#33 id=33 data-nosnippet>33</a><span class="kw">use </span>tvm_ffi::object::ObjectRef;
+<a href=#34 id=34 data-nosnippet>34</a><span class="kw">use </span>tvm_ffi::tvm_ffi_sys::{TVMFFIAny, TVMFFITypeIndex};
+<a href=#35 id=35 data-nosnippet>35</a><span class="kw">use </span>tvm_ffi::{
+<a href=#36 id=36 data-nosnippet>36</a>    Any, Dispatcher, IntoDispatcher, MutationView, ObjectArc, ObjectCore, ObjectRefCore, <span class="prelude-ty">Result</span>,
+<a href=#37 id=37 data-nosnippet>37</a>    UnchangedOr,
+<a href=#38 id=38 data-nosnippet>38</a>};
 <a href=#39 id=39 data-nosnippet>39</a>
-<a href=#40 id=40 data-nosnippet>40</a><span class="doccomment">/// The base of a constraint-aware mutator, holding the constraint context of the current value.
-<a href=#41 id=41 data-nosnippet>41</a>///
-<a href=#42 id=42 data-nosnippet>42</a>/// Its layout mirrors the native one, so it requires the matching native build.
-<a href=#43 id=43 data-nosnippet>43</a></span><span class="attr">#[repr(C)]
-<a href=#44 id=44 data-nosnippet>44</a></span><span class="kw">pub struct </span>StructuralMutatorWithConstraintContextBase {
-<a href=#45 id=45 data-nosnippet>45</a>    base_: StructuralMutatorObj,
-<a href=#46 id=46 data-nosnippet>46</a>    constraints: UnsafeCell&lt;ConstraintContext&gt;,
-<a href=#47 id=47 data-nosnippet>47</a>    needs_child_context: UnsafeCell&lt;bool&gt;,
-<a href=#48 id=48 data-nosnippet>48</a>}
-<a href=#49 id=49 data-nosnippet>49</a>
-<a href=#50 id=50 data-nosnippet>50</a><span class="kw">impl </span>StructuralMutatorWithConstraintContextBase {
-<a href=#51 id=51 data-nosnippet>51</a>    <span class="doccomment">/// Return the constraint context in effect at the current value; `snapshot()` it to keep its
-<a href=#52 id=52 data-nosnippet>52</a>    /// current prefix.
-<a href=#53 id=53 data-nosnippet>53</a>    </span><span class="attr">#[inline]
-<a href=#54 id=54 data-nosnippet>54</a>    </span><span class="kw">pub fn </span>constraints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ConstraintContext {
-<a href=#55 id=55 data-nosnippet>55</a>        <span class="comment">// SAFETY: the borrow ends with this clone, before anything can replace the field.
-<a href=#56 id=56 data-nosnippet>56</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).clone() }
-<a href=#57 id=57 data-nosnippet>57</a>    }
-<a href=#58 id=58 data-nosnippet>58</a>
-<a href=#59 id=59 data-nosnippet>59</a>    <span class="doccomment">/// Borrow only while a mapper cannot recurse through this mutator.
-<a href=#60 id=60 data-nosnippet>60</a>    /// End this borrow before default descent can replace the context field.
-<a href=#61 id=61 data-nosnippet>61</a>    </span><span class="attr">#[inline]
-<a href=#62 id=62 data-nosnippet>62</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">unsafe fn </span>constraints_for_observer(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ConstraintContext {
-<a href=#63 id=63 data-nosnippet>63</a>        <span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()
-<a href=#64 id=64 data-nosnippet>64</a>    }
-<a href=#65 id=65 data-nosnippet>65</a>}
-<a href=#66 id=66 data-nosnippet>66</a>
-<a href=#67 id=67 data-nosnippet>67</a><span class="comment">// SAFETY: repr(C) matches the complete native state-only semantic base. The
-<a href=#68 id=68 data-nosnippet>68</a>// shared engine installs its vtable, owns remaps and publishes the dispatcher's
-<a href=#69 id=69 data-nosnippet>69</a>// actual recursive reborrow. Native hooks borrow this runtime synchronously and
-<a href=#70 id=70 data-nosnippet>70</a>// cannot retain it. No shared reference freezes the replaceable context/flag.
-<a href=#71 id=71 data-nosnippet>71</a>// Each default call transfers exactly one owning replacement/Unchanged/Error.
-<a href=#72 id=72 data-nosnippet>72</a></span><span class="kw">unsafe impl </span>StructuralMutatorBase <span class="kw">for </span>StructuralMutatorWithConstraintContextBase {
-<a href=#73 id=73 data-nosnippet>73</a>    <span class="kw">fn </span>new() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#74 id=74 data-nosnippet>74</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-<a href=#75 id=75 data-nosnippet>75</a>            base_: StructuralMutatorObj::default(),
-<a href=#76 id=76 data-nosnippet>76</a>            constraints: UnsafeCell::new(ConstraintContext::new()),
-<a href=#77 id=77 data-nosnippet>77</a>            needs_child_context: UnsafeCell::new(<span class="bool-val">false</span>),
-<a href=#78 id=78 data-nosnippet>78</a>        })
-<a href=#79 id=79 data-nosnippet>79</a>    }
-<a href=#80 id=80 data-nosnippet>80</a>
-<a href=#81 id=81 data-nosnippet>81</a>    <span class="kw">fn </span>type_index() -&gt; i32 {
-<a href=#82 id=82 data-nosnippet>82</a>        StructuralMutatorWithConstraintContextObj::type_index()
-<a href=#83 id=83 data-nosnippet>83</a>    }
-<a href=#84 id=84 data-nosnippet>84</a>
-<a href=#85 id=85 data-nosnippet>85</a>    <span class="attr">#[inline(always)]
-<a href=#86 id=86 data-nosnippet>86</a>    </span><span class="kw">unsafe fn </span>default_mutate_raw(runtime: <span class="kw-2">*mut </span><span class="self">Self</span>, value: MutationView&lt;<span class="lifetime">'_</span>&gt;) -&gt; TVMFFIAny {
-<a href=#87 id=87 data-nosnippet>87</a>        <span class="kw">static </span>COPYING: ColdInitLazyLock&lt;<span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;&gt; =
-<a href=#88 id=88 data-nosnippet>88</a>            ColdInitLazyLock::new(|| TypeAttrColumn::new(<span class="string">"__s_mutate_with_constraint_context__"</span>));
-<a href=#89 id=89 data-nosnippet>89</a>        <span class="kw">static </span>INPLACE: ColdInitLazyLock&lt;<span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;&gt; = ColdInitLazyLock::new(|| {
-<a href=#90 id=90 data-nosnippet>90</a>            TypeAttrColumn::new(<span class="string">"__s_maybe_inplace_mutate_with_constraint_context__"</span>)
-<a href=#91 id=91 data-nosnippet>91</a>        });
-<a href=#92 id=92 data-nosnippet>92</a>        <span class="kw">let </span>borrowed = value.as_any_view();
-<a href=#93 id=93 data-nosnippet>93</a>        <span class="kw">let </span>lookup = |column: <span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;| {
-<a href=#94 id=94 data-nosnippet>94</a>            column
-<a href=#95 id=95 data-nosnippet>95</a>                .and_then(|column| column.get_raw_ffi_any(borrowed.type_index()))
-<a href=#96 id=96 data-nosnippet>96</a>                .filter(|hook| hook.type_index != TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32)
-<a href=#97 id=97 data-nosnippet>97</a>        };
-<a href=#98 id=98 data-nosnippet>98</a>        <span class="kw">let </span>hook = <span class="kw">if </span>value.inplace_mode() == InplaceMode::Allow {
-<a href=#99 id=99 data-nosnippet>99</a>            lookup(<span class="kw-2">*</span>INPLACE).filter(|<span class="kw">_</span>| {
-<a href=#100 id=100 data-nosnippet>100</a>                <span class="comment">// Permission alone is insufficient after a callback retains an
-<a href=#101 id=101 data-nosnippet>101</a>                // alias. Borrow in place so the count is the slot's own reference.
-<a href=#102 id=102 data-nosnippet>102</a>                </span>borrowed
-<a href=#103 id=103 data-nosnippet>103</a>                    .downcast_ref::&lt;ObjectRef&gt;()
-<a href=#104 id=104 data-nosnippet>104</a>                    .is_some_and(|owner| ObjectArc::strong_count(ObjectRef::data(owner)) == <span class="number">1</span>)
-<a href=#105 id=105 data-nosnippet>105</a>            })
-<a href=#106 id=106 data-nosnippet>106</a>        } <span class="kw">else </span>{
-<a href=#107 id=107 data-nosnippet>107</a>            <span class="prelude-val">None
-<a href=#108 id=108 data-nosnippet>108</a>        </span>}
-<a href=#109 id=109 data-nosnippet>109</a>        .or_else(|| lookup(<span class="kw-2">*</span>COPYING));
-<a href=#110 id=110 data-nosnippet>110</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(hook) = hook {
-<a href=#111 id=111 data-nosnippet>111</a>            <span class="comment">// Copy the borrowed registry token; the shared helper acquires
-<a href=#112 id=112 data-nosnippet>112</a>            // Function ownership before packed reentry and handles error context.
-<a href=#113 id=113 data-nosnippet>113</a>            </span>StructuralMutatorObj::call_structural_mutate_hook_raw(
-<a href=#114 id=114 data-nosnippet>114</a>                runtime.cast(),
-<a href=#115 id=115 data-nosnippet>115</a>                <span class="kw-2">*</span>borrowed.as_raw_ffi_any(),
-<a href=#116 id=116 data-nosnippet>116</a>                hook,
-<a href=#117 id=117 data-nosnippet>117</a>            )
-<a href=#118 id=118 data-nosnippet>118</a>        } <span class="kw">else </span>{
-<a href=#119 id=119 data-nosnippet>119</a>            <span class="comment">// Prefix-only fallback uses installed remap/callback thunks, never
-<a href=#120 id=120 data-nosnippet>120</a>            // an ordinary Rust engine's dispatcher offset.
-<a href=#121 id=121 data-nosnippet>121</a>            </span>StructuralMutatorObj::default_mutate_raw(runtime.cast(), value)
-<a href=#122 id=122 data-nosnippet>122</a>        }
-<a href=#123 id=123 data-nosnippet>123</a>    }
-<a href=#124 id=124 data-nosnippet>124</a>}
-<a href=#125 id=125 data-nosnippet>125</a>
-<a href=#126 id=126 data-nosnippet>126</a><span class="doccomment">/// The running constraint-aware mutation, passed to each handler; `view.base().constraints()` gives
-<a href=#127 id=127 data-nosnippet>127</a>/// the facts in scope.
-<a href=#128 id=128 data-nosnippet>128</a></span><span class="kw">pub type </span>StructuralMutatorWithConstraintContextView&lt;<span class="lifetime">'a</span>, D&gt; =
-<a href=#129 id=129 data-nosnippet>129</a>    StructuralMutatorView&lt;<span class="lifetime">'a</span>, D, StructuralMutatorWithConstraintContextBase&gt;;
-<a href=#130 id=130 data-nosnippet>130</a>
-<a href=#131 id=131 data-nosnippet>131</a><span class="doccomment">/// Mutate `root` with `dispatcher`, which sees the facts of the bindings, guards and ranges in
-<a href=#132 id=132 data-nosnippet>132</a>/// scope.
-<a href=#133 id=133 data-nosnippet>133</a>///
-<a href=#134 id=134 data-nosnippet>134</a>/// The first matching handler owns descent: `view.default_mutate(self, value)` rewrites the
-<a href=#135 id=135 data-nosnippet>135</a>/// children, `view.mutate(self, child)` one child. Handlers must not append to the context or
-<a href=#136 id=136 data-nosnippet>136</a>/// panic; an error stops the traversal.
+<a href=#40 id=40 data-nosnippet>40</a><span class="kw">use </span><span class="kw">super</span>::StructuralMutatorWithConstraintContextObj;
+<a href=#41 id=41 data-nosnippet>41</a><span class="kw">use </span><span class="kw">crate</span>::sym::ConstraintContext;
+<a href=#42 id=42 data-nosnippet>42</a>
+<a href=#43 id=43 data-nosnippet>43</a><span class="doccomment">/// The base of a constraint-aware mutator, holding the constraint context of the current value.
+<a href=#44 id=44 data-nosnippet>44</a>///
+<a href=#45 id=45 data-nosnippet>45</a>/// Its layout mirrors the native one, so it requires the matching native build.
+<a href=#46 id=46 data-nosnippet>46</a></span><span class="attr">#[repr(C)]
+<a href=#47 id=47 data-nosnippet>47</a></span><span class="kw">pub struct </span>StructuralMutatorWithConstraintContextBase {
+<a href=#48 id=48 data-nosnippet>48</a>    base_: StructuralMutatorObj,
+<a href=#49 id=49 data-nosnippet>49</a>    constraints: UnsafeCell&lt;ConstraintContext&gt;,
+<a href=#50 id=50 data-nosnippet>50</a>    needs_child_context: UnsafeCell&lt;bool&gt;,
+<a href=#51 id=51 data-nosnippet>51</a>}
+<a href=#52 id=52 data-nosnippet>52</a>
+<a href=#53 id=53 data-nosnippet>53</a><span class="kw">impl </span>StructuralMutatorWithConstraintContextBase {
+<a href=#54 id=54 data-nosnippet>54</a>    <span class="doccomment">/// Return the constraint context in effect at the current value; `snapshot()` it to keep its
+<a href=#55 id=55 data-nosnippet>55</a>    /// current prefix.
+<a href=#56 id=56 data-nosnippet>56</a>    </span><span class="attr">#[inline]
+<a href=#57 id=57 data-nosnippet>57</a>    </span><span class="kw">pub fn </span>constraints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ConstraintContext {
+<a href=#58 id=58 data-nosnippet>58</a>        <span class="comment">// SAFETY: the borrow ends with this clone, before anything can replace the field.
+<a href=#59 id=59 data-nosnippet>59</a>        </span><span class="kw">unsafe </span>{ (<span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()).clone() }
+<a href=#60 id=60 data-nosnippet>60</a>    }
+<a href=#61 id=61 data-nosnippet>61</a>
+<a href=#62 id=62 data-nosnippet>62</a>    <span class="doccomment">/// Borrow only while a mapper cannot recurse through this mutator.
+<a href=#63 id=63 data-nosnippet>63</a>    /// End this borrow before default descent can replace the context field.
+<a href=#64 id=64 data-nosnippet>64</a>    </span><span class="attr">#[inline]
+<a href=#65 id=65 data-nosnippet>65</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">unsafe fn </span>constraints_for_observer(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ConstraintContext {
+<a href=#66 id=66 data-nosnippet>66</a>        <span class="kw-2">&amp;*</span><span class="self">self</span>.constraints.get()
+<a href=#67 id=67 data-nosnippet>67</a>    }
+<a href=#68 id=68 data-nosnippet>68</a>}
+<a href=#69 id=69 data-nosnippet>69</a>
+<a href=#70 id=70 data-nosnippet>70</a><span class="comment">// SAFETY: repr(C) matches the complete native state-only semantic base. The
+<a href=#71 id=71 data-nosnippet>71</a>// shared engine installs its vtable, owns remaps and publishes the dispatcher's
+<a href=#72 id=72 data-nosnippet>72</a>// actual recursive reborrow. Native hooks borrow this runtime synchronously and
+<a href=#73 id=73 data-nosnippet>73</a>// cannot retain it. No shared reference freezes the replaceable context/flag.
+<a href=#74 id=74 data-nosnippet>74</a>// Each default call transfers exactly one owning replacement/Unchanged/Error.
+<a href=#75 id=75 data-nosnippet>75</a></span><span class="kw">unsafe impl </span>StructuralMutatorBase <span class="kw">for </span>StructuralMutatorWithConstraintContextBase {
+<a href=#76 id=76 data-nosnippet>76</a>    <span class="kw">fn </span>new() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+<a href=#77 id=77 data-nosnippet>77</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+<a href=#78 id=78 data-nosnippet>78</a>            base_: StructuralMutatorObj::default(),
+<a href=#79 id=79 data-nosnippet>79</a>            constraints: UnsafeCell::new(ConstraintContext::new()),
+<a href=#80 id=80 data-nosnippet>80</a>            needs_child_context: UnsafeCell::new(<span class="bool-val">false</span>),
+<a href=#81 id=81 data-nosnippet>81</a>        })
+<a href=#82 id=82 data-nosnippet>82</a>    }
+<a href=#83 id=83 data-nosnippet>83</a>
+<a href=#84 id=84 data-nosnippet>84</a>    <span class="kw">fn </span>type_index() -&gt; i32 {
+<a href=#85 id=85 data-nosnippet>85</a>        StructuralMutatorWithConstraintContextObj::type_index()
+<a href=#86 id=86 data-nosnippet>86</a>    }
+<a href=#87 id=87 data-nosnippet>87</a>
+<a href=#88 id=88 data-nosnippet>88</a>    <span class="attr">#[inline(always)]
+<a href=#89 id=89 data-nosnippet>89</a>    </span><span class="kw">unsafe fn </span>default_mutate_raw(runtime: <span class="kw-2">*mut </span><span class="self">Self</span>, value: MutationView&lt;<span class="lifetime">'_</span>&gt;) -&gt; TVMFFIAny {
+<a href=#90 id=90 data-nosnippet>90</a>        <span class="kw">static </span>COPYING: ColdInitLazyLock&lt;<span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;&gt; = ColdInitLazyLock::new(|| {
+<a href=#91 id=91 data-nosnippet>91</a>            TypeAttrColumn::lookup(<span class="string">"__s_mutate_with_constraint_context__"</span>)
+<a href=#92 id=92 data-nosnippet>92</a>        });
+<a href=#93 id=93 data-nosnippet>93</a>        <span class="kw">static </span>INPLACE: ColdInitLazyLock&lt;<span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;&gt; = ColdInitLazyLock::new(|| {
+<a href=#94 id=94 data-nosnippet>94</a>            TypeAttrColumn::lookup(<span class="string">"__s_maybe_inplace_mutate_with_constraint_context__"</span>)
+<a href=#95 id=95 data-nosnippet>95</a>        });
+<a href=#96 id=96 data-nosnippet>96</a>        <span class="kw">let </span>borrowed = value.as_any_view();
+<a href=#97 id=97 data-nosnippet>97</a>        <span class="kw">let </span>lookup = |column: <span class="prelude-ty">Option</span>&lt;TypeAttrColumn&gt;| {
+<a href=#98 id=98 data-nosnippet>98</a>            column
+<a href=#99 id=99 data-nosnippet>99</a>                .and_then(|column| column.get_raw_ffi_any(borrowed.type_index()))
+<a href=#100 id=100 data-nosnippet>100</a>                .filter(|hook| hook.type_index != TVMFFITypeIndex::kTVMFFINone <span class="kw">as </span>i32)
+<a href=#101 id=101 data-nosnippet>101</a>        };
+<a href=#102 id=102 data-nosnippet>102</a>        <span class="kw">let </span>hook = <span class="kw">if </span>value.inplace_mode() == InplaceMode::Allow {
+<a href=#103 id=103 data-nosnippet>103</a>            lookup(<span class="kw-2">*</span>INPLACE).filter(|<span class="kw">_</span>| {
+<a href=#104 id=104 data-nosnippet>104</a>                <span class="comment">// Permission alone is insufficient after a callback retains an
+<a href=#105 id=105 data-nosnippet>105</a>                // alias. Borrow in place so the count is the slot's own reference.
+<a href=#106 id=106 data-nosnippet>106</a>                </span>borrowed
+<a href=#107 id=107 data-nosnippet>107</a>                    .downcast_ref::&lt;ObjectRef&gt;()
+<a href=#108 id=108 data-nosnippet>108</a>                    .is_some_and(|owner| ObjectArc::is_unique(ObjectRef::data(owner)))
+<a href=#109 id=109 data-nosnippet>109</a>            })
+<a href=#110 id=110 data-nosnippet>110</a>        } <span class="kw">else </span>{
+<a href=#111 id=111 data-nosnippet>111</a>            <span class="prelude-val">None
+<a href=#112 id=112 data-nosnippet>112</a>        </span>}
+<a href=#113 id=113 data-nosnippet>113</a>        .or_else(|| lookup(<span class="kw-2">*</span>COPYING));
+<a href=#114 id=114 data-nosnippet>114</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(hook) = hook {
+<a href=#115 id=115 data-nosnippet>115</a>            <span class="comment">// Copy the borrowed registry token; the shared helper acquires
+<a href=#116 id=116 data-nosnippet>116</a>            // Function ownership before packed reentry and handles error context.
+<a href=#117 id=117 data-nosnippet>117</a>            </span>StructuralMutatorObj::call_structural_mutate_hook_raw(
+<a href=#118 id=118 data-nosnippet>118</a>                runtime.cast(),
+<a href=#119 id=119 data-nosnippet>119</a>                <span class="kw-2">*</span>borrowed.as_raw_ffi_any(),
+<a href=#120 id=120 data-nosnippet>120</a>                hook,
+<a href=#121 id=121 data-nosnippet>121</a>            )
+<a href=#122 id=122 data-nosnippet>122</a>        } <span class="kw">else </span>{
+<a href=#123 id=123 data-nosnippet>123</a>            <span class="comment">// Prefix-only fallback uses installed remap/callback thunks, never
+<a href=#124 id=124 data-nosnippet>124</a>            // an ordinary Rust engine's dispatcher offset.
+<a href=#125 id=125 data-nosnippet>125</a>            </span>StructuralMutatorObj::default_mutate_raw(runtime.cast(), value)
+<a href=#126 id=126 data-nosnippet>126</a>        }
+<a href=#127 id=127 data-nosnippet>127</a>    }
+<a href=#128 id=128 data-nosnippet>128</a>}
+<a href=#129 id=129 data-nosnippet>129</a>
+<a href=#130 id=130 data-nosnippet>130</a><span class="doccomment">/// The running constraint-aware mutation, passed to each handler; `view.base().constraints()` gives
+<a href=#131 id=131 data-nosnippet>131</a>/// the facts in scope.
+<a href=#132 id=132 data-nosnippet>132</a></span><span class="kw">pub type </span>StructuralMutatorWithConstraintContextView&lt;<span class="lifetime">'a</span>, D&gt; =
+<a href=#133 id=133 data-nosnippet>133</a>    StructuralMutatorView&lt;<span class="lifetime">'a</span>, D, StructuralMutatorWithConstraintContextBase&gt;;
+<a href=#134 id=134 data-nosnippet>134</a>
+<a href=#135 id=135 data-nosnippet>135</a><span class="doccomment">/// Mutate `root` with `dispatcher`, which sees the facts of the bindings, guards and ranges in
+<a href=#136 id=136 data-nosnippet>136</a>/// scope.
 <a href=#137 id=137 data-nosnippet>137</a>///
-<a href=#138 id=138 data-nosnippet>138</a>/// # Examples
-<a href=#139 id=139 data-nosnippet>139</a>///
-<a href=#140 id=140 data-nosnippet>140</a>/// ```
-<a href=#141 id=141 data-nosnippet>141</a>/// use tvm_tirx::ir::{
-<a href=#142 id=142 data-nosnippet>142</a>///     Bind, Evaluate, Expr, PrimExpr, PrimType, PrimVar, SeqStmt, Stmt, Var, UNKNOWN_LOC,
-<a href=#143 id=143 data-nosnippet>143</a>/// };
-<a href=#144 id=144 data-nosnippet>144</a>/// use tvm_tirx::script::script;
-<a href=#145 id=145 data-nosnippet>145</a>/// use tvm_tirx::sym::Analyzer;
-<a href=#146 id=146 data-nosnippet>146</a>/// use tvm_tirx::tirx::structural_mutate_with_constraint_context::{
-<a href=#147 id=147 data-nosnippet>147</a>///     structural_mutate_with_constraint_context as mutate,
-<a href=#148 id=148 data-nosnippet>148</a>///     StructuralMutatorWithConstraintContextView as View,
-<a href=#149 id=149 data-nosnippet>149</a>/// };
-<a href=#150 id=150 data-nosnippet>150</a>/// use tvm_tirx::tvm_ffi::{dispatch, Any, MutationView, Result, UnchangedOr};
-<a href=#151 id=151 data-nosnippet>151</a>///
-<a href=#152 id=152 data-nosnippet>152</a>/// struct Simplify;
-<a href=#153 id=153 data-nosnippet>153</a>///
-<a href=#154 id=154 data-nosnippet>154</a>/// #[dispatch(mutate, (MutationView&lt;'_&gt;, &amp;mut View&lt;'_, Self&gt;), Result&lt;UnchangedOr&lt;Any&gt;&gt;)]
-<a href=#155 id=155 data-nosnippet>155</a>/// impl Simplify {
-<a href=#156 id=156 data-nosnippet>156</a>///     fn mutate_evaluate(
-<a href=#157 id=157 data-nosnippet>157</a>///         &amp;mut self,
-<a href=#158 id=158 data-nosnippet>158</a>///         node: MutationView&lt;'_, Evaluate&gt;,
-<a href=#159 id=159 data-nosnippet>159</a>///         mutator: &amp;mut View&lt;'_, Self&gt;,
-<a href=#160 id=160 data-nosnippet>160</a>///     ) -&gt; Result&lt;UnchangedOr&lt;Any&gt;&gt; {
-<a href=#161 id=161 data-nosnippet>161</a>///         let analyzer = Analyzer::new();
-<a href=#162 id=162 data-nosnippet>162</a>///         analyzer.sync_constraint_context(&amp;mutator.base().constraints())?;
-<a href=#163 id=163 data-nosnippet>163</a>///         let value = PrimExpr::try_from(&amp;node.value)?;
-<a href=#164 id=164 data-nosnippet>164</a>///         Ok(Evaluate::new(analyzer.simplify(value, 2)?, UNKNOWN_LOC).into())
-<a href=#165 id=165 data-nosnippet>165</a>///     }
-<a href=#166 id=166 data-nosnippet>166</a>/// }
-<a href=#167 id=167 data-nosnippet>167</a>///
-<a href=#168 id=168 data-nosnippet>168</a>/// let x = PrimVar::new("x", PrimType::int(32), UNKNOWN_LOC);
-<a href=#169 id=169 data-nosnippet>169</a>/// let bind = Stmt::from(Bind::new(&amp;x, 4, UNKNOWN_LOC)?);
-<a href=#170 id=170 data-nosnippet>170</a>/// let use_x = Evaluate::new(Expr::try_from(&amp;x * 2)?, UNKNOWN_LOC);
-<a href=#171 id=171 data-nosnippet>171</a>/// let root = SeqStmt::new([bind, use_x.into()], UNKNOWN_LOC);
-<a href=#172 id=172 data-nosnippet>172</a>/// let result = SeqStmt::try_from(mutate(root, Simplify)?)?;
-<a href=#173 id=173 data-nosnippet>173</a>/// assert_eq!(script(&amp;result)?, "x: T.let[T.int32] = 4\nT.evaluate(8)");
-<a href=#174 id=174 data-nosnippet>174</a>/// # Ok::&lt;(), tvm_tirx::tvm_ffi::Error&gt;(())
-<a href=#175 id=175 data-nosnippet>175</a>/// ```
-<a href=#176 id=176 data-nosnippet>176</a></span><span class="kw">pub fn </span>structural_mutate_with_constraint_context&lt;R, H, M, D, O&gt;(
-<a href=#177 id=177 data-nosnippet>177</a>    root: R,
-<a href=#178 id=178 data-nosnippet>178</a>    dispatcher: H,
-<a href=#179 id=179 data-nosnippet>179</a>) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
-<a href=#180 id=180 data-nosnippet>180</a><span class="kw">where
-<a href=#181 id=181 data-nosnippet>181</a>    </span>R: Into&lt;Any&gt;,
-<a href=#182 id=182 data-nosnippet>182</a>    O: BorrowMut&lt;D&gt;,
-<a href=#183 id=183 data-nosnippet>183</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; H: IntoDispatcher&lt;
-<a href=#184 id=184 data-nosnippet>184</a>        (MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>StructuralMutatorWithConstraintContextView&lt;<span class="lifetime">'r</span>, D&gt;),
-<a href=#185 id=185 data-nosnippet>185</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;,
-<a href=#186 id=186 data-nosnippet>186</a>        M,
-<a href=#187 id=187 data-nosnippet>187</a>        Target = D,
-<a href=#188 id=188 data-nosnippet>188</a>        Output = O,
-<a href=#189 id=189 data-nosnippet>189</a>    &gt;,
-<a href=#190 id=190 data-nosnippet>190</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;
-<a href=#191 id=191 data-nosnippet>191</a>        (MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>StructuralMutatorWithConstraintContextView&lt;<span class="lifetime">'r</span>, D&gt;),
-<a href=#192 id=192 data-nosnippet>192</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;,
+<a href=#138 id=138 data-nosnippet>138</a>/// The first matching handler owns descent: `view.default_mutate(self, value)` rewrites the
+<a href=#139 id=139 data-nosnippet>139</a>/// children, `view.mutate(self, child)` one child. Handlers must not append to the context or
+<a href=#140 id=140 data-nosnippet>140</a>/// panic; an error stops the traversal.
+<a href=#141 id=141 data-nosnippet>141</a>///
+<a href=#142 id=142 data-nosnippet>142</a>/// # Examples
+<a href=#143 id=143 data-nosnippet>143</a>///
+<a href=#144 id=144 data-nosnippet>144</a>/// ```
+<a href=#145 id=145 data-nosnippet>145</a>/// use tvm_tirx::ir::{
+<a href=#146 id=146 data-nosnippet>146</a>///     Bind, Evaluate, Expr, PrimExpr, PrimType, PrimVar, SeqStmt, Stmt, Var, UNKNOWN_LOC,
+<a href=#147 id=147 data-nosnippet>147</a>/// };
+<a href=#148 id=148 data-nosnippet>148</a>/// use tvm_tirx::script::script;
+<a href=#149 id=149 data-nosnippet>149</a>/// use tvm_tirx::sym::Analyzer;
+<a href=#150 id=150 data-nosnippet>150</a>/// use tvm_tirx::tirx::structural_mutate_with_constraint_context::{
+<a href=#151 id=151 data-nosnippet>151</a>///     structural_mutate_with_constraint_context as mutate,
+<a href=#152 id=152 data-nosnippet>152</a>///     StructuralMutatorWithConstraintContextView as View,
+<a href=#153 id=153 data-nosnippet>153</a>/// };
+<a href=#154 id=154 data-nosnippet>154</a>/// use tvm_tirx::tvm_ffi::{dispatch, Any, MutationView, Result, UnchangedOr};
+<a href=#155 id=155 data-nosnippet>155</a>///
+<a href=#156 id=156 data-nosnippet>156</a>/// struct Simplify;
+<a href=#157 id=157 data-nosnippet>157</a>///
+<a href=#158 id=158 data-nosnippet>158</a>/// #[dispatch(mutate, (MutationView&lt;'_&gt;, &amp;mut View&lt;'_, Self&gt;), Result&lt;UnchangedOr&lt;Any&gt;&gt;)]
+<a href=#159 id=159 data-nosnippet>159</a>/// impl Simplify {
+<a href=#160 id=160 data-nosnippet>160</a>///     fn mutate_evaluate(
+<a href=#161 id=161 data-nosnippet>161</a>///         &amp;mut self,
+<a href=#162 id=162 data-nosnippet>162</a>///         node: MutationView&lt;'_, Evaluate&gt;,
+<a href=#163 id=163 data-nosnippet>163</a>///         mutator: &amp;mut View&lt;'_, Self&gt;,
+<a href=#164 id=164 data-nosnippet>164</a>///     ) -&gt; Result&lt;UnchangedOr&lt;Any&gt;&gt; {
+<a href=#165 id=165 data-nosnippet>165</a>///         let analyzer = Analyzer::new();
+<a href=#166 id=166 data-nosnippet>166</a>///         analyzer.sync_constraint_context(&amp;mutator.base().constraints())?;
+<a href=#167 id=167 data-nosnippet>167</a>///         let value = PrimExpr::try_from(&amp;node.value)?;
+<a href=#168 id=168 data-nosnippet>168</a>///         Ok(Evaluate::new(analyzer.simplify(value, 2)?, UNKNOWN_LOC).into())
+<a href=#169 id=169 data-nosnippet>169</a>///     }
+<a href=#170 id=170 data-nosnippet>170</a>/// }
+<a href=#171 id=171 data-nosnippet>171</a>///
+<a href=#172 id=172 data-nosnippet>172</a>/// let x = PrimVar::new("x", PrimType::int(32), UNKNOWN_LOC);
+<a href=#173 id=173 data-nosnippet>173</a>/// let bind = Stmt::from(Bind::new(&amp;x, 4, UNKNOWN_LOC)?);
+<a href=#174 id=174 data-nosnippet>174</a>/// let use_x = Evaluate::new(Expr::try_from(&amp;x * 2)?, UNKNOWN_LOC);
+<a href=#175 id=175 data-nosnippet>175</a>/// let root = SeqStmt::new([bind, use_x.into()], UNKNOWN_LOC);
+<a href=#176 id=176 data-nosnippet>176</a>/// let result = SeqStmt::try_from(mutate(root, Simplify)?)?;
+<a href=#177 id=177 data-nosnippet>177</a>/// assert_eq!(script(&amp;result)?, "x: T.let[T.int32] = 4\nT.evaluate(8)");
+<a href=#178 id=178 data-nosnippet>178</a>/// # Ok::&lt;(), tvm_tirx::tvm_ffi::Error&gt;(())
+<a href=#179 id=179 data-nosnippet>179</a>/// ```
+<a href=#180 id=180 data-nosnippet>180</a></span><span class="kw">pub fn </span>structural_mutate_with_constraint_context&lt;R, H, M, D, O&gt;(
+<a href=#181 id=181 data-nosnippet>181</a>    root: R,
+<a href=#182 id=182 data-nosnippet>182</a>    dispatcher: H,
+<a href=#183 id=183 data-nosnippet>183</a>) -&gt; <span class="prelude-ty">Result</span>&lt;Any&gt;
+<a href=#184 id=184 data-nosnippet>184</a><span class="kw">where
+<a href=#185 id=185 data-nosnippet>185</a>    </span>R: Into&lt;Any&gt;,
+<a href=#186 id=186 data-nosnippet>186</a>    O: BorrowMut&lt;D&gt;,
+<a href=#187 id=187 data-nosnippet>187</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; H: IntoDispatcher&lt;
+<a href=#188 id=188 data-nosnippet>188</a>        (MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>StructuralMutatorWithConstraintContextView&lt;<span class="lifetime">'r</span>, D&gt;),
+<a href=#189 id=189 data-nosnippet>189</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;,
+<a href=#190 id=190 data-nosnippet>190</a>        M,
+<a href=#191 id=191 data-nosnippet>191</a>        Target = D,
+<a href=#192 id=192 data-nosnippet>192</a>        Output = O,
 <a href=#193 id=193 data-nosnippet>193</a>    &gt;,
-<a href=#194 id=194 data-nosnippet>194</a>{
-<a href=#195 id=195 data-nosnippet>195</a>    StructuralMutateEngine::&lt;StructuralMutatorWithConstraintContextBase&gt;::mutate_root(
-<a href=#196 id=196 data-nosnippet>196</a>        root, dispatcher,
-<a href=#197 id=197 data-nosnippet>197</a>    )
-<a href=#198 id=198 data-nosnippet>198</a>}
+<a href=#194 id=194 data-nosnippet>194</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>, <span class="lifetime">'c</span>, <span class="lifetime">'r</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D: Dispatcher&lt;
+<a href=#195 id=195 data-nosnippet>195</a>        (MutationView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>StructuralMutatorWithConstraintContextView&lt;<span class="lifetime">'r</span>, D&gt;),
+<a href=#196 id=196 data-nosnippet>196</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;Any&gt;&gt;&gt;,
+<a href=#197 id=197 data-nosnippet>197</a>    &gt;,
+<a href=#198 id=198 data-nosnippet>198</a>{
+<a href=#199 id=199 data-nosnippet>199</a>    StructuralMutateEngine::&lt;StructuralMutatorWithConstraintContextBase&gt;::mutate_root(
+<a href=#200 id=200 data-nosnippet>200</a>        root, dispatcher,
+<a href=#201 id=201 data-nosnippet>201</a>    )
+<a href=#202 id=202 data-nosnippet>202</a>}
 </code></pre></div></section></main></body></html>

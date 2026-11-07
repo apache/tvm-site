@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["List","ListIterator","ListObj"]};
+window.SIDEBAR_ITEMS = {"struct":["Iter","List","ListObj"]};
