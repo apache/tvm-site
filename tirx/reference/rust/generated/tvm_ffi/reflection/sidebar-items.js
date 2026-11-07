@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["SEqHashKind"],"fn":["get_method","get_method_by_index","unsafe_init"],"struct":["AccessPath","AccessPathObj","AccessStep","AccessStepObj","FieldFlags","FieldGetter","ObjectDef","TypeAttrColumn"],"trait":["ShallowCopy","UnsafeInit"]};
+window.SIDEBAR_ITEMS = {"enum":["AccessKind","SEqHashKind"],"fn":["get_method","get_method_by_index","unsafe_init"],"struct":["AccessPath","AccessPathObj","AccessStep","AccessStepObj","FieldFlags","FieldGetter","ObjectDef","TypeAttrColumn"],"trait":["ShallowCopy","UnsafeInit"]};

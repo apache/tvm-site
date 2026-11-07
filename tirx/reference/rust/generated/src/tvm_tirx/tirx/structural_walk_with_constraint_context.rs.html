@@ -78,100 +78,94 @@
 <a href=#78 id=78 data-nosnippet>78</a>                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(interrupt));
 <a href=#79 id=79 data-nosnippet>79</a>            }
 <a href=#80 id=80 data-nosnippet>80</a>        }
-<a href=#81 id=81 data-nosnippet>81</a>        <span class="comment">// Post callbacks observe the restored context. The observer cannot access
-<a href=#82 id=82 data-nosnippet>82</a>        // this runtime's visitor; a nested walk creates its own runtime. Appending
-<a href=#83 id=83 data-nosnippet>83</a>        // mutates context contents, not this handle. End the field borrow before
-<a href=#84 id=84 data-nosnippet>84</a>        // any default descent can replace it; observers may clone it to retain it.
-<a href=#85 id=85 data-nosnippet>85</a>        </span><span class="kw">let </span>outcome = <span class="kw">unsafe </span>{
-<a href=#86 id=86 data-nosnippet>86</a>            (<span class="kw-2">&amp;mut *</span><span class="self">self</span>.observer).dispatch_tuple((
-<a href=#87 id=87 data-nosnippet>87</a>                value,
-<a href=#88 id=88 data-nosnippet>88</a>                visitor.base().constraints_for_observer(),
-<a href=#89 id=89 data-nosnippet>89</a>                kind,
-<a href=#90 id=90 data-nosnippet>90</a>            ))
-<a href=#91 id=91 data-nosnippet>91</a>        };
-<a href=#92 id=92 data-nosnippet>92</a>        <span class="kw">let </span>outcome = <span class="kw">match </span>outcome {
-<a href=#93 id=93 data-nosnippet>93</a>            <span class="prelude-val">Some</span>(result) =&gt; result<span class="question-mark">?</span>,
-<a href=#94 id=94 data-nosnippet>94</a>            <span class="prelude-val">None </span>=&gt; WalkResult::Advance,
-<a href=#95 id=95 data-nosnippet>95</a>        };
-<a href=#96 id=96 data-nosnippet>96</a>        <span class="kw">match </span>outcome {
-<a href=#97 id=97 data-nosnippet>97</a>            WalkResult::Advance <span class="kw">if </span>PRE =&gt; visitor.default_visit(<span class="self">self</span>, value),
-<a href=#98 id=98 data-nosnippet>98</a>            WalkResult::Advance =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-<a href=#99 id=99 data-nosnippet>99</a>            WalkResult::Skip =&gt; {
-<a href=#100 id=100 data-nosnippet>100</a>                core::hint::cold_path();
-<a href=#101 id=101 data-nosnippet>101</a>                <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
-<a href=#102 id=102 data-nosnippet>102</a>            }
-<a href=#103 id=103 data-nosnippet>103</a>            WalkResult::Interrupt =&gt; {
-<a href=#104 id=104 data-nosnippet>104</a>                core::hint::cold_path();
-<a href=#105 id=105 data-nosnippet>105</a>                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(VisitInterrupt::new(Any::new())))
-<a href=#106 id=106 data-nosnippet>106</a>            }
-<a href=#107 id=107 data-nosnippet>107</a>            WalkResult::InterruptWith(payload) =&gt; {
-<a href=#108 id=108 data-nosnippet>108</a>                core::hint::cold_path();
-<a href=#109 id=109 data-nosnippet>109</a>                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(VisitInterrupt::new(payload)))
-<a href=#110 id=110 data-nosnippet>110</a>            }
-<a href=#111 id=111 data-nosnippet>111</a>        }
-<a href=#112 id=112 data-nosnippet>112</a>    }
-<a href=#113 id=113 data-nosnippet>113</a>}
-<a href=#114 id=114 data-nosnippet>114</a>
-<a href=#115 id=115 data-nosnippet>115</a><span class="doccomment">/// Walk every value of `root` with `walker`, in `order`, with the facts in scope at each value.
+<a href=#81 id=81 data-nosnippet>81</a>        <span class="comment">// Post callbacks observe the restored context.
+<a href=#82 id=82 data-nosnippet>82</a>        // SAFETY: the observer cannot reach this visitor (a nested walk has its own runtime), and
+<a href=#83 id=83 data-nosnippet>83</a>        // the borrow ends with the callback, before default descent can replace the field.
+<a href=#84 id=84 data-nosnippet>84</a>        </span><span class="kw">let </span>constraints = <span class="kw">unsafe </span>{ visitor.base().constraints_for_observer() };
+<a href=#85 id=85 data-nosnippet>85</a>        <span class="kw">let </span>outcome = (<span class="kw-2">&amp;mut *</span><span class="self">self</span>.observer).dispatch_tuple((value, constraints, kind));
+<a href=#86 id=86 data-nosnippet>86</a>        <span class="kw">let </span>outcome = <span class="kw">match </span>outcome {
+<a href=#87 id=87 data-nosnippet>87</a>            <span class="prelude-val">Some</span>(result) =&gt; result<span class="question-mark">?</span>,
+<a href=#88 id=88 data-nosnippet>88</a>            <span class="prelude-val">None </span>=&gt; WalkResult::Advance,
+<a href=#89 id=89 data-nosnippet>89</a>        };
+<a href=#90 id=90 data-nosnippet>90</a>        <span class="kw">match </span>outcome {
+<a href=#91 id=91 data-nosnippet>91</a>            WalkResult::Advance <span class="kw">if </span>PRE =&gt; visitor.default_visit(<span class="self">self</span>, value),
+<a href=#92 id=92 data-nosnippet>92</a>            WalkResult::Advance =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+<a href=#93 id=93 data-nosnippet>93</a>            WalkResult::Skip =&gt; {
+<a href=#94 id=94 data-nosnippet>94</a>                core::hint::cold_path();
+<a href=#95 id=95 data-nosnippet>95</a>                <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+<a href=#96 id=96 data-nosnippet>96</a>            }
+<a href=#97 id=97 data-nosnippet>97</a>            WalkResult::Interrupt =&gt; {
+<a href=#98 id=98 data-nosnippet>98</a>                core::hint::cold_path();
+<a href=#99 id=99 data-nosnippet>99</a>                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(VisitInterrupt::new(Any::new())))
+<a href=#100 id=100 data-nosnippet>100</a>            }
+<a href=#101 id=101 data-nosnippet>101</a>            WalkResult::InterruptWith(payload) =&gt; {
+<a href=#102 id=102 data-nosnippet>102</a>                core::hint::cold_path();
+<a href=#103 id=103 data-nosnippet>103</a>                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(VisitInterrupt::new(payload)))
+<a href=#104 id=104 data-nosnippet>104</a>            }
+<a href=#105 id=105 data-nosnippet>105</a>        }
+<a href=#106 id=106 data-nosnippet>106</a>    }
+<a href=#107 id=107 data-nosnippet>107</a>}
+<a href=#108 id=108 data-nosnippet>108</a>
+<a href=#109 id=109 data-nosnippet>109</a><span class="doccomment">/// Walk every value of `root` with `walker`, in `order`, with the facts in scope at each value.
+<a href=#110 id=110 data-nosnippet>110</a>///
+<a href=#111 id=111 data-nosnippet>111</a>/// A callback takes a leading prefix of `(value, &amp;ConstraintContext, DefRegionKind)` and returns a
+<a href=#112 id=112 data-nosnippet>112</a>/// [`WalkResult`]: in pre-order `Skip` prunes the children, and `Interrupt` or an error stops the
+<a href=#113 id=113 data-nosnippet>113</a>/// walk. Callbacks must not append to the context or panic.
+<a href=#114 id=114 data-nosnippet>114</a>///
+<a href=#115 id=115 data-nosnippet>115</a>/// # Examples
 <a href=#116 id=116 data-nosnippet>116</a>///
-<a href=#117 id=117 data-nosnippet>117</a>/// A callback takes a leading prefix of `(value, &amp;ConstraintContext, DefRegionKind)` and returns a
-<a href=#118 id=118 data-nosnippet>118</a>/// [`WalkResult`]: in pre-order `Skip` prunes the children, and `Interrupt` or an error stops the
-<a href=#119 id=119 data-nosnippet>119</a>/// walk. Callbacks must not append to the context or panic.
-<a href=#120 id=120 data-nosnippet>120</a>///
-<a href=#121 id=121 data-nosnippet>121</a>/// # Examples
-<a href=#122 id=122 data-nosnippet>122</a>///
-<a href=#123 id=123 data-nosnippet>123</a>/// ```
-<a href=#124 id=124 data-nosnippet>124</a>/// use tvm_tirx::ir::{Evaluate, EvaluateObj, For, ForKind, PrimType, PrimVar, Var, UNKNOWN_LOC};
-<a href=#125 id=125 data-nosnippet>125</a>/// use tvm_tirx::script::script;
-<a href=#126 id=126 data-nosnippet>126</a>/// use tvm_tirx::sym::{ConstraintContext, RangeConstraintObj};
-<a href=#127 id=127 data-nosnippet>127</a>/// use tvm_tirx::tirx::structural_walk_with_constraint_context as walk;
-<a href=#128 id=128 data-nosnippet>128</a>/// use tvm_tirx::tvm_ffi::{ObjectRefCore, WalkOrder, WalkResult};
-<a href=#129 id=129 data-nosnippet>129</a>///
-<a href=#130 id=130 data-nosnippet>130</a>/// let i = PrimVar::new("i", PrimType::int(32), UNKNOWN_LOC);
-<a href=#131 id=131 data-nosnippet>131</a>/// let body = Evaluate::new(&amp;i, UNKNOWN_LOC);
-<a href=#132 id=132 data-nosnippet>132</a>/// let root = For::new(&amp;i, 0, 16, 1, ForKind::Default, body, None, UNKNOWN_LOC)?;
-<a href=#133 id=133 data-nosnippet>133</a>///
-<a href=#134 id=134 data-nosnippet>134</a>/// let mut ranges = Vec::new();
-<a href=#135 id=135 data-nosnippet>135</a>/// let record = |_: &amp;EvaluateObj, context: &amp;ConstraintContext| {
-<a href=#136 id=136 data-nosnippet>136</a>///     context.for_each(|fact| {
-<a href=#137 id=137 data-nosnippet>137</a>///         if let Some(range) = fact.downcast_ref::&lt;RangeConstraintObj&gt;() {
-<a href=#138 id=138 data-nosnippet>138</a>///             ranges.push(script(&amp;range.range).unwrap());
-<a href=#139 id=139 data-nosnippet>139</a>///         }
-<a href=#140 id=140 data-nosnippet>140</a>///     });
-<a href=#141 id=141 data-nosnippet>141</a>///     WalkResult::Advance
-<a href=#142 id=142 data-nosnippet>142</a>/// };
-<a href=#143 id=143 data-nosnippet>143</a>/// walk::structural_walk_with_constraint_context(&amp;root, record, WalkOrder::PreOrder)?;
-<a href=#144 id=144 data-nosnippet>144</a>/// assert_eq!(ranges, ["T.Range(0, 16)"]);
-<a href=#145 id=145 data-nosnippet>145</a>/// # Ok::&lt;(), tvm_tirx::tvm_ffi::Error&gt;(())
-<a href=#146 id=146 data-nosnippet>146</a>/// ```
-<a href=#147 id=147 data-nosnippet>147</a></span><span class="kw">pub fn </span>structural_walk_with_constraint_context&lt;<span class="lifetime">'input</span>, R, H, M, D, O&gt;(
-<a href=#148 id=148 data-nosnippet>148</a>    root: R,
-<a href=#149 id=149 data-nosnippet>149</a>    walker: H,
-<a href=#150 id=150 data-nosnippet>150</a>    order: WalkOrder,
-<a href=#151 id=151 data-nosnippet>151</a>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
-<a href=#152 id=152 data-nosnippet>152</a><span class="kw">where
-<a href=#153 id=153 data-nosnippet>153</a>    </span>R: Into&lt;AnyView&lt;<span class="lifetime">'input</span>&gt;&gt;,
-<a href=#154 id=154 data-nosnippet>154</a>    O: BorrowMut&lt;D&gt;,
-<a href=#155 id=155 data-nosnippet>155</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>&gt; H: IntoDispatcher&lt;
-<a href=#156 id=156 data-nosnippet>156</a>        (AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span>ConstraintContext, DefRegionKind),
-<a href=#157 id=157 data-nosnippet>157</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt;,
-<a href=#158 id=158 data-nosnippet>158</a>        M,
-<a href=#159 id=159 data-nosnippet>159</a>        Target = D,
-<a href=#160 id=160 data-nosnippet>160</a>        Output = O,
-<a href=#161 id=161 data-nosnippet>161</a>    &gt;,
-<a href=#162 id=162 data-nosnippet>162</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>, <span class="lifetime">'c</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D:
-<a href=#163 id=163 data-nosnippet>163</a>        Dispatcher&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span>ConstraintContext, DefRegionKind), <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt;&gt;,
-<a href=#164 id=164 data-nosnippet>164</a>{
-<a href=#165 id=165 data-nosnippet>165</a>    <span class="kw">let </span><span class="kw-2">mut </span>storage = walker.into_dispatcher();
-<a href=#166 id=166 data-nosnippet>166</a>    <span class="kw">let </span>observer = storage.borrow_mut();
-<a href=#167 id=167 data-nosnippet>167</a>    <span class="kw">let </span>root = root.into();
-<a href=#168 id=168 data-nosnippet>168</a>    <span class="kw">match </span>order {
-<a href=#169 id=169 data-nosnippet>169</a>        WalkOrder::PreOrder =&gt; {
-<a href=#170 id=170 data-nosnippet>170</a>            structural_visit_with_constraint_context(root, WalkVisitor::&lt;D, <span class="bool-val">true</span>&gt; { observer })
-<a href=#171 id=171 data-nosnippet>171</a>        }
-<a href=#172 id=172 data-nosnippet>172</a>        WalkOrder::PostOrder =&gt; {
-<a href=#173 id=173 data-nosnippet>173</a>            structural_visit_with_constraint_context(root, WalkVisitor::&lt;D, <span class="bool-val">false</span>&gt; { observer })
-<a href=#174 id=174 data-nosnippet>174</a>        }
-<a href=#175 id=175 data-nosnippet>175</a>    }
-<a href=#176 id=176 data-nosnippet>176</a>}
+<a href=#117 id=117 data-nosnippet>117</a>/// ```
+<a href=#118 id=118 data-nosnippet>118</a>/// use tvm_tirx::ir::{Evaluate, EvaluateObj, For, ForKind, PrimType, PrimVar, Var, UNKNOWN_LOC};
+<a href=#119 id=119 data-nosnippet>119</a>/// use tvm_tirx::script::script;
+<a href=#120 id=120 data-nosnippet>120</a>/// use tvm_tirx::sym::{ConstraintContext, RangeConstraintObj};
+<a href=#121 id=121 data-nosnippet>121</a>/// use tvm_tirx::tirx::structural_walk_with_constraint_context as walk;
+<a href=#122 id=122 data-nosnippet>122</a>/// use tvm_tirx::tvm_ffi::{ObjectRefCore, WalkOrder, WalkResult};
+<a href=#123 id=123 data-nosnippet>123</a>///
+<a href=#124 id=124 data-nosnippet>124</a>/// let i = PrimVar::new("i", PrimType::int(32), UNKNOWN_LOC);
+<a href=#125 id=125 data-nosnippet>125</a>/// let body = Evaluate::new(&amp;i, UNKNOWN_LOC);
+<a href=#126 id=126 data-nosnippet>126</a>/// let root = For::new(&amp;i, 0, 16, 1, ForKind::Default, body, None, UNKNOWN_LOC)?;
+<a href=#127 id=127 data-nosnippet>127</a>///
+<a href=#128 id=128 data-nosnippet>128</a>/// let mut ranges = Vec::new();
+<a href=#129 id=129 data-nosnippet>129</a>/// let record = |_: &amp;EvaluateObj, context: &amp;ConstraintContext| {
+<a href=#130 id=130 data-nosnippet>130</a>///     context.for_each(|fact| {
+<a href=#131 id=131 data-nosnippet>131</a>///         if let Some(range) = fact.downcast_ref::&lt;RangeConstraintObj&gt;() {
+<a href=#132 id=132 data-nosnippet>132</a>///             ranges.push(script(&amp;range.range).unwrap());
+<a href=#133 id=133 data-nosnippet>133</a>///         }
+<a href=#134 id=134 data-nosnippet>134</a>///     });
+<a href=#135 id=135 data-nosnippet>135</a>///     WalkResult::Advance
+<a href=#136 id=136 data-nosnippet>136</a>/// };
+<a href=#137 id=137 data-nosnippet>137</a>/// walk::structural_walk_with_constraint_context(&amp;root, record, WalkOrder::PreOrder)?;
+<a href=#138 id=138 data-nosnippet>138</a>/// assert_eq!(ranges, ["T.Range(0, 16)"]);
+<a href=#139 id=139 data-nosnippet>139</a>/// # Ok::&lt;(), tvm_tirx::tvm_ffi::Error&gt;(())
+<a href=#140 id=140 data-nosnippet>140</a>/// ```
+<a href=#141 id=141 data-nosnippet>141</a></span><span class="kw">pub fn </span>structural_walk_with_constraint_context&lt;<span class="lifetime">'input</span>, R, H, M, D, O&gt;(
+<a href=#142 id=142 data-nosnippet>142</a>    root: R,
+<a href=#143 id=143 data-nosnippet>143</a>    walker: H,
+<a href=#144 id=144 data-nosnippet>144</a>    order: WalkOrder,
+<a href=#145 id=145 data-nosnippet>145</a>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;VisitInterrupt&gt;&gt;
+<a href=#146 id=146 data-nosnippet>146</a><span class="kw">where
+<a href=#147 id=147 data-nosnippet>147</a>    </span>R: Into&lt;AnyView&lt;<span class="lifetime">'input</span>&gt;&gt;,
+<a href=#148 id=148 data-nosnippet>148</a>    O: BorrowMut&lt;D&gt;,
+<a href=#149 id=149 data-nosnippet>149</a>    <span class="kw">for</span>&lt;<span class="lifetime">'v</span>, <span class="lifetime">'c</span>&gt; H: IntoDispatcher&lt;
+<a href=#150 id=150 data-nosnippet>150</a>        (AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span>ConstraintContext, DefRegionKind),
+<a href=#151 id=151 data-nosnippet>151</a>        <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt;,
+<a href=#152 id=152 data-nosnippet>152</a>        M,
+<a href=#153 id=153 data-nosnippet>153</a>        Target = D,
+<a href=#154 id=154 data-nosnippet>154</a>        Output = O,
+<a href=#155 id=155 data-nosnippet>155</a>    &gt;,
+<a href=#156 id=156 data-nosnippet>156</a>    <span class="kw">for</span>&lt;<span class="lifetime">'s</span>, <span class="lifetime">'v</span>, <span class="lifetime">'c</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">'s </span><span class="kw-2">mut </span>D:
+<a href=#157 id=157 data-nosnippet>157</a>        Dispatcher&lt;(AnyView&lt;<span class="lifetime">'v</span>&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'c </span>ConstraintContext, DefRegionKind), <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;WalkResult&gt;&gt;&gt;,
+<a href=#158 id=158 data-nosnippet>158</a>{
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="kw">let </span><span class="kw-2">mut </span>storage = walker.into_dispatcher();
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">let </span>observer = storage.borrow_mut();
+<a href=#161 id=161 data-nosnippet>161</a>    <span class="kw">let </span>root = root.into();
+<a href=#162 id=162 data-nosnippet>162</a>    <span class="kw">match </span>order {
+<a href=#163 id=163 data-nosnippet>163</a>        WalkOrder::PreOrder =&gt; {
+<a href=#164 id=164 data-nosnippet>164</a>            structural_visit_with_constraint_context(root, WalkVisitor::&lt;D, <span class="bool-val">true</span>&gt; { observer })
+<a href=#165 id=165 data-nosnippet>165</a>        }
+<a href=#166 id=166 data-nosnippet>166</a>        WalkOrder::PostOrder =&gt; {
+<a href=#167 id=167 data-nosnippet>167</a>            structural_visit_with_constraint_context(root, WalkVisitor::&lt;D, <span class="bool-val">false</span>&gt; { observer })
+<a href=#168 id=168 data-nosnippet>168</a>        }
+<a href=#169 id=169 data-nosnippet>169</a>    }
+<a href=#170 id=170 data-nosnippet>170</a>}
 </code></pre></div></section></main></body></html>

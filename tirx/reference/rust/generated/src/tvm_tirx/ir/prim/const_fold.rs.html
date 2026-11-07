@@ -27,7 +27,7 @@
 <a href=#27 id=27 data-nosnippet>27</a>//! operand also folds the identities (`x + 0`, `x * 1`, ...). Division by a constant zero is an
 <a href=#28 id=28 data-nosnippet>28</a>//! error, as in C++.
 <a href=#29 id=29 data-nosnippet>29</a>
-<a href=#30 id=30 data-nosnippet>30</a></span><span class="kw">use </span>tvm_ffi::{BigInt, DLDataType, ObjectRefCore, <span class="prelude-ty">Result</span>, INTERNAL_ERROR};
+<a href=#30 id=30 data-nosnippet>30</a></span><span class="kw">use </span>tvm_ffi::{BigInt, DLDataTypeCode, ObjectRefCore, <span class="prelude-ty">Result</span>, INTERNAL_ERROR};
 <a href=#31 id=31 data-nosnippet>31</a>
 <a href=#32 id=32 data-nosnippet>32</a><span class="kw">use </span><span class="kw">crate</span>::ir::expr::{FloatImm, FloatImmObj, IntImm, IntImmObj, PrimExpr};
 <a href=#33 id=33 data-nosnippet>33</a><span class="kw">use </span><span class="kw">crate</span>::ir::location::UNKNOWN_LOC;
@@ -42,10 +42,10 @@
 <a href=#42 id=42 data-nosnippet>42</a>
 <a href=#43 id=43 data-nosnippet>43</a></span><span class="doccomment">/// `TryConstFold&lt;Add&gt;`.
 <a href=#44 id=44 data-nosnippet>44</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#45 id=45 data-nosnippet>45</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#45 id=45 data-nosnippet>45</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#46 id=46 data-nosnippet>46</a>    <span class="kw">let </span>(pa, pb, fa, fb) = (int(a), int(b), float(a), float(b));
 <a href=#47 id=47 data-nosnippet>47</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
-<a href=#48 id=48 data-nosnippet>48</a>        <span class="kw">return </span>exact(dtype, x + y);
+<a href=#48 id=48 data-nosnippet>48</a>        <span class="kw">return </span>exact(ty, x + y);
 <a href=#49 id=49 data-nosnippet>49</a>    }
 <a href=#50 id=50 data-nosnippet>50</a>    <span class="kw">if </span>pa.is_some_and(BigInt::is_zero) {
 <a href=#51 id=51 data-nosnippet>51</a>        <span class="kw">return </span>keep(b);
@@ -54,9 +54,9 @@
 <a href=#54 id=54 data-nosnippet>54</a>        <span class="kw">return </span>keep(a);
 <a href=#55 id=55 data-nosnippet>55</a>    }
 <a href=#56 id=56 data-nosnippet>56</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (fa, fb) {
-<a href=#57 id=57 data-nosnippet>57</a>        <span class="kw">match </span>dtype.bits {
-<a href=#58 id=58 data-nosnippet>58</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(dtype, single(x, y, |x, y| x + y)),
-<a href=#59 id=59 data-nosnippet>59</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(dtype, x + y),
+<a href=#57 id=57 data-nosnippet>57</a>        <span class="kw">match </span>ty.bits() {
+<a href=#58 id=58 data-nosnippet>58</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(ty, single(x, y, |x, y| x + y)),
+<a href=#59 id=59 data-nosnippet>59</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(ty, x + y),
 <a href=#60 id=60 data-nosnippet>60</a>            <span class="kw">_ </span>=&gt; {}
 <a href=#61 id=61 data-nosnippet>61</a>        }
 <a href=#62 id=62 data-nosnippet>62</a>    }
@@ -71,18 +71,18 @@
 <a href=#71 id=71 data-nosnippet>71</a>
 <a href=#72 id=72 data-nosnippet>72</a><span class="doccomment">/// `TryConstFold&lt;Sub&gt;`.
 <a href=#73 id=73 data-nosnippet>73</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>sub(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#74 id=74 data-nosnippet>74</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#74 id=74 data-nosnippet>74</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#75 id=75 data-nosnippet>75</a>    <span class="kw">let </span>(pa, pb, fa, fb) = (int(a), int(b), float(a), float(b));
 <a href=#76 id=76 data-nosnippet>76</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
-<a href=#77 id=77 data-nosnippet>77</a>        <span class="kw">return </span>exact(dtype, x - y);
+<a href=#77 id=77 data-nosnippet>77</a>        <span class="kw">return </span>exact(ty, x - y);
 <a href=#78 id=78 data-nosnippet>78</a>    }
 <a href=#79 id=79 data-nosnippet>79</a>    <span class="kw">if </span>pb.is_some_and(BigInt::is_zero) {
 <a href=#80 id=80 data-nosnippet>80</a>        <span class="kw">return </span>keep(a);
 <a href=#81 id=81 data-nosnippet>81</a>    }
 <a href=#82 id=82 data-nosnippet>82</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (fa, fb) {
-<a href=#83 id=83 data-nosnippet>83</a>        <span class="kw">match </span>dtype.bits {
-<a href=#84 id=84 data-nosnippet>84</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(dtype, single(x, y, |x, y| x - y)),
-<a href=#85 id=85 data-nosnippet>85</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(dtype, x - y),
+<a href=#83 id=83 data-nosnippet>83</a>        <span class="kw">match </span>ty.bits() {
+<a href=#84 id=84 data-nosnippet>84</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(ty, single(x, y, |x, y| x - y)),
+<a href=#85 id=85 data-nosnippet>85</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(ty, x - y),
 <a href=#86 id=86 data-nosnippet>86</a>            <span class="kw">_ </span>=&gt; {}
 <a href=#87 id=87 data-nosnippet>87</a>        }
 <a href=#88 id=88 data-nosnippet>88</a>    }
@@ -94,10 +94,10 @@
 <a href=#94 id=94 data-nosnippet>94</a>
 <a href=#95 id=95 data-nosnippet>95</a><span class="doccomment">/// `TryConstFold&lt;Mul&gt;`.
 <a href=#96 id=96 data-nosnippet>96</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>mul(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#97 id=97 data-nosnippet>97</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#97 id=97 data-nosnippet>97</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#98 id=98 data-nosnippet>98</a>    <span class="kw">let </span>(pa, pb, fa, fb) = (int(a), int(b), float(a), float(b));
 <a href=#99 id=99 data-nosnippet>99</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
-<a href=#100 id=100 data-nosnippet>100</a>        <span class="kw">return </span>exact(dtype, x * y);
+<a href=#100 id=100 data-nosnippet>100</a>        <span class="kw">return </span>exact(ty, x * y);
 <a href=#101 id=101 data-nosnippet>101</a>    }
 <a href=#102 id=102 data-nosnippet>102</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(x) = pa {
 <a href=#103 id=103 data-nosnippet>103</a>        <span class="kw">if </span>is_one(x) {
@@ -116,9 +116,9 @@
 <a href=#116 id=116 data-nosnippet>116</a>        }
 <a href=#117 id=117 data-nosnippet>117</a>    }
 <a href=#118 id=118 data-nosnippet>118</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (fa, fb) {
-<a href=#119 id=119 data-nosnippet>119</a>        <span class="kw">match </span>dtype.bits {
-<a href=#120 id=120 data-nosnippet>120</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(dtype, single(x, y, |x, y| x * y)),
-<a href=#121 id=121 data-nosnippet>121</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(dtype, x * y),
+<a href=#119 id=119 data-nosnippet>119</a>        <span class="kw">match </span>ty.bits() {
+<a href=#120 id=120 data-nosnippet>120</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(ty, single(x, y, |x, y| x * y)),
+<a href=#121 id=121 data-nosnippet>121</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(ty, x * y),
 <a href=#122 id=122 data-nosnippet>122</a>            <span class="kw">_ </span>=&gt; {}
 <a href=#123 id=123 data-nosnippet>123</a>        }
 <a href=#124 id=124 data-nosnippet>124</a>    }
@@ -143,11 +143,11 @@
 <a href=#143 id=143 data-nosnippet>143</a>
 <a href=#144 id=144 data-nosnippet>144</a><span class="doccomment">/// `TryConstFold&lt;Div&gt;`: integers divide truncating.
 <a href=#145 id=145 data-nosnippet>145</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>div(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#146 id=146 data-nosnippet>146</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#147 id=147 data-nosnippet>147</a>    <span class="kw">let </span>(pa, pb, fa, fb) = (int(a), int(b), float(a), float(b));
 <a href=#148 id=148 data-nosnippet>148</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
 <a href=#149 id=149 data-nosnippet>149</a>        check_int_divisor(y)<span class="question-mark">?</span>;
-<a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">return </span>exact(dtype, x.try_div(y)<span class="question-mark">?</span>);
+<a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">return </span>exact(ty, x.try_div(y)<span class="question-mark">?</span>);
 <a href=#151 id=151 data-nosnippet>151</a>    }
 <a href=#152 id=152 data-nosnippet>152</a>    <span class="kw">if </span>pa.is_some_and(BigInt::is_zero) {
 <a href=#153 id=153 data-nosnippet>153</a>        <span class="kw">return </span>keep(a);
@@ -160,9 +160,9 @@
 <a href=#160 id=160 data-nosnippet>160</a>    }
 <a href=#161 id=161 data-nosnippet>161</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (fa, fb) {
 <a href=#162 id=162 data-nosnippet>162</a>        check_float_divisor(y)<span class="question-mark">?</span>;
-<a href=#163 id=163 data-nosnippet>163</a>        <span class="kw">match </span>dtype.bits {
-<a href=#164 id=164 data-nosnippet>164</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(dtype, single(x, y, |x, y| x / y)),
-<a href=#165 id=165 data-nosnippet>165</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(dtype, x / y),
+<a href=#163 id=163 data-nosnippet>163</a>        <span class="kw">match </span>ty.bits() {
+<a href=#164 id=164 data-nosnippet>164</a>            <span class="number">32 </span>=&gt; <span class="kw">return </span>float_imm_of(ty, single(x, y, |x, y| x / y)),
+<a href=#165 id=165 data-nosnippet>165</a>            <span class="number">64 </span>=&gt; <span class="kw">return </span>float_imm(ty, x / y),
 <a href=#166 id=166 data-nosnippet>166</a>            <span class="kw">_ </span>=&gt; {}
 <a href=#167 id=167 data-nosnippet>167</a>        }
 <a href=#168 id=168 data-nosnippet>168</a>    }
@@ -181,27 +181,27 @@
 <a href=#181 id=181 data-nosnippet>181</a><span class="doccomment">/// `TryConstFold&lt;Mod&gt;`, the truncating remainder: index types fold with the identities, wider
 <a href=#182 id=182 data-nosnippet>182</a>/// integers fold only two constants.
 <a href=#183 id=183 data-nosnippet>183</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>truncmod(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#184 id=184 data-nosnippet>184</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#184 id=184 data-nosnippet>184</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#185 id=185 data-nosnippet>185</a>    <span class="kw">let </span>(pa, pb) = (int(a), int(b));
-<a href=#186 id=186 data-nosnippet>186</a>    <span class="kw">if </span>is_index_type(dtype) &amp;&amp; is_index_type(support::prim_dtype(b)<span class="question-mark">?</span>) {
+<a href=#186 id=186 data-nosnippet>186</a>    <span class="kw">if </span>is_index_type(ty) &amp;&amp; is_index_type(b.prim_ty()) {
 <a href=#187 id=187 data-nosnippet>187</a>        <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
 <a href=#188 id=188 data-nosnippet>188</a>            check_int_divisor(y)<span class="question-mark">?</span>;
-<a href=#189 id=189 data-nosnippet>189</a>            <span class="kw">return </span>exact(dtype, x.try_rem(y)<span class="question-mark">?</span>);
+<a href=#189 id=189 data-nosnippet>189</a>            <span class="kw">return </span>exact(ty, x.try_rem(y)<span class="question-mark">?</span>);
 <a href=#190 id=190 data-nosnippet>190</a>        }
 <a href=#191 id=191 data-nosnippet>191</a>        <span class="kw">if </span>pa.is_some_and(BigInt::is_zero) {
 <a href=#192 id=192 data-nosnippet>192</a>            <span class="kw">return </span>keep(a);
 <a href=#193 id=193 data-nosnippet>193</a>        }
 <a href=#194 id=194 data-nosnippet>194</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(y) = pb {
 <a href=#195 id=195 data-nosnippet>195</a>            <span class="kw">if </span>is_one(y) {
-<a href=#196 id=196 data-nosnippet>196</a>                <span class="kw">return </span>int_imm(dtype, BigInt::from(<span class="number">0i64</span>));
+<a href=#196 id=196 data-nosnippet>196</a>                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::new(ty.clone(), BigInt::from(<span class="number">0i64</span>), UNKNOWN_LOC)<span class="question-mark">?</span>.into()));
 <a href=#197 id=197 data-nosnippet>197</a>            }
 <a href=#198 id=198 data-nosnippet>198</a>            check_int_divisor(y)<span class="question-mark">?</span>;
 <a href=#199 id=199 data-nosnippet>199</a>        }
 <a href=#200 id=200 data-nosnippet>200</a>    }
 <a href=#201 id=201 data-nosnippet>201</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
-<a href=#202 id=202 data-nosnippet>202</a>        <span class="kw">if </span>dtype.bits &gt;= <span class="number">64 </span>{
+<a href=#202 id=202 data-nosnippet>202</a>        <span class="kw">if </span>ty.bits() &gt;= <span class="number">64 </span>{
 <a href=#203 id=203 data-nosnippet>203</a>            check_int_divisor(y)<span class="question-mark">?</span>;
-<a href=#204 id=204 data-nosnippet>204</a>            <span class="kw">return </span>exact(dtype, x.try_rem(y)<span class="question-mark">?</span>);
+<a href=#204 id=204 data-nosnippet>204</a>            <span class="kw">return </span>exact(ty, x.try_rem(y)<span class="question-mark">?</span>);
 <a href=#205 id=205 data-nosnippet>205</a>        }
 <a href=#206 id=206 data-nosnippet>206</a>    }
 <a href=#207 id=207 data-nosnippet>207</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
@@ -209,11 +209,11 @@
 <a href=#209 id=209 data-nosnippet>209</a>
 <a href=#210 id=210 data-nosnippet>210</a><span class="doccomment">/// `TryConstFold&lt;FloorDiv&gt;`.
 <a href=#211 id=211 data-nosnippet>211</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>floordiv(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#212 id=212 data-nosnippet>212</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#212 id=212 data-nosnippet>212</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#213 id=213 data-nosnippet>213</a>    <span class="kw">let </span>(pa, pb, fa, fb) = (int(a), int(b), float(a), float(b));
 <a href=#214 id=214 data-nosnippet>214</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
 <a href=#215 id=215 data-nosnippet>215</a>        check_int_divisor(y)<span class="question-mark">?</span>;
-<a href=#216 id=216 data-nosnippet>216</a>        <span class="kw">return </span>exact(dtype, x.floor_div(y)<span class="question-mark">?</span>);
+<a href=#216 id=216 data-nosnippet>216</a>        <span class="kw">return </span>exact(ty, x.floor_div(y)<span class="question-mark">?</span>);
 <a href=#217 id=217 data-nosnippet>217</a>    }
 <a href=#218 id=218 data-nosnippet>218</a>    <span class="kw">if </span>pa.is_some_and(BigInt::is_zero) {
 <a href=#219 id=219 data-nosnippet>219</a>        <span class="kw">return </span>keep(a);
@@ -226,9 +226,9 @@
 <a href=#226 id=226 data-nosnippet>226</a>    }
 <a href=#227 id=227 data-nosnippet>227</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (fa, fb) {
 <a href=#228 id=228 data-nosnippet>228</a>        <span class="kw">if </span>y != <span class="number">0.0 </span>{
-<a href=#229 id=229 data-nosnippet>229</a>            <span class="kw">return match </span>dtype.bits {
-<a href=#230 id=230 data-nosnippet>230</a>                <span class="number">32 </span>=&gt; float_imm_of(dtype, single(x, y, |x, y| x / y).map(f64::floor)),
-<a href=#231 id=231 data-nosnippet>231</a>                <span class="number">64 </span>=&gt; float_imm(dtype, (x / y).floor()),
+<a href=#229 id=229 data-nosnippet>229</a>            <span class="kw">return match </span>ty.bits() {
+<a href=#230 id=230 data-nosnippet>230</a>                <span class="number">32 </span>=&gt; float_imm_of(ty, single(x, y, |x, y| x / y).map(f64::floor)),
+<a href=#231 id=231 data-nosnippet>231</a>                <span class="number">64 </span>=&gt; float_imm(ty, (x / y).floor()),
 <a href=#232 id=232 data-nosnippet>232</a>                <span class="kw">_ </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
 <a href=#233 id=233 data-nosnippet>233</a>            };
 <a href=#234 id=234 data-nosnippet>234</a>        }
@@ -248,27 +248,27 @@
 <a href=#248 id=248 data-nosnippet>248</a><span class="doccomment">/// `TryConstFold&lt;FloorMod&gt;`: index types fold with the identities, wider or unsigned integers
 <a href=#249 id=249 data-nosnippet>249</a>/// fold only two constants.
 <a href=#250 id=250 data-nosnippet>250</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>floormod(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#251 id=251 data-nosnippet>251</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#251 id=251 data-nosnippet>251</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#252 id=252 data-nosnippet>252</a>    <span class="kw">let </span>(pa, pb) = (int(a), int(b));
-<a href=#253 id=253 data-nosnippet>253</a>    <span class="kw">if </span>is_index_type(dtype) &amp;&amp; is_index_type(support::prim_dtype(b)<span class="question-mark">?</span>) {
+<a href=#253 id=253 data-nosnippet>253</a>    <span class="kw">if </span>is_index_type(ty) &amp;&amp; is_index_type(b.prim_ty()) {
 <a href=#254 id=254 data-nosnippet>254</a>        <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
 <a href=#255 id=255 data-nosnippet>255</a>            check_int_divisor(y)<span class="question-mark">?</span>;
-<a href=#256 id=256 data-nosnippet>256</a>            <span class="kw">return </span>exact(dtype, x.floor_mod(y)<span class="question-mark">?</span>);
+<a href=#256 id=256 data-nosnippet>256</a>            <span class="kw">return </span>exact(ty, x.floor_mod(y)<span class="question-mark">?</span>);
 <a href=#257 id=257 data-nosnippet>257</a>        }
 <a href=#258 id=258 data-nosnippet>258</a>        <span class="kw">if </span>pa.is_some_and(BigInt::is_zero) {
 <a href=#259 id=259 data-nosnippet>259</a>            <span class="kw">return </span>keep(a);
 <a href=#260 id=260 data-nosnippet>260</a>        }
 <a href=#261 id=261 data-nosnippet>261</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(y) = pb {
 <a href=#262 id=262 data-nosnippet>262</a>            <span class="kw">if </span>is_one(y) {
-<a href=#263 id=263 data-nosnippet>263</a>                <span class="kw">return </span>int_imm(dtype, BigInt::from(<span class="number">0i64</span>));
+<a href=#263 id=263 data-nosnippet>263</a>                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::new(ty.clone(), BigInt::from(<span class="number">0i64</span>), UNKNOWN_LOC)<span class="question-mark">?</span>.into()));
 <a href=#264 id=264 data-nosnippet>264</a>            }
 <a href=#265 id=265 data-nosnippet>265</a>            check_int_divisor(y)<span class="question-mark">?</span>;
 <a href=#266 id=266 data-nosnippet>266</a>        }
 <a href=#267 id=267 data-nosnippet>267</a>    }
 <a href=#268 id=268 data-nosnippet>268</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (pa, pb) {
-<a href=#269 id=269 data-nosnippet>269</a>        <span class="kw">if </span>dtype.bits &gt;= <span class="number">64 </span>|| dtype.code == support::UINT {
+<a href=#269 id=269 data-nosnippet>269</a>        <span class="kw">if </span>ty.bits() &gt;= <span class="number">64 </span>|| ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLUInt]) {
 <a href=#270 id=270 data-nosnippet>270</a>            check_int_divisor(y)<span class="question-mark">?</span>;
-<a href=#271 id=271 data-nosnippet>271</a>            <span class="kw">return </span>exact(dtype, x.floor_mod(y)<span class="question-mark">?</span>);
+<a href=#271 id=271 data-nosnippet>271</a>            <span class="kw">return </span>exact(ty, x.floor_mod(y)<span class="question-mark">?</span>);
 <a href=#272 id=272 data-nosnippet>272</a>        }
 <a href=#273 id=273 data-nosnippet>273</a>    }
 <a href=#274 id=274 data-nosnippet>274</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
@@ -278,9 +278,9 @@
 <a href=#278 id=278 data-nosnippet>278</a>/// when it is NaN or less than the second, and the second otherwise: a NaN in either operand is
 <a href=#279 id=279 data-nosnippet>279</a>/// the result, and of two equal values (`0.0` and `-0.0`) the second is.
 <a href=#280 id=280 data-nosnippet>280</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>min(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#282 id=282 data-nosnippet>282</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (int(a), int(b)) {
-<a href=#283 id=283 data-nosnippet>283</a>        <span class="kw">return </span>int_imm(dtype, x.min(y).clone());
+<a href=#283 id=283 data-nosnippet>283</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::new(ty.clone(), x.min(y).clone(), UNKNOWN_LOC)<span class="question-mark">?</span>.into()));
 <a href=#284 id=284 data-nosnippet>284</a>    }
 <a href=#285 id=285 data-nosnippet>285</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (float(a), float(b)) {
 <a href=#286 id=286 data-nosnippet>286</a>        <span class="kw">return </span>keep(<span class="kw">if </span>x.is_nan() || x &lt; y { a } <span class="kw">else </span>{ b });
@@ -293,9 +293,9 @@
 <a href=#293 id=293 data-nosnippet>293</a>
 <a href=#294 id=294 data-nosnippet>294</a><span class="doccomment">/// `TryConstFold&lt;Max&gt;`, as [`min`]: the first float is kept when it is NaN or greater.
 <a href=#295 id=295 data-nosnippet>295</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>max(a: <span class="kw-2">&amp;</span>PrimExpr, b: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#296 id=296 data-nosnippet>296</a>    <span class="kw">let </span>dtype = support::prim_dtype(a)<span class="question-mark">?</span>;
+<a href=#296 id=296 data-nosnippet>296</a>    <span class="kw">let </span>ty = a.prim_ty();
 <a href=#297 id=297 data-nosnippet>297</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (int(a), int(b)) {
-<a href=#298 id=298 data-nosnippet>298</a>        <span class="kw">return </span>int_imm(dtype, x.max(y).clone());
+<a href=#298 id=298 data-nosnippet>298</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::new(ty.clone(), x.max(y).clone(), UNKNOWN_LOC)<span class="question-mark">?</span>.into()));
 <a href=#299 id=299 data-nosnippet>299</a>    }
 <a href=#300 id=300 data-nosnippet>300</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(x), <span class="prelude-val">Some</span>(y)) = (float(a), float(b)) {
 <a href=#301 id=301 data-nosnippet>301</a>        <span class="kw">return </span>keep(<span class="kw">if </span>x.is_nan() || x &gt; y { a } <span class="kw">else </span>{ b });
@@ -359,19 +359,19 @@
 <a href=#359 id=359 data-nosnippet>359</a>// Helpers
 <a href=#360 id=360 data-nosnippet>360</a>
 <a href=#361 id=361 data-nosnippet>361</a></span><span class="doccomment">/// C++ `IsIndexType`: a scalar `int32` or `int64`, which index arithmetic folds eagerly.
-<a href=#362 id=362 data-nosnippet>362</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>is_index_type(dtype: DLDataType) -&gt; bool {
-<a href=#363 id=363 data-nosnippet>363</a>    dtype.code == support::INT &amp;&amp; (dtype.bits == <span class="number">32 </span>|| dtype.bits == <span class="number">64</span>) &amp;&amp; dtype.lanes == <span class="number">1
-<a href=#364 id=364 data-nosnippet>364</a></span>}
+<a href=#362 id=362 data-nosnippet>362</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>is_index_type(ty: <span class="kw-2">&amp;</span>PrimType) -&gt; bool {
+<a href=#363 id=363 data-nosnippet>363</a>    ty.is_scalar() &amp;&amp; ty.matches_code(<span class="kw-2">&amp;</span>[DLDataTypeCode::kDLInt]) &amp;&amp; <span class="macro">matches!</span>(ty.bits(), <span class="number">32 </span>| <span class="number">64</span>)
+<a href=#364 id=364 data-nosnippet>364</a>}
 <a href=#365 id=365 data-nosnippet>365</a>
-<a href=#366 id=366 data-nosnippet>366</a><span class="doccomment">/// C++ `IsRepresentable(value, dtype)`: whether the exact integer `value` is a literal of the
-<a href=#367 id=367 data-nosnippet>367</a>/// scalar type `dtype`, an integer in its range or a boolean 0 or 1 (as is an `int1`).
-<a href=#368 id=368 data-nosnippet>368</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>is_representable(value: <span class="kw-2">&amp;</span>BigInt, dtype: DLDataType) -&gt; bool {
-<a href=#369 id=369 data-nosnippet>369</a>    <span class="kw">if </span>!support::is_scalar(dtype) || dtype.bits == <span class="number">0 </span>{
+<a href=#366 id=366 data-nosnippet>366</a><span class="doccomment">/// C++ `IsRepresentable(value, ty)`: whether the exact integer `value` is a literal of the
+<a href=#367 id=367 data-nosnippet>367</a>/// scalar type `ty`, an integer in its range or a boolean 0 or 1 (as is an `int1`).
+<a href=#368 id=368 data-nosnippet>368</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>is_representable(value: <span class="kw-2">&amp;</span>BigInt, ty: <span class="kw-2">&amp;</span>PrimType) -&gt; bool {
+<a href=#369 id=369 data-nosnippet>369</a>    <span class="kw">if </span>!ty.is_scalar() || ty.bits() == <span class="number">0 </span>{
 <a href=#370 id=370 data-nosnippet>370</a>        <span class="kw">return </span><span class="bool-val">false</span>;
 <a href=#371 id=371 data-nosnippet>371</a>    }
-<a href=#372 id=372 data-nosnippet>372</a>    <span class="kw">let </span>bits = u32::from(dtype.bits);
+<a href=#372 id=372 data-nosnippet>372</a>    <span class="kw">let </span>(code, bits) = (ty.dtype.code, u32::from(ty.bits()));
 <a href=#373 id=373 data-nosnippet>373</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(small) = value.to_i64() {
-<a href=#374 id=374 data-nosnippet>374</a>        <span class="kw">return match </span>dtype.code {
+<a href=#374 id=374 data-nosnippet>374</a>        <span class="kw">return match </span>code {
 <a href=#375 id=375 data-nosnippet>375</a>            support::UINT =&gt; small &gt;= <span class="number">0 </span>&amp;&amp; (bits &gt;= <span class="number">63 </span>|| (small <span class="kw">as </span>u64) &lt; (<span class="number">1u64 </span>&lt;&lt; bits)),
 <a href=#376 id=376 data-nosnippet>376</a>            support::BOOL =&gt; small == <span class="number">0 </span>|| small == <span class="number">1</span>,
 <a href=#377 id=377 data-nosnippet>377</a>            support::INT <span class="kw">if </span>bits == <span class="number">1 </span>=&gt; small == <span class="number">0 </span>|| small == <span class="number">1</span>,
@@ -381,7 +381,7 @@
 <a href=#381 id=381 data-nosnippet>381</a>            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
 <a href=#382 id=382 data-nosnippet>382</a>        };
 <a href=#383 id=383 data-nosnippet>383</a>    }
-<a href=#384 id=384 data-nosnippet>384</a>    <span class="kw">match </span>dtype.code {
+<a href=#384 id=384 data-nosnippet>384</a>    <span class="kw">match </span>code {
 <a href=#385 id=385 data-nosnippet>385</a>        support::UINT =&gt; !value.is_negative() &amp;&amp; <span class="kw-2">*</span>value &lt; BigInt::from(<span class="number">1i64</span>) &lt;&lt; i64::from(bits),
 <a href=#386 id=386 data-nosnippet>386</a>        support::INT <span class="kw">if </span>bits &gt; <span class="number">1 </span>=&gt; {
 <a href=#387 id=387 data-nosnippet>387</a>            <span class="kw">let </span>limit = BigInt::from(<span class="number">1i64</span>) &lt;&lt; i64::from(bits - <span class="number">1</span>);
@@ -407,81 +407,76 @@
 <a href=#407 id=407 data-nosnippet>407</a>    expr.downcast_ref::&lt;FloatImmObj&gt;().map(|imm| imm.value)
 <a href=#408 id=408 data-nosnippet>408</a>}
 <a href=#409 id=409 data-nosnippet>409</a>
-<a href=#410 id=410 data-nosnippet>410</a><span class="doccomment">/// C++ `IntImm(dtype, value)`.
-<a href=#411 id=411 data-nosnippet>411</a></span><span class="kw">fn </span>int_imm(dtype: DLDataType, value: BigInt) -&gt; Folded {
-<a href=#412 id=412 data-nosnippet>412</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::new(PrimType::from_dtype(dtype)<span class="question-mark">?</span>, value, UNKNOWN_LOC)<span class="question-mark">?</span>.into()))
-<a href=#413 id=413 data-nosnippet>413</a>}
-<a href=#414 id=414 data-nosnippet>414</a>
-<a href=#415 id=415 data-nosnippet>415</a><span class="doccomment">/// C++ `IntImm(result_ty, value)` of an exact result, or nothing to fold when it is not a value of
-<a href=#416 id=416 data-nosnippet>416</a>/// the type.
-<a href=#417 id=417 data-nosnippet>417</a></span><span class="kw">fn </span>exact(dtype: DLDataType, value: BigInt) -&gt; Folded {
-<a href=#418 id=418 data-nosnippet>418</a>    <span class="kw">match </span>is_representable(<span class="kw-2">&amp;</span>value, dtype) {
-<a href=#419 id=419 data-nosnippet>419</a>        <span class="bool-val">true </span>=&gt; int_imm(dtype, value),
-<a href=#420 id=420 data-nosnippet>420</a>        <span class="bool-val">false </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-<a href=#421 id=421 data-nosnippet>421</a>    }
+<a href=#410 id=410 data-nosnippet>410</a><span class="doccomment">/// C++ `IntImm(result_ty, value)` of an exact result, or nothing to fold when it is not a value of
+<a href=#411 id=411 data-nosnippet>411</a>/// the type.
+<a href=#412 id=412 data-nosnippet>412</a></span><span class="kw">fn </span>exact(ty: <span class="kw-2">&amp;</span>PrimType, value: BigInt) -&gt; Folded {
+<a href=#413 id=413 data-nosnippet>413</a>    <span class="kw">match </span>is_representable(<span class="kw-2">&amp;</span>value, ty) {
+<a href=#414 id=414 data-nosnippet>414</a>        <span class="bool-val">true </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::new(ty.clone(), value, UNKNOWN_LOC)<span class="question-mark">?</span>.into())),
+<a href=#415 id=415 data-nosnippet>415</a>        <span class="bool-val">false </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+<a href=#416 id=416 data-nosnippet>416</a>    }
+<a href=#417 id=417 data-nosnippet>417</a>}
+<a href=#418 id=418 data-nosnippet>418</a>
+<a href=#419 id=419 data-nosnippet>419</a><span class="doccomment">/// C++ `FloatImm(ty, value)`.
+<a href=#420 id=420 data-nosnippet>420</a></span><span class="kw">fn </span>float_imm(ty: <span class="kw-2">&amp;</span>PrimType, value: f64) -&gt; Folded {
+<a href=#421 id=421 data-nosnippet>421</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(FloatImm::new(ty.clone(), value, UNKNOWN_LOC)<span class="question-mark">?</span>.into()))
 <a href=#422 id=422 data-nosnippet>422</a>}
 <a href=#423 id=423 data-nosnippet>423</a>
-<a href=#424 id=424 data-nosnippet>424</a><span class="doccomment">/// C++ `FloatImm(dtype, value)`.
-<a href=#425 id=425 data-nosnippet>425</a></span><span class="kw">fn </span>float_imm(dtype: DLDataType, value: f64) -&gt; Folded {
-<a href=#426 id=426 data-nosnippet>426</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(FloatImm::new(PrimType::from_dtype(dtype)<span class="question-mark">?</span>, value, UNKNOWN_LOC)<span class="question-mark">?</span>.into()))
+<a href=#424 id=424 data-nosnippet>424</a><span class="doccomment">/// C++ `IntImm::Bool(value)`.
+<a href=#425 id=425 data-nosnippet>425</a></span><span class="kw">fn </span>boolean(value: bool) -&gt; Folded {
+<a href=#426 id=426 data-nosnippet>426</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::bool(value).into()))
 <a href=#427 id=427 data-nosnippet>427</a>}
 <a href=#428 id=428 data-nosnippet>428</a>
-<a href=#429 id=429 data-nosnippet>429</a><span class="doccomment">/// C++ `IntImm::Bool(value)`.
-<a href=#430 id=430 data-nosnippet>430</a></span><span class="kw">fn </span>boolean(value: bool) -&gt; Folded {
-<a href=#431 id=431 data-nosnippet>431</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(IntImm::bool(value).into()))
-<a href=#432 id=432 data-nosnippet>432</a>}
-<a href=#433 id=433 data-nosnippet>433</a>
-<a href=#434 id=434 data-nosnippet>434</a><span class="doccomment">/// A float32 operation on the operands rounded to float32, as C++ computes `float` arithmetic, or
-<a href=#435 id=435 data-nosnippet>435</a>/// `None` when the result is beyond the float32 range: C++ checks the result in double precision
-<a href=#436 id=436 data-nosnippet>436</a>/// before rounding can turn a finite overflow into infinity, and rounding that result to float32
-<a href=#437 id=437 data-nosnippet>437</a>/// gives the single-precision one (a double holds more than twice the digits of a float).
-<a href=#438 id=438 data-nosnippet>438</a></span><span class="kw">fn </span>single(x: f64, y: f64, op: <span class="kw">fn</span>(f64, f64) -&gt; f64) -&gt; <span class="prelude-ty">Option</span>&lt;f64&gt; {
-<a href=#439 id=439 data-nosnippet>439</a>    <span class="kw">let </span>result = op(f64::from(x <span class="kw">as </span>f32), f64::from(y <span class="kw">as </span>f32));
-<a href=#440 id=440 data-nosnippet>440</a>    is_in_float32_range(result).then(|| f64::from(result <span class="kw">as </span>f32))
-<a href=#441 id=441 data-nosnippet>441</a>}
-<a href=#442 id=442 data-nosnippet>442</a>
-<a href=#443 id=443 data-nosnippet>443</a><span class="doccomment">/// C++ `FloatImm(dtype, value)` of a folded value, or nothing to fold.
-<a href=#444 id=444 data-nosnippet>444</a></span><span class="kw">fn </span>float_imm_of(dtype: DLDataType, value: <span class="prelude-ty">Option</span>&lt;f64&gt;) -&gt; Folded {
-<a href=#445 id=445 data-nosnippet>445</a>    <span class="kw">match </span>value {
-<a href=#446 id=446 data-nosnippet>446</a>        <span class="prelude-val">Some</span>(value) =&gt; float_imm(dtype, value),
-<a href=#447 id=447 data-nosnippet>447</a>        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-<a href=#448 id=448 data-nosnippet>448</a>    }
-<a href=#449 id=449 data-nosnippet>449</a>}
-<a href=#450 id=450 data-nosnippet>450</a>
-<a href=#451 id=451 data-nosnippet>451</a><span class="doccomment">/// The error of `TVM_FFI_ICHECK_NE(pb-&gt;value, 0) &lt;&lt; "Divide by zero"`.
-<a href=#452 id=452 data-nosnippet>452</a></span><span class="kw">fn </span>check_int_divisor(divisor: <span class="kw-2">&amp;</span>BigInt) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-<a href=#453 id=453 data-nosnippet>453</a>    <span class="kw">match </span>divisor.is_zero() {
-<a href=#454 id=454 data-nosnippet>454</a>        <span class="bool-val">true </span>=&gt; <span class="prelude-val">Err</span>(support::compare_failed(
-<a href=#455 id=455 data-nosnippet>455</a>            INTERNAL_ERROR,
-<a href=#456 id=456 data-nosnippet>456</a>            <span class="string">"pb-&gt;value != 0"</span>,
-<a href=#457 id=457 data-nosnippet>457</a>            divisor,
-<a href=#458 id=458 data-nosnippet>458</a>            <span class="number">0</span>,
-<a href=#459 id=459 data-nosnippet>459</a>            <span class="string">"Divide by zero"</span>,
-<a href=#460 id=460 data-nosnippet>460</a>        )),
-<a href=#461 id=461 data-nosnippet>461</a>        <span class="bool-val">false </span>=&gt; <span class="prelude-val">Ok</span>(()),
-<a href=#462 id=462 data-nosnippet>462</a>    }
-<a href=#463 id=463 data-nosnippet>463</a>}
-<a href=#464 id=464 data-nosnippet>464</a>
-<a href=#465 id=465 data-nosnippet>465</a><span class="doccomment">/// The error of `TVM_FFI_ICHECK_NE(fb-&gt;value, 0) &lt;&lt; "Divide by zero"`.
-<a href=#466 id=466 data-nosnippet>466</a></span><span class="kw">fn </span>check_float_divisor(divisor: f64) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-<a href=#467 id=467 data-nosnippet>467</a>    <span class="kw">match </span>divisor == <span class="number">0.0 </span>{
-<a href=#468 id=468 data-nosnippet>468</a>        <span class="bool-val">true </span>=&gt; <span class="prelude-val">Err</span>(support::compare_failed(
-<a href=#469 id=469 data-nosnippet>469</a>            INTERNAL_ERROR,
-<a href=#470 id=470 data-nosnippet>470</a>            <span class="string">"fb-&gt;value != 0"</span>,
-<a href=#471 id=471 data-nosnippet>471</a>            support::CppDouble(divisor),
-<a href=#472 id=472 data-nosnippet>472</a>            <span class="number">0</span>,
-<a href=#473 id=473 data-nosnippet>473</a>            <span class="string">"Divide by zero"</span>,
-<a href=#474 id=474 data-nosnippet>474</a>        )),
-<a href=#475 id=475 data-nosnippet>475</a>        <span class="bool-val">false </span>=&gt; <span class="prelude-val">Ok</span>(()),
-<a href=#476 id=476 data-nosnippet>476</a>    }
-<a href=#477 id=477 data-nosnippet>477</a>}
-<a href=#478 id=478 data-nosnippet>478</a>
-<a href=#479 id=479 data-nosnippet>479</a><span class="kw">fn </span>is_one(value: <span class="kw-2">&amp;</span>BigInt) -&gt; bool {
-<a href=#480 id=480 data-nosnippet>480</a>    value.to_i64() == <span class="prelude-val">Some</span>(<span class="number">1</span>)
+<a href=#429 id=429 data-nosnippet>429</a><span class="doccomment">/// A float32 operation on the operands rounded to float32, as C++ computes `float` arithmetic, or
+<a href=#430 id=430 data-nosnippet>430</a>/// `None` when the result is beyond the float32 range: C++ checks the result in double precision
+<a href=#431 id=431 data-nosnippet>431</a>/// before rounding can turn a finite overflow into infinity, and rounding that result to float32
+<a href=#432 id=432 data-nosnippet>432</a>/// gives the single-precision one (a double holds more than twice the digits of a float).
+<a href=#433 id=433 data-nosnippet>433</a></span><span class="kw">fn </span>single(x: f64, y: f64, op: <span class="kw">fn</span>(f64, f64) -&gt; f64) -&gt; <span class="prelude-ty">Option</span>&lt;f64&gt; {
+<a href=#434 id=434 data-nosnippet>434</a>    <span class="kw">let </span>result = op(f64::from(x <span class="kw">as </span>f32), f64::from(y <span class="kw">as </span>f32));
+<a href=#435 id=435 data-nosnippet>435</a>    is_in_float32_range(result).then(|| f64::from(result <span class="kw">as </span>f32))
+<a href=#436 id=436 data-nosnippet>436</a>}
+<a href=#437 id=437 data-nosnippet>437</a>
+<a href=#438 id=438 data-nosnippet>438</a><span class="doccomment">/// C++ `FloatImm(ty, value)` of a folded value, or nothing to fold.
+<a href=#439 id=439 data-nosnippet>439</a></span><span class="kw">fn </span>float_imm_of(ty: <span class="kw-2">&amp;</span>PrimType, value: <span class="prelude-ty">Option</span>&lt;f64&gt;) -&gt; Folded {
+<a href=#440 id=440 data-nosnippet>440</a>    <span class="kw">match </span>value {
+<a href=#441 id=441 data-nosnippet>441</a>        <span class="prelude-val">Some</span>(value) =&gt; float_imm(ty, value),
+<a href=#442 id=442 data-nosnippet>442</a>        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+<a href=#443 id=443 data-nosnippet>443</a>    }
+<a href=#444 id=444 data-nosnippet>444</a>}
+<a href=#445 id=445 data-nosnippet>445</a>
+<a href=#446 id=446 data-nosnippet>446</a><span class="doccomment">/// The error of `TVM_FFI_ICHECK_NE(pb-&gt;value, 0) &lt;&lt; "Divide by zero"`.
+<a href=#447 id=447 data-nosnippet>447</a></span><span class="kw">fn </span>check_int_divisor(divisor: <span class="kw-2">&amp;</span>BigInt) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+<a href=#448 id=448 data-nosnippet>448</a>    <span class="kw">match </span>divisor.is_zero() {
+<a href=#449 id=449 data-nosnippet>449</a>        <span class="bool-val">true </span>=&gt; <span class="prelude-val">Err</span>(support::compare_failed(
+<a href=#450 id=450 data-nosnippet>450</a>            INTERNAL_ERROR,
+<a href=#451 id=451 data-nosnippet>451</a>            <span class="string">"pb-&gt;value != 0"</span>,
+<a href=#452 id=452 data-nosnippet>452</a>            divisor,
+<a href=#453 id=453 data-nosnippet>453</a>            <span class="number">0</span>,
+<a href=#454 id=454 data-nosnippet>454</a>            <span class="string">"Divide by zero"</span>,
+<a href=#455 id=455 data-nosnippet>455</a>        )),
+<a href=#456 id=456 data-nosnippet>456</a>        <span class="bool-val">false </span>=&gt; <span class="prelude-val">Ok</span>(()),
+<a href=#457 id=457 data-nosnippet>457</a>    }
+<a href=#458 id=458 data-nosnippet>458</a>}
+<a href=#459 id=459 data-nosnippet>459</a>
+<a href=#460 id=460 data-nosnippet>460</a><span class="doccomment">/// The error of `TVM_FFI_ICHECK_NE(fb-&gt;value, 0) &lt;&lt; "Divide by zero"`.
+<a href=#461 id=461 data-nosnippet>461</a></span><span class="kw">fn </span>check_float_divisor(divisor: f64) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+<a href=#462 id=462 data-nosnippet>462</a>    <span class="kw">match </span>divisor == <span class="number">0.0 </span>{
+<a href=#463 id=463 data-nosnippet>463</a>        <span class="bool-val">true </span>=&gt; <span class="prelude-val">Err</span>(support::compare_failed(
+<a href=#464 id=464 data-nosnippet>464</a>            INTERNAL_ERROR,
+<a href=#465 id=465 data-nosnippet>465</a>            <span class="string">"fb-&gt;value != 0"</span>,
+<a href=#466 id=466 data-nosnippet>466</a>            support::CppDouble(divisor),
+<a href=#467 id=467 data-nosnippet>467</a>            <span class="number">0</span>,
+<a href=#468 id=468 data-nosnippet>468</a>            <span class="string">"Divide by zero"</span>,
+<a href=#469 id=469 data-nosnippet>469</a>        )),
+<a href=#470 id=470 data-nosnippet>470</a>        <span class="bool-val">false </span>=&gt; <span class="prelude-val">Ok</span>(()),
+<a href=#471 id=471 data-nosnippet>471</a>    }
+<a href=#472 id=472 data-nosnippet>472</a>}
+<a href=#473 id=473 data-nosnippet>473</a>
+<a href=#474 id=474 data-nosnippet>474</a><span class="kw">fn </span>is_one(value: <span class="kw-2">&amp;</span>BigInt) -&gt; bool {
+<a href=#475 id=475 data-nosnippet>475</a>    value.to_i64() == <span class="prelude-val">Some</span>(<span class="number">1</span>)
+<a href=#476 id=476 data-nosnippet>476</a>}
+<a href=#477 id=477 data-nosnippet>477</a>
+<a href=#478 id=478 data-nosnippet>478</a><span class="doccomment">/// The operand itself.
+<a href=#479 id=479 data-nosnippet>479</a></span><span class="kw">fn </span>keep(expr: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
+<a href=#480 id=480 data-nosnippet>480</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(expr.clone()))
 <a href=#481 id=481 data-nosnippet>481</a>}
-<a href=#482 id=482 data-nosnippet>482</a>
-<a href=#483 id=483 data-nosnippet>483</a><span class="doccomment">/// The operand itself.
-<a href=#484 id=484 data-nosnippet>484</a></span><span class="kw">fn </span>keep(expr: <span class="kw-2">&amp;</span>PrimExpr) -&gt; Folded {
-<a href=#485 id=485 data-nosnippet>485</a>    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(expr.clone()))
-<a href=#486 id=486 data-nosnippet>486</a>}
 </code></pre></div></section></main></body></html>

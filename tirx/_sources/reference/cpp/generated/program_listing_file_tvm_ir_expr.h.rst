@@ -847,29 +847,11 @@ Program Listing for File expr.h
    template <>
    struct TypeTraits<PrimVar> : public ObjectRefTypeTraitsBase<PrimVar> {
      using Base = ObjectRefTypeTraitsBase<PrimVar>;
-     using Base::CopyFromAnyViewAfterCheck;
-     using Base::CopyToAnyView;
-     using Base::GetMismatchTypeInfo;
-     using Base::MoveFromAnyAfterCheck;
-     using Base::MoveToAny;
-     using Base::TypeSchema;
-     using Base::TypeStr;
    
      TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
-       if (src->type_index != VarObj::RuntimeTypeIndex()) {
-         return false;
-       }
-       const auto* var = static_cast<const VarObj*>(
-           detail::ObjectUnsafe::ObjectPtrFromUnowned<Object>(src->v_obj).get());
-       return detail::AnyUnsafe::CheckAnyStrict<PrimType>(var->ExprObj::ty);
-     }
-   
-     TVM_FFI_INLINE static std::optional<PrimVar> TryCastFromAnyView(const TVMFFIAny* src) {
-       if (CheckAnyStrict(src)) {
-         return detail::ObjectUnsafe::ObjectRefFromObjectPtr<PrimVar>(
-             detail::ObjectUnsafe::ObjectPtrFromUnowned<VarObj>(src->v_obj));
-       }
-       return std::nullopt;
+       if (!Base::CheckAnyStrict(src)) return false;
+       const auto* var = detail::ObjectUnsafe::RawObjectPtrFromUnowned<VarObj>(src->v_obj);
+       return var->ty.as<PrimTypeObj>() != nullptr;
      }
    };
    
