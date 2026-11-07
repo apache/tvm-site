@@ -153,7 +153,7 @@ key constructs:**
      - Pass a node wherever a parent type is expected
    * - ``as<T>()`` / ``as_or_throw<T>()``
      - Convert to a child type, with a checked result
-   * - Typed views (``PrimExpr``, ``IntExpr``, ``PrimVar``)
+   * - Typed expressions (``PrimExpr``, ``IntExpr``, ``PrimVar``)
      - Require an expression of a given type, checked on conversion
    * - ``ExprFunctor`` / ``StmtFunctor``
      - Process each node type in its own method
@@ -295,21 +295,22 @@ that names both type keys: the actual ``prim.Add`` and the requested
 Casts check the class of the object; next, let's look at references that
 also check the type of the expression.
 
-Typed Views
-~~~~~~~~~~~
+Typed Expressions
+~~~~~~~~~~~~~~~~~
 
-**A typed view constrains an expression by its type, not by its object
-class.** Arithmetic needs expressions whose result is a primitive value,
-but an addition, a variable, and a call can all produce one, so no single
-object class captures "primitive". :cpp:class:`PrimExpr <tvm::PrimExpr>`
-is a named managed reference that accepts any ``Expr`` whose ``ty`` is a
+**A typed expression is a reference checked by the expression's type,
+not by its object class.** Arithmetic needs expressions whose result is a
+primitive value, but an addition, a variable, and a call can all produce
+one, so no single object class captures "primitive".
+:cpp:class:`PrimExpr <tvm::PrimExpr>` is a ``TypedExpr<PrimType>``: a
+named managed reference that accepts any ``Expr`` whose ``ty`` is a
 ``PrimType``, and has no object class of its own.
 
 .. list-table::
    :header-rows: 1
    :widths: 25 75
 
-   * - View
+   * - Reference
      - Accepts
    * - :cpp:class:`PrimExpr <tvm::PrimExpr>`
      - Any expression whose ``ty`` is a ``PrimType``
@@ -318,7 +319,7 @@ is a named managed reference that accepts any ``Expr`` whose ``ty`` is a
    * - :cpp:class:`PrimVar <tvm::PrimVar>`
      - A ``Var`` whose ``ty`` is a ``PrimType``
 
-The same casts check the view. Let's try two variables, an integer and a
+The same casts check the type. Let's try two variables, an integer and a
 float:
 
 .. literalinclude:: ../../examples/ir_guides/cpp/working_with_ir.cc
@@ -336,18 +337,18 @@ The output is:
    as_or_throw<IntExpr>: Cannot treat type `ir.Var[ty=float32]` as type `ir.IntExpr`
 
 Both variables are ``VarObj`` objects; only their ``ty`` differs, and the
-views check it. The error shows the type in brackets, ``ir.Var[ty=float32]``.
-This is why ``x`` is a ``PrimVar``: the operators take ``PrimExpr``, and a
+typed expressions check it. The error shows the type in brackets,
+``ir.Var[ty=float32]``. This is why ``x`` is a ``PrimVar``: the operators take ``PrimExpr``, and a
 plain ``Var`` would first need a checked cast.
 
 .. note::
 
-   A view is not a subclass of the node's own reference class:
+   A typed expression is not a subclass of the node's own reference class:
    ``PrimVar`` derives from ``PrimExpr`` and converts to ``Var`` through a
    conversion operator.
 
-A cast or a view looks at one node at a time; to process every node type
-in its own method, we dispatch.
+A cast or a typed expression looks at one node at a time; to process
+every node type in its own method, we dispatch.
 
 Dispatching on Node Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -757,7 +758,7 @@ Quick Reference
      - Checks the node type and downcasts
    * - :cpp:class:`PrimExpr <tvm::PrimExpr>`, :cpp:class:`IntExpr <tvm::IntExpr>`,
        :cpp:class:`PrimVar <tvm::PrimVar>`
-     - Typed views that check an expression's ``ty``
+     - Typed expressions that check an expression's ``ty``
    * - ``ref.CopyOnWrite()->field = value``
      - Changes a field, copying the object first if it is shared
    * - :cpp:class:`ExprFunctor <tvm::ExprFunctor>`,

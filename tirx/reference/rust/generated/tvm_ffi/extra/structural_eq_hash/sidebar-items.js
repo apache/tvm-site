@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_first_structural_mismatch","get_first_structural_mismatch_with","structural_equal","structural_equal_with","structural_hash","structural_hash_with"],"struct":["StructuralOptions"]};

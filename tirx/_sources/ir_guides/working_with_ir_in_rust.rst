@@ -201,7 +201,7 @@ This is the newtype pattern. Simplified from the crate, the pair is:
    #[derive(Object)]
    #[type_key = "prim.Add"]
    pub struct AddObj {
-       base: ExprObj,
+       base_: ExprObj,
        pub a: PrimExpr,
        pub b: PrimExpr,
    }
@@ -209,7 +209,7 @@ This is the newtype pattern. Simplified from the crate, the pair is:
    #[repr(C)]
    #[derive(ObjectRef, Clone)]
    pub struct Add {
-       base: ObjectArc<AddObj>,
+       data_: ObjectArc<AddObj>,
    }
 
 Rust has no inheritance; instead, ``#[repr(C)]`` puts the parent's object,
@@ -426,7 +426,7 @@ form**:
    * - Errors
      - ``Result`` values
    * - Structural equality
-     - The global function ``ffi.StructuralEqual``
+     - |structural_equal|_, and |structural_hash|_ consistent with it
 
 Structural Walk
 ~~~~~~~~~~~~~~~
@@ -580,10 +580,9 @@ ownership of the managed reference we pass and returns the new root as an
 Structural Equality
 ~~~~~~~~~~~~~~~~~~~
 
-The crate has no Rust function for structural equality yet, so we call the
-global function ``ffi.StructuralEqual`` with its four arguments: the two values,
-``map_free_vars``, and ``skip_tensor_content``. Let's specialize
-``add_one`` twice and compare the results:
+|structural_equal|_ compares two values by structure and content rather
+than by identity, and returns a ``Result`` because a node may not support
+the comparison. Let's specialize ``add_one`` twice and compare the results:
 
 .. literalinclude:: ../../examples/ir_guides/rust/src/lib.rs
    :language: rust
@@ -790,7 +789,7 @@ Quick Reference
      - Rebuilds with replacements and returns an ``Any``
    * - A trailing |DefRegionKind|_ parameter
      - Receives the definition region kind
-   * - ``Function::get_global("ffi.StructuralEqual")``
+   * - |structural_equal|_\ ``(&a, &b)``
      - Compares by structure
    * - |dispatch|_\ ``(prefix, (Carrier, ...), ResultType)``
      - Generates ``dispatch``, a ``match_any!`` over the ``prefix_*``
@@ -823,6 +822,10 @@ Quick Reference
 .. _structural_map: ../reference/rust/generated/tvm_ffi/extra/structural_map/fn.structural_map.html
 .. |structural_visit| replace:: ``structural_visit``
 .. _structural_visit: ../reference/rust/generated/tvm_ffi/extra/structural_visit/fn.structural_visit.html
+.. |structural_equal| replace:: ``structural_equal``
+.. _structural_equal: ../reference/rust/generated/tvm_ffi/extra/structural_eq_hash/fn.structural_equal.html
+.. |structural_hash| replace:: ``structural_hash``
+.. _structural_hash: ../reference/rust/generated/tvm_ffi/extra/structural_eq_hash/fn.structural_hash.html
 .. |structural_mutate| replace:: ``structural_mutate``
 .. _structural_mutate: ../reference/rust/generated/tvm_ffi/extra/structural_mutate/fn.structural_mutate.html
 .. |WalkResult| replace:: ``WalkResult``

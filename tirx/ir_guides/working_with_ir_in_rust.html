@@ -593,7 +593,7 @@ the underlying object that the object alone does not express.</p>
 <span class="cp">#[derive(Object)]</span>
 <span class="cp">#[type_key = </span><span class="s">"prim.Add"</span><span class="cp">]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">AddObj</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">base</span><span class="p">:</span><span class="w"> </span><span class="nc">ExprObj</span><span class="p">,</span>
+<span class="w">    </span><span class="n">base_</span><span class="p">:</span><span class="w"> </span><span class="nc">ExprObj</span><span class="p">,</span>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="nc">PrimExpr</span><span class="p">,</span>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="nc">PrimExpr</span><span class="p">,</span>
 <span class="p">}</span>
@@ -601,7 +601,7 @@ the underlying object that the object alone does not express.</p>
 <span class="cp">#[repr(C)]</span>
 <span class="cp">#[derive(ObjectRef, Clone)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Add</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">base</span><span class="p">:</span><span class="w"> </span><span class="nc">ObjectArc</span><span class="o">&lt;</span><span class="n">AddObj</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_</span><span class="p">:</span><span class="w"> </span><span class="nc">ObjectArc</span><span class="o">&lt;</span><span class="n">AddObj</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -845,7 +845,7 @@ form</strong>:</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">Result</span></code> values</p></td>
 </tr>
 <tr class="row-even"><td><p>Structural equality</p></td>
-<td><p>The global function <code class="docutils literal notranslate"><span class="pre">ffi.StructuralEqual</span></code></p></td>
+<td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_eq_hash/fn.structural_equal.html"><code class="docutils literal notranslate"><span class="pre">structural_equal</span></code></a>, and <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_eq_hash/fn.structural_hash.html"><code class="docutils literal notranslate"><span class="pre">structural_hash</span></code></a> consistent with it</p></td>
 </tr>
 </tbody>
 </table>
@@ -1035,17 +1035,13 @@ ownership of the managed reference we pass and returns the new root as an
 </section>
 <section id="structural-equality">
 <h3>Structural Equality<a class="headerlink" href="#structural-equality" title="Link to this heading">#</a></h3>
-<p>The crate has no Rust function for structural equality yet, so we call the
-global function <code class="docutils literal notranslate"><span class="pre">ffi.StructuralEqual</span></code> with its four arguments: the two values,
-<code class="docutils literal notranslate"><span class="pre">map_free_vars</span></code>, and <code class="docutils literal notranslate"><span class="pre">skip_tensor_content</span></code>. Let’s specialize
-<code class="docutils literal notranslate"><span class="pre">add_one</span></code> twice and compare the results:</p>
+<p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_eq_hash/fn.structural_equal.html"><code class="docutils literal notranslate"><span class="pre">structural_equal</span></code></a> compares two values by structure and content rather
+than by identity, and returns a <code class="docutils literal notranslate"><span class="pre">Result</span></code> because a node may not support
+the comparison. Let’s specialize <code class="docutils literal notranslate"><span class="pre">add_one</span></code> twice and compare the results:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">compare_specialized</span><span class="p">(</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="nc">Function</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">:</span><span class="w"> </span><span class="nc">Var</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Array</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">specialize</span><span class="p">(</span><span class="n">func</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span><span class="w"> </span><span class="mi">128</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">specialize</span><span class="p">(</span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">128</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">map_free_vars</span><span class="p">,</span><span class="w"> </span><span class="n">skip_tensor_content</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">equal</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">Function</span><span class="p">::</span><span class="n">get_global</span><span class="p">(</span><span class="s">"ffi.StructuralEqual"</span><span class="p">)</span><span class="o">?</span>
-<span class="w">        </span><span class="p">.</span><span class="n">call_tuple</span><span class="p">((</span><span class="o">&amp;</span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="n">map_free_vars</span><span class="p">,</span><span class="w"> </span><span class="n">skip_tensor_content</span><span class="p">))</span><span class="o">?</span>
-<span class="w">        </span><span class="p">.</span><span class="n">try_into</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">equal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">structural_equal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">second</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 <span class="w">    </span><span class="nb">Ok</span><span class="p">([</span><span class="n">first</span><span class="p">.</span><span class="n">same_as</span><span class="p">(</span><span class="o">&amp;</span><span class="n">second</span><span class="p">),</span><span class="w"> </span><span class="n">equal</span><span class="p">].</span><span class="n">into_iter</span><span class="p">().</span><span class="n">collect</span><span class="p">())</span>
 <span class="p">}</span>
 </pre></div>
@@ -1335,7 +1331,7 @@ borrowed object in an <code class="docutils literal notranslate"><span class="pr
 <tr class="row-even"><td><p>A trailing <a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_visit/enum.DefRegionKind.html"><code class="docutils literal notranslate"><span class="pre">DefRegionKind</span></code></a> parameter</p></td>
 <td><p>Receives the definition region kind</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Function::get_global(&quot;ffi.StructuralEqual&quot;)</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/extra/structural_eq_hash/fn.structural_equal.html"><code class="docutils literal notranslate"><span class="pre">structural_equal</span></code></a><code class="docutils literal notranslate"><span class="pre">(&amp;a,</span> <span class="pre">&amp;b)</span></code></p></td>
 <td><p>Compares by structure</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference external" href="../reference/rust/generated/tvm_ffi/attr.dispatch.html"><code class="docutils literal notranslate"><span class="pre">#[dispatch]</span></code></a><code class="docutils literal notranslate"><span class="pre">(prefix,</span> <span class="pre">(Carrier,</span> <span class="pre">...),</span> <span class="pre">ResultType)</span></code></p></td>
