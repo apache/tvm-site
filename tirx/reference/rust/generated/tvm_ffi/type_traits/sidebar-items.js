@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["AnyCompatible","ContainerElement","DowncastRefFromAny","TypeSubsumes"]};
+window.SIDEBAR_ITEMS = {"trait":["AnyCompatible","ContainerElement","DowncastRefFromAny","IntoArg","TypeSubsumes"]};

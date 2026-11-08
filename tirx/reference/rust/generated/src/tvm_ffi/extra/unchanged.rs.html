@@ -24,7 +24,7 @@
 <a href=#24 id=24 data-nosnippet>24</a><span class="kw">use </span><span class="kw">super</span>::structural_common::{raw_ffi_any_same_as, structural_error_from_raw};
 <a href=#25 id=25 data-nosnippet>25</a>
 <a href=#26 id=26 data-nosnippet>26</a><span class="kw">use </span><span class="kw">crate</span>::any::{Any, AnyView, TryFromTemp};
-<a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span><span class="kw">crate</span>::error::{Error, <span class="prelude-ty">Result</span>, TYPE_ERROR};
+<a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span><span class="kw">crate</span>::error::{Error, <span class="prelude-ty">Result</span>};
 <a href=#28 id=28 data-nosnippet>28</a><span class="kw">use </span><span class="kw">crate</span>::tvm_ffi_sys::{TVMFFIAny, TVMFFITypeIndex};
 <a href=#29 id=29 data-nosnippet>29</a><span class="kw">use </span><span class="kw">crate</span>::type_traits::{AnyCompatible, ContainerElement};
 <a href=#30 id=30 data-nosnippet>30</a>
@@ -209,299 +209,230 @@
 <a href=#209 id=209 data-nosnippet>209</a>            <span class="prelude-val">None </span>=&gt; UnchangedOr::unchanged(),
 <a href=#210 id=210 data-nosnippet>210</a>        }
 <a href=#211 id=211 data-nosnippet>211</a>    }
-<a href=#212 id=212 data-nosnippet>212</a>
-<a href=#213 id=213 data-nosnippet>213</a>    <span class="doccomment">/// Fallibly convert only the replacement, preserving an unchanged result.
-<a href=#214 id=214 data-nosnippet>214</a>    ///
-<a href=#215 id=215 data-nosnippet>215</a>    /// # Arguments
-<a href=#216 id=216 data-nosnippet>216</a>    ///
-<a href=#217 id=217 data-nosnippet>217</a>    /// * `convert` - Converts the replacement; called only when there is one.
-<a href=#218 id=218 data-nosnippet>218</a>    ///
-<a href=#219 id=219 data-nosnippet>219</a>    /// # Returns
-<a href=#220 id=220 data-nosnippet>220</a>    ///
-<a href=#221 id=221 data-nosnippet>221</a>    /// The converted result.
-<a href=#222 id=222 data-nosnippet>222</a>    ///
-<a href=#223 id=223 data-nosnippet>223</a>    /// # Errors
-<a href=#224 id=224 data-nosnippet>224</a>    ///
-<a href=#225 id=225 data-nosnippet>225</a>    /// Returns the error of `convert` unchanged.
-<a href=#226 id=226 data-nosnippet>226</a>    ///
-<a href=#227 id=227 data-nosnippet>227</a>    /// ```
-<a href=#228 id=228 data-nosnippet>228</a>    /// use tvm_ffi::UnchangedOr;
-<a href=#229 id=229 data-nosnippet>229</a>    /// let result = UnchangedOr::changed(3_i64).try_map(u32::try_from).unwrap();
-<a href=#230 id=230 data-nosnippet>230</a>    /// assert_eq!(result.into_option(), Some(3_u32));
-<a href=#231 id=231 data-nosnippet>231</a>    /// ```
-<a href=#232 id=232 data-nosnippet>232</a>    ///
-<a href=#233 id=233 data-nosnippet>233</a>    /// See also [`UnchangedOr`].
-<a href=#234 id=234 data-nosnippet>234</a>    </span><span class="attr">#[inline]
-<a href=#235 id=235 data-nosnippet>235</a>    </span><span class="kw">pub fn </span>try_map&lt;U: ContainerElement, E&gt;(
-<a href=#236 id=236 data-nosnippet>236</a>        <span class="self">self</span>,
-<a href=#237 id=237 data-nosnippet>237</a>        convert: <span class="kw">impl </span>FnOnce(T) -&gt; std::result::Result&lt;U, E&gt;,
-<a href=#238 id=238 data-nosnippet>238</a>    ) -&gt; std::result::Result&lt;UnchangedOr&lt;U&gt;, E&gt; {
-<a href=#239 id=239 data-nosnippet>239</a>        <span class="kw">match </span><span class="self">self</span>.into_option() {
-<a href=#240 id=240 data-nosnippet>240</a>            <span class="prelude-val">Some</span>(value) =&gt; convert(value).map(UnchangedOr::changed),
-<a href=#241 id=241 data-nosnippet>241</a>            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(UnchangedOr::unchanged()),
-<a href=#242 id=242 data-nosnippet>242</a>        }
-<a href=#243 id=243 data-nosnippet>243</a>    }
-<a href=#244 id=244 data-nosnippet>244</a>
-<a href=#245 id=245 data-nosnippet>245</a>    <span class="doccomment">/// Check a replacement's FFI type without cloning it.
-<a href=#246 id=246 data-nosnippet>246</a>    ///
-<a href=#247 id=247 data-nosnippet>247</a>    /// An unchanged result is compatible with every replacement type. Erased and
-<a href=#248 id=248 data-nosnippet>248</a>    /// narrowing conversions retain the strict type check of
-<a href=#249 id=249 data-nosnippet>249</a>    /// [`Any::downcast_ref`]. For a
-<a href=#250 id=250 data-nosnippet>250</a>    /// known typed conversion, use `map(Into::into)`.
-<a href=#251 id=251 data-nosnippet>251</a>    ///
-<a href=#252 id=252 data-nosnippet>252</a>    /// # Returns
-<a href=#253 id=253 data-nosnippet>253</a>    ///
-<a href=#254 id=254 data-nosnippet>254</a>    /// The result typed as `UnchangedOr&lt;U&gt;`.
-<a href=#255 id=255 data-nosnippet>255</a>    ///
-<a href=#256 id=256 data-nosnippet>256</a>    /// # Errors
-<a href=#257 id=257 data-nosnippet>257</a>    ///
-<a href=#258 id=258 data-nosnippet>258</a>    /// Returns a `TypeError` if the replacement is not stored as `U`.
-<a href=#259 id=259 data-nosnippet>259</a>    ///
-<a href=#260 id=260 data-nosnippet>260</a>    /// ```
-<a href=#261 id=261 data-nosnippet>261</a>    /// use tvm_ffi::{Any, UnchangedOr};
-<a href=#262 id=262 data-nosnippet>262</a>    /// let erased: UnchangedOr&lt;Any&gt; = 7_i64.into();
-<a href=#263 id=263 data-nosnippet>263</a>    /// assert_eq!(erased.try_cast::&lt;i64&gt;()?.into_option(), Some(7));
-<a href=#264 id=264 data-nosnippet>264</a>    /// # Ok::&lt;(), tvm_ffi::Error&gt;(())
-<a href=#265 id=265 data-nosnippet>265</a>    /// ```
-<a href=#266 id=266 data-nosnippet>266</a>    ///
-<a href=#267 id=267 data-nosnippet>267</a>    /// See also [`UnchangedOr`].
-<a href=#268 id=268 data-nosnippet>268</a>    </span><span class="attr">#[inline]
-<a href=#269 id=269 data-nosnippet>269</a>    </span><span class="kw">pub fn </span>try_cast&lt;U: ContainerElement&gt;(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;UnchangedOr&lt;U&gt;&gt; {
-<a href=#270 id=270 data-nosnippet>270</a>        <span class="kw">if unsafe </span>{ UnchangedOr::&lt;U&gt;::check_any_strict(<span class="self">self</span>.data.as_raw_ffi_any()) } {
-<a href=#271 id=271 data-nosnippet>271</a>            <span class="prelude-val">Ok</span>(UnchangedOr {
-<a href=#272 id=272 data-nosnippet>272</a>                data: <span class="self">self</span>.data,
-<a href=#273 id=273 data-nosnippet>273</a>                _marker: PhantomData,
-<a href=#274 id=274 data-nosnippet>274</a>            })
-<a href=#275 id=275 data-nosnippet>275</a>        } <span class="kw">else </span>{
-<a href=#276 id=276 data-nosnippet>276</a>            <span class="prelude-val">Err</span>(Error::new(
-<a href=#277 id=277 data-nosnippet>277</a>                TYPE_ERROR,
-<a href=#278 id=278 data-nosnippet>278</a>                <span class="kw-2">&amp;</span><span class="macro">format!</span>(
-<a href=#279 id=279 data-nosnippet>279</a>                    <span class="string">"structural mutation result does not match {}"</span>,
-<a href=#280 id=280 data-nosnippet>280</a>                    U::container_type_str()
-<a href=#281 id=281 data-nosnippet>281</a>                ),
-<a href=#282 id=282 data-nosnippet>282</a>                <span class="string">""</span>,
-<a href=#283 id=283 data-nosnippet>283</a>            ))
-<a href=#284 id=284 data-nosnippet>284</a>        }
-<a href=#285 id=285 data-nosnippet>285</a>    }
-<a href=#286 id=286 data-nosnippet>286</a>}
-<a href=#287 id=287 data-nosnippet>287</a>
-<a href=#288 id=288 data-nosnippet>288</a><span class="kw">impl </span>UnchangedOr&lt;Any&gt; {
-<a href=#289 id=289 data-nosnippet>289</a>    <span class="doccomment">/// Wrap a successful erased carrier, which may hold the unchanged marker.
-<a href=#290 id=290 data-nosnippet>290</a>    </span><span class="attr">#[inline(always)]
-<a href=#291 id=291 data-nosnippet>291</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_any(data: Any) -&gt; <span class="self">Self </span>{
-<a href=#292 id=292 data-nosnippet>292</a>        <span class="self">Self </span>{
-<a href=#293 id=293 data-nosnippet>293</a>            data,
-<a href=#294 id=294 data-nosnippet>294</a>            _marker: PhantomData,
-<a href=#295 id=295 data-nosnippet>295</a>        }
-<a href=#296 id=296 data-nosnippet>296</a>    }
-<a href=#297 id=297 data-nosnippet>297</a>
-<a href=#298 id=298 data-nosnippet>298</a>    <span class="attr">#[inline(always)]
-<a href=#299 id=299 data-nosnippet>299</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_carrier(data: Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#300 id=300 data-nosnippet>300</a>        <span class="kw">if </span>data.type_index() == TVMFFITypeIndex::kTVMFFIError <span class="kw">as </span>i32 {
-<a href=#301 id=301 data-nosnippet>301</a>            core::hint::cold_path();
-<a href=#302 id=302 data-nosnippet>302</a>            <span class="comment">// Transfer ownership directly into the checked cold conversion.
-<a href=#303 id=303 data-nosnippet>303</a>            </span><span class="kw">return unsafe </span>{
-<a href=#304 id=304 data-nosnippet>304</a>                <span class="kw">let </span>raw = Any::into_raw_ffi_any(data);
-<a href=#305 id=305 data-nosnippet>305</a>                <span class="prelude-val">Err</span>(structural_error_from_raw(raw))
-<a href=#306 id=306 data-nosnippet>306</a>            };
-<a href=#307 id=307 data-nosnippet>307</a>        }
-<a href=#308 id=308 data-nosnippet>308</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-<a href=#309 id=309 data-nosnippet>309</a>            data,
-<a href=#310 id=310 data-nosnippet>310</a>            _marker: PhantomData,
-<a href=#311 id=311 data-nosnippet>311</a>        })
-<a href=#312 id=312 data-nosnippet>312</a>    }
-<a href=#313 id=313 data-nosnippet>313</a>}
-<a href=#314 id=314 data-nosnippet>314</a>
-<a href=#315 id=315 data-nosnippet>315</a><span class="kw">impl</span>&lt;T: ContainerElement&gt; Clone <span class="kw">for </span>UnchangedOr&lt;T&gt; {
-<a href=#316 id=316 data-nosnippet>316</a>    <span class="attr">#[inline]
-<a href=#317 id=317 data-nosnippet>317</a>    </span><span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
-<a href=#318 id=318 data-nosnippet>318</a>        <span class="self">Self </span>{
-<a href=#319 id=319 data-nosnippet>319</a>            data: <span class="self">self</span>.data.clone(),
-<a href=#320 id=320 data-nosnippet>320</a>            _marker: PhantomData,
-<a href=#321 id=321 data-nosnippet>321</a>        }
-<a href=#322 id=322 data-nosnippet>322</a>    }
-<a href=#323 id=323 data-nosnippet>323</a>}
+<a href=#212 id=212 data-nosnippet>212</a>}
+<a href=#213 id=213 data-nosnippet>213</a>
+<a href=#214 id=214 data-nosnippet>214</a><span class="kw">impl </span>UnchangedOr&lt;Any&gt; {
+<a href=#215 id=215 data-nosnippet>215</a>    <span class="doccomment">/// Wrap a successful erased carrier, which may hold the unchanged marker.
+<a href=#216 id=216 data-nosnippet>216</a>    </span><span class="attr">#[inline(always)]
+<a href=#217 id=217 data-nosnippet>217</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_any(data: Any) -&gt; <span class="self">Self </span>{
+<a href=#218 id=218 data-nosnippet>218</a>        <span class="self">Self </span>{
+<a href=#219 id=219 data-nosnippet>219</a>            data,
+<a href=#220 id=220 data-nosnippet>220</a>            _marker: PhantomData,
+<a href=#221 id=221 data-nosnippet>221</a>        }
+<a href=#222 id=222 data-nosnippet>222</a>    }
+<a href=#223 id=223 data-nosnippet>223</a>
+<a href=#224 id=224 data-nosnippet>224</a>    <span class="attr">#[inline(always)]
+<a href=#225 id=225 data-nosnippet>225</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_carrier(data: Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+<a href=#226 id=226 data-nosnippet>226</a>        <span class="kw">if </span>data.type_index() == TVMFFITypeIndex::kTVMFFIError <span class="kw">as </span>i32 {
+<a href=#227 id=227 data-nosnippet>227</a>            core::hint::cold_path();
+<a href=#228 id=228 data-nosnippet>228</a>            <span class="comment">// Transfer ownership directly into the checked cold conversion.
+<a href=#229 id=229 data-nosnippet>229</a>            </span><span class="kw">return unsafe </span>{
+<a href=#230 id=230 data-nosnippet>230</a>                <span class="kw">let </span>raw = Any::into_raw_ffi_any(data);
+<a href=#231 id=231 data-nosnippet>231</a>                <span class="prelude-val">Err</span>(structural_error_from_raw(raw))
+<a href=#232 id=232 data-nosnippet>232</a>            };
+<a href=#233 id=233 data-nosnippet>233</a>        }
+<a href=#234 id=234 data-nosnippet>234</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+<a href=#235 id=235 data-nosnippet>235</a>            data,
+<a href=#236 id=236 data-nosnippet>236</a>            _marker: PhantomData,
+<a href=#237 id=237 data-nosnippet>237</a>        })
+<a href=#238 id=238 data-nosnippet>238</a>    }
+<a href=#239 id=239 data-nosnippet>239</a>}
+<a href=#240 id=240 data-nosnippet>240</a>
+<a href=#241 id=241 data-nosnippet>241</a><span class="kw">impl</span>&lt;T: ContainerElement&gt; Clone <span class="kw">for </span>UnchangedOr&lt;T&gt; {
+<a href=#242 id=242 data-nosnippet>242</a>    <span class="attr">#[inline]
+<a href=#243 id=243 data-nosnippet>243</a>    </span><span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+<a href=#244 id=244 data-nosnippet>244</a>        <span class="self">Self </span>{
+<a href=#245 id=245 data-nosnippet>245</a>            data: <span class="self">self</span>.data.clone(),
+<a href=#246 id=246 data-nosnippet>246</a>            _marker: PhantomData,
+<a href=#247 id=247 data-nosnippet>247</a>        }
+<a href=#248 id=248 data-nosnippet>248</a>    }
+<a href=#249 id=249 data-nosnippet>249</a>}
+<a href=#250 id=250 data-nosnippet>250</a>
+<a href=#251 id=251 data-nosnippet>251</a><span class="macro">crate::impl_into_arg!</span>(<span class="kw">impl</span>[T: ContainerElement] UnchangedOr&lt;T&gt;);
+<a href=#252 id=252 data-nosnippet>252</a>
+<a href=#253 id=253 data-nosnippet>253</a><span class="kw">impl</span>&lt;<span class="lifetime">'b</span>, T: ContainerElement&gt; TryFrom&lt;<span class="kw-2">&amp;</span><span class="lifetime">'b </span>Any&gt; <span class="kw">for </span>UnchangedOr&lt;T&gt; {
+<a href=#254 id=254 data-nosnippet>254</a>    <span class="kw">type </span>Error = Error;
+<a href=#255 id=255 data-nosnippet>255</a>    <span class="attr">#[inline]
+<a href=#256 id=256 data-nosnippet>256</a>    </span><span class="kw">fn </span>try_from(value: <span class="kw-2">&amp;</span><span class="lifetime">'b </span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+<a href=#257 id=257 data-nosnippet>257</a>        TryFromTemp::&lt;<span class="self">Self</span>&gt;::try_from(value).map(TryFromTemp::into_value)
+<a href=#258 id=258 data-nosnippet>258</a>    }
+<a href=#259 id=259 data-nosnippet>259</a>}
+<a href=#260 id=260 data-nosnippet>260</a>
+<a href=#261 id=261 data-nosnippet>261</a><span class="kw">impl</span>&lt;T: ContainerElement&gt; TryFrom&lt;Any&gt; <span class="kw">for </span>UnchangedOr&lt;T&gt; {
+<a href=#262 id=262 data-nosnippet>262</a>    <span class="kw">type </span>Error = Error;
+<a href=#263 id=263 data-nosnippet>263</a>    <span class="attr">#[inline]
+<a href=#264 id=264 data-nosnippet>264</a>    </span><span class="kw">fn </span>try_from(value: Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+<a href=#265 id=265 data-nosnippet>265</a>        TryFromTemp::&lt;<span class="self">Self</span>&gt;::try_from(value).map(TryFromTemp::into_value)
+<a href=#266 id=266 data-nosnippet>266</a>    }
+<a href=#267 id=267 data-nosnippet>267</a>}
+<a href=#268 id=268 data-nosnippet>268</a>
+<a href=#269 id=269 data-nosnippet>269</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: ContainerElement&gt; TryFrom&lt;AnyView&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>UnchangedOr&lt;T&gt; {
+<a href=#270 id=270 data-nosnippet>270</a>    <span class="kw">type </span>Error = Error;
+<a href=#271 id=271 data-nosnippet>271</a>    <span class="attr">#[inline]
+<a href=#272 id=272 data-nosnippet>272</a>    </span><span class="kw">fn </span>try_from(value: AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+<a href=#273 id=273 data-nosnippet>273</a>        TryFromTemp::&lt;<span class="self">Self</span>&gt;::try_from(value).map(TryFromTemp::into_value)
+<a href=#274 id=274 data-nosnippet>274</a>    }
+<a href=#275 id=275 data-nosnippet>275</a>}
+<a href=#276 id=276 data-nosnippet>276</a>
+<a href=#277 id=277 data-nosnippet>277</a><span class="attr">#[inline]
+<a href=#278 id=278 data-nosnippet>278</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_unchanged(value: <span class="kw-2">&amp;</span>Any) -&gt; bool {
+<a href=#279 id=279 data-nosnippet>279</a>    value.type_index() == TVMFFITypeIndex::kTVMFFIUnchanged <span class="kw">as </span>i32
+<a href=#280 id=280 data-nosnippet>280</a>}
+<a href=#281 id=281 data-nosnippet>281</a>
+<a href=#282 id=282 data-nosnippet>282</a><span class="comment">// -----------------------------------------------------------------------------
+<a href=#283 id=283 data-nosnippet>283</a>// AnyCompatible: low-level FFI carrier conversions.
+<a href=#284 id=284 data-nosnippet>284</a>// -----------------------------------------------------------------------------
+<a href=#285 id=285 data-nosnippet>285</a>
+<a href=#286 id=286 data-nosnippet>286</a>// SAFETY: the unchanged ABI tag has no payload or owned resources.
+<a href=#287 id=287 data-nosnippet>287</a></span><span class="kw">unsafe impl </span>AnyCompatible <span class="kw">for </span>Unchanged {
+<a href=#288 id=288 data-nosnippet>288</a>    <span class="kw">unsafe fn </span>copy_to_any_view(_src: <span class="kw-2">&amp;</span><span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
+<a href=#289 id=289 data-nosnippet>289</a>        <span class="kw-2">*</span>data = TVMFFIAny::new();
+<a href=#290 id=290 data-nosnippet>290</a>        data.type_index = TVMFFITypeIndex::kTVMFFIUnchanged <span class="kw">as </span>i32;
+<a href=#291 id=291 data-nosnippet>291</a>    }
+<a href=#292 id=292 data-nosnippet>292</a>
+<a href=#293 id=293 data-nosnippet>293</a>    <span class="kw">unsafe fn </span>move_to_any(src: <span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
+<a href=#294 id=294 data-nosnippet>294</a>        <span class="kw">unsafe </span>{ <span class="self">Self</span>::copy_to_any_view(<span class="kw-2">&amp;</span>src, data) };
+<a href=#295 id=295 data-nosnippet>295</a>    }
+<a href=#296 id=296 data-nosnippet>296</a>
+<a href=#297 id=297 data-nosnippet>297</a>    <span class="kw">unsafe fn </span>check_any_strict(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
+<a href=#298 id=298 data-nosnippet>298</a>        data.type_index == TVMFFITypeIndex::kTVMFFIUnchanged <span class="kw">as </span>i32
+<a href=#299 id=299 data-nosnippet>299</a>    }
+<a href=#300 id=300 data-nosnippet>300</a>
+<a href=#301 id=301 data-nosnippet>301</a>    <span class="kw">unsafe fn </span>copy_from_any_view_after_check(_data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="self">Self </span>{
+<a href=#302 id=302 data-nosnippet>302</a>        <span class="self">Self
+<a href=#303 id=303 data-nosnippet>303</a>    </span>}
+<a href=#304 id=304 data-nosnippet>304</a>
+<a href=#305 id=305 data-nosnippet>305</a>    <span class="kw">unsafe fn </span>move_from_any_after_check(_data: <span class="kw-2">&amp;mut </span>TVMFFIAny) -&gt; <span class="self">Self </span>{
+<a href=#306 id=306 data-nosnippet>306</a>        <span class="self">Self
+<a href=#307 id=307 data-nosnippet>307</a>    </span>}
+<a href=#308 id=308 data-nosnippet>308</a>
+<a href=#309 id=309 data-nosnippet>309</a>    <span class="kw">unsafe fn </span>try_cast_from_any_view(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::result::Result&lt;<span class="self">Self</span>, ()&gt; {
+<a href=#310 id=310 data-nosnippet>310</a>        <span class="kw">unsafe </span>{ <span class="self">Self</span>::check_any_strict(data).then_some(<span class="self">Self</span>).ok_or(()) }
+<a href=#311 id=311 data-nosnippet>311</a>    }
+<a href=#312 id=312 data-nosnippet>312</a>
+<a href=#313 id=313 data-nosnippet>313</a>    <span class="kw">fn </span>type_str() -&gt; std::string::String {
+<a href=#314 id=314 data-nosnippet>314</a>        <span class="string">"Unchanged"</span>.into()
+<a href=#315 id=315 data-nosnippet>315</a>    }
+<a href=#316 id=316 data-nosnippet>316</a>
+<a href=#317 id=317 data-nosnippet>317</a>    <span class="kw">fn </span>type_schema() -&gt; std::string::String {
+<a href=#318 id=318 data-nosnippet>318</a>        <span class="kw">crate</span>::type_traits::type_schema(<span class="string">"ffi.Unchanged"</span>, <span class="kw-2">&amp;</span>[])
+<a href=#319 id=319 data-nosnippet>319</a>    }
+<a href=#320 id=320 data-nosnippet>320</a>}
+<a href=#321 id=321 data-nosnippet>321</a>
+<a href=#322 id=322 data-nosnippet>322</a><span class="macro">crate::impl_try_from_any!</span>(Unchanged);
+<a href=#323 id=323 data-nosnippet>323</a><span class="macro">crate::impl_into_arg!</span>(Unchanged);
 <a href=#324 id=324 data-nosnippet>324</a>
-<a href=#325 id=325 data-nosnippet>325</a><span class="kw">impl</span>&lt;<span class="lifetime">'b</span>, T: ContainerElement&gt; TryFrom&lt;<span class="kw-2">&amp;</span><span class="lifetime">'b </span>Any&gt; <span class="kw">for </span>UnchangedOr&lt;T&gt; {
-<a href=#326 id=326 data-nosnippet>326</a>    <span class="kw">type </span>Error = Error;
-<a href=#327 id=327 data-nosnippet>327</a>    <span class="attr">#[inline]
-<a href=#328 id=328 data-nosnippet>328</a>    </span><span class="kw">fn </span>try_from(value: <span class="kw-2">&amp;</span><span class="lifetime">'b </span>Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#329 id=329 data-nosnippet>329</a>        TryFromTemp::&lt;<span class="self">Self</span>&gt;::try_from(value).map(TryFromTemp::into_value)
-<a href=#330 id=330 data-nosnippet>330</a>    }
-<a href=#331 id=331 data-nosnippet>331</a>}
+<a href=#325 id=325 data-nosnippet>325</a><span class="comment">// SAFETY: the carrier contains either the resource-free marker or exactly
+<a href=#326 id=326 data-nosnippet>326</a>// T's owning representation. Borrowing never acquires ownership; moving
+<a href=#327 id=327 data-nosnippet>327</a>// transfers the carrier once. Non-strict conversions materialize a valid T.
+<a href=#328 id=328 data-nosnippet>328</a></span><span class="kw">unsafe impl</span>&lt;T: ContainerElement&gt; AnyCompatible <span class="kw">for </span>UnchangedOr&lt;T&gt; {
+<a href=#329 id=329 data-nosnippet>329</a>    <span class="kw">unsafe fn </span>copy_to_any_view(src: <span class="kw-2">&amp;</span><span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
+<a href=#330 id=330 data-nosnippet>330</a>        <span class="kw-2">*</span>data = <span class="kw-2">*</span>src.data.as_raw_ffi_any();
+<a href=#331 id=331 data-nosnippet>331</a>    }
 <a href=#332 id=332 data-nosnippet>332</a>
-<a href=#333 id=333 data-nosnippet>333</a><span class="kw">impl</span>&lt;T: ContainerElement&gt; TryFrom&lt;Any&gt; <span class="kw">for </span>UnchangedOr&lt;T&gt; {
-<a href=#334 id=334 data-nosnippet>334</a>    <span class="kw">type </span>Error = Error;
-<a href=#335 id=335 data-nosnippet>335</a>    <span class="attr">#[inline]
-<a href=#336 id=336 data-nosnippet>336</a>    </span><span class="kw">fn </span>try_from(value: Any) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#337 id=337 data-nosnippet>337</a>        TryFromTemp::&lt;<span class="self">Self</span>&gt;::try_from(value).map(TryFromTemp::into_value)
-<a href=#338 id=338 data-nosnippet>338</a>    }
-<a href=#339 id=339 data-nosnippet>339</a>}
-<a href=#340 id=340 data-nosnippet>340</a>
-<a href=#341 id=341 data-nosnippet>341</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: ContainerElement&gt; TryFrom&lt;AnyView&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>UnchangedOr&lt;T&gt; {
-<a href=#342 id=342 data-nosnippet>342</a>    <span class="kw">type </span>Error = Error;
-<a href=#343 id=343 data-nosnippet>343</a>    <span class="attr">#[inline]
-<a href=#344 id=344 data-nosnippet>344</a>    </span><span class="kw">fn </span>try_from(value: AnyView&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-<a href=#345 id=345 data-nosnippet>345</a>        TryFromTemp::&lt;<span class="self">Self</span>&gt;::try_from(value).map(TryFromTemp::into_value)
-<a href=#346 id=346 data-nosnippet>346</a>    }
-<a href=#347 id=347 data-nosnippet>347</a>}
-<a href=#348 id=348 data-nosnippet>348</a>
-<a href=#349 id=349 data-nosnippet>349</a><span class="attr">#[inline]
-<a href=#350 id=350 data-nosnippet>350</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_unchanged(value: <span class="kw-2">&amp;</span>Any) -&gt; bool {
-<a href=#351 id=351 data-nosnippet>351</a>    value.type_index() == TVMFFITypeIndex::kTVMFFIUnchanged <span class="kw">as </span>i32
-<a href=#352 id=352 data-nosnippet>352</a>}
-<a href=#353 id=353 data-nosnippet>353</a>
-<a href=#354 id=354 data-nosnippet>354</a><span class="comment">// -----------------------------------------------------------------------------
-<a href=#355 id=355 data-nosnippet>355</a>// AnyCompatible: low-level FFI carrier conversions.
-<a href=#356 id=356 data-nosnippet>356</a>// -----------------------------------------------------------------------------
+<a href=#333 id=333 data-nosnippet>333</a>    <span class="kw">unsafe fn </span>move_to_any(src: <span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
+<a href=#334 id=334 data-nosnippet>334</a>        <span class="kw-2">*</span>data = Any::into_raw_ffi_any(src.data);
+<a href=#335 id=335 data-nosnippet>335</a>    }
+<a href=#336 id=336 data-nosnippet>336</a>
+<a href=#337 id=337 data-nosnippet>337</a>    <span class="kw">unsafe fn </span>check_any_strict(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
+<a href=#338 id=338 data-nosnippet>338</a>        <span class="kw">if </span>T::CONTAINER_IS_ANY {
+<a href=#339 id=339 data-nosnippet>339</a>            <span class="comment">// An erased successful result excludes the ABI's error channel.
+<a href=#340 id=340 data-nosnippet>340</a>            </span>data.type_index != TVMFFITypeIndex::kTVMFFIError <span class="kw">as </span>i32
+<a href=#341 id=341 data-nosnippet>341</a>        } <span class="kw">else </span>{
+<a href=#342 id=342 data-nosnippet>342</a>            <span class="kw">unsafe </span>{ Unchanged::check_any_strict(data) || T::container_check_any_strict(data) }
+<a href=#343 id=343 data-nosnippet>343</a>        }
+<a href=#344 id=344 data-nosnippet>344</a>    }
+<a href=#345 id=345 data-nosnippet>345</a>
+<a href=#346 id=346 data-nosnippet>346</a>    <span class="kw">unsafe fn </span>match_constraints(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">unsafe </span>{ Unchanged::check_any_strict(data) || T::container_match_constraints(data) }
+<a href=#348 id=348 data-nosnippet>348</a>    }
+<a href=#349 id=349 data-nosnippet>349</a>
+<a href=#350 id=350 data-nosnippet>350</a>    <span class="kw">unsafe fn </span>copy_from_any_view_after_check(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="self">Self </span>{
+<a href=#351 id=351 data-nosnippet>351</a>        <span class="kw">if unsafe </span>{ Unchanged::check_any_strict(data) } {
+<a href=#352 id=352 data-nosnippet>352</a>            <span class="kw">return </span><span class="self">Self</span>::unchanged();
+<a href=#353 id=353 data-nosnippet>353</a>        }
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="comment">// Materialize T, including numeric narrowing, before storing its value.
+<a href=#355 id=355 data-nosnippet>355</a>        </span><span class="kw">unsafe </span>{ <span class="self">Self</span>::changed(T::container_copy_from_any_view_after_check(data)) }
+<a href=#356 id=356 data-nosnippet>356</a>    }
 <a href=#357 id=357 data-nosnippet>357</a>
-<a href=#358 id=358 data-nosnippet>358</a>// SAFETY: the unchanged ABI tag has no payload or owned resources.
-<a href=#359 id=359 data-nosnippet>359</a></span><span class="kw">unsafe impl </span>AnyCompatible <span class="kw">for </span>Unchanged {
-<a href=#360 id=360 data-nosnippet>360</a>    <span class="kw">unsafe fn </span>copy_to_any_view(_src: <span class="kw-2">&amp;</span><span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
-<a href=#361 id=361 data-nosnippet>361</a>        <span class="kw-2">*</span>data = TVMFFIAny::new();
-<a href=#362 id=362 data-nosnippet>362</a>        data.type_index = TVMFFITypeIndex::kTVMFFIUnchanged <span class="kw">as </span>i32;
-<a href=#363 id=363 data-nosnippet>363</a>    }
-<a href=#364 id=364 data-nosnippet>364</a>
-<a href=#365 id=365 data-nosnippet>365</a>    <span class="kw">unsafe fn </span>move_to_any(src: <span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
-<a href=#366 id=366 data-nosnippet>366</a>        <span class="self">Self</span>::copy_to_any_view(<span class="kw-2">&amp;</span>src, data);
-<a href=#367 id=367 data-nosnippet>367</a>    }
-<a href=#368 id=368 data-nosnippet>368</a>
-<a href=#369 id=369 data-nosnippet>369</a>    <span class="kw">unsafe fn </span>check_any_strict(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
-<a href=#370 id=370 data-nosnippet>370</a>        data.type_index == TVMFFITypeIndex::kTVMFFIUnchanged <span class="kw">as </span>i32
-<a href=#371 id=371 data-nosnippet>371</a>    }
-<a href=#372 id=372 data-nosnippet>372</a>
-<a href=#373 id=373 data-nosnippet>373</a>    <span class="kw">unsafe fn </span>copy_from_any_view_after_check(_data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="self">Self </span>{
-<a href=#374 id=374 data-nosnippet>374</a>        <span class="self">Self
-<a href=#375 id=375 data-nosnippet>375</a>    </span>}
+<a href=#358 id=358 data-nosnippet>358</a>    <span class="kw">unsafe fn </span>move_from_any_after_check(data: <span class="kw-2">&amp;mut </span>TVMFFIAny) -&gt; <span class="self">Self </span>{
+<a href=#359 id=359 data-nosnippet>359</a>        <span class="kw">unsafe </span>{
+<a href=#360 id=360 data-nosnippet>360</a>            <span class="self">Self </span>{
+<a href=#361 id=361 data-nosnippet>361</a>                data: Any::from_raw_ffi_any(std::mem::replace(data, TVMFFIAny::new())),
+<a href=#362 id=362 data-nosnippet>362</a>                _marker: PhantomData,
+<a href=#363 id=363 data-nosnippet>363</a>            }
+<a href=#364 id=364 data-nosnippet>364</a>        }
+<a href=#365 id=365 data-nosnippet>365</a>    }
+<a href=#366 id=366 data-nosnippet>366</a>
+<a href=#367 id=367 data-nosnippet>367</a>    <span class="kw">unsafe fn </span>try_cast_from_any_view(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::result::Result&lt;<span class="self">Self</span>, ()&gt; {
+<a href=#368 id=368 data-nosnippet>368</a>        <span class="kw">if </span>T::CONTAINER_IS_ANY &amp;&amp; data.type_index == TVMFFITypeIndex::kTVMFFIError <span class="kw">as </span>i32 {
+<a href=#369 id=369 data-nosnippet>369</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(());
+<a href=#370 id=370 data-nosnippet>370</a>        }
+<a href=#371 id=371 data-nosnippet>371</a>        <span class="kw">if unsafe </span>{ Unchanged::check_any_strict(data) } {
+<a href=#372 id=372 data-nosnippet>372</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="self">Self</span>::unchanged());
+<a href=#373 id=373 data-nosnippet>373</a>        }
+<a href=#374 id=374 data-nosnippet>374</a>        <span class="kw">unsafe </span>{ T::container_try_cast_from_any_view(data).map(<span class="self">Self</span>::changed) }
+<a href=#375 id=375 data-nosnippet>375</a>    }
 <a href=#376 id=376 data-nosnippet>376</a>
-<a href=#377 id=377 data-nosnippet>377</a>    <span class="kw">unsafe fn </span>move_from_any_after_check(_data: <span class="kw-2">&amp;mut </span>TVMFFIAny) -&gt; <span class="self">Self </span>{
-<a href=#378 id=378 data-nosnippet>378</a>        <span class="self">Self
-<a href=#379 id=379 data-nosnippet>379</a>    </span>}
+<a href=#377 id=377 data-nosnippet>377</a>    <span class="kw">fn </span>type_str() -&gt; std::string::String {
+<a href=#378 id=378 data-nosnippet>378</a>        <span class="macro">format!</span>(<span class="string">"UnchangedOr&lt;{}&gt;"</span>, T::container_type_str())
+<a href=#379 id=379 data-nosnippet>379</a>    }
 <a href=#380 id=380 data-nosnippet>380</a>
-<a href=#381 id=381 data-nosnippet>381</a>    <span class="kw">unsafe fn </span>try_cast_from_any_view(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::result::Result&lt;<span class="self">Self</span>, ()&gt; {
-<a href=#382 id=382 data-nosnippet>382</a>        <span class="self">Self</span>::check_any_strict(data).then_some(<span class="self">Self</span>).ok_or(())
+<a href=#381 id=381 data-nosnippet>381</a>    <span class="kw">fn </span>type_schema() -&gt; std::string::String {
+<a href=#382 id=382 data-nosnippet>382</a>        <span class="kw">crate</span>::type_traits::type_schema(<span class="string">"UnchangedOr"</span>, <span class="kw-2">&amp;</span>[T::container_type_schema()])
 <a href=#383 id=383 data-nosnippet>383</a>    }
-<a href=#384 id=384 data-nosnippet>384</a>
-<a href=#385 id=385 data-nosnippet>385</a>    <span class="kw">fn </span>type_str() -&gt; std::string::String {
-<a href=#386 id=386 data-nosnippet>386</a>        <span class="string">"Unchanged"</span>.into()
-<a href=#387 id=387 data-nosnippet>387</a>    }
-<a href=#388 id=388 data-nosnippet>388</a>
-<a href=#389 id=389 data-nosnippet>389</a>    <span class="kw">fn </span>type_schema() -&gt; std::string::String {
-<a href=#390 id=390 data-nosnippet>390</a>        <span class="kw">crate</span>::type_traits::type_schema(<span class="string">"ffi.Unchanged"</span>, <span class="kw-2">&amp;</span>[])
-<a href=#391 id=391 data-nosnippet>391</a>    }
-<a href=#392 id=392 data-nosnippet>392</a>}
-<a href=#393 id=393 data-nosnippet>393</a>
-<a href=#394 id=394 data-nosnippet>394</a><span class="macro">crate::impl_try_from_any!</span>(Unchanged);
-<a href=#395 id=395 data-nosnippet>395</a>
-<a href=#396 id=396 data-nosnippet>396</a><span class="comment">// SAFETY: the carrier contains either the resource-free marker or exactly
-<a href=#397 id=397 data-nosnippet>397</a>// T's owning representation. Borrowing never acquires ownership; moving
-<a href=#398 id=398 data-nosnippet>398</a>// transfers the carrier once. Non-strict conversions materialize a valid T.
-<a href=#399 id=399 data-nosnippet>399</a></span><span class="kw">unsafe impl</span>&lt;T: ContainerElement&gt; AnyCompatible <span class="kw">for </span>UnchangedOr&lt;T&gt; {
-<a href=#400 id=400 data-nosnippet>400</a>    <span class="kw">unsafe fn </span>copy_to_any_view(src: <span class="kw-2">&amp;</span><span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
-<a href=#401 id=401 data-nosnippet>401</a>        <span class="kw-2">*</span>data = <span class="kw-2">*</span>src.data.as_raw_ffi_any();
-<a href=#402 id=402 data-nosnippet>402</a>    }
-<a href=#403 id=403 data-nosnippet>403</a>
-<a href=#404 id=404 data-nosnippet>404</a>    <span class="kw">unsafe fn </span>move_to_any(src: <span class="self">Self</span>, data: <span class="kw-2">&amp;mut </span>TVMFFIAny) {
-<a href=#405 id=405 data-nosnippet>405</a>        <span class="kw-2">*</span>data = Any::into_raw_ffi_any(src.data);
-<a href=#406 id=406 data-nosnippet>406</a>    }
-<a href=#407 id=407 data-nosnippet>407</a>
-<a href=#408 id=408 data-nosnippet>408</a>    <span class="kw">unsafe fn </span>check_any_strict(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
-<a href=#409 id=409 data-nosnippet>409</a>        <span class="kw">if </span>T::CONTAINER_IS_ANY {
-<a href=#410 id=410 data-nosnippet>410</a>            <span class="comment">// An erased successful result excludes the ABI's error channel.
-<a href=#411 id=411 data-nosnippet>411</a>            </span>data.type_index != TVMFFITypeIndex::kTVMFFIError <span class="kw">as </span>i32
-<a href=#412 id=412 data-nosnippet>412</a>        } <span class="kw">else </span>{
-<a href=#413 id=413 data-nosnippet>413</a>            Unchanged::check_any_strict(data) || T::container_check_any_strict(data)
-<a href=#414 id=414 data-nosnippet>414</a>        }
-<a href=#415 id=415 data-nosnippet>415</a>    }
-<a href=#416 id=416 data-nosnippet>416</a>
-<a href=#417 id=417 data-nosnippet>417</a>    <span class="kw">unsafe fn </span>match_constraints(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; bool {
-<a href=#418 id=418 data-nosnippet>418</a>        Unchanged::check_any_strict(data) || T::container_match_constraints(data)
-<a href=#419 id=419 data-nosnippet>419</a>    }
-<a href=#420 id=420 data-nosnippet>420</a>
-<a href=#421 id=421 data-nosnippet>421</a>    <span class="kw">unsafe fn </span>copy_from_any_view_after_check(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; <span class="self">Self </span>{
-<a href=#422 id=422 data-nosnippet>422</a>        <span class="kw">if </span>Unchanged::check_any_strict(data) {
-<a href=#423 id=423 data-nosnippet>423</a>            <span class="kw">return </span><span class="self">Self</span>::unchanged();
-<a href=#424 id=424 data-nosnippet>424</a>        }
-<a href=#425 id=425 data-nosnippet>425</a>        <span class="comment">// Materialize T, including numeric narrowing, before storing its value.
-<a href=#426 id=426 data-nosnippet>426</a>        </span><span class="self">Self</span>::changed(T::container_copy_from_any_view_after_check(data))
-<a href=#427 id=427 data-nosnippet>427</a>    }
-<a href=#428 id=428 data-nosnippet>428</a>
-<a href=#429 id=429 data-nosnippet>429</a>    <span class="kw">unsafe fn </span>move_from_any_after_check(data: <span class="kw-2">&amp;mut </span>TVMFFIAny) -&gt; <span class="self">Self </span>{
-<a href=#430 id=430 data-nosnippet>430</a>        <span class="self">Self </span>{
-<a href=#431 id=431 data-nosnippet>431</a>            data: Any::from_raw_ffi_any(std::mem::replace(data, TVMFFIAny::new())),
-<a href=#432 id=432 data-nosnippet>432</a>            _marker: PhantomData,
-<a href=#433 id=433 data-nosnippet>433</a>        }
-<a href=#434 id=434 data-nosnippet>434</a>    }
-<a href=#435 id=435 data-nosnippet>435</a>
-<a href=#436 id=436 data-nosnippet>436</a>    <span class="kw">unsafe fn </span>try_cast_from_any_view(data: <span class="kw-2">&amp;</span>TVMFFIAny) -&gt; std::result::Result&lt;<span class="self">Self</span>, ()&gt; {
-<a href=#437 id=437 data-nosnippet>437</a>        <span class="kw">if </span>T::CONTAINER_IS_ANY &amp;&amp; data.type_index == TVMFFITypeIndex::kTVMFFIError <span class="kw">as </span>i32 {
-<a href=#438 id=438 data-nosnippet>438</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(());
-<a href=#439 id=439 data-nosnippet>439</a>        }
-<a href=#440 id=440 data-nosnippet>440</a>        <span class="kw">if </span>Unchanged::check_any_strict(data) {
-<a href=#441 id=441 data-nosnippet>441</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="self">Self</span>::unchanged());
-<a href=#442 id=442 data-nosnippet>442</a>        }
-<a href=#443 id=443 data-nosnippet>443</a>        T::container_try_cast_from_any_view(data).map(<span class="self">Self</span>::changed)
-<a href=#444 id=444 data-nosnippet>444</a>    }
-<a href=#445 id=445 data-nosnippet>445</a>
-<a href=#446 id=446 data-nosnippet>446</a>    <span class="kw">fn </span>type_str() -&gt; std::string::String {
-<a href=#447 id=447 data-nosnippet>447</a>        <span class="macro">format!</span>(<span class="string">"UnchangedOr&lt;{}&gt;"</span>, T::container_type_str())
-<a href=#448 id=448 data-nosnippet>448</a>    }
-<a href=#449 id=449 data-nosnippet>449</a>
-<a href=#450 id=450 data-nosnippet>450</a>    <span class="kw">fn </span>type_schema() -&gt; std::string::String {
-<a href=#451 id=451 data-nosnippet>451</a>        <span class="kw">crate</span>::type_traits::type_schema(<span class="string">"UnchangedOr"</span>, <span class="kw-2">&amp;</span>[T::container_type_schema()])
-<a href=#452 id=452 data-nosnippet>452</a>    }
-<a href=#453 id=453 data-nosnippet>453</a>}
-<a href=#454 id=454 data-nosnippet>454</a>
-<a href=#455 id=455 data-nosnippet>455</a><span class="comment">// -----------------------------------------------------------------------------
-<a href=#456 id=456 data-nosnippet>456</a>// Conversions into an erased mutation result.
-<a href=#457 id=457 data-nosnippet>457</a>// -----------------------------------------------------------------------------
-<a href=#458 id=458 data-nosnippet>458</a>
-<a href=#459 id=459 data-nosnippet>459</a></span><span class="doccomment">/// `Unchanged.into()` keeps the original value.
-<a href=#460 id=460 data-nosnippet>460</a></span><span class="kw">impl </span>From&lt;Unchanged&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
-<a href=#461 id=461 data-nosnippet>461</a>    <span class="attr">#[inline]
-<a href=#462 id=462 data-nosnippet>462</a>    </span><span class="kw">fn </span>from(<span class="kw">_</span>: Unchanged) -&gt; <span class="self">Self </span>{
-<a href=#463 id=463 data-nosnippet>463</a>        <span class="self">Self</span>::unchanged()
-<a href=#464 id=464 data-nosnippet>464</a>    }
-<a href=#465 id=465 data-nosnippet>465</a>}
-<a href=#466 id=466 data-nosnippet>466</a>
-<a href=#467 id=467 data-nosnippet>467</a><span class="doccomment">/// A managed reference replaces the original value.
-<a href=#468 id=468 data-nosnippet>468</a></span><span class="kw">impl</span>&lt;T: <span class="kw">crate</span>::object::ObjectRefCore&gt; From&lt;T&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
-<a href=#469 id=469 data-nosnippet>469</a>    <span class="attr">#[inline]
-<a href=#470 id=470 data-nosnippet>470</a>    </span><span class="kw">fn </span>from(value: T) -&gt; <span class="self">Self </span>{
-<a href=#471 id=471 data-nosnippet>471</a>        <span class="self">Self</span>::changed(Any::from(value))
-<a href=#472 id=472 data-nosnippet>472</a>    }
-<a href=#473 id=473 data-nosnippet>473</a>}
-<a href=#474 id=474 data-nosnippet>474</a>
-<a href=#475 id=475 data-nosnippet>475</a><span class="doccomment">/// A typed result keeps its unchanged marker or replacement.
-<a href=#476 id=476 data-nosnippet>476</a></span><span class="kw">impl</span>&lt;T: <span class="kw">crate</span>::object::ObjectRefCore&gt; From&lt;UnchangedOr&lt;T&gt;&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
-<a href=#477 id=477 data-nosnippet>477</a>    <span class="attr">#[inline]
-<a href=#478 id=478 data-nosnippet>478</a>    </span><span class="kw">fn </span>from(value: UnchangedOr&lt;T&gt;) -&gt; <span class="self">Self </span>{
-<a href=#479 id=479 data-nosnippet>479</a>        <span class="self">Self</span>::from_any(Any::from(value))
-<a href=#480 id=480 data-nosnippet>480</a>    }
-<a href=#481 id=481 data-nosnippet>481</a>}
-<a href=#482 id=482 data-nosnippet>482</a>
-<a href=#483 id=483 data-nosnippet>483</a><span class="macro">macro_rules!</span> impl_unchanged_or_any_from_scalar {
-<a href=#484 id=484 data-nosnippet>484</a>    ($(<span class="macro-nonterminal">$ty</span>:ty),<span class="kw-2">*</span>) =&gt; {
-<a href=#485 id=485 data-nosnippet>485</a>        $(
-<a href=#486 id=486 data-nosnippet>486</a>            <span class="doccomment">/// A scalar replaces the original value.
-<a href=#487 id=487 data-nosnippet>487</a>            </span><span class="kw">impl </span>From&lt;<span class="macro-nonterminal">$ty</span>&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
-<a href=#488 id=488 data-nosnippet>488</a>                <span class="attr">#[inline]
-<a href=#489 id=489 data-nosnippet>489</a>                </span><span class="kw">fn </span>from(value: <span class="macro-nonterminal">$ty</span>) -&gt; <span class="self">Self </span>{
-<a href=#490 id=490 data-nosnippet>490</a>                    <span class="self">Self</span>::changed(Any::from(value))
-<a href=#491 id=491 data-nosnippet>491</a>                }
-<a href=#492 id=492 data-nosnippet>492</a>            }
-<a href=#493 id=493 data-nosnippet>493</a>
-<a href=#494 id=494 data-nosnippet>494</a>            <span class="doccomment">/// A typed scalar result keeps its unchanged marker or replacement.
-<a href=#495 id=495 data-nosnippet>495</a>            </span><span class="kw">impl </span>From&lt;UnchangedOr&lt;<span class="macro-nonterminal">$ty</span>&gt;&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
-<a href=#496 id=496 data-nosnippet>496</a>                <span class="attr">#[inline]
-<a href=#497 id=497 data-nosnippet>497</a>                </span><span class="kw">fn </span>from(value: UnchangedOr&lt;<span class="macro-nonterminal">$ty</span>&gt;) -&gt; <span class="self">Self </span>{
-<a href=#498 id=498 data-nosnippet>498</a>                    <span class="self">Self</span>::from_any(Any::from(value))
-<a href=#499 id=499 data-nosnippet>499</a>                }
-<a href=#500 id=500 data-nosnippet>500</a>            }
-<a href=#501 id=501 data-nosnippet>501</a>        )*
-<a href=#502 id=502 data-nosnippet>502</a>    };
-<a href=#503 id=503 data-nosnippet>503</a>}
-<a href=#504 id=504 data-nosnippet>504</a><span class="macro">impl_unchanged_or_any_from_scalar!</span>(
-<a href=#505 id=505 data-nosnippet>505</a>    bool, i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64
-<a href=#506 id=506 data-nosnippet>506</a>);
+<a href=#384 id=384 data-nosnippet>384</a>}
+<a href=#385 id=385 data-nosnippet>385</a>
+<a href=#386 id=386 data-nosnippet>386</a><span class="comment">// -----------------------------------------------------------------------------
+<a href=#387 id=387 data-nosnippet>387</a>// Conversions into an erased mutation result.
+<a href=#388 id=388 data-nosnippet>388</a>// -----------------------------------------------------------------------------
+<a href=#389 id=389 data-nosnippet>389</a>
+<a href=#390 id=390 data-nosnippet>390</a></span><span class="doccomment">/// `Unchanged.into()` keeps the original value.
+<a href=#391 id=391 data-nosnippet>391</a></span><span class="kw">impl </span>From&lt;Unchanged&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
+<a href=#392 id=392 data-nosnippet>392</a>    <span class="attr">#[inline]
+<a href=#393 id=393 data-nosnippet>393</a>    </span><span class="kw">fn </span>from(<span class="kw">_</span>: Unchanged) -&gt; <span class="self">Self </span>{
+<a href=#394 id=394 data-nosnippet>394</a>        <span class="self">Self</span>::unchanged()
+<a href=#395 id=395 data-nosnippet>395</a>    }
+<a href=#396 id=396 data-nosnippet>396</a>}
+<a href=#397 id=397 data-nosnippet>397</a>
+<a href=#398 id=398 data-nosnippet>398</a><span class="doccomment">/// A managed reference replaces the original value.
+<a href=#399 id=399 data-nosnippet>399</a></span><span class="kw">impl</span>&lt;T: <span class="kw">crate</span>::object::ObjectRefCore&gt; From&lt;T&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
+<a href=#400 id=400 data-nosnippet>400</a>    <span class="attr">#[inline]
+<a href=#401 id=401 data-nosnippet>401</a>    </span><span class="kw">fn </span>from(value: T) -&gt; <span class="self">Self </span>{
+<a href=#402 id=402 data-nosnippet>402</a>        <span class="self">Self</span>::changed(Any::from(value))
+<a href=#403 id=403 data-nosnippet>403</a>    }
+<a href=#404 id=404 data-nosnippet>404</a>}
+<a href=#405 id=405 data-nosnippet>405</a>
+<a href=#406 id=406 data-nosnippet>406</a><span class="doccomment">/// A typed result keeps its unchanged marker or replacement.
+<a href=#407 id=407 data-nosnippet>407</a></span><span class="kw">impl</span>&lt;T: <span class="kw">crate</span>::object::ObjectRefCore&gt; From&lt;UnchangedOr&lt;T&gt;&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
+<a href=#408 id=408 data-nosnippet>408</a>    <span class="attr">#[inline]
+<a href=#409 id=409 data-nosnippet>409</a>    </span><span class="kw">fn </span>from(value: UnchangedOr&lt;T&gt;) -&gt; <span class="self">Self </span>{
+<a href=#410 id=410 data-nosnippet>410</a>        <span class="self">Self</span>::from_any(Any::from(value))
+<a href=#411 id=411 data-nosnippet>411</a>    }
+<a href=#412 id=412 data-nosnippet>412</a>}
+<a href=#413 id=413 data-nosnippet>413</a>
+<a href=#414 id=414 data-nosnippet>414</a><span class="macro">macro_rules!</span> impl_unchanged_or_any_from_scalar {
+<a href=#415 id=415 data-nosnippet>415</a>    ($(<span class="macro-nonterminal">$ty</span>:ty),<span class="kw-2">*</span>) =&gt; {
+<a href=#416 id=416 data-nosnippet>416</a>        $(
+<a href=#417 id=417 data-nosnippet>417</a>            <span class="doccomment">/// A scalar replaces the original value.
+<a href=#418 id=418 data-nosnippet>418</a>            </span><span class="kw">impl </span>From&lt;<span class="macro-nonterminal">$ty</span>&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
+<a href=#419 id=419 data-nosnippet>419</a>                <span class="attr">#[inline]
+<a href=#420 id=420 data-nosnippet>420</a>                </span><span class="kw">fn </span>from(value: <span class="macro-nonterminal">$ty</span>) -&gt; <span class="self">Self </span>{
+<a href=#421 id=421 data-nosnippet>421</a>                    <span class="self">Self</span>::changed(Any::from(value))
+<a href=#422 id=422 data-nosnippet>422</a>                }
+<a href=#423 id=423 data-nosnippet>423</a>            }
+<a href=#424 id=424 data-nosnippet>424</a>
+<a href=#425 id=425 data-nosnippet>425</a>            <span class="doccomment">/// A typed scalar result keeps its unchanged marker or replacement.
+<a href=#426 id=426 data-nosnippet>426</a>            </span><span class="kw">impl </span>From&lt;UnchangedOr&lt;<span class="macro-nonterminal">$ty</span>&gt;&gt; <span class="kw">for </span>UnchangedOr&lt;Any&gt; {
+<a href=#427 id=427 data-nosnippet>427</a>                <span class="attr">#[inline]
+<a href=#428 id=428 data-nosnippet>428</a>                </span><span class="kw">fn </span>from(value: UnchangedOr&lt;<span class="macro-nonterminal">$ty</span>&gt;) -&gt; <span class="self">Self </span>{
+<a href=#429 id=429 data-nosnippet>429</a>                    <span class="self">Self</span>::from_any(Any::from(value))
+<a href=#430 id=430 data-nosnippet>430</a>                }
+<a href=#431 id=431 data-nosnippet>431</a>            }
+<a href=#432 id=432 data-nosnippet>432</a>        )*
+<a href=#433 id=433 data-nosnippet>433</a>    };
+<a href=#434 id=434 data-nosnippet>434</a>}
+<a href=#435 id=435 data-nosnippet>435</a><span class="macro">impl_unchanged_or_any_from_scalar!</span>(
+<a href=#436 id=436 data-nosnippet>436</a>    bool, i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64
+<a href=#437 id=437 data-nosnippet>437</a>);
 </code></pre></div></section></main></body></html>
