@@ -91,7 +91,7 @@ Set ``BUILD_CPP_DOCS=1`` on the desired build command to enable the extra step:
 Build with Rust Docs
 --------------------
 
-The Rust API reference is the ``cargo doc`` output of the ``rust/`` crate, copied
+The Rust API reference is the ``cargo doc`` output of the ``rust/tvm-tirx`` crate, copied
 under ``reference/rust/generated`` of the HTML output. Use Rust 1.95 or newer,
 as required by the crate and its ``tvm-ffi`` dependency. The crate's build script runs
 ``tvm-tirx-config`` to find ``libtvm_tirx_compiler``, so
@@ -103,7 +103,7 @@ build the package first; ``uv run`` puts the helper on ``PATH``. Set
    # Interactive build with auto-rebuild on crate changes
    BUILD_RUST_DOCS=1 uv run --no-sync sphinx-autobuild docs docs/_build/html \
      --ignore docs/reference/python/generated --ignore docs/reference/cpp/generated \
-     --watch rust/src
+     --watch rust/tvm-tirx/src
 
    # One-off build
    BUILD_RUST_DOCS=1 uv run --no-sync python -m sphinx -b html -W docs docs/_build/html
