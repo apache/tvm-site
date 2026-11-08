@@ -98,6 +98,8 @@ Program Listing for File context.h
      }
    
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("tirx.DispatchContext", DispatchContextObj, ffi::Object);
+     // Shared instances are mutated in place, so the class is mutable.
+     static constexpr bool _type_mutable = true;
    };
    
    class DispatchContext : public ffi::ObjectRef {
