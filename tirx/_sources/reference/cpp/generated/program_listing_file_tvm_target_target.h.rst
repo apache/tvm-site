@@ -115,11 +115,6 @@ Program Listing for File target.h
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("target.Target", TargetObj, ffi::Object);
      // Shared instances are mutated in place, so the class is mutable.
      static constexpr bool _type_mutable = true;
-   
-    private:
-     mutable ffi::String str_repr_;
-   
-     friend class TargetInternal;
    };
    
    class Target : public ffi::ObjectRef {
