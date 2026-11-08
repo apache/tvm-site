@@ -648,13 +648,13 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a03983cf66713724c138f9697bb8e0e97`
 
-- :ref:`exhale_function_namespacetvm_1ab25738e50b37cd07b2d171ca74ba9321`
-
 - :ref:`exhale_function_namespacetvm_1afcdbd1fab3bdd58534c7fa93f3443d91`
 
 - :ref:`exhale_function_namespacetvm_1a15550334ba622451f41e2f04d386c1a2`
 
 - :ref:`exhale_function_namespacetvm_1ab09a39be17461ad9a4f0ec0b3cb963d9`
+
+- :ref:`exhale_function_namespacetvm_1ab25738e50b37cd07b2d171ca74ba9321`
 
 - :ref:`exhale_function_namespacetvm_1a253689828377e1e885a14b913f37a1c8`
 
@@ -738,11 +738,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a164d454c519fecaa5611c86b65469acc`
 
-- :ref:`exhale_function_namespacetvm_1a850a6f663cf645bf1d5de9e46c074c15`
-
 - :ref:`exhale_function_namespacetvm_1a06c876d86dd675819633003200a04c3a`
 
 - :ref:`exhale_function_namespacetvm_1a0116e9743c4fd5d3ee6b660870e5bf4f`
+
+- :ref:`exhale_function_namespacetvm_1a850a6f663cf645bf1d5de9e46c074c15`
 
 - :ref:`exhale_function_namespacetvm_1a18256ba1213ce5ff3cf8037a314354b7`
 

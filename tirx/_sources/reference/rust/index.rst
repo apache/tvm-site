@@ -46,8 +46,8 @@ Crates
      - Description
    * - 📦 `tvm-tirx <generated/tvm_tirx/index.html>`_
      - The IR, TIRx, symbolic analysis, target, backend, runtime, codegen and script
-       bindings, the Rust IR constructors and operators, and the definition of new
+       modules, their IR constructors and operators, and the definition of new
        types, operators, and passes.
    * - 📦 `tvm-ffi <generated/tvm_ffi/index.html>`_
-     - The TVM FFI objects, functions, containers and ``static_init_block!`` the
-       bindings are built on, re-exported as ``tvm_tirx::tvm_ffi``.
+     - The TVM FFI objects, functions, containers and ``static_init_block!`` that
+       ``tvm-tirx`` is built on, re-exported as ``tvm_tirx::tvm_ffi``.

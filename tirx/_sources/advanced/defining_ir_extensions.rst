@@ -283,10 +283,10 @@ The rewrites are:
          :start-after: // begin lowering
          :end-before: // end lowering
          :prepend: struct Lowering {
-                bindings: Vec<(Var, Var, Var)>,
+                bindings: Vec<(Var, PrimVar, PrimVar)>,
             }
             impl Lowering {
-                fn parts(&self, expr: &Expr) -> Result<(Expr, Expr)> { ... }
+                fn parts(&self, expr: &Expr) -> Result<(PrimExpr, PrimExpr)> { ... }
             }
             #[dispatch(map, (AnyView<'_>,), Result<UnchangedOr<Any>>)]
             impl Lowering {

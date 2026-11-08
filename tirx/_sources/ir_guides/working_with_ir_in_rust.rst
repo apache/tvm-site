@@ -41,9 +41,9 @@ The examples are packaged as ``tirx_ir_guide_examples`` under
 `examples/ir_guides <https://github.com/apache/tvm-tirx/tree/main/examples/ir_guides>`__.
 When cargo is available, installing the package builds the Rust crate in
 ``rust/`` into a library; ``CMakeLists.txt`` and ``pyproject.toml`` in the
-same directory show how. The crate uses the bindings from this checkout,
-so install TIRx from the same source tree. We install without build isolation
-to build against that installation instead of fetching one from PyPI:
+same directory show how. The crate depends on the ``tvm-tirx`` crate of this
+checkout, so install TIRx from the same source tree. We install without build
+isolation to build against that installation instead of fetching one from PyPI:
 
 .. code-block:: bash
 
