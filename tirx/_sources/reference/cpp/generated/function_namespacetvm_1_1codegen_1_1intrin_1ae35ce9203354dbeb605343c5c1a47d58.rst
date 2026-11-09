@@ -1,4 +1,4 @@
-.. _exhale_function_namespacetvm_1_1codegen_1_1intrin_1a5600f7b2a6b6972ef41882098a3b5452:
+.. _exhale_function_namespacetvm_1_1codegen_1_1intrin_1ae35ce9203354dbeb605343c5c1a47d58:
 
 Function tvm::codegen::intrin::DispatchFastErf
 ==============================================
@@ -10,5 +10,5 @@ Function Documentation
 ----------------------
 
 
-.. doxygenfunction:: tvm::codegen::intrin::DispatchFastErf(const PrimExpr&)
+.. doxygenfunction:: tvm::codegen::intrin::DispatchFastErf(const PrimExpr&, const Target&)
    :project: tvm-tirx

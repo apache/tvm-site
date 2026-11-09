@@ -47,6 +47,8 @@ Includes
 
 - ``tvm/runtime/base.h`` (:ref:`file_tvm_runtime_base.h`)
 
+- ``tvm/target/target.h`` (:ref:`file_tvm_target_target.h`)
+
 - ``tvm/tirx/op/abi.h`` (:ref:`file_tvm_tirx_op_abi.h`)
 
 
@@ -78,9 +80,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_namespacetvm_1_1codegen_1_1intrin_1a5600f7b2a6b6972ef41882098a3b5452`
+- :ref:`exhale_function_namespacetvm_1_1codegen_1_1intrin_1ae35ce9203354dbeb605343c5c1a47d58`
 
-- :ref:`exhale_function_namespacetvm_1_1codegen_1_1intrin_1a7c6c31c8eb0eb79e44b303e8347d9622`
+- :ref:`exhale_function_namespacetvm_1_1codegen_1_1intrin_1a1f662472d72ea1ae7b6b5242b52d46e2`
 
-- :ref:`exhale_function_namespacetvm_1_1codegen_1_1intrin_1a9c1915974400e10bff0cce4938fcc4e1`
+- :ref:`exhale_function_namespacetvm_1_1codegen_1_1intrin_1a8d7c8e96fb34fbbacad7406f1b503a61`
 

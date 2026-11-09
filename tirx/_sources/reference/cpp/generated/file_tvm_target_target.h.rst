@@ -45,8 +45,6 @@ Includes
 
 - ``tvm/ir/function.h`` (:ref:`file_tvm_ir_function.h`)
 
-- ``tvm/ir/with_context.h`` (:ref:`file_tvm_ir_with_context.h`)
-
 - ``tvm/runtime/device_api.h`` (:ref:`file_tvm_runtime_device_api.h`)
 
 - ``tvm/target/target_kind.h`` (:ref:`file_tvm_target_target_kind.h`)
@@ -59,11 +57,13 @@ Included By
 
 - :ref:`file_tvm_codegen_codegen.h`
 
+- :ref:`file_tvm_codegen_intrin_rule.h`
+
 - :ref:`file_tvm_target_target_tag_registry.h`
 
 - :ref:`file_tvm_tirx_analysis.h`
 
-- :ref:`file_tvm_tirx_layout.h`
+- :ref:`file_tvm_tirx_op_attr.h`
 
 - :ref:`file_tvm_tirx_tile_context.h`
 

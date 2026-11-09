@@ -35,7 +35,6 @@ Program Listing for File target.h
    #include <tvm/ffi/reflection/registry.h>
    #include <tvm/ir/expr.h>
    #include <tvm/ir/function.h>
-   #include <tvm/ir/with_context.h>
    #include <tvm/runtime/device_api.h>
    #include <tvm/target/target_kind.h>
    
@@ -121,7 +120,6 @@ Program Listing for File target.h
     public:
      TVM_TIRX_DLL explicit Target(const ffi::String& tag_or_config_or_target_str);
      TVM_TIRX_DLL explicit Target(const ffi::Map<ffi::String, ffi::Any>& config);
-     TVM_TIRX_DLL static ffi::Optional<Target> Current(bool allow_not_defined = true);
      explicit Target(Target target, ffi::Optional<Target> host) : Target(WithHost(target, host)) {}
      explicit Target(ffi::UnsafeInit tag, ffi::ObjectPtr<TargetObj> n) : ffi::ObjectRef(tag) {
        data_ = std::move(n);
@@ -140,11 +138,7 @@ Program Listing for File target.h
      }
    
     private:
-     // enable with syntax.
      friend class TargetInternal;
-     friend class With<Target>;
-     TVM_TIRX_DLL void EnterWithScope();
-     TVM_TIRX_DLL void ExitWithScope();
    };
    
    inline ffi::Optional<Target> TargetObj::GetHost() const { return this->host.as<Target>(); }

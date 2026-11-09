@@ -55,8 +55,6 @@ Includes
 
 - ``tvm/sym/analyzer.h`` (:ref:`file_tvm_sym_analyzer.h`)
 
-- ``tvm/target/target.h`` (:ref:`file_tvm_target_target.h`)
-
 - ``tvm/tirx/tile/thread_scope.h`` (:ref:`file_tvm_tirx_tile_thread_scope.h`)
 
 
@@ -108,5 +106,5 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a10e9dabc313c5ee9d822b3b07ab4a2b1`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1aa60dd5fc0225d01baa1f7373bcd73f7d`
 

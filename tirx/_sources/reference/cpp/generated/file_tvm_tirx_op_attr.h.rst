@@ -57,6 +57,8 @@ Includes
 
 - ``tvm/ir/stmt.h`` (:ref:`file_tvm_ir_stmt.h`)
 
+- ``tvm/target/target.h`` (:ref:`file_tvm_target_target.h`)
+
 
 
 Included By
@@ -83,9 +85,9 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a4684b6859921f2a35da020cf1301537d`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1ad8caa99cbbd70d07e70518f97c897163`
 
-- :ref:`exhale_typedef_namespacetvm_1_1tirx_1ad4c99fd67b65f19e2f7a26eb4190996e`
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a1b95c41008dbe53bdecdcdb20ecf17d0`
 
 
 Variables

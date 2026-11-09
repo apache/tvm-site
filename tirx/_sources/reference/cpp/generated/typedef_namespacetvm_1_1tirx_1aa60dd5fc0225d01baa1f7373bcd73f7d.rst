@@ -1,4 +1,4 @@
-.. _exhale_typedef_namespacetvm_1_1tirx_1a10e9dabc313c5ee9d822b3b07ab4a2b1:
+.. _exhale_typedef_namespacetvm_1_1tirx_1aa60dd5fc0225d01baa1f7373bcd73f7d:
 
 Typedef tvm::tirx::FAxisFuser
 =============================

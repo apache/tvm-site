@@ -38,6 +38,7 @@ Program Listing for File attr.h
    #include <tvm/ffi/string.h>
    #include <tvm/ir/expr.h>
    #include <tvm/ir/stmt.h>
+   #include <tvm/target/target.h>
    
    namespace tvm {
    namespace tirx {
@@ -45,9 +46,9 @@ Program Listing for File attr.h
    class StructuralVisitorWithConstraintContextObj;
    class StructuralMutatorWithConstraintContextObj;
    
-   using FLowerIntrinsic = ffi::TypedFunction<PrimExpr(PrimExpr)>;
+   using FLowerIntrinsic = ffi::TypedFunction<PrimExpr(PrimExpr, Target)>;
    
-   using FLegalize = ffi::TypedFunction<PrimExpr(PrimExpr)>;
+   using FLegalize = ffi::TypedFunction<PrimExpr(PrimExpr, Target)>;
    
    namespace op_attr {
    inline constexpr ffi::reflection::AttrKey<ffi::String> kGlobalSymbol{"TGlobalSymbol"};

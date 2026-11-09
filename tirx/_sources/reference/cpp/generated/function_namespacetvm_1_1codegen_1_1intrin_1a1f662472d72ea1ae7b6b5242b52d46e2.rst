@@ -1,4 +1,4 @@
-.. _exhale_function_namespacetvm_1_1codegen_1_1intrin_1a7c6c31c8eb0eb79e44b303e8347d9622:
+.. _exhale_function_namespacetvm_1_1codegen_1_1intrin_1a1f662472d72ea1ae7b6b5242b52d46e2:
 
 Function tvm::codegen::intrin::DispatchNumericallyStableTanh
 ============================================================
@@ -10,5 +10,5 @@ Function Documentation
 ----------------------
 
 
-.. doxygenfunction:: tvm::codegen::intrin::DispatchNumericallyStableTanh(const PrimExpr&)
+.. doxygenfunction:: tvm::codegen::intrin::DispatchNumericallyStableTanh(const PrimExpr&, const Target&)
    :project: tvm-tirx

@@ -37,6 +37,7 @@ Program Listing for File intrin_rule.h
    #include <tvm/ir/expr.h>
    #include <tvm/ir/op.h>
    #include <tvm/runtime/base.h>
+   #include <tvm/target/target.h>
    #include <tvm/tirx/op/abi.h>
    
    #include <string>
@@ -62,7 +63,7 @@ Program Listing for File intrin_rule.h
    };
    
    template <typename T, bool dtype_from_arg = false>
-   inline PrimExpr DispatchPureExtern(const PrimExpr& e) {
+   inline PrimExpr DispatchPureExtern(const PrimExpr& e, const Target& target) {
      const CallObj* call = e.as<CallObj>();
      TVM_FFI_ICHECK(call != nullptr);
      // Primitive intrinsic names use the prim. namespace prefix.
@@ -88,9 +89,9 @@ Program Listing for File intrin_rule.h
      }
    }
    
-   TVM_TIRX_DLL PrimExpr DispatchFastErf(const PrimExpr& e);
+   TVM_TIRX_DLL PrimExpr DispatchFastErf(const PrimExpr& e, const Target& target);
    
-   TVM_TIRX_DLL PrimExpr DispatchNumericallyStableTanh(const PrimExpr& e);
+   TVM_TIRX_DLL PrimExpr DispatchNumericallyStableTanh(const PrimExpr& e, const Target& target);
    
    }  // namespace intrin
    }  // namespace codegen

@@ -1,4 +1,4 @@
-.. _exhale_typedef_namespacetvm_1_1tirx_1ad4c99fd67b65f19e2f7a26eb4190996e:
+.. _exhale_typedef_namespacetvm_1_1tirx_1a1b95c41008dbe53bdecdcdb20ecf17d0:
 
 Typedef tvm::tirx::FLowerIntrinsic
 ==================================

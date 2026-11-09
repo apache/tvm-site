@@ -1,4 +1,4 @@
-.. _exhale_function_namespacetvm_1_1codegen_1_1intrin_1a9c1915974400e10bff0cce4938fcc4e1:
+.. _exhale_function_namespacetvm_1_1codegen_1_1intrin_1a8d7c8e96fb34fbbacad7406f1b503a61:
 
 Template Function tvm::codegen::intrin::DispatchPureExtern
 ==========================================================
@@ -10,5 +10,5 @@ Function Documentation
 ----------------------
 
 
-.. doxygenfunction:: tvm::codegen::intrin::DispatchPureExtern(const PrimExpr&)
+.. doxygenfunction:: tvm::codegen::intrin::DispatchPureExtern(const PrimExpr&, const Target&)
    :project: tvm-tirx

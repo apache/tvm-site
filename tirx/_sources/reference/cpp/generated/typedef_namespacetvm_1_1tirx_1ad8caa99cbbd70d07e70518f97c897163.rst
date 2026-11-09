@@ -1,4 +1,4 @@
-.. _exhale_typedef_namespacetvm_1_1tirx_1a4684b6859921f2a35da020cf1301537d:
+.. _exhale_typedef_namespacetvm_1_1tirx_1ad8caa99cbbd70d07e70518f97c897163:
 
 Typedef tvm::tirx::FLegalize
 ============================
