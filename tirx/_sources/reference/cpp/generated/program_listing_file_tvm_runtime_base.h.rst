@@ -40,11 +40,10 @@ Program Listing for File base.h
    // we will avoid defining extra C APIs here
    #include <tvm/ffi/c_api.h>
    
-   // TIRx version. Overridable at build time via -DTVM_TIRX_VERSION="..." (scikit-build-core
-   // passes the setuptools_scm-resolved version through CMake). The literal below is the
-   // fallback for a bare build with no override.
+   // TIRx version. CMake defines it from the setuptools-scm version under scikit-build-core or
+   // from the git tag. The literal below is the fallback for a build with no definition.
    #ifndef TVM_TIRX_VERSION
-   #define TVM_TIRX_VERSION "0.1.0b1"
+   #define TVM_TIRX_VERSION "0.1.0.dev0"
    #endif
    
    // Core runtime visibility is independent of TIRx compiler visibility.

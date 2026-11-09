@@ -40,13 +40,14 @@ Pre-release checklist (Step 0)
 ------------------------------
 
 Before running the steps below, prepare the candidate tag and release thread.
-Keep the package version consistent in ``pyproject.toml`` (``project.version``),
-``CMakeLists.txt`` (``TVM_TIRX_VERSION``), and ``python/tvm_tirx/libinfo.py``
-(``__version__``). Tags do not update these fields automatically.
+The tag sets the version: the candidate tag is ``vX.Y.Z-rcN`` and the final tag is
+``vX.Y.Z`` (``vX.Y.Z-postN`` for a post release). setuptools-scm derives the Python
+package version, CMake reads it from scikit-build-core or ``git describe``, and the
+crate publication workflow sets the crate version from the tag. No source file needs
+a version edit.
 
 **Step 0.1.** Tag the candidate ``$TIRX_VERSION`` on
 `GitHub <https://github.com/apache/tvm-tirx/releases/new>`__ at the reviewed commit.
-Use the intended package version, such as ``0.1.0``, in all three files.
 
 **Step 0.2.** Open a `release tracking issue
 <https://github.com/apache/tvm-tirx/issues/new>`__. Call the release vote once
@@ -71,6 +72,9 @@ This builds and signs the source release artifacts under
      (
        cd "$_workdir"
        git clone --recursive --branch "$_ver" https://github.com/apache/tvm-tirx.git "$_source_dir"
+       # The tarball has no .git; PKG-INFO gives setuptools-scm the final version.
+       printf 'Metadata-Version: 2.1\nName: apache-tvm-tirx\nVersion: %s\n' \
+         "${TIRX_RELEASE_VERSION#v}" > "$_source_dir/PKG-INFO"
        tar --exclude=.git --exclude=.gitignore --exclude=.gitattributes \
          --exclude=.gitmodules -czf "$_tarball" "$_source_dir"
        gpg --armor --output "$_tarball.asc" --detach-sig "$_tarball"
@@ -109,19 +113,15 @@ the result in the release thread.
 Step 2. Conclude Release
 ------------------------
 
-After the vote passes, conclude the vote, publish wheels, finalize the release
-tag, and bump the development version.
+After the vote passes, conclude the vote, tag the final release, and publish
+the wheels and the crate from it.
 
 **Step 2.1.** Announce the voting results by opening a ``[RESULT][VOTE]`` issue on
 the `issue tracker <https://github.com/apache/tvm-tirx/issues/new>`__.
 Issue notifications are mirrored to ``discuss-archive@tvm.apache.org``;
 post the result to ``dev@tvm.apache.org`` as well.
 
-**Step 2.2.** Publish PyPI wheels with the `publication workflow
-<https://github.com/apache/tvm-tirx/actions/workflows/publish_wheel.yml>`__.
-See :doc:`ci_cd` for how wheels are built with cibuildwheel.
-
-**Step 2.3.** Tag the approved candidate commit as the final version:
+**Step 2.2.** Tag the candidate commit as the final release and delete the candidate tag:
 
 .. code-block:: bash
 
@@ -131,22 +131,13 @@ See :doc:`ci_cd` for how wheels are built with cibuildwheel.
      git fetch upstream --tags
      git tag -a "$TIRX_RELEASE_VERSION" "${TIRX_VERSION}^{commit}" -m "Release $TIRX_RELEASE_VERSION"
      git push upstream "$TIRX_RELEASE_VERSION"
+     git push upstream --delete "$TIRX_VERSION"
    )
 
-Keep the candidate tag for traceability. Then create a version-bump branch and
-set all three version fields from Step 0 to the next development version
-(for example, ``0.1.1.dev0`` after ``0.1.0``):
-
-.. code-block:: bash
-
-   cd tvm-tirx-release
-   git switch -c bump-version upstream/main
-   "${EDITOR:-vi}" pyproject.toml CMakeLists.txt python/tvm_tirx/libinfo.py
-   git add pyproject.toml CMakeLists.txt python/tvm_tirx/libinfo.py
-   git commit -m "Bump development version after $TIRX_RELEASE_VERSION"
-   git push -u upstream bump-version
-
-Open a pull request for the version bump.
+**Step 2.3.** Publish the wheels and the crate: run the `wheel
+<https://github.com/apache/tvm-tirx/actions/workflows/publish_wheel.yml>`__ and `crate
+<https://github.com/apache/tvm-tirx/actions/workflows/publish_crate.yml>`__ publication
+workflows with ``tag`` set to ``$TIRX_RELEASE_VERSION``.
 
 Step 3. Upload Release Artifacts
 --------------------------------
