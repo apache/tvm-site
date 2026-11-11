@@ -46,9 +46,11 @@ Program Listing for File rvalue_ref.h
     public:
      using ContainerType = typename TObjRef::ContainerType;
      explicit RValueRef(TObjRef&& data)
-         : data_(details::ObjectUnsafe::ObjectPtrFromObjectRef<ContainerType>(std::move(data))) {}
+         : data_(detail::ObjectUnsafe::ObjectPtrFromObjectRef<ContainerType>(std::move(data))) {}
    
-     TObjRef operator*() && { return TObjRef(std::move(data_)); }
+     TObjRef operator*() && {
+       return detail::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(std::move(data_));
+     }
    
     private:
      mutable ObjectPtr<ContainerType> data_;
@@ -98,7 +100,7 @@ Program Listing for File rvalue_ref.h
          // fast path, storage type matches, direct move the rvalue ref
          if (TypeTraits<TObjRef>::CheckAnyStrict(&tmp_any)) {
            return RValueRef<TObjRef>(
-               details::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(std::move(*rvalue_ref)));
+               detail::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(std::move(*rvalue_ref)));
          }
          if (std::optional<TObjRef> opt = TypeTraits<TObjRef>::TryCastFromAnyView(&tmp_any)) {
            // object type does not match up, we need to try to convert the object

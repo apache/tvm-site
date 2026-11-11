@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["get_type_attr"],"struct":["FieldGetter","TypeAttrColumn"]};
+window.SIDEBAR_ITEMS = {"enum":["AccessKind","SEqHashKind"],"fn":["field_default","get_method","get_method_by_index","type_key","unsafe_init"],"struct":["AccessPath","AccessPathObj","AccessStep","AccessStepObj","EnumAttrMap","EnumDef","FieldFlags","FieldGetter","NativeFunction","ObjectDef","TypeAttrColumn","TypeAttrDef"],"trait":["NativeArgs","ShallowCopy","UnsafeInit"]};

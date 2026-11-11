@@ -32,6 +32,7 @@ Program Listing for File dtype.h
    #define TVM_FFI_EXTRA_DTYPE_H_
    
    #include <dlpack/dlpack.h>
+   #include <tvm/ffi/base_detail.h>
    
    #include <type_traits>
    
@@ -56,13 +57,15 @@ Program Listing for File dtype.h
    struct __hip_fp4_e2m1;
    struct __hip_fp4x2_e2m1;
    
-   namespace tvm_ffi {
+   namespace tvm {
+   namespace ffi {
    
    
    template <typename T>
    struct dtype_trait {};
    
-   namespace details::dtypes {
+   namespace detail {
+   namespace dtypes {
    
    template <typename T>
    struct integer_trait {
@@ -82,43 +85,44 @@ Program Listing for File dtype.h
      };
    };
    
-   }  // namespace details::dtypes
+   }  // namespace dtypes
+   }  // namespace detail
    
    template <>
-   struct dtype_trait<signed char> : details::dtypes::integer_trait<signed char> {};
+   struct dtype_trait<signed char> : detail::dtypes::integer_trait<signed char> {};
    
    template <>
-   struct dtype_trait<unsigned char> : details::dtypes::integer_trait<unsigned char> {};
+   struct dtype_trait<unsigned char> : detail::dtypes::integer_trait<unsigned char> {};
    
    template <>
-   struct dtype_trait<signed short> : details::dtypes::integer_trait<signed short> {};
+   struct dtype_trait<signed short> : detail::dtypes::integer_trait<signed short> {};
    
    template <>
-   struct dtype_trait<unsigned short> : details::dtypes::integer_trait<unsigned short> {};
+   struct dtype_trait<unsigned short> : detail::dtypes::integer_trait<unsigned short> {};
    
    template <>
-   struct dtype_trait<signed int> : details::dtypes::integer_trait<signed int> {};
+   struct dtype_trait<signed int> : detail::dtypes::integer_trait<signed int> {};
    
    template <>
-   struct dtype_trait<unsigned int> : details::dtypes::integer_trait<unsigned int> {};
+   struct dtype_trait<unsigned int> : detail::dtypes::integer_trait<unsigned int> {};
    
    template <>
-   struct dtype_trait<signed long> : details::dtypes::integer_trait<signed long> {};
+   struct dtype_trait<signed long> : detail::dtypes::integer_trait<signed long> {};
    
    template <>
-   struct dtype_trait<unsigned long> : details::dtypes::integer_trait<unsigned long> {};
+   struct dtype_trait<unsigned long> : detail::dtypes::integer_trait<unsigned long> {};
    
    template <>
-   struct dtype_trait<signed long long> : details::dtypes::integer_trait<signed long long> {};
+   struct dtype_trait<signed long long> : detail::dtypes::integer_trait<signed long long> {};
    
    template <>
-   struct dtype_trait<unsigned long long> : details::dtypes::integer_trait<unsigned long long> {};
+   struct dtype_trait<unsigned long long> : detail::dtypes::integer_trait<unsigned long long> {};
    
    template <>
-   struct dtype_trait<float> : details::dtypes::float_trait<float> {};
+   struct dtype_trait<float> : detail::dtypes::float_trait<float> {};
    
    template <>
-   struct dtype_trait<double> : details::dtypes::float_trait<double> {};
+   struct dtype_trait<double> : detail::dtypes::float_trait<double> {};
    
    // Specialization for bool
    
@@ -207,6 +211,7 @@ Program Listing for File dtype.h
    };
    
    
-   }  // namespace tvm_ffi
+   }  // namespace ffi
+   }  // namespace tvm
    
    #endif  // TVM_FFI_EXTRA_DTYPE_H_

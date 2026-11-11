@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["CPUNDAlloc","Tensor","TensorObj"],"trait":["DLTensorExt","NDAllocator"]};
+window.SIDEBAR_ITEMS = {"struct":["CPUNDAlloc","Tensor","TensorObj","TensorView"],"trait":["DLTensorExt","NDAllocator"]};

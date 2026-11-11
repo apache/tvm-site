@@ -33,11 +33,14 @@ Program Listing for File structural_equal.h
    
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/extra/base.h>
+   #include <tvm/ffi/function.h>
    #include <tvm/ffi/optional.h>
    #include <tvm/ffi/reflection/access_path.h>
+   #include <tvm/ffi/reflection/accessor.h>
    
    namespace tvm {
    namespace ffi {
+   
    class StructuralEqual {
     public:
      TVM_FFI_EXTRA_CXX_API static bool Equal(const Any& lhs, const Any& rhs,
@@ -56,6 +59,12 @@ Program Listing for File structural_equal.h
        return Equal(lhs, rhs, false, false);
      }
    };
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<TypedFunction<bool(
+       const Object*, const Object*, const TypedFunction<bool(AnyView, AnyView, int, AnyView)>&)>>
+       kSEqual{"__s_equal__"};
+   }  // namespace type_attr
    
    }  // namespace ffi
    }  // namespace tvm

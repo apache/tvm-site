@@ -40,7 +40,7 @@ Included By
 -----------
 
 
-- :ref:`file_tvm_ffi_base_details.h`
+- :ref:`file_tvm_ffi_base_detail.h`
 
 - :ref:`file_tvm_ffi_tvm_ffi.h`
 

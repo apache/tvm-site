@@ -39,6 +39,10 @@ Includes
 
 - ``tvm/ffi/extra/base.h`` (:ref:`file_tvm_ffi_extra_base.h`)
 
+- ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
+
+- ``tvm/ffi/reflection/accessor.h`` (:ref:`file_tvm_ffi_reflection_accessor.h`)
+
 
 
 Included By
@@ -58,10 +62,19 @@ Namespaces
 
 - :ref:`namespace_tvm__ffi`
 
+- :ref:`namespace_tvm__ffi__type_attr`
+
 
 Classes
 -------
 
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralHash`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1type__attr_1ab1a73b8b1f9d810837dd5bc2de286b71`
 

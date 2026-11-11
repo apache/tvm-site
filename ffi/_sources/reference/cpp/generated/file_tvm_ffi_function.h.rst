@@ -45,7 +45,7 @@ Includes
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
-- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
+- ``tvm/ffi/base_detail.h`` (:ref:`file_tvm_ffi_base_detail.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
@@ -53,7 +53,7 @@ Includes
 
 - ``tvm/ffi/expected.h`` (:ref:`file_tvm_ffi_expected.h`)
 
-- ``tvm/ffi/function_details.h``
+- ``tvm/ffi/function_detail.h``
 
 - ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
 
@@ -69,17 +69,29 @@ Included By
 
 - :ref:`file_tvm_ffi_dtype.h`
 
+- :ref:`file_tvm_ffi_extra_dataclass.h`
+
 - :ref:`file_tvm_ffi_extra_module.h`
 
+- :ref:`file_tvm_ffi_extra_serialization.h`
+
 - :ref:`file_tvm_ffi_extra_stl.h`
+
+- :ref:`file_tvm_ffi_extra_structural_equal.h`
+
+- :ref:`file_tvm_ffi_extra_structural_hash.h`
 
 - :ref:`file_tvm_ffi_extra_structural_mutate.h`
 
 - :ref:`file_tvm_ffi_extra_structural_visit.h`
 
+- :ref:`file_tvm_ffi_extra_visit_error_context.h`
+
 - :ref:`file_tvm_ffi_reflection_accessor.h`
 
 - :ref:`file_tvm_ffi_reflection_creator.h`
+
+- :ref:`file_tvm_ffi_reflection_native_function.h`
 
 - :ref:`file_tvm_ffi_reflection_overload.h`
 

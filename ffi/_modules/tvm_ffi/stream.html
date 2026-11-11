@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../../_static/documentation_options.js?v=274f805b"></script>
+    <script src="../../_static/documentation_options.js?v=2464e58c"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -417,8 +417,8 @@ window.runMermaid = runMermaid;</script>
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+g23b2ec1b3" />
-    <meta name="docbuild:last-update" content="Sep 26, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g99a7edded" />
+    <meta name="docbuild:last-update" content="Nov 11, 2026"/>
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -795,6 +795,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ctypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">c_void_p</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
@@ -850,6 +851,20 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_xpu_dlpack_device_from_torch_device_index</span><span class="p">(</span><span class="n">torch_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">core</span><span class="o">.</span><span class="n">Device</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the FFI device of torch ``xpu:&lt;torch_index&gt;``.</span>
+
+<span class="sd">    The kDLOneAPI device_id is the global SYCL index that torch's DLPack exporter reports,</span>
+<span class="sd">    which may differ from the torch XPU index, so the mapping comes from torch.</span>
+<span class="sd">    """</span>
+    <span class="c1"># TODO(tvm-ffi-team): remove this mapping once the DLPack, PyTorch, SYCL and Level Zero</span>
+    <span class="c1"># device indices are aligned, and use device(str(current_stream.device)) like CUDA.</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>  <span class="c1"># noqa: PLC0415</span>
+
+    <span class="k">return</span> <span class="n">device</span><span class="p">(</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_torchDeviceToDLDevice</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">,</span> <span class="n">torch_index</span><span class="p">)))</span>
+
+
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
@@ -864,10 +879,17 @@ window.runMermaid = runMermaid;</script>
 <span class="w">            </span><span class="sd">"""Enter both Torch and FFI stream contexts."""</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">torch_context</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">torch_context</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
-            <span class="n">current_stream</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_stream</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ffi_context</span> <span class="o">=</span> <span class="n">StreamContext</span><span class="p">(</span>
-                <span class="n">device</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">current_stream</span><span class="o">.</span><span class="n">device</span><span class="p">)),</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">cuda_stream</span>
-            <span class="p">)</span>
+            <span class="n">current_stream</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">get_device_module</span><span class="p">()</span><span class="o">.</span><span class="n">current_stream</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">current_stream</span><span class="p">,</span> <span class="s2">"cuda_stream"</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ffi_context</span> <span class="o">=</span> <span class="n">StreamContext</span><span class="p">(</span>
+                    <span class="n">device</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">current_stream</span><span class="o">.</span><span class="n">device</span><span class="p">)),</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">cuda_stream</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># XPU</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ffi_context</span> <span class="o">=</span> <span class="n">StreamContext</span><span class="p">(</span>
+                    <span class="n">_xpu_dlpack_device_from_torch_device_index</span><span class="p">(</span><span class="n">current_stream</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">index</span><span class="p">),</span>
+                    <span class="n">current_stream</span><span class="o">.</span><span class="n">sycl_queue</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ffi_context</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
             <span class="k">return</span> <span class="bp">self</span>
 
@@ -885,7 +907,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        context</span>
-<span class="sd">            The wrapped torch stream or cuda graph.</span>
+<span class="sd">            The wrapped torch stream (``torch.cuda.stream`` / ``torch.xpu.stream``)</span>
+<span class="sd">            or cuda graph.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -902,6 +925,10 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">            g = torch.cuda.CUDAGraph()</span>
 <span class="sd">            with tvm_ffi.use_torch_stream(torch.cuda.graph(g)):</span>
+<span class="sd">                ...</span>
+
+<span class="sd">            s = torch.xpu.Stream()</span>
+<span class="sd">            with tvm_ffi.use_torch_stream(torch.xpu.stream(s)):</span>
 <span class="sd">                ...</span>
 
 <span class="sd">        Note</span>
@@ -1045,7 +1072,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 26, 2026.
+  Last updated on Nov 11, 2026.
   <br/>
 </p>
   </div>

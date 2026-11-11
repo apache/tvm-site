@@ -250,6 +250,11 @@ All three are required together. When omitted, the tool operates in directive-on
    date and exit with status 1 if there is any (2 if a file failed to process), so CI
    can reject a stale tree. Cannot be combined with ``--init-*``.
 
+   With ``--target rust``, a file is stale only when a generated definition changes:
+   a type, field, accessor, allocator, upcast or layout assertion, or an ``object/``
+   block to add or remove. A run that would only rewrite ``use`` lines, comments,
+   line wrapping or the module path a type is spelled from leaves the file up to date.
+
 ``--imports``
    Additional Python modules to import before generation (semicolon-separated).
 
@@ -379,39 +384,51 @@ When you run the tool, it:
           # tvm-ffi-stubgen(end)
       ]
 
-``ty-map`` - Type Mapping
-   Maps a C++ type key to a different Python type path. This is useful when the Python
-   class is defined in a different module than the type key suggests.
-
-   .. code-block:: python
-
-      # tvm-ffi-stubgen(ty-map): ffi.reflection.AccessStep -> ffi.access_path.AccessStep
-
-``prefix`` - Demand a Namespace
-   Rust target only. Adds an ``object/<type_key>`` block to the file for every object
-   registered directly under the prefix that no processed file defines yet; ``skip``
-   leaves one out, and a key the ``tvm_ffi`` crate binds itself (every ``ffi.*`` key)
-   is never added. Code outside the blocks is preserved.
-
-   .. code-block:: rust
-
-      // tvm-ffi-stubgen(prefix): my_ffi_extension
-      // tvm-ffi-stubgen(skip): my_ffi_extension.Internal
-
-``import-object`` - Import Object
-   Injects a custom import into generated code. The format is
-   ``<full_name>;<type_checking_only>;<alias>``.
-
-   .. code-block:: python
-
-      # tvm-ffi-stubgen(import-object): ffi.Object;False;_ffi_Object
-
-   This imports ``ffi.Object`` as ``_ffi_Object`` for use in generated code. The second
-   field (``False``) indicates the import is not TYPE_CHECKING-only.
-
 ``skip-file`` - Skip File
    Prevents the tool from modifying the file. Place anywhere in the file.
 
    .. code-block:: python
 
       # tvm-ffi-stubgen(skip-file)
+
+**One-line directives**
+
+The other directives are settings on a single line, written
+``<subject>: <target>(<key>, <key> = <value>, ...)``; the parentheses are omitted when
+there are no keys. Several lines for the same subject and target merge.
+
+``object: <type_key>(ty_map = <path>)`` - Type Mapping
+   Maps a C++ type key to a different Python type path. This is useful when the Python
+   class is defined in a different module than the type key suggests.
+
+   .. code-block:: python
+
+      # tvm-ffi-stubgen(object): ffi.reflection.AccessStep(ty_map = ffi.access_path.AccessStep)
+
+``file: mod(prefix = <prefix>)`` - Demand a Namespace
+   Rust target only. Adds an ``object/<type_key>`` block to the file for every object
+   registered directly under the prefix that no processed file defines yet; an object's
+   ``skip`` key leaves one out, and a key the ``tvm_ffi`` crate binds itself (every
+   ``ffi.*`` key) is never added. A block under the prefix whose type is no longer
+   registered is removed. Code outside the blocks is preserved.
+
+   .. code-block:: rust
+
+      // tvm-ffi-stubgen(file): mod(prefix = my_ffi_extension)
+      // tvm-ffi-stubgen(object): my_ffi_extension.Internal(skip)
+
+   A generated type is named from the module of the file its block is in, not from its
+   type key: the module follows the file's place under the ``src/`` of the nearest
+   ``Cargo.toml`` (``src/ir/prim.rs`` is ``crate::ir::prim``). Other files refer to it by
+   that ``crate::`` path, so a namespace can live anywhere in the module tree. The Rust
+   target's other keys are listed in ``examples/rust_stubgen``.
+
+``import: <full_name>(type_checking_only, alias = <alias>)`` - Import Object
+   Keeps an import in the generated import section; both keys are optional.
+
+   .. code-block:: python
+
+      # tvm-ffi-stubgen(import): ffi.Object(alias = _ffi_Object)
+
+   This imports ``ffi.Object`` as ``_ffi_Object`` for use in generated code;
+   ``type_checking_only`` would import it under ``TYPE_CHECKING`` only.

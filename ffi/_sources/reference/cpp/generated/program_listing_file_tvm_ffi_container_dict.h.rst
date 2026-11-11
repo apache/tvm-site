@@ -33,7 +33,7 @@ Program Listing for File dict.h
    #define TVM_FFI_CONTAINER_DICT_H_
    
    #include <tvm/ffi/any.h>
-   #include <tvm/ffi/container/container_details.h>
+   #include <tvm/ffi/container/container_detail.h>
    #include <tvm/ffi/container/map_base.h>
    #include <tvm/ffi/memory.h>
    #include <tvm/ffi/object.h>
@@ -62,8 +62,8 @@ Program Listing for File dict.h
    static_assert(sizeof(DictObj) == sizeof(MapBaseObj), "DictObj must match MapBaseObj layout");
    
    template <typename K, typename V,
-             typename = typename std::enable_if_t<details::storage_enabled_v<K> &&
-                                                  details::storage_enabled_v<V>>>
+             typename = typename std::enable_if_t<detail::storage_enabled_v<K> &&
+                                                  detail::storage_enabled_v<V>>>
    class Dict : public ObjectRef {
     public:
      using key_type = K;
@@ -109,7 +109,9 @@ Program Listing for File dict.h
        data_ = other.data_;
        return *this;
      }
-     explicit Dict(ObjectPtr<Object> n) : ObjectRef(n) {}
+     explicit Dict(ObjectPtr<Object> n) : ObjectRef(std::move(n)) {
+       TVM_FFI_ICHECK_NOTNULL(data_.get());
+     }
      template <typename IterType>
      Dict(IterType begin, IterType end) {
        data_ = DictObj::CreateFromRange<DictObj>(begin, end);
@@ -122,7 +124,7 @@ Program Listing for File dict.h
        data_ = DictObj::CreateFromRange<DictObj>(init.begin(), init.end());
      }
      V at(const K& key) const {
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<V>(GetDictObj()->at(key));
+       return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<V>(GetDictObj()->at(key));
      }
      V operator[](const K& key) const { return this->at(key); }
      size_t size() const {
@@ -156,7 +158,7 @@ Program Listing for File dict.h
        if (iter == GetDictObj()->end()) {
          return std::nullopt;
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<V>(iter->second);
+       return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<V>(iter->second);
      }
    
      void erase(const K& key) {
@@ -168,6 +170,7 @@ Program Listing for File dict.h
    
      using ContainerType = DictObj;
      static constexpr bool _type_container_is_exact = false;
+     static constexpr bool _type_is_nullable = false;
    
    
      class iterator {
@@ -185,8 +188,8 @@ Program Listing for File dict.h
        pointer operator->() const = delete;
        reference operator*() const {
          auto& kv = *itr;
-         return std::make_pair(details::AnyUnsafe::CopyFromAnyViewAfterCheck<K>(kv.first),
-                               details::AnyUnsafe::CopyFromAnyViewAfterCheck<V>(kv.second));
+         return std::make_pair(detail::AnyUnsafe::CopyFromAnyViewAfterCheck<K>(kv.first),
+                               detail::AnyUnsafe::CopyFromAnyViewAfterCheck<V>(kv.second));
        }
        iterator& operator++() {
          ++itr;
@@ -244,8 +247,8 @@ Program Listing for File dict.h
      TVM_FFI_INLINE static std::string TypeSchema() {
        std::ostringstream oss;
        oss << R"({"type":")" << StaticTypeKey::kTVMFFIDict << R"(","args":[)";
-       oss << details::TypeSchema<K>::v() << ",";
-       oss << details::TypeSchema<V>::v();
+       oss << detail::TypeSchema<K>::v() << ",";
+       oss << detail::TypeSchema<V>::v();
        oss << "]}";
        return oss.str();
      }

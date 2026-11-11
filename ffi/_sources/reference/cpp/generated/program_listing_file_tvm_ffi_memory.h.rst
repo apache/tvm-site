@@ -52,7 +52,7 @@ Program Listing for File memory.h
    // - Arena allocator that gives ownership of memory to arena (deleter = nullptr)
    // - Thread-local object pools: one pool per size and alignment requirement.
    // - Can specialize by type of object to give the specific allocator to each object.
-   namespace details {
+   namespace detail {
    
    TVM_FFI_INLINE void* AlignedAlloc(size_t size, size_t align) {
    #ifdef _MSC_VER
@@ -95,12 +95,12 @@ Program Listing for File memory.h
        using Handler = typename Derived::template Handler<T>;
        static_assert(std::is_base_of_v<Object, T>, "make can only be used to create Object");
        T* ptr = Handler::New(static_cast<Derived*>(this), std::forward<Args>(args)...);
-       TVMFFIObject* ffi_ptr = details::ObjectUnsafe::GetHeader(ptr);
+       TVMFFIObject* ffi_ptr = detail::ObjectUnsafe::GetHeader(ptr);
        ffi_ptr->combined_ref_count = kCombinedRefCountBothOne;
        ffi_ptr->type_index = T::RuntimeTypeIndex();
        ffi_ptr->__padding = 0;
        ffi_ptr->deleter = Handler::Deleter();
-       return details::ObjectUnsafe::ObjectPtrFromOwned<T>(ptr);
+       return detail::ObjectUnsafe::ObjectPtrFromOwned<T>(ptr);
      }
    
      template <typename ArrayType, typename ElemType, typename... Args>
@@ -110,12 +110,12 @@ Program Listing for File memory.h
                      "make_inplace_array can only be used to create Object");
        ArrayType* ptr =
            Handler::New(static_cast<Derived*>(this), num_elems, std::forward<Args>(args)...);
-       TVMFFIObject* ffi_ptr = details::ObjectUnsafe::GetHeader(ptr);
+       TVMFFIObject* ffi_ptr = detail::ObjectUnsafe::GetHeader(ptr);
        ffi_ptr->combined_ref_count = kCombinedRefCountBothOne;
        ffi_ptr->type_index = ArrayType::RuntimeTypeIndex();
        ffi_ptr->__padding = 0;
        ffi_ptr->deleter = Handler::Deleter();
-       return details::ObjectUnsafe::ObjectPtrFromOwned<ArrayType>(ptr);
+       return detail::ObjectUnsafe::ObjectPtrFromOwned<ArrayType>(ptr);
      }
    
     private:
@@ -175,7 +175,7 @@ Program Listing for File memory.h
       private:
        static void Deleter_(void* objptr, int flags) {
          T* tptr =
-             details::ObjectUnsafe::RawObjectPtrFromUnowned<T>(static_cast<TVMFFIObject*>(objptr));
+             detail::ObjectUnsafe::RawObjectPtrFromUnowned<T>(static_cast<TVMFFIObject*>(objptr));
          if (flags & kTVMFFIObjectDeleterFlagBitMaskStrong) {
            // It is important to do tptr->T::~T(),
            // so that we explicitly call the specific destructor
@@ -228,7 +228,7 @@ Program Listing for File memory.h
    
       private:
        static void Deleter_(void* objptr, int flags) {
-         ArrayType* tptr = details::ObjectUnsafe::RawObjectPtrFromUnowned<ArrayType>(
+         ArrayType* tptr = detail::ObjectUnsafe::RawObjectPtrFromUnowned<ArrayType>(
              static_cast<TVMFFIObject*>(objptr));
          if (flags & kTVMFFIObjectDeleterFlagBitMaskStrong) {
            // It is important to do tptr->ArrayType::~ArrayType(),
@@ -243,21 +243,21 @@ Program Listing for File memory.h
        }
      };
    };
-   }  // namespace details
+   }  // namespace detail
    
    template <typename T, typename... Args>
    inline ObjectPtr<T> make_object(Args&&... args) {
-     return details::SimpleObjAllocator().make_object<T>(std::forward<Args>(args)...);
+     return detail::SimpleObjAllocator().make_object<T>(std::forward<Args>(args)...);
    }
    
    template <typename T, typename... Args>
    inline Arc<T> make_arc(Args&&... args) {
-     return details::ObjectUnsafe::ArcFromObjectPtr(make_object<T>(std::forward<Args>(args)...));
+     return detail::ObjectUnsafe::ArcFromObjectPtr(make_object<T>(std::forward<Args>(args)...));
    }
    
    template <typename ArrayType, typename ElemType, typename... Args>
    inline ObjectPtr<ArrayType> make_inplace_array_object(size_t num_elems, Args&&... args) {
-     return details::SimpleObjAllocator().make_inplace_array<ArrayType, ElemType>(
+     return detail::SimpleObjAllocator().make_inplace_array<ArrayType, ElemType>(
          num_elems, std::forward<Args>(args)...);
    }
    

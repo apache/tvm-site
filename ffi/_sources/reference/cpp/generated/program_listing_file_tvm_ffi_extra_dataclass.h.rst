@@ -34,7 +34,9 @@ Program Listing for File dataclass.h
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/container/variant.h>
    #include <tvm/ffi/extra/base.h>
+   #include <tvm/ffi/function.h>
    #include <tvm/ffi/optional.h>
+   #include <tvm/ffi/reflection/accessor.h>
    #include <tvm/ffi/string.h>
    
    #include <ostream>
@@ -77,6 +79,22 @@ Program Listing for File dataclass.h
    inline std::ostream& operator<<(std::ostream& os, const Optional<T>& value) {
      return os << ReprPrint(Any(value));
    }
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<
+       TypedFunction<String(const Object*, const TypedFunction<String(AnyView)>&)>>
+       kRepr{"__ffi_repr__"};
+   
+   inline constexpr reflection::AttrKey<
+       TypedFunction<int64_t(const Object*, const TypedFunction<int64_t(AnyView)>&)>>
+       kHash{"__ffi_hash__"};
+   inline constexpr reflection::AttrKey<
+       TypedFunction<bool(const Object*, const Object*, const TypedFunction<bool(AnyView, AnyView)>&)>>
+       kEq{"__ffi_eq__"};
+   inline constexpr reflection::AttrKey<TypedFunction<int32_t(
+       const Object*, const Object*, const TypedFunction<int32_t(AnyView, AnyView)>&)>>
+       kCompare{"__ffi_compare__"};
+   }  // namespace type_attr
    
    }  // namespace ffi
    }  // namespace tvm

@@ -40,9 +40,10 @@ Program Listing for File structural_visit.h
    #include <tvm/ffi/expected.h>
    #include <tvm/ffi/extra/visit_error_context.h>
    #include <tvm/ffi/function.h>
-   #include <tvm/ffi/function_details.h>
+   #include <tvm/ffi/function_detail.h>
    #include <tvm/ffi/optional.h>
    #include <tvm/ffi/reflection/accessor.h>
+   #include <tvm/ffi/reflection/native_function.h>
    
    #include <cstddef>
    #include <exception>
@@ -79,19 +80,26 @@ Program Listing for File structural_visit.h
    
    class StructuralVisitorObj;
    
-   using FStructuralVisit = TVMFFIAny (*)(StructuralVisitorObj* visitor, AnyView value) noexcept;
+   using FStructuralVisitABI = TVMFFIAny (*)(StructuralVisitorObj* visitor, AnyView value) noexcept;
    
-   namespace details {
+   namespace detail {
    
    // Visit reflected structural fields of an object-backed value.
    TVM_FFI_INLINE static Expected<Optional<VisitInterrupt>> VisitReflectedFieldsExpected(
        StructuralVisitorObj* visitor, const Object* obj) noexcept;
    
-   }  // namespace details
+   }  // namespace detail
    
    struct StructuralVisitorVTable {
-     FStructuralVisit visit = nullptr;
+     FStructuralVisitABI visit = nullptr;
    };
+   
+   using FStructuralVisit =
+       reflection::NativeFunctionView<Optional<VisitInterrupt>(StructuralVisitorObj*, AnyView)>;
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<FStructuralVisit> kStructuralVisit{"__s_visit__"};
+   }  // namespace type_attr
    
    class StructuralVisitorObj : public Object {
     public:
@@ -103,7 +111,7 @@ Program Listing for File structural_visit.h
      }
    
      TVM_FFI_INLINE Expected<Optional<VisitInterrupt>> VisitExpected(AnyView value) noexcept {
-       return details::ExpectedUnsafe::MoveFromTVMFFIAny<Optional<VisitInterrupt>>(
+       return detail::ExpectedUnsafe::MoveFromTVMFFIAny<Optional<VisitInterrupt>>(
            (*vtable_->visit)(this, value));
      }
    
@@ -134,7 +142,7 @@ Program Listing for File structural_visit.h
      }
    
      TVM_FFI_INLINE Expected<Optional<VisitInterrupt>> DefaultVisitExpected(AnyView value) noexcept {
-       return details::ExpectedUnsafe::MoveFromTVMFFIAny<Optional<VisitInterrupt>>(
+       return detail::ExpectedUnsafe::MoveFromTVMFFIAny<Optional<VisitInterrupt>>(
            DefaultVisitRaw(value));
      }
    
@@ -143,30 +151,30 @@ Program Listing for File structural_visit.h
    
     private:
      TVM_FFI_INLINE TVMFFIAny DefaultVisitRaw(AnyView value) noexcept {
-       static reflection::TypeAttrColumn column(reflection::type_attr::kStructuralVisit);
+       static reflection::TypeAttrColumn column(type_attr::kStructuralVisit);
        AnyView attr = column[value.type_index()];
        if (TVM_FFI_PREDICT_TRUE(attr.type_index() == TypeIndex::kTVMFFIOpaquePtr)) {
-         return (*reinterpret_cast<FStructuralVisit>(attr.cast<void*>()))(this, value);
+         return (*reinterpret_cast<FStructuralVisitABI>(attr.cast<void*>()))(this, value);
        }
        return DefaultVisitRawTail(value, attr);
      }
    
      TVMFFIAny DefaultVisitRawTail(AnyView value, AnyView attr) noexcept {
        if (attr.type_index() == TypeIndex::kTVMFFIFunction) {
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(
              attr.cast<Function>().CallExpected<Optional<VisitInterrupt>>(this, value));
        }
        if (TVM_FFI_PREDICT_FALSE(attr.type_index() != TypeIndex::kTVMFFINone)) {
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(
              Expected<Optional<VisitInterrupt>>(Unexpected(Error(
                  "TypeError", "__s_visit__ must be an opaque function pointer or ffi.Function", ""))));
        }
        if (value.type_index() < TypeIndex::kTVMFFIStaticObjectBegin) {
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(
              Expected<Optional<VisitInterrupt>>(std::nullopt));
        }
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(
-           details::VisitReflectedFieldsExpected(this, value.cast<const Object*>()));
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(
+           detail::VisitReflectedFieldsExpected(this, value.cast<const Object*>()));
      }
    
     protected:
@@ -181,22 +189,14 @@ Program Listing for File structural_visit.h
    
    class StructuralVisitor : public ObjectRef {
     public:
-     explicit StructuralVisitor(ObjectPtr<StructuralVisitorObj> n) : ObjectRef(std::move(n)) {}
+     explicit StructuralVisitor(ObjectPtr<StructuralVisitorObj> n) : ObjectRef(std::move(n)) {
+       TVM_FFI_ICHECK_NOTNULL(data_.get());
+     }
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StructuralVisitor, ObjectRef, StructuralVisitorObj);
    };
    
-   namespace details {
-   
-   template <typename T>
-   TVM_FFI_INLINE auto VisitReturnHelper(T&& result) {
-     if constexpr (std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>,
-                                  Optional<VisitInterrupt>>) {
-       return std::forward<T>(result);
-     } else {
-       return ExpectedReturnHelper(std::forward<T>(result));
-     }
-   }
+   namespace detail {
    
    TVM_FFI_INLINE bool StructuralVisitNeedEarlyReturn(
        const Optional<VisitInterrupt>& result) noexcept {
@@ -216,7 +216,7 @@ Program Listing for File structural_visit.h
    // Keep the raw result in registers on success; only error decoration takes its address.
    TVM_FFI_COLD_CODE inline TVMFFIAny AttachStructuralVisitErrorContextRaw(TVMFFIAny result,
                                                                            AnyView value) noexcept {
-     UpdateVisitErrorContext(result, value);
+     UpdateVisitErrorContext(&result, value);
      return result;
    }
    
@@ -237,7 +237,7 @@ Program Listing for File structural_visit.h
              int ret_code = field_info->getter(const_cast<void*>(field_addr),
                                                reinterpret_cast<TVMFFIAny*>(&field_value));
              if (TVM_FFI_PREDICT_FALSE(ret_code != 0)) {
-               result = Unexpected(details::MoveFromSafeCallRaised());
+               result = Unexpected(detail::MoveFromSafeCallRaised());
                return true;
              }
    
@@ -264,7 +264,7 @@ Program Listing for File structural_visit.h
      return visit_fields();
    }
    
-   }  // namespace details
+   }  // namespace detail
    
    // ---------------------------------------------------------------------------
    // Structural Walk API.
@@ -342,18 +342,17 @@ Program Listing for File structural_visit.h
      kPostOrder = 1,
    };
    
-   namespace details {
+   namespace detail {
    
-   #define TVM_FFI_S_VISIT_MAYBE_EARLY_RETURN(Result)                                \
-     do {                                                                            \
-       auto&& tvm_ffi_res_ = (Result);                                               \
-       if (TVM_FFI_PREDICT_FALSE(                                                    \
-               ::tvm::ffi::details::StructuralVisitNeedEarlyReturn(tvm_ffi_res_))) { \
-         return ::tvm::ffi::details::VisitReturnHelper(::std::move(tvm_ffi_res_));   \
-       }                                                                             \
+   #define TVM_FFI_S_VISIT_MAYBE_EARLY_RETURN(Result)                                                 \
+     do {                                                                                             \
+       auto&& tvm_ffi_res_ = (Result);                                                                \
+       if (TVM_FFI_PREDICT_FALSE(::tvm::ffi::detail::StructuralVisitNeedEarlyReturn(tvm_ffi_res_))) { \
+         return ::std::move(tvm_ffi_res_);                                                            \
+       }                                                                                              \
      } while (0)
    
-   }  // namespace details
+   }  // namespace detail
    
    template <typename Parent, WalkOrder order, typename... Callbacks>
    class StructuralWalkEngine : public Parent {
@@ -380,7 +379,7 @@ Program Listing for File structural_visit.h
      template <typename Callback, typename Value, size_t... Is>
      TVM_FFI_INLINE Expected<WalkResult> InvokeCallbackLink(Callback& callback, Value&& value,
                                                             std::index_sequence<Is...>) noexcept {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Callback>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<Callback>>;
        static_assert(
            FuncInfo::num_args == 1 + sizeof...(Is) || FuncInfo::num_args == 2 + sizeof...(Is),
            "StructuralWalk callback takes (value, state...) with an optional trailing "
@@ -403,7 +402,7 @@ Program Listing for File structural_visit.h
      template <typename Callback>
      TVM_FFI_INLINE bool TryLink(Callback& callback, AnyView value,
                                  Expected<WalkResult>* out) noexcept {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Callback>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<Callback>>;
        static_assert(FuncInfo::num_args >= 1, "StructuralWalk callback requires a value argument");
        using FirstArg = std::tuple_element_t<0, typename FuncInfo::ArgType>;
        using TSub = std::remove_cv_t<std::remove_reference_t<FirstArg>>;
@@ -429,18 +428,17 @@ Program Listing for File structural_visit.h
    
      TVMFFIAny VisitImpl(AnyView value) noexcept {
        if (TVM_FFI_PREDICT_FALSE(value.type_index() == TypeIndex::kTVMFFINone)) {
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(
              Expected<Optional<VisitInterrupt>>(std::nullopt));
        }
        if constexpr (order == WalkOrder::kPreOrder) {
          Expected<WalkResult> result = WalkResult::Advance();
          TryLinks(value, &result, std::index_sequence_for<Callbacks...>{});
-         if (TVM_FFI_PREDICT_FALSE(details::StructuralVisitNeedEarlyReturn(result))) {
+         if (TVM_FFI_PREDICT_FALSE(detail::StructuralVisitNeedEarlyReturn(result))) {
            if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
-             Error err = result.error();
-             details::UpdateVisitErrorContext(err, value);
+             detail::UpdateVisitErrorContext(&result, value);
            }
-           return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
+           return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
          }
          // Hoist the call out of TVM_FFI_UNSAFE_ASSUME: clang's -Wassume rejects
          // arguments that contain a call expression (its potential side effects
@@ -448,19 +446,19 @@ Program Listing for File structural_visit.h
          // quiet on configs where the assume macro compiles away.
          [[maybe_unused]] int32_t type_index = result.type_index();
          TVM_FFI_UNSAFE_ASSUME(type_index == TypeIndex::kTVMFFIInt);
-         if (TVM_FFI_PREDICT_FALSE(details::ExpectedUnsafe::ValueAs<int32_t>(result) ==
+         if (TVM_FFI_PREDICT_FALSE(detail::ExpectedUnsafe::ValueAs<int32_t>(result) ==
                                    WalkResult::kSkipTag)) {
-           return details::ExpectedUnsafe::MoveToTVMFFIAny(
+           return detail::ExpectedUnsafe::MoveToTVMFFIAny(
                Expected<Optional<VisitInterrupt>>(std::nullopt));
          }
        }
    
        {
          TVMFFIAny result =
-             details::ExpectedUnsafe::MoveToTVMFFIAny(Parent::DefaultVisitExpected(value));
-         if (TVM_FFI_PREDICT_FALSE(details::StructuralVisitRawNeedEarlyReturn(result))) {
+             detail::ExpectedUnsafe::MoveToTVMFFIAny(Parent::DefaultVisitExpected(value));
+         if (TVM_FFI_PREDICT_FALSE(detail::StructuralVisitRawNeedEarlyReturn(result))) {
            if (TVM_FFI_PREDICT_FALSE(result.type_index == TypeIndex::kTVMFFIError)) {
-             return details::AttachStructuralVisitErrorContextRaw(result, value);
+             return detail::AttachStructuralVisitErrorContextRaw(result, value);
            }
            return result;
          }
@@ -469,16 +467,15 @@ Program Listing for File structural_visit.h
        if constexpr (order == WalkOrder::kPostOrder) {
          Expected<WalkResult> result = WalkResult::Advance();
          TryLinks(value, &result, std::index_sequence_for<Callbacks...>{});
-         if (TVM_FFI_PREDICT_FALSE(details::StructuralVisitNeedEarlyReturn(result))) {
+         if (TVM_FFI_PREDICT_FALSE(detail::StructuralVisitNeedEarlyReturn(result))) {
            if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
-             Error err = result.error();
-             details::UpdateVisitErrorContext(err, value);
+             detail::UpdateVisitErrorContext(&result, value);
            }
-           return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
+           return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
          }
        }
    
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(
            Expected<Optional<VisitInterrupt>>(std::nullopt));
      }
    
@@ -491,7 +488,15 @@ Program Listing for File structural_visit.h
      static_assert(sizeof...(Callbacks) != 0, "StructuralWalk requires at least one callback");
      using Visitor = StructuralWalkEngine<StructuralVisitorObj, order, std::decay_t<Callbacks>...>;
      StructuralVisitor visitor(make_object<Visitor>(std::forward<Callbacks>(callbacks)...));
-     return visitor->VisitExpected(root);
+     auto result = visitor->VisitExpected(root);
+     if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
+       if (auto object_root = root.as<ObjectRef>()) {
+         return Unexpected(
+             VisitErrorContext::EnrichVisitError(std::move(result).error(), *object_root));
+       }
+       return Unexpected(std::move(result).error());
+     }
+     return result;
    }
    
    template <WalkOrder order, typename... Callbacks>
@@ -525,24 +530,24 @@ Program Listing for File structural_visit.h
    
      TVMFFIAny VisitImpl(AnyView value) noexcept {
        if (TVM_FFI_PREDICT_FALSE(value.type_index() == TypeIndex::kTVMFFINone)) {
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(
              Expected<Optional<VisitInterrupt>>(std::nullopt));
        }
        TVMFFIAny result;
        if (!TryLinks(value, &result, std::index_sequence_for<Callbacks...>{})) {
          // Only an unmatched value uses the Parent layer's default descent. A matched
          // callback already traversed as much of the value as it wanted.
-         result = details::ExpectedUnsafe::MoveToTVMFFIAny(Parent::DefaultVisitExpected(value));
+         result = detail::ExpectedUnsafe::MoveToTVMFFIAny(Parent::DefaultVisitExpected(value));
        }
        if (TVM_FFI_PREDICT_FALSE(result.type_index == TypeIndex::kTVMFFIError)) {
-         return details::AttachStructuralVisitErrorContextRaw(result, value);
+         return detail::AttachStructuralVisitErrorContextRaw(result, value);
        }
        return result;
      }
    
      template <typename Callback>
      inline bool TryLink(Callback& callback, AnyView value, TVMFFIAny* out) noexcept {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Callback>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<Callback>>;
        static_assert(FuncInfo::num_args == 2, "StructuralVisit callback takes (value, visitor)");
        using FirstArg = std::tuple_element_t<0, typename FuncInfo::ArgType>;
        using TSub = std::remove_cv_t<std::remove_reference_t<FirstArg>>;
@@ -554,20 +559,20 @@ Program Listing for File structural_visit.h
        auto* visitor = static_cast<typename Parent::VisitorObjType*>(this);
        try {
          if constexpr (std::is_same_v<TSub, AnyView>) {
-           *out = details::ExpectedUnsafe::MoveToTVMFFIAny(
+           *out = detail::ExpectedUnsafe::MoveToTVMFFIAny(
                Expected<Optional<VisitInterrupt>>(callback(value, visitor)));
            return true;
          } else if constexpr (std::is_same_v<TSub, Any>) {
-           *out = details::ExpectedUnsafe::MoveToTVMFFIAny(
+           *out = detail::ExpectedUnsafe::MoveToTVMFFIAny(
                Expected<Optional<VisitInterrupt>>(callback(Any(value), visitor)));
            return true;
          } else if (auto matched = value.template as<TSub>()) {
-           *out = details::ExpectedUnsafe::MoveToTVMFFIAny(
+           *out = detail::ExpectedUnsafe::MoveToTVMFFIAny(
                Expected<Optional<VisitInterrupt>>(callback(*std::move(matched), visitor)));
            return true;
          }
        } catch (const Error& err) {
-         *out = details::ExpectedUnsafe::MoveToTVMFFIAny(
+         *out = detail::ExpectedUnsafe::MoveToTVMFFIAny(
              Expected<Optional<VisitInterrupt>>(Unexpected(err)));
          return true;
        }
@@ -588,7 +593,15 @@ Program Listing for File structural_visit.h
      static_assert(sizeof...(Callbacks) != 0, "StructuralVisit requires at least one callback");
      using Engine = StructuralVisitEngine<StructuralVisitorObj, std::decay_t<Callbacks>...>;
      StructuralVisitor visitor(make_object<Engine>(std::forward<Callbacks>(callbacks)...));
-     return visitor->VisitExpected(root);
+     auto result = visitor->VisitExpected(root);
+     if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
+       if (auto object_root = root.as<ObjectRef>()) {
+         return Unexpected(
+             VisitErrorContext::EnrichVisitError(std::move(result).error(), *object_root));
+       }
+       return Unexpected(std::move(result).error());
+     }
+     return result;
    }
    
    template <typename... Callbacks>

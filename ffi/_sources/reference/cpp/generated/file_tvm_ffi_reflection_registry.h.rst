@@ -55,9 +55,7 @@ Includes
 
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
 
-- ``tvm/ffi/function_details.h``
-
-- ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
+- ``tvm/ffi/function_detail.h``
 
 - ``tvm/ffi/reflection/creator.h`` (:ref:`file_tvm_ffi_reflection_creator.h`)
 
@@ -144,6 +142,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a735285a70c7c4308816450a5b27f03f2`
 
+- :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a7b9b17cc3f6e24b8d10269cdf678fad9`
+
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a6b1f837cf822ded72a31f343ce987f4c`
 
 
@@ -151,12 +151,12 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1_1ffi_1_1reflection_1a96513314d45b43eada132d9b96653d9a`
+- :ref:`exhale_typedef_namespacetvm_1_1ffi_1_1reflection_1a991862433bd8ea60e21aeb243bc876a4`
 
 
 Variables
 ---------
 
 
-- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1aab5d2ed0a499b8237fedeead671a3fa0`
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1af889a524c355f64b48bb3959a7186a40`
 

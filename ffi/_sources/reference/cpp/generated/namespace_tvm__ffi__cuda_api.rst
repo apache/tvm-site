@@ -46,21 +46,21 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_unified__api_8h_1a3a921bfefc753492061768fced304aa7`
+- :ref:`exhale_typedef_unified__api_8h_1ae1366666e3a15b5f595cbf491922f6c8`
 
-- :ref:`exhale_typedef_unified__api_8h_1a92973dc82316f80c6ad935aafba39418`
+- :ref:`exhale_typedef_unified__api_8h_1a11c8c00a63f435cfeddcf9011f437059`
 
-- :ref:`exhale_typedef_unified__api_8h_1ab6a530cbc289dbb52b705f00c8095fc7`
+- :ref:`exhale_typedef_unified__api_8h_1aff9db9f45fb64f51218ffd18a1c4958d`
 
-- :ref:`exhale_typedef_unified__api_8h_1ae60e2c3b6b2591a181c9b0ff8905c2fb`
+- :ref:`exhale_typedef_unified__api_8h_1a3f76831f08bbbeb475eee8e1e7e765b7`
 
-- :ref:`exhale_typedef_unified__api_8h_1a6378bff570cca29703bf0a888e62c2e1`
+- :ref:`exhale_typedef_unified__api_8h_1a5ccc6d0438fa7a0883b9132f01d71c23`
 
-- :ref:`exhale_typedef_unified__api_8h_1a630f9293b2557ea7cf02fc5dc8975608`
+- :ref:`exhale_typedef_unified__api_8h_1a1e694de30ac55ed0b0aee907fb7af727`
 
-- :ref:`exhale_typedef_unified__api_8h_1a17eed3020dde14e09827a83036143d07`
+- :ref:`exhale_typedef_unified__api_8h_1a25d079adc37cc5d6689261aad02a60fd`
 
-- :ref:`exhale_typedef_unified__api_8h_1a6c2e323543c694ac2fc8e68c40a5fa3d`
+- :ref:`exhale_typedef_unified__api_8h_1a35c1e714f18c567426ba2a0c6a55b9ef`
 
 
 Variables

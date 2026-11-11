@@ -40,11 +40,11 @@ Program Listing for File function.h
    #endif  // TVM_FFI_DLL_EXPORT_INCLUDE_METADATA
    
    #include <tvm/ffi/any.h>
-   #include <tvm/ffi/base_details.h>
+   #include <tvm/ffi/base_detail.h>
    #include <tvm/ffi/c_api.h>
    #include <tvm/ffi/error.h>
    #include <tvm/ffi/expected.h>
-   #include <tvm/ffi/function_details.h>
+   #include <tvm/ffi/function_detail.h>
    
    #include <functional>
    #include <optional>
@@ -61,25 +61,25 @@ Program Listing for File function.h
      try {                           \
      (void)0
    
-   #define TVM_FFI_SAFE_CALL_END()                                                                \
-     return 0;                                                                                    \
-     }                                                                                            \
-     catch (const ::tvm::ffi::Error& err) {                                                       \
-       ::tvm::ffi::details::SetSafeCallRaised(err);                                               \
-       return -1;                                                                                 \
-     }                                                                                            \
-     catch (const std::exception& ex) {                                                           \
-       ::tvm::ffi::details::SetSafeCallRaised(::tvm::ffi::Error("InternalError", ex.what(), "")); \
-       return -1;                                                                                 \
-     }                                                                                            \
+   #define TVM_FFI_SAFE_CALL_END()                                                               \
+     return 0;                                                                                   \
+     }                                                                                           \
+     catch (const ::tvm::ffi::Error& err) {                                                      \
+       ::tvm::ffi::detail::SetSafeCallRaised(err);                                               \
+       return -1;                                                                                \
+     }                                                                                           \
+     catch (const std::exception& ex) {                                                          \
+       ::tvm::ffi::detail::SetSafeCallRaised(::tvm::ffi::Error("InternalError", ex.what(), "")); \
+       return -1;                                                                                \
+     }                                                                                           \
      TVM_FFI_UNREACHABLE()
    
-   #define TVM_FFI_CHECK_SAFE_CALL(func)                      \
-     {                                                        \
-       int ret_code = (func);                                 \
-       if (TVM_FFI_PREDICT_FALSE(ret_code != 0)) {            \
-         throw ::tvm::ffi::details::MoveFromSafeCallRaised(); \
-       }                                                      \
+   #define TVM_FFI_CHECK_SAFE_CALL(func)                     \
+     {                                                       \
+       int ret_code = (func);                                \
+       if (TVM_FFI_PREDICT_FALSE(ret_code != 0)) {           \
+         throw ::tvm::ffi::detail::MoveFromSafeCallRaised(); \
+       }                                                     \
      }
    
    class FunctionObj : public Object, public TVMFFIFunctionCell {
@@ -98,7 +98,8 @@ Program Listing for File function.h
      TVM_FFI_DECLARE_OBJECT_INFO_STATIC(StaticTypeKey::kTVMFFIFunction, FunctionObj, Object);
    
     protected:
-     FunctionObj() {}
+     // Keep value-initialization from zero-initializing the function cell.
+     FunctionObj() {}  // NOLINT(modernize-use-equals-default)
      friend class Function;
    
     private:
@@ -110,7 +111,7 @@ Program Listing for File function.h
      }
    };
    
-   namespace details {
+   namespace detail {
    template <typename TCallable>
    class FunctionObjImpl : public FunctionObj {
     public:
@@ -195,7 +196,7 @@ Program Listing for File function.h
     private:
      AnyView* args_;
    };
-   }  // namespace details
+   }  // namespace detail
    
    class PackedArgs {
     public:
@@ -216,7 +217,7 @@ Program Listing for File function.h
    
      template <typename... Args>
      TVM_FFI_INLINE static void Fill(AnyView* data, Args&&... args) {
-       details::for_each(details::PackedArgsSetter(data), std::forward<Args>(args)...);
+       detail::for_each(detail::PackedArgsSetter(data), std::forward<Args>(args)...);
      }
    
     private:
@@ -255,7 +256,7 @@ Program Listing for File function.h
        // We must ensure TCallable is a value type (decay_t) that can hold the callable object
        static_assert(std::is_same_v<TCallable, std::decay_t<TCallable>>);
        static_assert(std::is_invocable_v<TCallable, const AnyView*, int32_t, Any*>);
-       using ObjType = details::FunctionObjImpl<TCallable>;
+       using ObjType = detail::FunctionObjImpl<TCallable>;
        Function func;
        auto obj_ptr = make_object<ObjType>(std::forward<Args>(args)...);
        auto* call_ptr = obj_ptr->GetCallable();
@@ -268,9 +269,9 @@ Program Listing for File function.h
        // the other function coems from a different library
        Function func;
        if (self == nullptr && deleter == nullptr) {
-         func.data_ = make_object<details::ExternCFunctionObjNullHandleImpl>(safe_call);
+         func.data_ = make_object<detail::ExternCFunctionObjNullHandleImpl>(safe_call);
        } else {
-         func.data_ = make_object<details::ExternCFunctionObjImpl>(self, safe_call, deleter);
+         func.data_ = make_object<detail::ExternCFunctionObjImpl>(self, safe_call, deleter);
        }
        return func;
      }
@@ -280,7 +281,7 @@ Program Listing for File function.h
        TVM_FFI_CHECK_SAFE_CALL(TVMFFIFunctionGetGlobal(&name_arr, &handle));
        if (handle != nullptr) {
          return Function(
-             details::ObjectUnsafe::ObjectPtrFromOwned<FunctionObj>(static_cast<Object*>(handle)));
+             detail::ObjectUnsafe::ObjectPtrFromOwned<FunctionObj>(static_cast<Object*>(handle)));
        } else {
          return std::nullopt;
        }
@@ -321,7 +322,7 @@ Program Listing for File function.h
                            bool override = false) {
        TVMFFIByteArray name_arr{name.data(), name.size()};
        TVM_FFI_CHECK_SAFE_CALL(
-           TVMFFIFunctionSetGlobal(&name_arr, details::ObjectUnsafe::GetHeader(func.get()), override));
+           TVMFFIFunctionSetGlobal(&name_arr, detail::ObjectUnsafe::GetHeader(func.get()), override));
      }
      static std::vector<String> ListGlobalNames() {
        Function fname_functor =
@@ -340,22 +341,22 @@ Program Listing for File function.h
      }
      template <typename TCallable>
      static Function FromTyped(TCallable&& callable) {
-       using FuncInfo = details::FunctionInfo<std::decay_t<TCallable>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<TCallable>>;
        // Callable is always captured by value here to avoid possible dangling reference
        auto call_packed = [callable = std::forward<TCallable>(callable)](
                               const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
-         details::unpack_call<typename FuncInfo::RetType>(
+         detail::unpack_call<typename FuncInfo::RetType>(
              std::make_index_sequence<FuncInfo::num_args>{}, nullptr, callable, args, num_args, rv);
        };
        return FromPackedInternal(std::move(call_packed));
      }
      template <typename TCallable>
      static Function FromTyped(TCallable&& callable, std::string name) {
-       using FuncInfo = details::FunctionInfo<std::decay_t<TCallable>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<TCallable>>;
        // Callable is always captured by value here to avoid possible dangling reference
        auto call_packed = [callable = std::forward<TCallable>(callable), name = std::move(name)](
                               const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
-         details::unpack_call<typename FuncInfo::RetType>(
+         detail::unpack_call<typename FuncInfo::RetType>(
              std::make_index_sequence<FuncInfo::num_args>{}, &name, callable, args, num_args, rv);
        };
        return FromPackedInternal(std::move(call_packed));
@@ -431,7 +432,7 @@ Program Listing for File function.h
                                    ""));
          }
        } else {
-         return Unexpected(details::MoveFromSafeCallRaised());
+         return Unexpected(detail::MoveFromSafeCallRaised());
        }
      }
    
@@ -446,7 +447,7 @@ Program Listing for File function.h
      template <typename TCallable>
      static Function FromPackedInternal(TCallable&& packed_call) {
        // We must make TCallable a value type (decay_t) that can hold the callable object
-       using ObjType = typename details::FunctionObjImpl<std::decay_t<TCallable>>;
+       using ObjType = typename detail::FunctionObjImpl<std::decay_t<TCallable>>;
        Function func;
        func.data_ = make_object<ObjType>(std::forward<TCallable>(packed_call));
        return func;
@@ -502,7 +503,7 @@ Program Listing for File function.h
      constexpr Function&& packed() && { return std::move(packed_); }
      bool operator==(std::nullptr_t null) const { return packed_ == nullptr; }
      bool operator!=(std::nullptr_t null) const { return packed_ != nullptr; }
-     static std::string TypeSchema() { return details::FuncFunctorImpl<R, Args...>::TypeSchema(); }
+     static std::string TypeSchema() { return detail::FuncFunctorImpl<R, Args...>::TypeSchema(); }
    
     private:
      Function packed_;
@@ -546,7 +547,7 @@ Program Listing for File function.h
        }
      }
    
-     TVM_FFI_INLINE static std::string TypeStr() { return details::FunctionInfo<FType>::Sig(); }
+     TVM_FFI_INLINE static std::string TypeStr() { return detail::FunctionInfo<FType>::Sig(); }
      TVM_FFI_INLINE static std::string TypeSchema() { return TypedFunction<FType>::TypeSchema(); }
    };
    
@@ -561,19 +562,19 @@ Program Listing for File function.h
    // These should not be used directly; use the public macros instead.
    
    // Internal implementation macro that generates the C ABI wrapper function
-   #define TVM_FFI_DLL_EXPORT_TYPED_FUNC_IMPL_(ExportName, Function)                      \
-     extern "C" {                                                                         \
-     TVM_FFI_DLL_EXPORT int __tvm_ffi_##ExportName(void* self, const TVMFFIAny* args,     \
-                                                   int32_t num_args, TVMFFIAny* result) { \
-       TVM_FFI_SAFE_CALL_BEGIN();                                                         \
-       using FuncInfo = ::tvm::ffi::details::FunctionInfo<decltype(Function)>;            \
-       static std::string name = #ExportName;                                             \
-       ::tvm::ffi::details::unpack_call<typename FuncInfo::RetType>(                      \
-           std::make_index_sequence<FuncInfo::num_args>{}, &name, Function,               \
-           reinterpret_cast<const ::tvm::ffi::AnyView*>(args), num_args,                  \
-           reinterpret_cast<::tvm::ffi::Any*>(result));                                   \
-       TVM_FFI_SAFE_CALL_END();                                                           \
-     }                                                                                    \
+   #define TVM_FFI_DLL_EXPORT_TYPED_FUNC_IMPL_(ExportName, Function)                        \
+     extern "C" {                                                                           \
+     TVM_FFI_DLL_EXPORT int __tvm_ffi_##ExportName(void* self, const TVMFFIAny* args,       \
+                                                   int32_t num_args, TVMFFIAny* result) {   \
+       TVM_FFI_SAFE_CALL_BEGIN();                                                           \
+       using FuncInfo = ::tvm::ffi::detail::FunctionInfo<std::decay_t<decltype(Function)>>; \
+       static std::string name = #ExportName;                                               \
+       ::tvm::ffi::detail::unpack_call<typename FuncInfo::RetType>(                         \
+           std::make_index_sequence<FuncInfo::num_args>{}, &name, Function,                 \
+           reinterpret_cast<const ::tvm::ffi::AnyView*>(args), num_args,                    \
+           reinterpret_cast<::tvm::ffi::Any*>(result));                                     \
+       TVM_FFI_SAFE_CALL_END();                                                             \
+     }                                                                                      \
      }
    
    #if TVM_FFI_DLL_EXPORT_INCLUDE_METADATA
@@ -585,7 +586,7 @@ Program Listing for File function.h
      TVM_FFI_DLL_EXPORT int __tvm_ffi__metadata_##ExportName(void* self, const TVMFFIAny* args,     \
                                                              int32_t num_args, TVMFFIAny* result) { \
        TVM_FFI_SAFE_CALL_BEGIN();                                                                   \
-       using FuncInfo = ::tvm::ffi::details::FunctionInfo<decltype(Function)>;                      \
+       using FuncInfo = ::tvm::ffi::detail::FunctionInfo<std::decay_t<decltype(Function)>>;         \
        std::ostringstream os;                                                                       \
        os << R"({"type_schema":)"                                                                   \
           << ::tvm::ffi::EscapeStringJSON(::tvm::ffi::String(FuncInfo::TypeSchema())) << R"(})";    \

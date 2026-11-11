@@ -103,7 +103,7 @@ Program Listing for File shape.h
      TVM_FFI_DECLARE_OBJECT_INFO_STATIC(StaticTypeKey::kTVMFFIShape, ShapeObj, Object);
    };
    
-   namespace details {
+   namespace detail {
    
    class ShapeObjStdImpl : public ShapeObj {
     public:
@@ -149,21 +149,21 @@ Program Listing for File shape.h
    
    TVM_FFI_INLINE ObjectPtr<ShapeObj> MakeStridesFromShape(ShapeView shape) {
      int64_t* strides_data;
-     ObjectPtr<ShapeObj> strides = details::MakeEmptyShape(shape.size(), &strides_data);
+     ObjectPtr<ShapeObj> strides = detail::MakeEmptyShape(shape.size(), &strides_data);
      FillStridesFromShape(shape, strides_data);
      return strides;
    }
    
-   }  // namespace details
+   }  // namespace detail
    
    class Shape : public ObjectRef {
     public:
      using index_type = ShapeObj::index_type;
    
-     Shape() : ObjectRef(details::MakeEmptyShape(0, nullptr)) {}
+     Shape() : ObjectRef(detail::MakeEmptyShape(0, nullptr)) {}
    
      template <typename IterType>
-     Shape(IterType begin, IterType end) : Shape(details::MakeInplaceShape(begin, end)) {}
+     Shape(IterType begin, IterType end) : Shape(detail::MakeInplaceShape(begin, end)) {}
    
      Shape(Array<int64_t> shape)  // NOLINT(*)
          : Shape(shape.begin(), shape.end()) {}
@@ -171,12 +171,12 @@ Program Listing for File shape.h
      Shape(std::initializer_list<int64_t> shape) : Shape(shape.begin(), shape.end()) {}
    
      Shape(std::vector<int64_t> other)  // NOLINT(*)
-         : ObjectRef(make_object<details::ShapeObjStdImpl>(std::move(other))) {}
+         : ObjectRef(make_object<detail::ShapeObjStdImpl>(std::move(other))) {}
    
      Shape(ShapeView other) : Shape(other.begin(), other.end()) {}  // NOLINT(*)
    
      static Shape StridesFromShape(ShapeView shape) {
-       return Shape(details::MakeStridesFromShape(shape));
+       return Shape(detail::MakeStridesFromShape(shape));
      }
    
      operator ShapeView() const { return ShapeView(data(), size()); }  // NOLINT(*)

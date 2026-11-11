@@ -34,13 +34,17 @@ Program Listing for File accessor.h
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/c_api.h>
    #include <tvm/ffi/function.h>
+   #include <tvm/ffi/reflection/native_function.h>
    #include <tvm/ffi/type_traits.h>
    
+   #include <optional>
    #include <string>
    
    namespace tvm {
    namespace ffi {
    namespace reflection {
+   template <typename T>
+   struct AttrKey;
    
    inline const TVMFFIFieldInfo* GetFieldInfo(std::string_view type_key, const char* field_name) {
      int32_t type_index;
@@ -129,6 +133,9 @@ Program Listing for File accessor.h
          TVM_FFI_THROW(RuntimeError) << "Cannot find type attribute " << attr_name;
        }
      }
+     template <typename T>
+     explicit TypeAttrColumn(AttrKey<T> key) : TypeAttrColumn(key.name) {}
+   
      AnyView operator[](int32_t type_index) const {
        int32_t offset = type_index - column_->begin_index;
        if (offset < 0 || offset >= column_->size) {
@@ -211,36 +218,38 @@ Program Listing for File accessor.h
      return false;
    }
    
-   namespace type_attr {
-   inline constexpr const char* kNew = "__ffi_new__";
-   inline constexpr const char* kInit = "__ffi_init__";
-   inline constexpr const char* kConvert = "__ffi_convert__";
-   inline constexpr const char* kConvertTypeSchema = "__ffi_convert_type_schema__";
-   inline constexpr const char* kShallowCopy = "__ffi_shallow_copy__";
-   inline constexpr const char* kRepr = "__ffi_repr__";
-   inline constexpr const char* kHash = "__ffi_hash__";
-   inline constexpr const char* kEq = "__ffi_eq__";
-   inline constexpr const char* kCompare = "__ffi_compare__";
-   inline constexpr const char* kAnyHash = "__any_hash__";
-   inline constexpr const char* kAnyEqual = "__any_equal__";
-   inline constexpr const char* kSHash = "__s_hash__";
-   inline constexpr const char* kSEqual = "__s_equal__";
-   inline constexpr const char* kStructuralVisit = "__s_visit__";
-   
-   inline constexpr const char* kStructuralMutate = "__s_mutate__";
-   inline constexpr const char* kStructuralMaybeInplaceMutate = "__s_maybe_inplace_mutate__";
-   
-   inline constexpr const char* kDataToJson = "__data_to_json__";
-   inline constexpr const char* kDataFromJson = "__data_from_json__";
-   inline constexpr const char* kEnumState = "__ffi_enum__";
-   inline constexpr const char* kTypeFinal = "__ffi_type_final__";
-   }  // namespace type_attr
-   
    inline constexpr TVMFFIByteArray AsByteArray(const char* s) {
      return {s, std::char_traits<char>::length(s)};
    }
    
+   template <typename T>
+   struct AttrKey {
+     using ValueType = T;
+     const char* name;
+   
+     TVM_FFI_INLINE std::optional<ValueType> ValueFrom(AnyView value) const {
+       if (value == nullptr) return std::nullopt;
+       return value.template as_or_throw<ValueType>();
+     }
+   };
+   
    }  // namespace reflection
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<TypedFunction<ObjectRef()>> kNew{"__ffi_new__"};
+   inline constexpr reflection::AttrKey<Function> kInit{"__ffi_init__"};
+   inline constexpr reflection::AttrKey<TypedFunction<Any(AnyView)>> kConvert{"__ffi_convert__"};
+   inline constexpr reflection::AttrKey<Any> kConvertTypeSchema{"__ffi_convert_type_schema__"};
+   inline constexpr reflection::AttrKey<TypedFunction<ObjectRef(const Object*)>> kShallowCopy{
+       "__ffi_shallow_copy__"};
+   inline constexpr reflection::AttrKey<bool> kTypeFinal{"__ffi_type_final__"};
+   inline constexpr reflection::AttrKey<bool> kTypeMutable{"__ffi_type_mutable__"};
+   inline constexpr reflection::AttrKey<reflection::NativeFunctionView<int64_t(const Any&)>> kAnyHash{
+       "__any_hash__"};
+   inline constexpr reflection::AttrKey<reflection::NativeFunctionView<bool(const Any&, const Any&)>>
+       kAnyEqual{"__any_equal__"};
+   }  // namespace type_attr
+   
    }  // namespace ffi
    }  // namespace tvm
    #endif  // TVM_FFI_REFLECTION_ACCESSOR_H_

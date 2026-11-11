@@ -12,12 +12,16 @@ Inheritance Relationships
 Derived Types
 *************
 
+- ``public tvm::ffi::Array< Any >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Array`)
 - ``public tvm::ffi::Array< tvm::ffi::Any >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Array`)
 - ``public tvm::ffi::Array< tvm::ffi::Tuple< int32_t, tvm::ffi::Function > >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Array`)
+- ``public tvm::ffi::Array< tvm::ffi::ObjectRef >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Array`)
 - ``public tvm::ffi::Dict< tvm::ffi::Any, tvm::ffi::ObjectRef >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Dict`)
 - ``public tvm::ffi::Dict< tvm::ffi::String, tvm::ffi::Dict< tvm::ffi::ObjectRef, tvm::ffi::Any > >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Dict`)
 - ``public tvm::ffi::List< tvm::ffi::ObjectRef >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1List`)
+- ``public tvm::ffi::Map< Any, Any >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Map`)
 - ``public tvm::ffi::Map< tvm::ffi::String, tvm::ffi::Function >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Map`)
+- ``public tvm::ffi::Tuple< AccessPath, AccessPath >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Tuple`)
 - ``public tvm::ffi::Array< T, typename >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Array`)
 - ``public tvm::ffi::Dict< K, V, typename >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Dict`)
 - ``public tvm::ffi::Enum`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Enum`)
@@ -27,7 +31,6 @@ Derived Types
 - ``public tvm::ffi::List< T, typename >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1List`)
 - ``public tvm::ffi::Map< K, V, typename >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Map`)
 - ``public tvm::ffi::Module`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Module`)
-- ``public tvm::ffi::Optional< T, std::enable_if_t< use_object_ref_optional_v< T > > >``
 - ``public tvm::ffi::Shape`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Shape`)
 - ``public tvm::ffi::StructuralKey`` (:ref:`exhale_class_classtvm_1_1ffi_1_1StructuralKey`)
 - ``public tvm::ffi::StructuralMutator`` (:ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMutator`)

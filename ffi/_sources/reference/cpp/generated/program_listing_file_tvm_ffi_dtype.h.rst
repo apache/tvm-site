@@ -45,7 +45,7 @@ Program Listing for File dtype.h
    namespace ffi {
    enum DLExtDataTypeCode { kDLExtCustomBegin = 129 };
    
-   namespace details {
+   namespace detail {
    
    /*
     * \brief Convert a DLDataTypeCode to a string.
@@ -68,6 +68,9 @@ Program Listing for File dtype.h
        }
        case kDLBfloat: {
          return "bfloat";
+       }
+       case kDLBcomplex: {
+         return "bcomplex";
        }
        case kDLBool: {
          return "bool";
@@ -116,7 +119,7 @@ Program Listing for File dtype.h
        }
      }
    }
-   }  // namespace details
+   }  // namespace detail
    
    inline DLDataType StringToDLDataType(const String& str) {
      DLDataType out;
@@ -187,6 +190,10 @@ Program Listing for File dtype.h
          result = "bf";
          break;
        }
+       case kDLBcomplex: {
+         result = "bcomplex";
+         break;
+       }
        case kDLBool: {
          result = "bool";
          break;
@@ -246,7 +253,8 @@ Program Listing for File dtype.h
      }
    
      int16_t lanes = static_cast<int16_t>(dtype.lanes);
-     if (dtype.code < kDLFloat8_e3m4 && (dtype.code != kDLBool || dtype.bits != 8)) {
+     if ((dtype.code < kDLFloat8_e3m4 || dtype.code == kDLBcomplex) &&
+         (dtype.code != kDLBool || dtype.bits != 8)) {
        result += std::to_string(static_cast<int>(dtype.bits));
      }
      if (lanes > 1) {

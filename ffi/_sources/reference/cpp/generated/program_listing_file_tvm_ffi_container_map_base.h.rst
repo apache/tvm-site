@@ -33,7 +33,7 @@ Program Listing for File map_base.h
    #define TVM_FFI_CONTAINER_MAP_BASE_H_
    
    #include <tvm/ffi/any.h>
-   #include <tvm/ffi/container/container_details.h>
+   #include <tvm/ffi/container/container_detail.h>
    #include <tvm/ffi/memory.h>
    #include <tvm/ffi/object.h>
    #include <tvm/ffi/optional.h>
@@ -813,7 +813,7 @@ Program Listing for File map_base.h
        }
      }
      static void InplaceSmallMapDeleterFromData(void* data) {
-       details::ObjectUnsafe::ObjectPtrFromOwned<SmallMapBaseObj>(
+       detail::ObjectUnsafe::ObjectPtrFromOwned<SmallMapBaseObj>(
            reinterpret_cast<Object*>(reinterpret_cast<char*>(data) - sizeof(SmallMapBaseObj)))
            .reset();
      }
@@ -836,7 +836,7 @@ Program Listing for File map_base.h
            this_small_map->data_deleter_ = InplaceSmallMapDeleterFromData;
            // move out other from the ptr so the deletion can only be triggered
            // via InplaceSmallMapDeleterFromData
-           details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(other));
+           detail::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(other));
          }
          other_small_map->data_ = nullptr;
          other_small_map->size_ = 0;
@@ -1131,10 +1131,10 @@ Program Listing for File map_base.h
          const MapBaseObj* n = reinterpret_cast<const MapBaseObj*>(src->v_obj);
          for (const auto& kv : *n) {
            if constexpr (!std::is_same_v<K, Any>) {
-             if (!details::AnyUnsafe::CheckAnyStrict<K>(kv.first)) return false;
+             if (!detail::AnyUnsafe::CheckAnyStrict<K>(kv.first)) return false;
            }
            if constexpr (!std::is_same_v<V, Any>) {
-             if (!details::AnyUnsafe::CheckAnyStrict<V>(kv.second)) return false;
+             if (!detail::AnyUnsafe::CheckAnyStrict<V>(kv.second)) return false;
            }
          }
          return true;
@@ -1150,17 +1150,17 @@ Program Listing for File map_base.h
          const MapBaseObj* n = reinterpret_cast<const MapBaseObj*>(src->v_obj);
          for (const auto& kv : *n) {
            if constexpr (!std::is_same_v<K, Any>) {
-             if (!details::AnyUnsafe::CheckAnyStrict<K>(kv.first) &&
+             if (!detail::AnyUnsafe::CheckAnyStrict<K>(kv.first) &&
                  !kv.first.try_cast<K>().has_value()) {
                return std::string(Derived::kTypeName) + "[some key is " +
-                      details::AnyUnsafe::GetMismatchTypeInfo<K>(kv.first) + ", V]";
+                      detail::AnyUnsafe::GetMismatchTypeInfo<K>(kv.first) + ", V]";
              }
            }
            if constexpr (!std::is_same_v<V, Any>) {
-             if (!details::AnyUnsafe::CheckAnyStrict<V>(kv.second) &&
+             if (!detail::AnyUnsafe::CheckAnyStrict<V>(kv.second) &&
                  !kv.second.try_cast<V>().has_value()) {
                return std::string(Derived::kTypeName) + "[K, some value is " +
-                      details::AnyUnsafe::GetMismatchTypeInfo<V>(kv.second) + "]";
+                      detail::AnyUnsafe::GetMismatchTypeInfo<V>(kv.second) + "]";
              }
            }
          }
@@ -1179,10 +1179,10 @@ Program Listing for File map_base.h
          bool storage_check = [&]() {
            for (const auto& kv : *n) {
              if constexpr (!std::is_same_v<K, Any>) {
-               if (!details::AnyUnsafe::CheckAnyStrict<K>(kv.first)) return false;
+               if (!detail::AnyUnsafe::CheckAnyStrict<K>(kv.first)) return false;
              }
              if constexpr (!std::is_same_v<V, Any>) {
-               if (!details::AnyUnsafe::CheckAnyStrict<V>(kv.second)) return false;
+               if (!detail::AnyUnsafe::CheckAnyStrict<V>(kv.second)) return false;
              }
            }
            return true;
@@ -1214,8 +1214,8 @@ Program Listing for File map_base.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() {
-       return std::string(Derived::kTypeName) + "<" + details::Type2Str<K>::v() + ", " +
-              details::Type2Str<V>::v() + ">";
+       return std::string(Derived::kTypeName) + "<" + detail::Type2Str<K>::v() + ", " +
+              detail::Type2Str<V>::v() + ">";
      }
    
     private:

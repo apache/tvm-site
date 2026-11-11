@@ -19,8 +19,8 @@ Base Types
 Derived Types
 *************
 
-- ``public tvm::ffi::details::TensorObjFromDLPack< TDLPackManagedTensor >``
-- ``public tvm::ffi::details::TensorObjFromNDAlloc< TNDAlloc >``
+- ``public tvm::ffi::detail::TensorObjFromDLPack< TDLPackManagedTensor >``
+- ``public tvm::ffi::detail::TensorObjFromNDAlloc< TNDAlloc >``
 
 
 Class Documentation

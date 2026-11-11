@@ -105,7 +105,7 @@ Program Listing for File list.h
      friend struct TypeTraits;
    };
    
-   template <typename T, typename = typename std::enable_if_t<details::storage_enabled_v<T>>>
+   template <typename T, typename = typename std::enable_if_t<detail::storage_enabled_v<T>>>
    class List : public ObjectRef {
     public:
      using value_type = T;
@@ -146,7 +146,9 @@ Program Listing for File list.h
        return *this;
      }
    
-     explicit List(ObjectPtr<Object> n) : ObjectRef(std::move(n)) {}
+     explicit List(ObjectPtr<Object> n) : ObjectRef(std::move(n)) {
+       TVM_FFI_ICHECK_NOTNULL(data_.get());
+     }
    
      template <typename IterType>
      List(IterType first, IterType last) {  // NOLINT(performance-unnecessary-value-param)
@@ -169,11 +171,11 @@ Program Listing for File list.h
      // iterators
      struct ValueConverter {
        using ResultType = T;
-       static T convert(const Any& n) { return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(n); }
+       static T convert(const Any& n) { return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(n); }
      };
    
-     using iterator = details::IterAdapter<ValueConverter, const Any*>;
-     using reverse_iterator = details::ReverseIterAdapter<ValueConverter, const Any*>;
+     using iterator = detail::IterAdapter<ValueConverter, const Any*>;
+     using reverse_iterator = detail::ReverseIterAdapter<ValueConverter, const Any*>;
    
      iterator begin() const { return iterator(GetListObj()->begin()); }
      iterator end() const { return iterator(GetListObj()->end()); }
@@ -187,7 +189,7 @@ Program Listing for File list.h
        if (p == nullptr) {
          TVM_FFI_THROW(IndexError) << "cannot index a null list";
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->at(i));
+       return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->at(i));
      }
    
      size_t size() const {
@@ -207,7 +209,7 @@ Program Listing for File list.h
        if (p == nullptr) {
          TVM_FFI_THROW(IndexError) << "cannot index a null list";
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->front());
+       return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->front());
      }
    
      T back() const {
@@ -215,7 +217,7 @@ Program Listing for File list.h
        if (p == nullptr) {
          TVM_FFI_THROW(IndexError) << "cannot index a null list";
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->back());
+       return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->back());
      }
    
     public:
@@ -317,6 +319,7 @@ Program Listing for File list.h
    
      using ContainerType = ListObj;
      static constexpr bool _type_container_is_exact = false;
+     static constexpr bool _type_is_nullable = false;
    
     private:
      ListObj* EnsureCapacity(int64_t reserve_extra) {
@@ -356,7 +359,7 @@ Program Listing for File list.h
      TVM_FFI_INLINE static std::string TypeSchema() {
        std::ostringstream oss;
        oss << R"({"type":")" << kStaticTypeKey << R"(","args":[)";
-       oss << details::TypeSchema<T>::v();
+       oss << detail::TypeSchema<T>::v();
        oss << "]}";
        return oss.str();
      }

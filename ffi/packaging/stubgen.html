@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../_static/documentation_options.js?v=274f805b"></script>
+    <script src="../_static/documentation_options.js?v=2464e58c"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,8 +62,8 @@
     <link rel="prev" title="Python Packaging" href="python_packaging.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+g23b2ec1b3" />
-    <meta name="docbuild:last-update" content="Sep 26, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g99a7edded" />
+    <meta name="docbuild:last-update" content="Nov 11, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -694,7 +694,7 @@ multiple libraries.</p>
 </dd>
 </dl>
 <p><strong>Optional arguments:</strong></p>
-<dl class="simple">
+<dl>
 <dt><code class="docutils literal notranslate"><span class="pre">--verbose</span></code></dt><dd><p>Print a unified diff of changes to each file.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">--dry-run</span></code></dt><dd><p>Preview changes without writing to files.</p>
@@ -702,6 +702,10 @@ multiple libraries.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">--check</span></code></dt><dd><p>Write nothing; print <code class="docutils literal notranslate"><span class="pre">[Stale]</span> <span class="pre">&lt;file&gt;</span></code> for every file whose stub blocks are out of
 date and exit with status 1 if there is any (2 if a file failed to process), so CI
 can reject a stale tree. Cannot be combined with <code class="docutils literal notranslate"><span class="pre">--init-*</span></code>.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">--target</span> <span class="pre">rust</span></code>, a file is stale only when a generated definition changes:
+a type, field, accessor, allocator, upcast or layout assertion, or an <code class="docutils literal notranslate"><span class="pre">object/</span></code>
+block to add or remove. A run that would only rewrite <code class="docutils literal notranslate"><span class="pre">use</span></code> lines, comments,
+line wrapping or the module path a type is spelled from leaves the file up to date.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">--imports</span></code></dt><dd><p>Additional Python modules to import before generation (semicolon-separated).</p>
 </dd>
@@ -812,33 +816,44 @@ determines which imports are needed.</p>
 </pre></div>
 </div>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">ty-map</span></code> - Type Mapping</dt><dd><p>Maps a C++ type key to a different Python type path. This is useful when the Python
-class is defined in a different module than the type key suggests.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tvm-ffi-stubgen(ty-map): ffi.reflection.AccessStep -&gt; ffi.access_path.AccessStep</span>
-</pre></div>
-</div>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">prefix</span></code> - Demand a Namespace</dt><dd><p>Rust target only. Adds an <code class="docutils literal notranslate"><span class="pre">object/&lt;type_key&gt;</span></code> block to the file for every object
-registered directly under the prefix that no processed file defines yet; <code class="docutils literal notranslate"><span class="pre">skip</span></code>
-leaves one out, and a key the <code class="docutils literal notranslate"><span class="pre">tvm_ffi</span></code> crate binds itself (every <code class="docutils literal notranslate"><span class="pre">ffi.*</span></code> key)
-is never added. Code outside the blocks is preserved.</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// tvm-ffi-stubgen(prefix): my_ffi_extension</span>
-<span class="c1">// tvm-ffi-stubgen(skip): my_ffi_extension.Internal</span>
-</pre></div>
-</div>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">import-object</span></code> - Import Object</dt><dd><p>Injects a custom import into generated code. The format is
-<code class="docutils literal notranslate"><span class="pre">&lt;full_name&gt;;&lt;type_checking_only&gt;;&lt;alias&gt;</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tvm-ffi-stubgen(import-object): ffi.Object;False;_ffi_Object</span>
-</pre></div>
-</div>
-<p>This imports <code class="docutils literal notranslate"><span class="pre">ffi.Object</span></code> as <code class="docutils literal notranslate"><span class="pre">_ffi_Object</span></code> for use in generated code. The second
-field (<code class="docutils literal notranslate"><span class="pre">False</span></code>) indicates the import is not TYPE_CHECKING-only.</p>
-</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">skip-file</span></code> - Skip File</dt><dd><p>Prevents the tool from modifying the file. Place anywhere in the file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tvm-ffi-stubgen(skip-file)</span>
 </pre></div>
 </div>
+</dd>
+</dl>
+<p><strong>One-line directives</strong></p>
+<p>The other directives are settings on a single line, written
+<code class="docutils literal notranslate"><span class="pre">&lt;subject&gt;:</span> <span class="pre">&lt;target&gt;(&lt;key&gt;,</span> <span class="pre">&lt;key&gt;</span> <span class="pre">=</span> <span class="pre">&lt;value&gt;,</span> <span class="pre">...)</span></code>; the parentheses are omitted when
+there are no keys. Several lines for the same subject and target merge.</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">object:</span> <span class="pre">&lt;type_key&gt;(ty_map</span> <span class="pre">=</span> <span class="pre">&lt;path&gt;)</span></code> - Type Mapping</dt><dd><p>Maps a C++ type key to a different Python type path. This is useful when the Python
+class is defined in a different module than the type key suggests.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tvm-ffi-stubgen(object): ffi.reflection.AccessStep(ty_map = ffi.access_path.AccessStep)</span>
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">file:</span> <span class="pre">mod(prefix</span> <span class="pre">=</span> <span class="pre">&lt;prefix&gt;)</span></code> - Demand a Namespace</dt><dd><p>Rust target only. Adds an <code class="docutils literal notranslate"><span class="pre">object/&lt;type_key&gt;</span></code> block to the file for every object
+registered directly under the prefix that no processed file defines yet; an object’s
+<code class="docutils literal notranslate"><span class="pre">skip</span></code> key leaves one out, and a key the <code class="docutils literal notranslate"><span class="pre">tvm_ffi</span></code> crate binds itself (every
+<code class="docutils literal notranslate"><span class="pre">ffi.*</span></code> key) is never added. A block under the prefix whose type is no longer
+registered is removed. Code outside the blocks is preserved.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// tvm-ffi-stubgen(file): mod(prefix = my_ffi_extension)</span>
+<span class="c1">// tvm-ffi-stubgen(object): my_ffi_extension.Internal(skip)</span>
+</pre></div>
+</div>
+<p>A generated type is named from the module of the file its block is in, not from its
+type key: the module follows the file’s place under the <code class="docutils literal notranslate"><span class="pre">src/</span></code> of the nearest
+<code class="docutils literal notranslate"><span class="pre">Cargo.toml</span></code> (<code class="docutils literal notranslate"><span class="pre">src/ir/prim.rs</span></code> is <code class="docutils literal notranslate"><span class="pre">crate::ir::prim</span></code>). Other files refer to it by
+that <code class="docutils literal notranslate"><span class="pre">crate::</span></code> path, so a namespace can live anywhere in the module tree. The Rust
+target’s other keys are listed in <code class="docutils literal notranslate"><span class="pre">examples/rust_stubgen</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">import:</span> <span class="pre">&lt;full_name&gt;(type_checking_only,</span> <span class="pre">alias</span> <span class="pre">=</span> <span class="pre">&lt;alias&gt;)</span></code> - Import Object</dt><dd><p>Keeps an import in the generated import section; both keys are optional.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tvm-ffi-stubgen(import): ffi.Object(alias = _ffi_Object)</span>
+</pre></div>
+</div>
+<p>This imports <code class="docutils literal notranslate"><span class="pre">ffi.Object</span></code> as <code class="docutils literal notranslate"><span class="pre">_ffi_Object</span></code> for use in generated code;
+<code class="docutils literal notranslate"><span class="pre">type_checking_only</span></code> would import it under <code class="docutils literal notranslate"><span class="pre">TYPE_CHECKING</span></code> only.</p>
 </dd>
 </dl>
 </section>
@@ -932,7 +947,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 26, 2026.
+  Last updated on Nov 11, 2026.
   <br/>
 </p>
   </div>

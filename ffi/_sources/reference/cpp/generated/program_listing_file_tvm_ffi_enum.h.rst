@@ -63,7 +63,7 @@ Program Listing for File enum.h
    
    class EnumState : public ObjectRef {
     public:
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(EnumState, ObjectRef, EnumStateObj);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(EnumState, ObjectRef, EnumStateObj);
    };
    
    class EnumObj : public Object {
@@ -94,7 +94,7 @@ Program Listing for File enum.h
    
    class Enum : public ObjectRef {
     public:
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(Enum, ObjectRef, EnumObj);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Enum, ObjectRef, EnumObj);
    };
    
    class IntEnumObj : public EnumObj {
@@ -104,7 +104,7 @@ Program Listing for File enum.h
    
    class IntEnum : public Enum {
     public:
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(IntEnum, Enum, IntEnumObj);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IntEnum, Enum, IntEnumObj);
    };
    
    class StrEnumObj : public EnumObj {
@@ -114,14 +114,18 @@ Program Listing for File enum.h
    
    class StrEnum : public Enum {
     public:
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(StrEnum, Enum, StrEnumObj);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StrEnum, Enum, StrEnumObj);
    };
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<EnumState> kEnumState{"__ffi_enum__"};
+   }  // namespace type_attr
    
    template <typename Index>
    inline Enum EnumObj::GetByIndex(int32_t type_index, const Index& index) {
-     static reflection::TypeAttrColumn state_column(reflection::type_attr::kEnumState);
-     if (AnyView value = state_column[type_index]; value != nullptr) {
-       EnumState state = value.cast<EnumState>();
+     static reflection::TypeAttrColumn state_column(type_attr::kEnumState);
+     if (auto value = type_attr::kEnumState.ValueFrom(state_column[type_index])) {
+       const EnumState& state = *value;
        if (auto entry = state->indexes.Get(Any(index))) return entry->as_or_throw<Enum>();
      }
      TVM_FFI_THROW(ValueError) << "Enum `" << TypeIndexToTypeKey(type_index)

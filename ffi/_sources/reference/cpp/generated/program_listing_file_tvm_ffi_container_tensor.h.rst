@@ -50,7 +50,8 @@ Program Listing for File tensor.h
    
    inline bool IsDirectAddressDevice(const DLDevice& device) {
      return device.device_type <= kDLCUDAHost || device.device_type == kDLCUDAManaged ||
-            device.device_type == kDLROCM || device.device_type == kDLROCMHost;
+            device.device_type == kDLROCM || device.device_type == kDLROCMHost ||
+            device.device_type == kDLOneAPI;
    }
    
    inline bool IsContiguous(const DLTensor& arr) {
@@ -112,7 +113,7 @@ Program Listing for File tensor.h
        ret->dl_tensor = *static_cast<DLTensor*>(self);
        ret->manager_ctx = self;
        ret->deleter = DLManagedTensorDeleter<DLManagedTensor>;
-       details::ObjectUnsafe::IncRefObjectHandle(self);
+       detail::ObjectUnsafe::IncRefObjectHandle(self);
        return ret;
      }
    
@@ -124,7 +125,7 @@ Program Listing for File tensor.h
        ret->dl_tensor = *static_cast<DLTensor*>(self);
        ret->manager_ctx = self;
        ret->deleter = DLManagedTensorDeleter<DLManagedTensorVersioned>;
-       details::ObjectUnsafe::IncRefObjectHandle(self);
+       detail::ObjectUnsafe::IncRefObjectHandle(self);
        return ret;
      }
    
@@ -132,14 +133,14 @@ Program Listing for File tensor.h
      template <typename TDLManagedTensor>
      static void DLManagedTensorDeleter(TDLManagedTensor* tensor) {
        TensorObj* obj = static_cast<TensorObj*>(tensor->manager_ctx);
-       details::ObjectUnsafe::DecRefObjectHandle(obj);
+       detail::ObjectUnsafe::DecRefObjectHandle(obj);
        delete tensor;
      }
    
      friend class Tensor;
    };
    
-   namespace details {
+   namespace detail {
    template <typename TNDAlloc>
    class TensorObjFromNDAlloc : public TensorObj {
     public:
@@ -157,7 +158,7 @@ Program Listing for File tensor.h
        this->shape = reinterpret_cast<int64_t*>(reinterpret_cast<char*>(this) + sizeof(Self));
        this->strides = this->shape + shape.size();
        std::copy(shape.begin(), shape.end(), this->shape);
-       details::FillStridesFromShape(shape, this->strides);
+       detail::FillStridesFromShape(shape, this->strides);
        // call allocator to alloc data
        alloc_.AllocData(static_cast<DLTensor*>(this), std::forward<ExtraArgs>(extra_args)...);
      }
@@ -191,8 +192,8 @@ Program Listing for File tensor.h
        *static_cast<DLTensor*>(this) = tensor_->dl_tensor;
        if (extra_strides_at_tail) {
          this->strides = reinterpret_cast<int64_t*>(reinterpret_cast<char*>(this) + sizeof(Self));
-         details::FillStridesFromShape(ShapeView(tensor_->dl_tensor.shape, tensor_->dl_tensor.ndim),
-                                       this->strides);
+         detail::FillStridesFromShape(ShapeView(tensor_->dl_tensor.shape, tensor_->dl_tensor.ndim),
+                                      this->strides);
        }
      }
    
@@ -206,7 +207,7 @@ Program Listing for File tensor.h
     private:
      TDLPackManagedTensor* tensor_;
    };
-   }  // namespace details
+   }  // namespace detail
    
    class Tensor : public ObjectRef {
     public:
@@ -282,14 +283,14 @@ Program Listing for File tensor.h
        Object* obj_handle = const_cast<TensorObj*>(get());
        TVM_FFI_CHECK_SAFE_CALL(TVMFFITensorCreateUnsafeView(obj_handle, &prototype, &out));
        return Tensor(
-           details::ObjectUnsafe::ObjectPtrFromOwned<TensorObj>(static_cast<TVMFFIObject*>(out)));
+           detail::ObjectUnsafe::ObjectPtrFromOwned<TensorObj>(static_cast<TVMFFIObject*>(out)));
      }
      template <typename TNDAlloc, typename... ExtraArgs>
      static Tensor FromNDAlloc(TNDAlloc alloc, ffi::ShapeView shape, DLDataType dtype, DLDevice device,
                                ExtraArgs&&... extra_args) {
        // inplace alloc shape and strides after data structure (as a result why multiply 2)
        size_t num_extra_i64_at_tail = shape.size() * 2;
-       return Tensor(make_inplace_array_object<details::TensorObjFromNDAlloc<TNDAlloc>, int64_t>(
+       return Tensor(make_inplace_array_object<detail::TensorObjFromNDAlloc<TNDAlloc>, int64_t>(
            num_extra_i64_at_tail, alloc, shape, dtype, device,
            std::forward<ExtraArgs>(extra_args)...));
      }
@@ -309,7 +310,7 @@ Program Listing for File tensor.h
        prototype.ndim = static_cast<int>(shape.size());
        prototype.strides = const_cast<int64_t*>(strides.data());
        prototype.byte_offset = 0;
-       return Tensor(make_inplace_array_object<details::TensorObjFromNDAlloc<TNDAlloc>, int64_t>(
+       return Tensor(make_inplace_array_object<detail::TensorObjFromNDAlloc<TNDAlloc>, int64_t>(
            num_extra_i64_at_tail, alloc, prototype, std::forward<ExtraArgs>(extra_args)...));
      }
      static Tensor FromEnvAlloc(int (*env_alloc)(DLTensor*, TVMFFIObjectHandle*), ffi::ShapeView shape,
@@ -322,7 +323,7 @@ Program Listing for File tensor.h
        prototype.ndim = static_cast<int>(shape.size());
        TVM_FFI_CHECK_SAFE_CALL(env_alloc(&prototype, &out));
        return Tensor(
-           details::ObjectUnsafe::ObjectPtrFromOwned<TensorObj>(static_cast<TVMFFIObject*>(out)));
+           detail::ObjectUnsafe::ObjectPtrFromOwned<TensorObj>(static_cast<TVMFFIObject*>(out)));
      }
      static Tensor FromDLPack(DLManagedTensor* tensor, size_t require_alignment = 0,
                               bool require_contiguous = false) {
@@ -334,11 +335,11 @@ Program Listing for File tensor.h
          TVM_FFI_THROW(RuntimeError) << "FromDLPack: Tensor is not contiguous.";
        }
        if (tensor->dl_tensor.strides != nullptr || tensor->dl_tensor.ndim == 0) {
-         return Tensor(make_object<details::TensorObjFromDLPack<DLManagedTensor>>(
+         return Tensor(make_object<detail::TensorObjFromDLPack<DLManagedTensor>>(
              tensor, /*extra_strides_at_tail=*/false));
        } else {
          return Tensor(
-             make_inplace_array_object<details::TensorObjFromDLPack<DLManagedTensor>, int64_t>(
+             make_inplace_array_object<detail::TensorObjFromDLPack<DLManagedTensor>, int64_t>(
                  tensor->dl_tensor.ndim, tensor, /*extra_strides_at_tail=*/true));
        }
      }
@@ -356,13 +357,13 @@ Program Listing for File tensor.h
          TVM_FFI_THROW(RuntimeError) << "Subbyte type padded is not yet supported";
        }
        if (tensor->dl_tensor.strides != nullptr || tensor->dl_tensor.ndim == 0) {
-         return Tensor(make_object<details::TensorObjFromDLPack<DLManagedTensorVersioned>>(
+         return Tensor(make_object<detail::TensorObjFromDLPack<DLManagedTensorVersioned>>(
              tensor, /*extra_strides_at_tail=*/false));
        } else {
          return Tensor(
-             make_inplace_array_object<details::TensorObjFromDLPack<DLManagedTensorVersioned>,
-                                       int64_t>(tensor->dl_tensor.ndim, tensor,
-                                                /*extra_strides_at_tail=*/true));
+             make_inplace_array_object<detail::TensorObjFromDLPack<DLManagedTensorVersioned>, int64_t>(
+                 tensor->dl_tensor.ndim, tensor,
+                 /*extra_strides_at_tail=*/true));
        }
      }
    

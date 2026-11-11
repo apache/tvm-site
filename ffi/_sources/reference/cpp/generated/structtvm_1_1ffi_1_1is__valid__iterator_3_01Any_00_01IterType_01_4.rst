@@ -9,9 +9,10 @@ Template Struct is_valid_iterator< Any, IterType >
 Inheritance Relationships
 -------------------------
 
-Base Type
-*********
+Base Types
+**********
 
+- ``public std::bool_constant< std::is_same_v< Any, std::remove_cv_t< std::remove_reference_t< decltype(*std::declval< IterType >())> > >||std::is_base_of_v< Any, std::remove_cv_t< std::remove_reference_t< decltype(*std::declval< IterType >())> > > >``
 - ``public std::true_type``
 
 

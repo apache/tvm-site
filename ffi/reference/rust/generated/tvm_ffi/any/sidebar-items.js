@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Any","AnyView","TryFromTemp"]};
+window.SIDEBAR_ITEMS = {"struct":["Any","AnyView"]};

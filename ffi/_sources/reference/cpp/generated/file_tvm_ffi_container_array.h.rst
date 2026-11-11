@@ -32,7 +32,7 @@ Definition (``tvm/ffi/container/array.h``)
 Detailed Description
 --------------------
 
-tvm::ffi::Array<Any> is an erased type that contains a list of content 
+:ref:`exhale_class_classtvm_1_1ffi_1_1Array` is an erased type that contains a list of content 
 
 
 
@@ -47,7 +47,7 @@ Includes
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
-- ``tvm/ffi/container/container_details.h``
+- ``tvm/ffi/container/container_detail.h``
 
 - ``tvm/ffi/container/seq_base.h`` (:ref:`file_tvm_ffi_container_seq_base.h`)
 

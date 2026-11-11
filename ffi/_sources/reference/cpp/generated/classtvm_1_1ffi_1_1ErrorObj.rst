@@ -19,7 +19,7 @@ Base Types
 Derived Type
 ************
 
-- ``public tvm::ffi::details::ErrorObjFromStd``
+- ``public tvm::ffi::detail::ErrorObjFromStd``
 
 
 Class Documentation

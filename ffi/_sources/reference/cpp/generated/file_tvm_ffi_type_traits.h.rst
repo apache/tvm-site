@@ -39,7 +39,7 @@ Includes
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
-- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
+- ``tvm/ffi/base_detail.h`` (:ref:`file_tvm_ffi_base_detail.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
@@ -126,9 +126,9 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_type__traits_8h_1a7ba296d84188e5970ba854332a1f04a6`
+- :ref:`exhale_typedef_type__traits_8h_1acdf0820a74b1606deaca6accefcd8954`
 
-- :ref:`exhale_typedef_type__traits_8h_1ae125f5f5a8a94c7340577c1959805295`
+- :ref:`exhale_typedef_type__traits_8h_1a8da6898a78b58f0073d1d9af89880e75`
 
 
 Variables

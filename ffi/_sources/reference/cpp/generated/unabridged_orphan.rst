@@ -85,7 +85,7 @@ Files
 .. toctree::
    :maxdepth: 5
 
-   file_tvm_ffi_base_details.h.rst
+   file_tvm_ffi_base_detail.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -206,6 +206,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_extra_module.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_reflection_native_function.h.rst
 
 .. toctree::
    :maxdepth: 5

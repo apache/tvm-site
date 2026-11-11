@@ -43,18 +43,18 @@ Program Listing for File creator.h
      if (type_info->metadata != nullptr && type_info->metadata->creator != nullptr) {
        TVMFFIObjectHandle handle;
        TVM_FFI_CHECK_SAFE_CALL(type_info->metadata->creator(&handle));
-       return details::ObjectUnsafe::ObjectPtrFromOwned<Object>(static_cast<TVMFFIObject*>(handle));
+       return detail::ObjectUnsafe::ObjectPtrFromOwned<Object>(static_cast<TVMFFIObject*>(handle));
      }
      // Fallback: __ffi_new__ type attr (Python-defined types)
-     constexpr TVMFFIByteArray kFFINewAttrName = reflection::AsByteArray(reflection::type_attr::kNew);
+     constexpr TVMFFIByteArray kFFINewAttrName = reflection::AsByteArray(type_attr::kNew.name);
      const TVMFFITypeAttrColumn* column = TVMFFIGetTypeAttrColumn(&kFFINewAttrName);
      if (column != nullptr) {
        int32_t offset = type_info->type_index - column->begin_index;
        if (offset >= 0 && offset < column->size) {
          AnyView attr_view = AnyView::CopyFromTVMFFIAny(column->data[offset]);
-         if (auto opt_func = attr_view.try_cast<Function>()) {
-           ObjectRef obj_ref = (*opt_func)().cast<ObjectRef>();
-           return details::ObjectUnsafe::ObjectPtrFromObjectRef<Object>(std::move(obj_ref));
+         if (auto opt_func = type_attr::kNew.ValueFrom(attr_view)) {
+           ObjectRef obj_ref = (*opt_func)();
+           return detail::ObjectUnsafe::ObjectPtrFromObjectRef<Object>(std::move(obj_ref));
          }
        }
      }
@@ -68,7 +68,7 @@ Program Listing for File creator.h
      if (type_info->metadata != nullptr && type_info->metadata->creator != nullptr) {
        return true;
      }
-     constexpr TVMFFIByteArray kFFINewAttrName = reflection::AsByteArray(reflection::type_attr::kNew);
+     constexpr TVMFFIByteArray kFFINewAttrName = reflection::AsByteArray(type_attr::kNew.name);
      const TVMFFITypeAttrColumn* column = TVMFFIGetTypeAttrColumn(&kFFINewAttrName);
      if (column != nullptr) {
        int32_t offset = type_info->type_index - column->begin_index;
@@ -82,7 +82,7 @@ Program Listing for File creator.h
    
    namespace reflection {
    
-   namespace details {
+   namespace detail {
    
    template <typename TObjectRef>
    TObjectRef FFIConvertFromAnyViewToObjectRef(AnyView input) {
@@ -95,7 +95,11 @@ Program Listing for File creator.h
      TVM_FFI_UNREACHABLE();
    }
    
-   }  // namespace details
+   }  // namespace detail
+   
+   // Backward compatibility.
+   // TODO(tvm-ffi): Remove after updating the remaining downstream uses.
+   namespace details = detail;
    
    class ObjectCreator {
     public:

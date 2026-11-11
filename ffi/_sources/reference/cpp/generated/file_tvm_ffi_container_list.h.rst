@@ -32,7 +32,7 @@ Definition (``tvm/ffi/container/list.h``)
 Detailed Description
 --------------------
 
-tvm::ffi::List<Any> is an erased mutable sequence container. 
+:ref:`exhale_class_classtvm_1_1ffi_1_1List` is an erased mutable sequence container. 
 
 
 
@@ -72,8 +72,6 @@ Included By
 - :ref:`file_tvm_ffi_enum.h`
 
 - :ref:`file_tvm_ffi_extra_stl.h`
-
-- :ref:`file_tvm_ffi_extra_visit_error_context.h`
 
 - :ref:`file_tvm_ffi_reflection_enum_def.h`
 

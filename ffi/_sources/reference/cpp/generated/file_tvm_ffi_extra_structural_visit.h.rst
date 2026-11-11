@@ -63,11 +63,13 @@ Includes
 
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
 
-- ``tvm/ffi/function_details.h``
+- ``tvm/ffi/function_detail.h``
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 
 - ``tvm/ffi/reflection/accessor.h`` (:ref:`file_tvm_ffi_reflection_accessor.h`)
+
+- ``tvm/ffi/reflection/native_function.h`` (:ref:`file_tvm_ffi_reflection_native_function.h`)
 
 - ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
 
@@ -91,6 +93,8 @@ Namespaces
 - :ref:`namespace_tvm`
 
 - :ref:`namespace_tvm__ffi`
+
+- :ref:`namespace_tvm__ffi__type_attr`
 
 
 Classes
@@ -145,5 +149,14 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_structural__visit_8h_1a745d053678181bd38e0fee17b772656b`
+- :ref:`exhale_typedef_structural__visit_8h_1aef223f02e47a13890214a3faf0657f82`
+
+- :ref:`exhale_typedef_structural__visit_8h_1a7b68fd90b5c08a694c11744e75bb0305`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1type__attr_1a68eac47fae7fac9957590434ce83ff0c`
 

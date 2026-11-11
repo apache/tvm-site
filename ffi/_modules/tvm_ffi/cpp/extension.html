@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../../../_static/documentation_options.js?v=274f805b"></script>
+    <script src="../../../_static/documentation_options.js?v=2464e58c"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -417,8 +417,8 @@ window.runMermaid = runMermaid;</script>
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+g23b2ec1b3" />
-    <meta name="docbuild:last-update" content="Sep 26, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g99a7edded" />
+    <meta name="docbuild:last-update" content="Nov 11, 2026"/>
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -798,6 +798,8 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
@@ -811,7 +813,8 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm_ffi.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileLock</span>
 
 <span class="n">IS_WINDOWS</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">"win32"</span>
-<span class="n">BACKEND_STR</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="s2">"hip"</span><span class="p">]</span>
+<span class="n">BACKEND_STR</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="s2">"hip"</span><span class="p">,</span> <span class="s2">"sycl"</span><span class="p">]</span>
+<span class="n">_BACKENDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="s2">"hip"</span><span class="p">,</span> <span class="s2">"sycl"</span><span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -832,18 +835,18 @@ window.runMermaid = runMermaid;</script>
 
 <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_detect_gpu_backend</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">BACKEND_STR</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Auto-detect whether to use CUDA or HIP (ROCm), defaulting to CUDA.</span>
+<span class="w">    </span><span class="sd">"""Auto-detect whether to use CUDA, HIP (ROCm), or SYCL, defaulting to CUDA.</span>
 
 <span class="sd">    Resolution order: the ``TVM_FFI_GPU_BACKEND`` override, then PyTorch build</span>
-<span class="sd">    signals (``torch.version.hip`` / ``torch.version.cuda``), then a discoverable</span>
+<span class="sd">    signals (``torch.version.hip`` / ``torch.version.cuda`` / ``torch.version.xpu``), then a discoverable</span>
 <span class="sd">    ``hipcc`` when no ``nvcc`` can be found. Compilers are resolved from ``PATH``</span>
 <span class="sd">    and from the ``CUDA_HOME``/``CUDA_PATH`` and ``ROCM_HOME``/``ROCM_PATH``</span>
 <span class="sd">    toolkit homes, so an env-specified CUDA install is honored even when ``nvcc``</span>
 <span class="sd">    is off ``PATH``. The mere existence of ``/opt/rocm`` is not treated as</span>
-<span class="sd">    evidence of HIP.</span>
+<span class="sd">    evidence of HIP. SYCL is never inferred from the presence of ``icpx`` alone.</span>
 <span class="sd">    """</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"TVM_FFI_GPU_BACKEND"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">backend</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="s2">"hip"</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">in</span> <span class="n">_BACKENDS</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">backend</span>  <span class="c1"># type: ignore[return-value]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>  <span class="c1"># noqa: PLC0415</span>
@@ -853,6 +856,8 @@ window.runMermaid = runMermaid;</script>
             <span class="k">return</span> <span class="s2">"hip"</span>
         <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">return</span> <span class="s2">"cuda"</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="s2">"xpu"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">"sycl"</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">if</span> <span class="n">_find_compiler</span><span class="p">(</span><span class="s2">"nvcc"</span><span class="p">,</span> <span class="s2">"CUDA_HOME"</span><span class="p">,</span> <span class="s2">"CUDA_PATH"</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span>
@@ -864,13 +869,15 @@ window.runMermaid = runMermaid;</script>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_gpu_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BACKEND_STR</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">backend</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="s2">"hip"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">in</span> <span class="n">_BACKENDS</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">backend</span>  <span class="c1"># type: ignore[return-value]</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid backend: </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2">. Supported backends are 'cuda' and 'hip'."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Invalid backend: </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2">. Supported backends are 'cuda', 'hip', and 'sycl'."</span>
+        <span class="p">)</span>
     <span class="k">return</span> <span class="n">_detect_gpu_backend</span><span class="p">()</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_hash_sources</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_hash_sources</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
     <span class="n">cpp_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cuda_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpp_files</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
@@ -881,8 +888,12 @@ window.runMermaid = runMermaid;</script>
     <span class="n">extra_ldflags</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">extra_include_paths</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">embed_cubin</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Generate a unique hash for the given sources and functions."""</span>
+<span class="w">    </span><span class="sd">"""Generate a unique hash for the given sources and functions.</span>
+
+<span class="sd">    ``backend`` is only hashed when given, so existing cache keys are unchanged.</span>
+<span class="sd">    """</span>
     <span class="n">m</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_hash</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -921,6 +932,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">embed_cubin</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_hash</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">16</span><span class="p">]</span>
 
@@ -1077,6 +1090,32 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_sycl_compiler</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Find the oneAPI DPC++ compiler (``icpx``)."""</span>
+    <span class="n">icpx</span> <span class="o">=</span> <span class="n">_find_compiler</span><span class="p">(</span><span class="s2">"icpx"</span><span class="p">,</span> <span class="s2">"CMPLR_ROOT"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">icpx</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ONEAPI_ROOT"</span><span class="p">):</span>
+        <span class="n">icpx</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span>
+            <span class="s2">"icpx"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"ONEAPI_ROOT"</span><span class="p">])</span> <span class="o">/</span> <span class="s2">"compiler"</span> <span class="o">/</span> <span class="s2">"latest"</span> <span class="o">/</span> <span class="s2">"bin"</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">icpx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">"Could not find the SYCL compiler icpx. Please source the oneAPI setvars.sh script "</span>
+            <span class="s2">"or set the CMPLR_ROOT environment variable."</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">icpx</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_sycl_targets</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Get the SYCL ahead-of-time target flags, or none to JIT compile from SPIR-V."""</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"TVM_FFI_SYCL_TARGETS"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>  <span class="c1"># e.g., "intel_gpu_pvc intel_gpu_bmg_g21"</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[A-Za-z0-9_]+"</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid SYCL target: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">targets</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s2">"-fsycl-targets=</span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">targets</span><span class="p">))]</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_run_command_in_dev_prompt</span><span class="p">(</span>
     <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -1120,11 +1159,19 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">vsdevcmd_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"VsDevCmd.bat not found at: </span><span class="si">{</span><span class="n">vsdevcmd_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">machine</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"arm64"</span><span class="p">,</span> <span class="s2">"aarch64"</span><span class="p">):</span>
+            <span class="n">msvc_arch</span> <span class="o">=</span> <span class="s2">"arm64"</span>
+        <span class="k">elif</span> <span class="n">machine</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"amd64"</span><span class="p">,</span> <span class="s2">"x86_64"</span><span class="p">):</span>
+            <span class="n">msvc_arch</span> <span class="o">=</span> <span class="s2">"x64"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported Windows architecture: </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
         <span class="c1"># Use cmd.exe to run the batch file and then your command.</span>
         <span class="c1"># The /k flag keeps the command prompt open after the batch file runs.</span>
         <span class="c1"># The "&amp;" symbol chains the commands.</span>
-        <span class="n">cmd_command</span> <span class="o">=</span> <span class="s1">'"</span><span class="si">{vsdevcmd_path}</span><span class="s1">" -arch=x64 &amp; </span><span class="si">{command}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">vsdevcmd_path</span><span class="o">=</span><span class="n">vsdevcmd_path</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">cmd_command</span> <span class="o">=</span> <span class="s1">'"</span><span class="si">{vsdevcmd_path}</span><span class="s1">" -arch=</span><span class="si">{arch}</span><span class="s1"> &amp; </span><span class="si">{command}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">vsdevcmd_path</span><span class="o">=</span><span class="n">vsdevcmd_path</span><span class="p">,</span> <span class="n">arch</span><span class="o">=</span><span class="n">msvc_arch</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># Execute the command in a new shell</span>
@@ -1138,6 +1185,14 @@ window.runMermaid = runMermaid;</script>
                 <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_windows_argument</span><span class="p">(</span><span class="n">argument</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Quote one argument of a Windows command line if it would otherwise split on a space.</span>
+
+<span class="sd">    The CUDA toolkit installs under ``Program Files`` by default.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">list2cmdline</span><span class="p">([</span><span class="n">argument</span><span class="p">])</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_generate_ninja_build</span><span class="p">(</span>  <span class="c1"># noqa: PLR0915, PLR0912</span>
@@ -1161,6 +1216,13 @@ window.runMermaid = runMermaid;</script>
         <span class="n">object_mode</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">output_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="s1">'.dll'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">IS_WINDOWS</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'.so'</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">has_cuda_sources</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">".cu"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">)</span>
+    <span class="n">with_sycl</span> <span class="o">=</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">"sycl"</span>
+    <span class="k">if</span> <span class="n">with_sycl</span> <span class="ow">and</span> <span class="n">has_cuda_sources</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"CUDA (.cu) sources cannot be built with the sycl backend, use C++ sources instead."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">with_sycl</span> <span class="ow">and</span> <span class="n">IS_WINDOWS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"The sycl backend is not yet supported on Windows"</span><span class="p">)</span>
     <span class="n">with_hip</span> <span class="o">=</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">"hip"</span>
     <span class="n">with_cuda</span> <span class="o">=</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">"cuda"</span>
     <span class="n">with_backend</span> <span class="o">=</span> <span class="n">with_hip</span> <span class="ow">or</span> <span class="n">with_cuda</span> <span class="ow">or</span> <span class="n">has_cuda_sources</span>
@@ -1176,7 +1238,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">tvm_ffi_lib_name</span> <span class="o">=</span> <span class="n">tvm_ffi_lib</span><span class="o">.</span><span class="n">stem</span>
     <span class="k">if</span> <span class="n">IS_WINDOWS</span><span class="p">:</span>
         <span class="n">default_cflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"/O2"</span><span class="p">,</span> <span class="s2">"/MD"</span><span class="p">]</span>
-        <span class="n">default_cxxflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"/std:c++17"</span><span class="p">,</span> <span class="s2">"/MD"</span><span class="p">,</span> <span class="s2">"/EHsc"</span><span class="p">]</span>
+        <span class="n">default_cxxflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"/std:c++20"</span><span class="p">,</span> <span class="s2">"/O2"</span><span class="p">,</span> <span class="s2">"/MD"</span><span class="p">,</span> <span class="s2">"/EHsc"</span><span class="p">]</span>
         <span class="n">_win_warnings</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">"/wd4819"</span><span class="p">,</span>
             <span class="s2">"/wd4251"</span><span class="p">,</span>
@@ -1191,16 +1253,24 @@ window.runMermaid = runMermaid;</script>
         <span class="p">]</span>
         <span class="n">default_cflags</span> <span class="o">+=</span> <span class="n">_win_warnings</span>
         <span class="n">default_cxxflags</span> <span class="o">+=</span> <span class="n">_win_warnings</span>
-        <span class="n">default_cuda_cflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-Xcompiler"</span><span class="p">,</span> <span class="s2">"/std:c++17"</span><span class="p">,</span> <span class="s2">"/O2"</span><span class="p">]</span>
+        <span class="c1"># nvcc forwards its own -std and -O to cl for the host pass, as it does to gcc.</span>
+        <span class="c1"># /MD matches the C++ objects: cl's default /MT fails a mixed link (LNK2038).</span>
+        <span class="n">default_cuda_cflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-Xcompiler"</span><span class="p">,</span> <span class="s2">"/MD"</span><span class="p">,</span> <span class="s2">"-std=c++20"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">]</span>
         <span class="n">default_ldflags</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">"/DLL"</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">"/LIBPATH:</span><span class="si">{</span><span class="n">tvm_ffi_lib_path</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="n">_windows_argument</span><span class="p">(</span><span class="sa">f</span><span class="s2">"/LIBPATH:</span><span class="si">{</span><span class="n">tvm_ffi_lib_path</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tvm_ffi_lib_name</span><span class="si">}</span><span class="s2">.lib"</span><span class="p">,</span>
         <span class="p">]</span>
+        <span class="k">if</span> <span class="n">with_cuda</span><span class="p">:</span>
+            <span class="n">default_cuda_cflags</span> <span class="o">+=</span> <span class="p">[</span><span class="n">_get_cuda_target</span><span class="p">()]</span>
+            <span class="n">default_ldflags</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="n">_windows_argument</span><span class="p">(</span><span class="sa">f</span><span class="s2">"/LIBPATH:</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">_find_cuda_home</span><span class="p">())</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'lib'</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'x64'</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+                <span class="s2">"cudart.lib"</span><span class="p">,</span>  <span class="c1"># cuda runtime library</span>
+            <span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">default_cflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-fPIC"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">]</span>
-        <span class="n">default_cxxflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-std=c++17"</span><span class="p">,</span> <span class="s2">"-fPIC"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">]</span>
-        <span class="n">default_cuda_cflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-std=c++17"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">]</span>
+        <span class="n">default_cxxflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-std=c++20"</span><span class="p">,</span> <span class="s2">"-fPIC"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">]</span>
+        <span class="n">default_cuda_cflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-std=c++20"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">]</span>
         <span class="n">default_ldflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-shared"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"-L</span><span class="si">{</span><span class="n">tvm_ffi_lib_path</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"-ltvm_ffi"</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">with_hip</span><span class="p">:</span>
@@ -1212,6 +1282,11 @@ window.runMermaid = runMermaid;</script>
                 <span class="sa">f</span><span class="s2">"-L</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">rocm_home</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'lib'</span><span class="si">!s}</span><span class="s2">"</span><span class="p">,</span>
                 <span class="s2">"-lamdhip64"</span><span class="p">,</span>
             <span class="p">]</span>
+        <span class="k">if</span> <span class="n">with_sycl</span><span class="p">:</span>
+            <span class="c1"># SYCL is single-source C++, so every C++ source is compiled and linked with icpx.</span>
+            <span class="n">sycl_flags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-fsycl"</span><span class="p">,</span> <span class="o">*</span><span class="n">_get_sycl_targets</span><span class="p">()]</span>
+            <span class="n">default_cxxflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-std=c++20"</span><span class="p">,</span> <span class="s2">"-fPIC"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">,</span> <span class="o">*</span><span class="n">sycl_flags</span><span class="p">]</span>
+            <span class="n">default_ldflags</span> <span class="o">+=</span> <span class="n">sycl_flags</span>
         <span class="k">if</span> <span class="n">with_cuda</span><span class="p">:</span>
             <span class="n">default_cuda_cflags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-Xcompiler"</span><span class="p">,</span> <span class="s2">"-fPIC"</span><span class="p">,</span> <span class="o">*</span><span class="n">default_cuda_cflags</span><span class="p">]</span>
             <span class="n">default_cuda_cflags</span> <span class="o">+=</span> <span class="p">[</span><span class="n">_get_cuda_target</span><span class="p">()]</span>
@@ -1223,6 +1298,9 @@ window.runMermaid = runMermaid;</script>
     <span class="n">extra_cflags_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">flag</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">extra_cflags</span><span class="p">]</span>
     <span class="n">cflags</span> <span class="o">=</span> <span class="n">default_cflags</span> <span class="o">+</span> <span class="n">extra_cflags_list</span>
     <span class="n">cxxflags</span> <span class="o">=</span> <span class="n">default_cxxflags</span> <span class="o">+</span> <span class="n">extra_cflags_list</span>
+    <span class="k">if</span> <span class="n">with_sycl</span><span class="p">:</span>
+        <span class="c1"># SYCL device code is compiled by the C++ rule</span>
+        <span class="n">cxxflags</span> <span class="o">+=</span> <span class="p">[</span><span class="n">flag</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">extra_cuda_cflags</span><span class="p">]</span>
     <span class="n">cuda_cflags</span> <span class="o">=</span> <span class="n">default_cuda_cflags</span> <span class="o">+</span> <span class="p">[</span><span class="n">flag</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">extra_cuda_cflags</span><span class="p">]</span>
     <span class="n">ldflags</span> <span class="o">=</span> <span class="n">default_ldflags</span> <span class="o">+</span> <span class="p">[</span><span class="n">flag</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">extra_ldflags</span><span class="p">]</span>
     <span class="n">include_paths</span> <span class="o">=</span> <span class="n">default_include_paths</span> <span class="o">+</span> <span class="p">[</span>
@@ -1240,7 +1318,10 @@ window.runMermaid = runMermaid;</script>
     <span class="n">with_c</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">".c"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">)</span>
     <span class="n">ninja</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"ninja_required_version = 1.3"</span><span class="p">)</span>
-    <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"cxx = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CXX"</span><span class="p">,</span> <span class="s2">"cl"</span> <span class="k">if</span> <span class="n">IS_WINDOWS</span> <span class="k">else</span> <span class="s2">"c++"</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">with_sycl</span><span class="p">:</span>
+        <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cxx = </span><span class="si">{</span><span class="n">_find_sycl_compiler</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"cxx = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CXX"</span><span class="p">,</span> <span class="s2">"cl"</span> <span class="k">if</span> <span class="n">IS_WINDOWS</span> <span class="k">else</span> <span class="s2">"c++"</span><span class="p">)))</span>
     <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"cxxflags = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cxxflags</span><span class="p">)))</span>
     <span class="k">if</span> <span class="n">with_c</span><span class="p">:</span>
         <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"cc = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CC"</span><span class="p">,</span> <span class="s2">"cl"</span> <span class="k">if</span> <span class="n">IS_WINDOWS</span> <span class="k">else</span> <span class="s2">"cc"</span><span class="p">)))</span>
@@ -1479,7 +1560,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_build_impl</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_impl</span><span class="p">(</span>  <span class="c1"># noqa: PLR0912, PLR0913</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">sources</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra_cflags</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
@@ -1498,7 +1579,12 @@ window.runMermaid = runMermaid;</script>
     <span class="k">assert</span> <span class="n">source_path_list</span><span class="p">,</span> <span class="s2">"sources must be provided."</span>
 
     <span class="n">has_cuda</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">".cu"</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">source_path_list</span><span class="p">)</span>
-    <span class="n">resolved_backend</span> <span class="o">=</span> <span class="n">_resolve_gpu_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span> <span class="k">if</span> <span class="n">has_cuda</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">has_cuda</span><span class="p">:</span>
+        <span class="n">resolved_backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_resolve_gpu_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">"sycl"</span><span class="p">:</span>
+        <span class="n">resolved_backend</span> <span class="o">=</span> <span class="s2">"sycl"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">resolved_backend</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">extra_ldflags_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">extra_ldflags</span><span class="p">)</span> <span class="k">if</span> <span class="n">extra_ldflags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
     <span class="n">extra_cflags_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">extra_cflags</span><span class="p">)</span> <span class="k">if</span> <span class="n">extra_cflags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
     <span class="n">extra_cuda_cflags_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">extra_cuda_cflags</span><span class="p">)</span> <span class="k">if</span> <span class="n">extra_cuda_cflags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
@@ -1518,6 +1604,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">extra_ldflags_list</span><span class="p">,</span>
             <span class="n">extra_include_paths_list</span><span class="p">,</span>
             <span class="n">embed_cubin</span><span class="p">,</span>
+            <span class="n">backend</span><span class="o">=</span><span class="s2">"sycl"</span> <span class="k">if</span> <span class="n">resolved_backend</span> <span class="o">==</span> <span class="s2">"sycl"</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">build_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">source_hash</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1640,8 +1727,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        The extra compiler flags for C++ compilation.</span>
 <span class="sd">        The default flags are:</span>
 
-<span class="sd">        - On Linux/macOS: ['-std=c++17', '-fPIC', '-O2']</span>
-<span class="sd">        - On Windows: ['/std:c++17', '/O2']</span>
+<span class="sd">        - On Linux/macOS: ['-std=c++20', '-fPIC', '-O2']</span>
+<span class="sd">        - On Windows: ['/std:c++20', '/O2']</span>
 
 <span class="sd">    extra_cuda_cflags</span>
 <span class="sd">        The extra compiler flags for CUDA compilation.</span>
@@ -1669,7 +1756,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        See the `examples/cubin_launcher` directory for examples how to use cubin launcher to launch CUBIN kernels in TVM-FFI.</span>
 
 <span class="sd">    backend</span>
-<span class="sd">        The GPU backend to use. It can be "cuda" or "hip".</span>
+<span class="sd">        The GPU backend to use. It can be "cuda", "hip", or "sycl".</span>
 <span class="sd">        If not specified, the backend will be automatically determined based on the available GPU and the provided source code.</span>
 
 <span class="sd">    output</span>
@@ -1734,6 +1821,9 @@ window.runMermaid = runMermaid;</script>
     <span class="n">cuda_source</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cuda_source_list</span><span class="p">)</span>
     <span class="n">with_backend</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cuda_source_list</span><span class="p">)</span>
     <span class="k">del</span> <span class="n">cuda_source_list</span>
+    <span class="n">with_sycl</span> <span class="o">=</span> <span class="n">with_backend</span> <span class="ow">and</span> <span class="n">_resolve_gpu_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"sycl"</span>
+    <span class="k">if</span> <span class="n">with_sycl</span><span class="p">:</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="s2">"sycl"</span>
 
     <span class="n">extra_ldflags_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">extra_ldflags</span><span class="p">)</span> <span class="k">if</span> <span class="n">extra_ldflags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
     <span class="n">extra_cflags_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">extra_cflags</span><span class="p">)</span> <span class="k">if</span> <span class="n">extra_cflags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
@@ -1771,6 +1861,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">extra_ldflags_list</span><span class="p">,</span>
             <span class="n">extra_include_paths_list</span><span class="p">,</span>
             <span class="n">embed_cubin</span><span class="p">,</span>
+            <span class="n">backend</span><span class="o">=</span><span class="s2">"sycl"</span> <span class="k">if</span> <span class="n">with_sycl</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">build_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">source_hash</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1778,7 +1869,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">build_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">cpp_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">((</span><span class="n">build_dir</span> <span class="o">/</span> <span class="s2">"main.cpp"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
-    <span class="n">cuda_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">((</span><span class="n">build_dir</span> <span class="o">/</span> <span class="s2">"cuda.cu"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+    <span class="n">cuda_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">((</span><span class="n">build_dir</span> <span class="o">/</span> <span class="p">(</span><span class="s2">"sycl.cpp"</span> <span class="k">if</span> <span class="n">with_sycl</span> <span class="k">else</span> <span class="s2">"cuda.cu"</span><span class="p">))</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
 
     <span class="k">with</span> <span class="n">FileLock</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">build_dir</span> <span class="o">/</span> <span class="s2">"lock"</span><span class="p">)):</span>
         <span class="c1"># write source files if they do not already exist</span>
@@ -1869,8 +1960,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        The extra compiler flags for C++ compilation.</span>
 <span class="sd">        The default flags are:</span>
 
-<span class="sd">        - On Linux/macOS: ['-std=c++17', '-fPIC', '-O2']</span>
-<span class="sd">        - On Windows: ['/std:c++17', '/O2']</span>
+<span class="sd">        - On Linux/macOS: ['-std=c++20', '-fPIC', '-O2']</span>
+<span class="sd">        - On Windows: ['/std:c++20', '/O2']</span>
 
 <span class="sd">    extra_cuda_cflags</span>
 <span class="sd">        The extra compiler flags for CUDA compilation.</span>
@@ -1900,7 +1991,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        for the duration of the process.</span>
 
 <span class="sd">    backend</span>
-<span class="sd">        The GPU backend to use. It can be "cuda" or "hip".</span>
+<span class="sd">        The GPU backend to use. It can be "cuda", "hip", or "sycl".</span>
 <span class="sd">        If not specified, the backend will be automatically determined based on the available GPU and the provided source code.</span>
 
 <span class="sd">    Returns</span>
@@ -2040,17 +2131,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Extra compiler flags applied to both C and C++ compilation.</span>
 <span class="sd">        The C++ default flags are:</span>
 
-<span class="sd">        - On Linux/macOS: ['-std=c++17', '-fPIC', '-O2']</span>
-<span class="sd">        - On Windows: ['/std:c++17', '/MD', '/O2']</span>
+<span class="sd">        - On Linux/macOS: ['-std=c++20', '-fPIC', '-O2']</span>
+<span class="sd">        - On Windows: ['/std:c++20', '/MD', '/O2']</span>
 
-<span class="sd">        The C default flags omit ``-std=c++17`` and ``/EHsc``.</span>
+<span class="sd">        The C default flags omit ``-std=c++20`` and ``/EHsc``.</span>
 
 <span class="sd">    extra_cuda_cflags</span>
 <span class="sd">        The extra compiler flags for CUDA compilation.</span>
 <span class="sd">        The default flags are:</span>
 
-<span class="sd">        - ['-Xcompiler', '-fPIC', '-std=c++17', '-O2'] (Linux/macOS)</span>
-<span class="sd">        - ['-Xcompiler', '/std:c++17', '/O2'] (Windows)</span>
+<span class="sd">        - ['-Xcompiler', '-fPIC', '-std=c++20', '-O2'] (Linux/macOS)</span>
+<span class="sd">        - ['-Xcompiler', '/MD', '-std=c++20', '-O2'] (Windows)</span>
 
 <span class="sd">    extra_ldflags</span>
 <span class="sd">        The extra linker flags.</span>
@@ -2068,7 +2159,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        specify the cache directory.</span>
 
 <span class="sd">    backend</span>
-<span class="sd">        The GPU backend to use. It can be "cuda" or "hip".</span>
+<span class="sd">        The GPU backend to use. It can be "cuda", "hip", or "sycl".</span>
 <span class="sd">        If not specified, the backend will be automatically determined based on the available GPU and the provided source code.</span>
 
 <span class="sd">    output</span>
@@ -2201,15 +2292,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        The extra compiler flags for C++ compilation.</span>
 <span class="sd">        The default flags are:</span>
 
-<span class="sd">        - On Linux/macOS: ['-std=c++17', '-fPIC', '-O2']</span>
-<span class="sd">        - On Windows: ['/std:c++17', '/MD', '/O2']</span>
+<span class="sd">        - On Linux/macOS: ['-std=c++20', '-fPIC', '-O2']</span>
+<span class="sd">        - On Windows: ['/std:c++20', '/MD', '/O2']</span>
 
 <span class="sd">    extra_cuda_cflags</span>
 <span class="sd">        The extra compiler flags for CUDA compilation.</span>
 <span class="sd">        The default flags are:</span>
 
-<span class="sd">        - ['-Xcompiler', '-fPIC', '-std=c++17', '-O2'] (Linux/macOS)</span>
-<span class="sd">        - ['-Xcompiler', '/std:c++17', '/O2'] (Windows)</span>
+<span class="sd">        - ['-Xcompiler', '-fPIC', '-std=c++20', '-O2'] (Linux/macOS)</span>
+<span class="sd">        - ['-Xcompiler', '/MD', '-std=c++20', '-O2'] (Windows)</span>
 
 <span class="sd">    extra_ldflags</span>
 <span class="sd">        The extra linker flags.</span>
@@ -2231,7 +2322,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        for the duration of the process.</span>
 
 <span class="sd">    backend</span>
-<span class="sd">        The GPU backend to use. It can be "cuda" or "hip".</span>
+<span class="sd">        The GPU backend to use. It can be "cuda", "hip", or "sycl".</span>
 <span class="sd">        If not specified, the backend will be automatically determined based on the available GPU and the provided source code.</span>
 
 <span class="sd">    Returns</span>
@@ -2344,7 +2435,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 26, 2026.
+  Last updated on Nov 11, 2026.
   <br/>
 </p>
   </div>

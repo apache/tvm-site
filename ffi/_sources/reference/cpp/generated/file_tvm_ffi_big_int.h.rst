@@ -37,6 +37,8 @@ Includes
 
 - ``algorithm``
 
+- ``bit``
+
 - ``cmath``
 
 - ``cstddef``

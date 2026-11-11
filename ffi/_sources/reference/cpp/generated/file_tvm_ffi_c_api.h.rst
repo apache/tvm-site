@@ -42,7 +42,7 @@ Included By
 
 - :ref:`file_tvm_ffi_any.h`
 
-- :ref:`file_tvm_ffi_base_details.h`
+- :ref:`file_tvm_ffi_base_detail.h`
 
 - :ref:`file_tvm_ffi_enum.h`
 

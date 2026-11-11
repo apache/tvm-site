@@ -33,6 +33,8 @@ Program Listing for File structural_hash.h
    
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/extra/base.h>
+   #include <tvm/ffi/function.h>
+   #include <tvm/ffi/reflection/accessor.h>
    
    namespace tvm {
    namespace ffi {
@@ -43,6 +45,12 @@ Program Listing for File structural_hash.h
                                                 bool skip_tensor_content = false);
      TVM_FFI_INLINE uint64_t operator()(const Any& value) const { return Hash(value); }
    };
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<TypedFunction<int64_t(
+       const Object*, int64_t, const TypedFunction<int64_t(AnyView, int64_t, int)>&)>>
+       kSHash{"__s_hash__"};
+   }  // namespace type_attr
    
    }  // namespace ffi
    }  // namespace tvm

@@ -44,7 +44,7 @@ Program Listing for File device.h
    
    namespace tvm {
    namespace ffi {
-   namespace details {
+   namespace detail {
    
    TVM_FFI_INLINE static std::optional<DLDeviceType> TryParseDLDeviceType(std::string_view name) {
      if (name == "cpu") return kDLCPU;
@@ -55,10 +55,14 @@ Program Listing for File device.h
      if (name == "vpi") return kDLVPI;
      if (name == "rocm") return kDLROCM;
      if (name == "ext_dev") return kDLExtDev;
+     if (name == "oneapi" || name == "xpu") return kDLOneAPI;
      if (name == "hexagon") return kDLHexagon;
      if (name == "wgpu" || name == "webgpu") return kDLWebGPU;
      if (name == "maia") return kDLMAIA;
      if (name == "trn") return kDLTrn;
+     if (name == "tpu") return kDLTPU;
+     if (name == "tpu_host") return kDLTPUHost;
+     if (name == "ascend") return kDLAscend;
      return std::nullopt;
    }
    
@@ -96,7 +100,7 @@ Program Listing for File device.h
      return DLDevice{device_type.value(), device_id};
    }
    
-   }  // namespace details
+   }  // namespace detail
    
    // Device
    template <>
@@ -134,7 +138,7 @@ Program Listing for File device.h
          return src->v_device;
        }
        if (auto opt_str = TypeTraits<String>::TryCastFromAnyView(src)) {
-         return details::TryStringViewToDLDevice(std::string_view(opt_str->data(), opt_str->size()));
+         return detail::TryStringViewToDLDevice(std::string_view(opt_str->data(), opt_str->size()));
        }
        return std::nullopt;
      }

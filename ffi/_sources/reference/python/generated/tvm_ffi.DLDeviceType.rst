@@ -39,5 +39,8 @@
       ~DLDeviceType.kDLHexagon
       ~DLDeviceType.kDLMAIA
       ~DLDeviceType.kDLTrn
+      ~DLDeviceType.kDLTPU
+      ~DLDeviceType.kDLTPUHost
+      ~DLDeviceType.kDLAscend
    
    

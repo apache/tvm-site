@@ -18,7 +18,7 @@ Base Type
 Derived Type
 ************
 
-- ``public tvm::ffi::StructuralMapEngineBase`` (:ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMapEngineBase`)
+- ``public tvm::ffi::detail::StructuralMutatorEngineBase< StructuralMutatorObj >``
 
 
 Class Documentation

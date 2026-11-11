@@ -32,7 +32,7 @@ Program Listing for File stl.h
    #ifndef TVM_FFI_EXTRA_STL_H_
    #define TVM_FFI_EXTRA_STL_H_
    
-   #include <tvm/ffi/base_details.h>
+   #include <tvm/ffi/base_detail.h>
    #include <tvm/ffi/c_api.h>
    #include <tvm/ffi/container/array.h>
    #include <tvm/ffi/container/list.h>
@@ -61,7 +61,7 @@ Program Listing for File stl.h
    
    namespace tvm {
    namespace ffi {
-   namespace details {
+   namespace detail {
    
    struct STLTypeMismatch : public std::exception {
      const char* what() const noexcept override { return "STL type mismatch"; }
@@ -104,10 +104,10 @@ Program Listing for File stl.h
    struct ListTemplate {};
    struct MapTemplate {};
    
-   }  // namespace details
+   }  // namespace detail
    
    template <>
-   struct TypeTraits<details::ListTemplate> : public details::STLTypeTrait {
+   struct TypeTraits<detail::ListTemplate> : public detail::STLTypeTrait {
     public:
      static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIArray;
    
@@ -163,7 +163,7 @@ Program Listing for File stl.h
    };
    
    template <>
-   struct TypeTraits<details::MapTemplate> : public details::STLTypeTrait {
+   struct TypeTraits<detail::MapTemplate> : public detail::STLTypeTrait {
     public:
      static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIMap;
    
@@ -196,7 +196,7 @@ Program Listing for File stl.h
    };
    
    template <typename T, std::size_t Nm>
-   struct TypeTraits<std::array<T, Nm>> : public TypeTraits<details::ListTemplate> {
+   struct TypeTraits<std::array<T, Nm>> : public TypeTraits<detail::ListTemplate> {
     private:
      using Self = std::array<T, Nm>;
    
@@ -227,23 +227,23 @@ Program Listing for File stl.h
            result[i] = ConstructFromAny<T>(begin[i]);
          }
          return result;
-       } catch (const details::STLTypeMismatch&) {
+       } catch (const detail::STLTypeMismatch&) {
          return std::nullopt;
        }
      }
    
      TVM_FFI_INLINE static std::string TypeStr() {
-       return "std::array<" + details::Type2Str<T>::v() + ", " + std::to_string(Nm) + ">";
+       return "std::array<" + detail::Type2Str<T>::v() + ", " + std::to_string(Nm) + ">";
      }
    
      TVM_FFI_INLINE static std::string TypeSchema() {
-       return R"({"type":"std::array","args":[)" + details::TypeSchema<T>::v() + "," +
+       return R"({"type":"std::array","args":[)" + detail::TypeSchema<T>::v() + "," +
               std::to_string(Nm) + "]}";
      }
    };
    
    template <typename T>
-   struct TypeTraits<std::vector<T>> : public TypeTraits<details::ListTemplate> {
+   struct TypeTraits<std::vector<T>> : public TypeTraits<detail::ListTemplate> {
     private:
      using Self = std::vector<T>;
    
@@ -271,17 +271,17 @@ Program Listing for File stl.h
            result.emplace_back(ConstructFromAny<T>(seq->at(i)));
          }
          return result;
-       } catch (const details::STLTypeMismatch&) {
+       } catch (const detail::STLTypeMismatch&) {
          return std::nullopt;
        }
      }
    
      TVM_FFI_INLINE static std::string TypeStr() {
-       return "std::vector<" + details::Type2Str<T>::v() + ">";
+       return "std::vector<" + detail::Type2Str<T>::v() + ">";
      }
    
      TVM_FFI_INLINE static std::string TypeSchema() {
-       return R"({"type":"std::vector","args":[)" + details::TypeSchema<T>::v() + "]}";
+       return R"({"type":"std::vector","args":[)" + detail::TypeSchema<T>::v() + "]}";
      }
    };
    
@@ -340,7 +340,7 @@ Program Listing for File stl.h
      }
    
      TVM_FFI_INLINE static std::string TypeSchema() {
-       return R"({"type":"std::optional","args":[)" + details::TypeSchema<T>::v() + "]}";
+       return R"({"type":"std::optional","args":[)" + detail::TypeSchema<T>::v() + "]}";
      }
    };
    
@@ -436,7 +436,7 @@ Program Listing for File stl.h
        std::ostringstream os;
        os << "std::variant<";
        const char* sep = "";
-       ((os << sep << details::Type2Str<Args>::v(), sep = ", "), ...);
+       ((os << sep << detail::Type2Str<Args>::v(), sep = ", "), ...);
        os << ">";
        return std::move(os).str();
      }
@@ -445,14 +445,15 @@ Program Listing for File stl.h
        std::ostringstream os;
        os << R"({"type":"std::variant","args":[)";
        const char* sep = "";
-       ((os << sep << details::TypeSchema<Args>::v(), sep = ", "), ...);
+       ((os << sep << detail::TypeSchema<Args>::v(), sep = ", "), ...);
+       (void)sep;
        os << "]}";
        return std::move(os).str();
      }
    };
    
    template <typename... Args>
-   struct TypeTraits<std::tuple<Args...>> : public TypeTraits<details::ListTemplate> {
+   struct TypeTraits<std::tuple<Args...>> : public TypeTraits<detail::ListTemplate> {
     private:
      using Self = std::tuple<Args...>;
      static constexpr std::size_t Nm = sizeof...(Args);
@@ -494,7 +495,7 @@ Program Listing for File stl.h
        try {
          auto array = CopyFromAnyImpl<ArrayObj>(src);
          return ConstructTupleAux(std::make_index_sequence<Nm>{}, *array);
-       } catch (const details::STLTypeMismatch&) {
+       } catch (const detail::STLTypeMismatch&) {
          return std::nullopt;
        }
      }
@@ -503,7 +504,7 @@ Program Listing for File stl.h
        std::ostringstream os;
        os << "std::tuple<";
        const char* sep = "";
-       ((os << sep << details::Type2Str<Args>::v(), sep = ", "), ...);
+       ((os << sep << detail::Type2Str<Args>::v(), sep = ", "), ...);
        os << ">";
        return std::move(os).str();
      }
@@ -512,14 +513,14 @@ Program Listing for File stl.h
        std::ostringstream os;
        os << R"({"type":"std::tuple","args":[)";
        const char* sep = "";
-       ((os << sep << details::TypeSchema<Args>::v(), sep = ", "), ...);
+       ((os << sep << detail::TypeSchema<Args>::v(), sep = ", "), ...);
        os << "]}";
        return std::move(os).str();
      }
    };
    
    template <typename K, typename V>
-   struct TypeTraits<std::map<K, V>> : public TypeTraits<details::MapTemplate> {
+   struct TypeTraits<std::map<K, V>> : public TypeTraits<detail::MapTemplate> {
     private:
      using Self = std::map<K, V>;
      TVM_FFI_INLINE static bool CheckAnyFast(const TVMFFIAny* src) {
@@ -539,23 +540,23 @@ Program Listing for File stl.h
        if (!CheckAnyFast(src)) return std::nullopt;
        try {
          return ConstructMap<Self, /*CanReserve=*/false>(src);
-       } catch (const details::STLTypeMismatch&) {
+       } catch (const detail::STLTypeMismatch&) {
          return std::nullopt;
        }
      }
    
      TVM_FFI_INLINE static std::string TypeStr() {
-       return "std::map<" + details::Type2Str<K>::v() + ", " + details::Type2Str<V>::v() + ">";
+       return "std::map<" + detail::Type2Str<K>::v() + ", " + detail::Type2Str<V>::v() + ">";
      }
    
      TVM_FFI_INLINE static std::string TypeSchema() {
-       return R"({"type":"std::map","args":[)" + details::TypeSchema<K>::v() + "," +
-              details::TypeSchema<V>::v() + "]}";
+       return R"({"type":"std::map","args":[)" + detail::TypeSchema<K>::v() + "," +
+              detail::TypeSchema<V>::v() + "]}";
      }
    };
    
    template <typename K, typename V>
-   struct TypeTraits<std::unordered_map<K, V>> : public TypeTraits<details::MapTemplate> {
+   struct TypeTraits<std::unordered_map<K, V>> : public TypeTraits<detail::MapTemplate> {
     private:
      using Self = std::unordered_map<K, V>;
      TVM_FFI_INLINE static bool CheckAnyFast(const TVMFFIAny* src) {
@@ -575,19 +576,18 @@ Program Listing for File stl.h
        if (!CheckAnyFast(src)) return std::nullopt;
        try {
          return ConstructMap<Self, /*CanReserve=*/true>(src);
-       } catch (const details::STLTypeMismatch&) {
+       } catch (const detail::STLTypeMismatch&) {
          return std::nullopt;
        }
      }
    
      TVM_FFI_INLINE static std::string TypeStr() {
-       return "std::unordered_map<" + details::Type2Str<K>::v() + ", " + details::Type2Str<V>::v() +
-              ">";
+       return "std::unordered_map<" + detail::Type2Str<K>::v() + ", " + detail::Type2Str<V>::v() + ">";
      }
    
      TVM_FFI_INLINE static std::string TypeSchema() {
-       return R"({"type":"std::unordered_map","args":[)" + details::TypeSchema<K>::v() + "," +
-              details::TypeSchema<V>::v() + "]}";
+       return R"({"type":"std::unordered_map","args":[)" + detail::TypeSchema<K>::v() + "," +
+              detail::TypeSchema<V>::v() + "]}";
      }
    };
    
@@ -625,19 +625,21 @@ Program Listing for File stl.h
    
      TVM_FFI_INLINE static std::string TypeStr() {
        std::ostringstream os;
-       os << "std::function<" << details::Type2Str<Ret>::v() << "(";
+       os << "std::function<" << detail::Type2Str<Ret>::v() << "(";
        const char* sep = "";
-       ((os << sep << details::Type2Str<Args>::v(), sep = ", "), ...);
+       ((os << sep << detail::Type2Str<Args>::v(), sep = ", "), ...);
        os << ")>";
        return std::move(os).str();
      }
    
      TVM_FFI_INLINE static std::string TypeSchema() {
        std::ostringstream os;
-       os << R"({"type":"std::function","args":[)" << details::TypeSchema<Ret>::v() << ",[";
+       os << R"({"type":"std::function","named_args":{"return":[)" << detail::TypeSchema<Ret>::v()
+          << R"(],"params":[)";
        const char* sep = "";
-       ((os << sep << details::TypeSchema<Args>::v(), sep = ", "), ...);
-       os << "]]}";
+       ((os << sep << detail::TypeSchema<Args>::v(), sep = ", "), ...);
+       (void)sep;
+       os << "]}}";
        return std::move(os).str();
      }
    };

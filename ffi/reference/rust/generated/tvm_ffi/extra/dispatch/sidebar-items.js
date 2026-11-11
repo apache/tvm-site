@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["WalkDispatch"]};
+window.SIDEBAR_ITEMS = {"trait":["Dispatcher","IntoDispatcher"]};

@@ -12,7 +12,7 @@ Inheritance Relationships
 Derived Type
 ************
 
-- ``public tvm::ffi::details::BytesObjBase``
+- ``public tvm::ffi::detail::BytesObjBase``
 
 
 Struct Documentation

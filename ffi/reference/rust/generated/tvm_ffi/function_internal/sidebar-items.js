@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["call_packed_callable"],"trait":["ArgIntoRef","AsPackedCallable","IntoArgHolder","IntoArgHolderTuple","TupleAsPackedArgs"]};

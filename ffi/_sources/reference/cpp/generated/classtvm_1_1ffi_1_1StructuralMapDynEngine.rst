@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public Parent``
+- ``public detail::StructuralMutatorEngineParent< Parent >``
 
 
 Class Documentation

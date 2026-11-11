@@ -20,6 +20,7 @@ Files
 - :ref:`file_tvm_ffi_reflection_accessor.h`
 - :ref:`file_tvm_ffi_reflection_creator.h`
 - :ref:`file_tvm_ffi_reflection_enum_def.h`
+- :ref:`file_tvm_ffi_reflection_native_function.h`
 - :ref:`file_tvm_ffi_reflection_overload.h`
 - :ref:`file_tvm_ffi_reflection_registry.h`
 

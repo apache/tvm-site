@@ -36,8 +36,7 @@ Program Listing for File registry.h
    #include <tvm/ffi/container/map.h>
    #include <tvm/ffi/container/variant.h>
    #include <tvm/ffi/function.h>
-   #include <tvm/ffi/function_details.h>
-   #include <tvm/ffi/optional.h>
+   #include <tvm/ffi/function_detail.h>
    #include <tvm/ffi/reflection/creator.h>
    #include <tvm/ffi/string.h>
    #include <tvm/ffi/type_traits.h>
@@ -54,15 +53,15 @@ Program Listing for File registry.h
    namespace tvm {
    namespace ffi {
    namespace reflection {
-   namespace details {
    
+   namespace detail {
    template <typename T, typename = void>
    struct HasContainerType : public std::false_type {};
    
    template <typename T>
    struct HasContainerType<T, std::void_t<typename T::ContainerType>> : public std::true_type {};
    
-   }  // namespace details
+   }  // namespace detail
    
    using _MetadataType = std::vector<std::pair<String, Any>>;  // NOLINT(bugprone-reserved-identifier)
    struct FieldInfoBuilder : public TVMFFIFieldInfo {
@@ -91,7 +90,7 @@ Program Listing for File registry.h
                  std::back_inserter(*out));
      }
      static std::string ToJSON(const _MetadataType& metadata) {
-       using ::tvm::ffi::details::StringObj;
+       using ::tvm::ffi::detail::StringObj;
        std::ostringstream os;
        os << "{";
        bool first = true;
@@ -239,7 +238,7 @@ Program Listing for File registry.h
      int64_t field_offset_to_class =
          reinterpret_cast<int64_t>(&(static_cast<Class*>(nullptr)->*field_ptr));
      return field_offset_to_class -
-            ::tvm::ffi::details::ObjectUnsafe::GetObjectOffsetToSubclass<Class>();
+            ::tvm::ffi::detail::ObjectUnsafe::GetObjectOffsetToSubclass<Class>();
    }
    
    class ReflectionDefBase {
@@ -247,7 +246,7 @@ Program Listing for File registry.h
      template <typename T>
      static int FieldGetter(void* field, TVMFFIAny* result) {
        TVM_FFI_SAFE_CALL_BEGIN();
-       *result = ::tvm::ffi::details::AnyUnsafe::MoveAnyToTVMFFIAny(Any(*reinterpret_cast<T*>(field)));
+       *result = ::tvm::ffi::detail::AnyUnsafe::MoveAnyToTVMFFIAny(Any(*reinterpret_cast<T*>(field)));
        TVM_FFI_SAFE_CALL_END();
      }
    
@@ -266,7 +265,7 @@ Program Listing for File registry.h
      static int ObjectCreatorDefault(TVMFFIObjectHandle* result) {
        TVM_FFI_SAFE_CALL_BEGIN();
        ObjectPtr<T> obj = make_object<T>();
-       *result = ::tvm::ffi::details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
+       *result = ::tvm::ffi::detail::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
        TVM_FFI_SAFE_CALL_END();
      }
    
@@ -274,7 +273,7 @@ Program Listing for File registry.h
      static int ObjectCreatorUnsafeInit(TVMFFIObjectHandle* result) {
        TVM_FFI_SAFE_CALL_BEGIN();
        ObjectPtr<T> obj = make_object<T>(UnsafeInit{});
-       *result = ::tvm::ffi::details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
+       *result = ::tvm::ffi::detail::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
        TVM_FFI_SAFE_CALL_END();
      }
    
@@ -362,7 +361,7 @@ Program Listing for File registry.h
     public:
      template <typename Func, typename... Extra>
      GlobalDef& def(const char* name, Func&& func, Extra&&... extra) {
-       using FuncInfo = ::tvm::ffi::details::FunctionInfo<std::decay_t<Func>>;
+       using FuncInfo = ::tvm::ffi::detail::FunctionInfo<std::decay_t<Func>>;
        RegisterFunc(name, ffi::Function::FromTyped(std::forward<Func>(func), std::string(name)),
                     FuncInfo::TypeSchema(), std::forward<Extra>(extra)...);
        return *this;
@@ -371,13 +370,13 @@ Program Listing for File registry.h
      template <typename Func, typename... Extra>
      GlobalDef& def_packed(const char* name, Func func, Extra&&... extra) {
        RegisterFunc(name, ffi::Function::FromPacked(func),
-                    ::tvm::ffi::details::TypeSchemaImpl<Function>::v(), std::forward<Extra>(extra)...);
+                    ::tvm::ffi::detail::TypeSchemaImpl<Function>::v(), std::forward<Extra>(extra)...);
        return *this;
      }
    
      template <typename Func, typename... Extra>
      GlobalDef& def_method(const char* name, Func&& func, Extra&&... extra) {
-       using FuncInfo = ::tvm::ffi::details::FunctionInfo<std::decay_t<Func>>;
+       using FuncInfo = ::tvm::ffi::detail::FunctionInfo<std::decay_t<Func>>;
        RegisterFunc(name, GetMethod(std::string(name), std::forward<Func>(func)),
                     FuncInfo::TypeSchema(), std::forward<Extra>(extra)...);
        return *this;
@@ -468,8 +467,8 @@ Program Listing for File registry.h
        if constexpr (std::is_copy_constructible_v<Class>) {
          Function fn = Function::FromTyped(
              [](const Class* self) { return ObjectRef(ffi::make_object<Class>(*self)); },
-             std::string(type_key_) + "." + type_attr::kShallowCopy);
-         TVMFFIByteArray attr = AsByteArray(type_attr::kShallowCopy);
+             std::string(type_key_) + "." + type_attr::kShallowCopy.name);
+         TVMFFIByteArray attr = AsByteArray(type_attr::kShallowCopy.name);
          TVMFFIAny fn_any = AnyView(fn).CopyToTVMFFIAny();
          TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &attr, &fn_any));
        }
@@ -480,11 +479,11 @@ Program Listing for File registry.h
              [creator = info->metadata->creator]() -> ObjectRef {
                TVMFFIObjectHandle handle;
                TVM_FFI_CHECK_SAFE_CALL(creator(&handle));
-               return ObjectRef(::tvm::ffi::details::ObjectUnsafe::ObjectPtrFromOwned<Object>(
+               return ObjectRef(::tvm::ffi::detail::ObjectUnsafe::ObjectPtrFromOwned<Object>(
                    static_cast<TVMFFIObject*>(handle)));
              },
-             std::string(type_key_) + "." + type_attr::kNew);
-         TVMFFIByteArray attr = AsByteArray(type_attr::kNew);
+             std::string(type_key_) + "." + type_attr::kNew.name);
+         TVMFFIByteArray attr = AsByteArray(type_attr::kNew.name);
          TVMFFIAny fn_any = AnyView(fn).CopyToTVMFFIAny();
          TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &attr, &fn_any));
          // Step 3. Register `__ffi_init__` if no explicit init is defined.
@@ -496,8 +495,9 @@ Program Listing for File registry.h
            }
          }
        }
-       // Step 4. Publish finality, which no other registered metadata exposes.
-       RegisterTypeAttrValue(type_index_, type_attr::kTypeFinal, Class::_type_final);
+       // Step 4. Publish finality and mutability, which no other registered metadata exposes.
+       RegisterTypeAttrValue(type_index_, type_attr::kTypeFinal.name, Class::_type_final);
+       RegisterTypeAttrValue(type_index_, type_attr::kTypeMutable.name, Class::_type_mutable);
      }
    
      template <typename T, typename BaseClass, typename... Extra>
@@ -546,11 +546,12 @@ Program Listing for File registry.h
    
      template <typename TSelf>
      TVM_FFI_INLINE ObjectDef& def_convert() {
-       if constexpr (details::HasContainerType<TSelf>::value) {
+       if constexpr (detail::HasContainerType<TSelf>::value) {
          static_assert(std::is_same_v<typename TSelf::ContainerType, Class>,
                        "TSelf::ContainerType must match ObjectDef's object type");
        }
-       return def_type_attr(type_attr::kConvert, &details::FFIConvertFromAnyViewToObjectRef<TSelf>);
+       return def_type_attr(type_attr::kConvert.name,
+                            &detail::FFIConvertFromAnyViewToObjectRef<TSelf>);
      }
    
      template <typename... Args, typename... Extra>
@@ -561,7 +562,7 @@ Program Listing for File registry.h
                       std::forward<Extra>(extra)...);
        // Also mirror into __ffi_init__ TypeAttrColumn for runtime dispatch.
        const TVMFFITypeInfo* tinfo = TVMFFIGetTypeInfo(type_index_);
-       constexpr TVMFFIByteArray attr_name = AsByteArray(type_attr::kInit);
+       constexpr TVMFFIByteArray attr_name = AsByteArray(type_attr::kInit.name);
        for (int32_t i = 0; i < tinfo->num_methods; ++i) {
          if (tinfo->methods[i].name.size == attr_name.size &&
              std::strncmp(tinfo->methods[i].name.data, attr_name.data, attr_name.size) == 0) {
@@ -624,7 +625,7 @@ Program Listing for File registry.h
        // initialize default value to nullptr
        info.default_value_or_factory = AnyView(nullptr).CopyToTVMFFIAny();
        info.doc = TVMFFIByteArray{nullptr, 0};
-       info.metadata_.emplace_back("type_schema", ::tvm::ffi::details::TypeSchema<T>::v());
+       info.metadata_.emplace_back("type_schema", ::tvm::ffi::detail::TypeSchema<T>::v());
        // apply field info traits
        ((ApplyFieldInfoTrait(&info, std::forward<ExtraArgs>(extra_args)), ...));
        // call register
@@ -636,7 +637,7 @@ Program Listing for File registry.h
      // register a method
      template <typename Func, typename... Extra>
      void RegisterMethod(const char* name, bool is_static, Func&& func, Extra&&... extra) {
-       using FuncInfo = ::tvm::ffi::details::FunctionInfo<std::decay_t<Func>>;
+       using FuncInfo = ::tvm::ffi::detail::FunctionInfo<std::decay_t<Func>>;
        MethodInfoBuilder info;
        info.name = TVMFFIByteArray{name, std::char_traits<char>::length(name)};
        info.doc = TVMFFIByteArray{nullptr, 0};
@@ -659,7 +660,7 @@ Program Listing for File registry.h
      int32_t type_index_;
      const char* type_key_;
      bool has_explicit_init_{false};
-     static constexpr const char* kInitMethodName = type_attr::kInit;
+     static constexpr const char* kInitMethodName = type_attr::kInit.name;
    };
    
    template <typename Class, typename = std::enable_if_t<std::is_base_of_v<Object, Class>>>
@@ -668,6 +669,11 @@ Program Listing for File registry.h
      template <typename... ExtraArgs>
      explicit TypeAttrDef(ExtraArgs&&... extra_args)
          : type_index_(Class::_GetOrAllocRuntimeTypeIndex()), type_key_(Class::_type_key) {}
+   
+     template <auto Fn, typename T>
+     TypeAttrDef& native_fn_attr(AttrKey<T> key) {
+       return attr(key, T::template FromNative<Fn>());
+     }
    
      template <typename Value,
                std::enable_if_t<std::is_convertible_v<Value&&, AnyView> ||
@@ -690,15 +696,23 @@ Program Listing for File registry.h
    
      template <typename TSelf>
      TVM_FFI_INLINE TypeAttrDef& def_convert() {
-       if constexpr (details::HasContainerType<TSelf>::value) {
+       if constexpr (detail::HasContainerType<TSelf>::value) {
          static_assert(std::is_same_v<typename TSelf::ContainerType, Class>,
                        "TSelf::ContainerType must match TypeAttrDef's object type");
        }
-       return def(type_attr::kConvert, &details::FFIConvertFromAnyViewToObjectRef<TSelf>);
+       return def(type_attr::kConvert.name, &detail::FFIConvertFromAnyViewToObjectRef<TSelf>);
+     }
+   
+     template <typename T, typename Value>
+     TypeAttrDef& attr(AttrKey<T> key, Value&& value) {
+       T typed_value(std::forward<Value>(value));
+       RegisterTypeAttrValue(type_index_, key.name, std::move(typed_value));
+       return *this;
      }
    
      template <typename T>
-     TypeAttrDef& attr(const char* name, T value) {
+     TypeAttrDef& attr(const char* name,
+                       T value) {  // NOLINT(performance-unnecessary-value-param)
        RegisterTypeAttrValue(type_index_, name, std::move(value));
        return *this;
      }
@@ -715,7 +729,12 @@ Program Listing for File registry.h
                                                     reinterpret_cast<const TVMFFIAny*>(&any_view)));
    }
    
-   namespace details {
+   template <typename T>
+   inline void EnsureTypeAttrColumn(AttrKey<T> key) {
+     EnsureTypeAttrColumn(key.name);
+   }
+   
+   namespace detail {
    
    template <typename... Args>
    struct OverloadCastImpl {
@@ -756,10 +775,10 @@ Program Listing for File registry.h
      }
    };
    
-   }  // namespace details
+   }  // namespace detail
    
    template <typename... Args>
-   inline constexpr details::OverloadCastImpl<Args...> overload_cast = {};
+   inline constexpr detail::OverloadCastImpl<Args...> overload_cast = {};
    
    // `const_`'s trailing underscore triggers RST hyperlink-reference syntax in
    // the exhale-generated per-variable page; suppress doc emission for it.

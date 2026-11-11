@@ -33,6 +33,8 @@ Program Listing for File serialization.h
    
    #include <tvm/ffi/extra/base.h>
    #include <tvm/ffi/extra/json.h>
+   #include <tvm/ffi/function.h>
+   #include <tvm/ffi/reflection/accessor.h>
    
    namespace tvm {
    namespace ffi {
@@ -40,6 +42,12 @@ Program Listing for File serialization.h
    TVM_FFI_EXTRA_CXX_API json::Value ToJSONGraph(const Any& value, const Any& metadata = Any(nullptr));
    
    TVM_FFI_EXTRA_CXX_API Any FromJSONGraph(const json::Value& value);
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<TypedFunction<Any(AnyView)>> kDataToJson{"__data_to_json__"};
+   inline constexpr reflection::AttrKey<TypedFunction<Any(AnyView)>> kDataFromJson{
+       "__data_from_json__"};
+   }  // namespace type_attr
    
    }  // namespace ffi
    }  // namespace tvm

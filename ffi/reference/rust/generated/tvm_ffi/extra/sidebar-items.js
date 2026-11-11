@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["dispatch","module","structural_mutate","structural_visit","unchanged"],"struct":["StructuralView"]};
+window.SIDEBAR_ITEMS = {"mod":["cold_init_lazy_lock","dispatch","module","structural_eq_hash","structural_map","structural_mutate","structural_visit","structural_walk","unchanged","visit_error_context"]};

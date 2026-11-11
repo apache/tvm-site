@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Function","FunctionObj"]};
+window.SIDEBAR_ITEMS = {"struct":["Function","FunctionObj"],"trait":["AsPackedCallable","PackedCallArg","PackedCallArgs"]};

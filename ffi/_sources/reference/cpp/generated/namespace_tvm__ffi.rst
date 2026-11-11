@@ -25,6 +25,8 @@ Namespaces
 
 - :ref:`namespace_tvm__ffi__symbol`
 
+- :ref:`namespace_tvm__ffi__type_attr`
+
 
 Classes
 -------
@@ -178,8 +180,6 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMapEngine`
 
-- :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMapEngineBase`
-
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMutateEngine`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMutator`
@@ -240,13 +240,13 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
-
 - :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
 
-- :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
+- :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
 - :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
+
+- :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
 
 - :ref:`exhale_function_endian_8h_1ab4e0ed8000c632cd2c7cd089c0a0d1af`
 
@@ -351,19 +351,25 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_memory_8h_1a65bf625279df21dec5c8097264415113`
+- :ref:`exhale_typedef_memory_8h_1a302da88862e88a37a93812e434da3ffd`
 
-- :ref:`exhale_typedef_structural__mutate_8h_1a060cef1ff53c97235144336dac227d74`
+- :ref:`exhale_typedef_structural__mutate_8h_1ac5d2c819e51b2d823b5fbfe5957fdb8b`
 
-- :ref:`exhale_typedef_structural__mutate_8h_1ae69b95653133acacec6825c62bc41191`
+- :ref:`exhale_typedef_structural__mutate_8h_1a343fd6305cf5a680a080adf9a21e8a9c`
 
-- :ref:`exhale_typedef_structural__mutate_8h_1a074bf7a4d1b8b09e4ff3f3a189e77c2b`
+- :ref:`exhale_typedef_structural__mutate_8h_1a08b87bc240aeab4955918a14f1b5ae3d`
 
-- :ref:`exhale_typedef_structural__visit_8h_1a745d053678181bd38e0fee17b772656b`
+- :ref:`exhale_typedef_structural__mutate_8h_1ad24739881ff22cf8381242a7f675a877`
 
-- :ref:`exhale_typedef_type__traits_8h_1a7ba296d84188e5970ba854332a1f04a6`
+- :ref:`exhale_typedef_structural__visit_8h_1aef223f02e47a13890214a3faf0657f82`
 
-- :ref:`exhale_typedef_type__traits_8h_1ae125f5f5a8a94c7340577c1959805295`
+- :ref:`exhale_typedef_structural__visit_8h_1a7b68fd90b5c08a694c11744e75bb0305`
+
+- :ref:`exhale_typedef_structural__mutate_8h_1a4117d77cda6312f7853841542d9cffe0`
+
+- :ref:`exhale_typedef_type__traits_8h_1acdf0820a74b1606deaca6accefcd8954`
+
+- :ref:`exhale_typedef_type__traits_8h_1a8da6898a78b58f0073d1d9af89880e75`
 
 
 Variables

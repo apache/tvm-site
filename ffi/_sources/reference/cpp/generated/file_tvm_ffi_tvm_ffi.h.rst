@@ -44,7 +44,7 @@ Includes
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
-- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
+- ``tvm/ffi/base_detail.h`` (:ref:`file_tvm_ffi_base_detail.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
@@ -52,7 +52,7 @@ Includes
 
 - ``tvm/ffi/container/array.h`` (:ref:`file_tvm_ffi_container_array.h`)
 
-- ``tvm/ffi/container/container_details.h``
+- ``tvm/ffi/container/container_detail.h``
 
 - ``tvm/ffi/container/list.h`` (:ref:`file_tvm_ffi_container_list.h`)
 
@@ -80,7 +80,7 @@ Includes
 
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
 
-- ``tvm/ffi/function_details.h``
+- ``tvm/ffi/function_detail.h``
 
 - ``tvm/ffi/memory.h`` (:ref:`file_tvm_ffi_memory.h`)
 

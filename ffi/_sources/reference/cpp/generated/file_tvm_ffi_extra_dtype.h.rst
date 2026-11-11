@@ -37,6 +37,8 @@ Includes
 
 - ``dlpack/dlpack.h``
 
+- ``tvm/ffi/base_detail.h`` (:ref:`file_tvm_ffi_base_detail.h`)
+
 - ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
 
 
@@ -48,5 +50,7 @@ Namespaces
 ----------
 
 
-- :ref:`namespace_tvm_ffi`
+- :ref:`namespace_tvm`
+
+- :ref:`namespace_tvm__ffi`
 

@@ -53,9 +53,11 @@ Includes
 
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
 
-- ``tvm/ffi/function_details.h``
+- ``tvm/ffi/function_detail.h``
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
+
+- ``tvm/ffi/reflection/accessor.h`` (:ref:`file_tvm_ffi_reflection_accessor.h`)
 
 - ``tvm/ffi/reflection/registry.h`` (:ref:`file_tvm_ffi_reflection_registry.h`)
 

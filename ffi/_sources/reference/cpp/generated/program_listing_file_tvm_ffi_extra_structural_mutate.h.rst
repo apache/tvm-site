@@ -41,7 +41,7 @@ Program Listing for File structural_mutate.h
    #include <tvm/ffi/extra/structural_visit.h>
    #include <tvm/ffi/extra/visit_error_context.h>
    #include <tvm/ffi/function.h>
-   #include <tvm/ffi/function_details.h>
+   #include <tvm/ffi/function_detail.h>
    #include <tvm/ffi/optional.h>
    #include <tvm/ffi/reflection/accessor.h>
    
@@ -77,29 +77,29 @@ Program Listing for File structural_mutate.h
    template <typename Parent, typename... Callbacks>
    class StructuralMutateEngine;
    
-   using FStructuralMutate = TVMFFIAny (*)(StructuralMutatorObj* mutator, AnyView value) noexcept;
+   using FStructuralMutateABI = TVMFFIAny (*)(StructuralMutatorObj* mutator, AnyView value) noexcept;
    
    using FStructuralVarRemapGet = TVMFFIAny (*)(StructuralMutatorObj* mutator, AnyView var) noexcept;
    
    using FStructuralVarRemapSet = TVMFFIAny (*)(StructuralMutatorObj* mutator, AnyView var,
                                                 AnyView mapped_value) noexcept;
    
-   namespace details {
+   namespace detail {
    
    // Copy and structurally mutate the reflected fields of an object-backed value.
    TVM_FFI_INLINE static Expected<Any> MutateReflectedFieldsExpected(StructuralMutatorObj* mutator,
                                                                      AnyView value) noexcept;
    
-   }  // namespace details
+   }  // namespace detail
    
    struct StructuralMutatorVTable {
-     FStructuralMutate mutate = nullptr;
-     FStructuralMutate maybe_inplace_mutate = nullptr;
+     FStructuralMutateABI mutate = nullptr;
+     FStructuralMutateABI maybe_inplace_mutate = nullptr;
      FStructuralVarRemapGet var_remap_get = nullptr;
      FStructuralVarRemapSet var_remap_set = nullptr;
    };
    
-   namespace details {
+   namespace detail {
    template <typename Parent>
    class StructuralMutateDynEngine;
    
@@ -110,7 +110,7 @@ Program Listing for File structural_mutate.h
    
    template <typename T>
    inline constexpr bool is_unchanged_or_v<UnchangedOr<T>> = true;
-   }  // namespace details
+   }  // namespace detail
    
    struct Unchanged {
      TVM_FFI_INLINE TVMFFIAny CopyToTVMFFIAny() const noexcept {
@@ -127,7 +127,7 @@ Program Listing for File structural_mutate.h
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
      TVM_FFI_INLINE operator Any() const noexcept {
        TVMFFIAny raw = CopyToTVMFFIAny();
-       return details::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw);
+       return detail::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw);
      }
    };
    
@@ -146,9 +146,9 @@ Program Listing for File structural_mutate.h
      // Preserve the dedicated tag and wrapper routes. Subsumption applies only to materialized
      // wrapper storage; a bare value must first be implicitly convertible to T.
      template <typename U, typename = std::enable_if_t<!std::is_same_v<std::decay_t<U>, Unchanged> &&
-                                                       !details::is_unchanged_or_v<std::decay_t<U>> &&
-                                                       !details::is_expected_v<std::decay_t<U>> &&
-                                                       !details::is_unexpected_v<std::decay_t<U>> &&
+                                                       !detail::is_unchanged_or_v<std::decay_t<U>> &&
+                                                       !detail::is_expected_v<std::decay_t<U>> &&
+                                                       !detail::is_unexpected_v<std::decay_t<U>> &&
                                                        !std::is_base_of_v<Error, std::decay_t<U>> &&
                                                        std::is_convertible_v<U, T>>>
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
@@ -161,8 +161,8 @@ Program Listing for File structural_mutate.h
          : data_([&other]() {
              if constexpr (type_subsumes_v<T, U>) {
                // Reuse materialized storage, including the unchanged marker.
-               return details::AnyUnsafe::MoveTVMFFIAnyRawToAny(
-                   details::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(other.data_)));
+               return detail::AnyUnsafe::MoveTVMFFIAnyRawToAny(
+                   detail::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(other.data_)));
              } else {
                return other.IsUnchanged() ? std::move(other.data_)
                                           : Any(T(std::move(other).ValueUnchecked()));
@@ -184,24 +184,23 @@ Program Listing for File structural_mutate.h
      }
    
      TVM_FFI_INLINE T ValueOrUnchanged(const T& original) && {
-       return IsUnchanged() ? original
-                            : details::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
+       return IsUnchanged() ? original : detail::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
      }
    
      TVM_FFI_INLINE T ValueOrUnchanged(T&& original) && {
        return IsUnchanged() ? std::move(original)
-                            : details::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
+                            : detail::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
      }
    
      template <typename U = T,
                typename = std::enable_if_t<std::is_same_v<T, Any> && std::is_same_v<U, T>>>
      TVM_FFI_INLINE Any ValueOrUnchanged(AnyView original) && {
        return IsUnchanged() ? Any(original)
-                            : details::AnyUnsafe::MoveFromAnyAfterCheck<Any>(std::move(data_));
+                            : detail::AnyUnsafe::MoveFromAnyAfterCheck<Any>(std::move(data_));
      }
    
      TVM_FFI_INLINE T ValueUnchecked() && {
-       return details::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
+       return detail::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
      }
    
      template <typename U,
@@ -219,7 +218,7 @@ Program Listing for File structural_mutate.h
     private:
      template <typename>
      friend class UnchangedOr;
-     friend struct details::UnchangedOrUnsafe;
+     friend struct detail::UnchangedOrUnsafe;
      template <typename, typename>
      friend struct TypeTraits;
      struct UnsafeInit {};
@@ -227,7 +226,7 @@ Program Listing for File structural_mutate.h
      Any data_;
    };
    
-   namespace details {
+   namespace detail {
    struct UnchangedOrUnsafe {
      template <typename T>
      TVM_FFI_INLINE static UnchangedOr<T> MoveFromTVMFFIAny(TVMFFIAny raw) {
@@ -241,24 +240,34 @@ Program Listing for File structural_mutate.h
      }
    };
    
-   }  // namespace details
+   }  // namespace detail
    
-   namespace details {
+   namespace detail {
    // Out of line so its strings and Error construction stay out of the hot path of whatever hook
    // body TVM_FFI_S_MUTATE_ASSIGN_OR_RETURN expands into. Same reason as
    // BadStructuralMutateHookError.
    // Takes nothing on purpose. Naming the offending type in the message would keep the result live
    // across the predicted-not-taken guard in the hot path. The declared type is already present in
    // the source line to which the diagnostic points.
-   TVM_FFI_COLD_CODE inline UnexpectedReturnHelper SMutateDeclaredTypeError() noexcept {
-     return UnexpectedReturnHelper(Unexpected(
-         Error("TypeError", "structural mutate result does not match the declared type", "")));
+   TVM_FFI_COLD_CODE inline Unexpected<Error> SMutateDeclaredTypeError() noexcept {
+     return Unexpected(
+         Error("TypeError", "structural mutate result does not match the declared type", ""));
    }
-   }  // namespace details
+   }  // namespace detail
+   
+   using FStructuralMutate =
+       reflection::NativeFunctionView<UnchangedOr<Any>(StructuralMutatorObj*, AnyView)>;
+   
+   namespace type_attr {
+   inline constexpr reflection::AttrKey<FStructuralMutate> kStructuralMutate{"__s_mutate__"};
+   inline constexpr reflection::AttrKey<FStructuralMutate> kStructuralMaybeInplaceMutate{
+       "__s_maybe_inplace_mutate__"};
+   }  // namespace type_attr
    
    class StructuralMutatorObj : public Object {
     public:
      using MutatorObjType = StructuralMutatorObj;
+     using StateTupleType = std::tuple<>;
    
      TVM_FFI_INLINE UnchangedOr<Any> Mutate(AnyView value,
                                             InplaceMode inplace_mode = InplaceMode::kDisallow) {
@@ -270,26 +279,26 @@ Program Listing for File structural_mutate.h
        const Object* object = value.as<Object>();
        // Check uniqueness on the borrowed view before callbacks can acquire owning references.
        if (inplace_mode == InplaceMode::kAllow && object != nullptr && object->unique()) {
-         return details::ExpectedUnsafe::MoveFromTVMFFIAny<UnchangedOr<Any>>(
+         return detail::ExpectedUnsafe::MoveFromTVMFFIAny<UnchangedOr<Any>>(
              (*vtable_->maybe_inplace_mutate)(this, value));
        }
-       return details::ExpectedUnsafe::MoveFromTVMFFIAny<UnchangedOr<Any>>(
+       return detail::ExpectedUnsafe::MoveFromTVMFFIAny<UnchangedOr<Any>>(
            (*vtable_->mutate)(this, value));
      }
    
      TVM_FFI_INLINE Expected<UnchangedOr<Any>> DefaultMutateExpected(
          AnyView value, InplaceMode inplace_mode = InplaceMode::kDisallow) noexcept {
-       return details::ExpectedUnsafe::MoveFromTVMFFIAny<UnchangedOr<Any>>(
+       return detail::ExpectedUnsafe::MoveFromTVMFFIAny<UnchangedOr<Any>>(
            inplace_mode == InplaceMode::kAllow ? DefaultMaybeInplaceMutateRaw(value)
                                                : DefaultMutateRaw(value));
      }
    
      TVM_FFI_INLINE Expected<Any> VarRemapGetExpected(AnyView var) noexcept {
-       return details::ExpectedUnsafe::MoveFromTVMFFIAny<Any>((*vtable_->var_remap_get)(this, var));
+       return detail::ExpectedUnsafe::MoveFromTVMFFIAny<Any>((*vtable_->var_remap_get)(this, var));
      }
    
      TVM_FFI_INLINE Expected<void> VarRemapSetExpected(AnyView var, AnyView mapped_value) noexcept {
-       return details::ExpectedUnsafe::MoveFromTVMFFIAny<void>(
+       return detail::ExpectedUnsafe::MoveFromTVMFFIAny<void>(
            (*vtable_->var_remap_set)(this, var, mapped_value));
      }
    
@@ -325,11 +334,11 @@ Program Listing for File structural_mutate.h
    
     private:
      template <typename Parent>
-     friend class details::StructuralMutateDynEngine;
+     friend class detail::StructuralMutateDynEngine;
    
      TVM_FFI_COLD_CODE static Expected<Any> BadStructuralMutateHookError() noexcept {
        return Unexpected(
-           Error("TypeError", "__s_mutate__ must be an opaque function pointer or ffi.Function", ""));
+           Error("TypeError", "__s_mutate__ must be a direct hook pointer or ffi.Function", ""));
      }
    
      // Convention: the ABI boundary is a raw TVMFFIAny; mutation results inside a callback or hook
@@ -345,13 +354,13 @@ Program Listing for File structural_mutate.h
      //
      // Engine-internal: subclasses call the Expected forms above.
      TVM_FFI_INLINE TVMFFIAny DefaultMutateRaw(AnyView value) noexcept {
-       static reflection::TypeAttrColumn column(reflection::type_attr::kStructuralMutate);
+       static reflection::TypeAttrColumn column(type_attr::kStructuralMutate);
        AnyView attr = column[value.type_index()];
        // Exactly one frame per node: hooks propagate errors untouched, and this is the engine
        // dispatching into `value`, so both exits below name it here and nowhere else.
        TVMFFIAny result;
        if (TVM_FFI_PREDICT_TRUE(attr.type_index() == TypeIndex::kTVMFFIOpaquePtr)) {
-         result = (*reinterpret_cast<FStructuralMutate>(attr.cast<void*>()))(this, value);
+         result = (*reinterpret_cast<FStructuralMutateABI>(attr.cast<void*>()))(this, value);
        } else {
          result = DefaultMutateRawTail(value, attr);
        }
@@ -363,23 +372,23 @@ Program Listing for File structural_mutate.h
    
      TVM_FFI_COLD_CODE static TVMFFIAny AttachVisitErrorContextRaw(TVMFFIAny result,
                                                                    AnyView value) noexcept {
-       details::UpdateVisitErrorContext(result, value);
+       detail::UpdateVisitErrorContext(&result, value);
        return result;
      }
    
      TVMFFIAny DefaultMutateRawTail(AnyView value, AnyView attr) noexcept {
        if (attr.type_index() != TypeIndex::kTVMFFINone) {
-         // Registered, but as an ffi.Function rather than an opaque pointer.
+         // Registered as a typed function pointer or ffi.Function.
          if (attr.type_index() == TypeIndex::kTVMFFIFunction) {
-           return details::ExpectedUnsafe::MoveToTVMFFIAny(
+           return detail::ExpectedUnsafe::MoveToTVMFFIAny(
                attr.cast<Function>().CallExpected<Any>(this, value));
          }
          // Registered as neither: a malformed hook.
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(BadStructuralMutateHookError());
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(BadStructuralMutateHookError());
        }
        // No hook at all. A POD carries through unchanged; an object walks its reflected fields.
        if (value.type_index() < TypeIndex::kTVMFFIStaticObjectBegin) {
-         return details::AnyUnsafe::MoveAnyToTVMFFIAny(Any(value));
+         return detail::AnyUnsafe::MoveAnyToTVMFFIAny(Any(value));
        }
        const TVMFFITypeInfo* type_info = TVMFFIGetTypeInfo(value.type_index());
        const int32_t identity_kind = type_info->metadata == nullptr
@@ -391,8 +400,8 @@ Program Listing for File structural_mutate.h
          // Only None means no cached descent result; every other value, including the unchanged
          // marker used by a pattern definition, is returned directly.
          Expected<Any> mapped = VarRemapGetExpected(value);
-         if (details::ExpectedUnsafe::GetData(mapped).type_index() != TypeIndex::kTVMFFINone) {
-           return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(mapped));
+         if (detail::ExpectedUnsafe::GetData(mapped).type_index() != TypeIndex::kTVMFFINone) {
+           return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(mapped));
          }
        }
    
@@ -402,33 +411,33 @@ Program Listing for File structural_mutate.h
          return Unchanged().CopyToTVMFFIAny();
        }
    
-       Expected<Any> result = details::MutateReflectedFieldsExpected(this, value);
+       Expected<Any> result = detail::MutateReflectedFieldsExpected(this, value);
        if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
        }
        if (is_free_var || is_dag_node) {
-         const Any& result_value = details::ExpectedUnsafe::GetData(result);
+         const Any& result_value = detail::ExpectedUnsafe::GetData(result);
          // Bind the descent result. The one exception is an unchanged simple definition: its
          // uses resolve to the var itself on a miss, so there is nothing to record.
          if (is_dag_node || def_region_kind() == kTVMFFIDefRegionKindPattern ||
              result_value.type_index() != TypeIndex::kTVMFFIUnchanged) {
            Expected<void> set_result = VarRemapSetExpected(value, result_value);
            if (TVM_FFI_PREDICT_FALSE(set_result.is_err())) {
-             return details::ExpectedUnsafe::MoveToTVMFFIAny(
+             return detail::ExpectedUnsafe::MoveToTVMFFIAny(
                  Expected<Any>(Unexpected(std::move(set_result).error())));
            }
          }
        }
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
      }
      TVM_FFI_INLINE TVMFFIAny DefaultMaybeInplaceMutateRaw(AnyView value) noexcept {
-       static reflection::TypeAttrColumn column(reflection::type_attr::kStructuralMaybeInplaceMutate);
+       static reflection::TypeAttrColumn column(type_attr::kStructuralMaybeInplaceMutate);
        AnyView attr = column[value.type_index()];
        if (TVM_FFI_PREDICT_TRUE(attr.type_index() == TypeIndex::kTVMFFIOpaquePtr)) {
          // This is the engine dispatching into `value`; hooks propagate errors untouched, so the
          // node is named here. The fall-through re-dispatches the same node through
          // DefaultMutateRaw, which names it there instead -- exactly one frame either way.
-         TVMFFIAny result = (*reinterpret_cast<FStructuralMutate>(attr.cast<void*>()))(this, value);
+         TVMFFIAny result = (*reinterpret_cast<FStructuralMutateABI>(attr.cast<void*>()))(this, value);
          if (TVM_FFI_PREDICT_FALSE(result.type_index == TypeIndex::kTVMFFIError)) {
            return AttachVisitErrorContextRaw(result, value);
          }
@@ -439,19 +448,26 @@ Program Listing for File structural_mutate.h
    
      TVMFFIAny DefaultMaybeInplaceMutateRawTail(AnyView value, AnyView attr) noexcept {
        if (attr.type_index() == TypeIndex::kTVMFFIFunction) {
-         TVMFFIAny result = details::ExpectedUnsafe::MoveToTVMFFIAny(
+         TVMFFIAny result = detail::ExpectedUnsafe::MoveToTVMFFIAny(
              attr.cast<Function>().CallExpected<Any>(this, value));
          if (TVM_FFI_PREDICT_FALSE(result.type_index == TypeIndex::kTVMFFIError)) {
            return AttachVisitErrorContextRaw(result, value);
          }
          return result;
        }
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(
            DefaultMutateExpected(value, InplaceMode::kDisallow));
      }
    
     protected:
      explicit StructuralMutatorObj(const StructuralMutatorVTable* vtable) : vtable_(vtable) {}
+   
+     TVM_FFI_INLINE StateTupleType StateTuple() const noexcept { return {}; }
+   
+     TVM_FFI_COLD_CODE static void UpdateVisitErrorContext(Expected<Any>* result,  // NOLINT(*)
+                                                           AnyView node) noexcept {
+       ::tvm::ffi::detail::UpdateVisitErrorContext(result, node);
+     }
    
      const StructuralMutatorVTable* vtable_ = nullptr;
    
@@ -460,19 +476,21 @@ Program Listing for File structural_mutate.h
    
    class StructuralMutator : public ObjectRef {
     public:
-     explicit StructuralMutator(ObjectPtr<StructuralMutatorObj> n) : ObjectRef(std::move(n)) {}
+     explicit StructuralMutator(ObjectPtr<StructuralMutatorObj> n) : ObjectRef(std::move(n)) {
+       TVM_FFI_ICHECK_NOTNULL(data_.get());
+     }
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StructuralMutator, ObjectRef, StructuralMutatorObj);
    };
    
-   namespace details {
+   namespace detail {
    
    TVM_FFI_INLINE static Expected<Any> MutateReflectedFieldsExpected(StructuralMutatorObj* mutator,
                                                                      AnyView value) noexcept {
      const Object* obj = value.as<Object>();
      int32_t type_index = obj->type_index();
    
-     static reflection::TypeAttrColumn column(reflection::type_attr::kShallowCopy);
+     static reflection::TypeAttrColumn column(type_attr::kShallowCopy);
      AnyView attr = column[type_index];
      if (TVM_FFI_PREDICT_FALSE(attr.type_index() != TypeIndex::kTVMFFIFunction)) {
        return Unexpected(Error("TypeError", "__ffi_shallow_copy__ must be an ffi.Function", ""));
@@ -483,7 +501,7 @@ Program Listing for File structural_mutate.h
        return result;
      }
    
-     const Any& result_value = details::ExpectedUnsafe::GetData(result);
+     const Any& result_value = detail::ExpectedUnsafe::GetData(result);
      Object* new_obj = const_cast<Object*>(result_value.as<Object>());
      // Copy-on-write mutation requires a distinct target so partial updates cannot modify the source.
      if (TVM_FFI_PREDICT_FALSE(new_obj == nullptr || result.type_index() != value.type_index() ||
@@ -506,7 +524,7 @@ Program Listing for File structural_mutate.h
              void* field_addr = reinterpret_cast<char*>(new_obj) + field_info->offset;
              int ret_code = field_info->getter(field_addr, reinterpret_cast<TVMFFIAny*>(&field_value));
              if (TVM_FFI_PREDICT_FALSE(ret_code != 0)) {
-               result = Unexpected(details::MoveFromSafeCallRaised());
+               result = Unexpected(detail::MoveFromSafeCallRaised());
                return true;
              }
    
@@ -528,7 +546,7 @@ Program Listing for File structural_mutate.h
                result = Unexpected(std::move(mutated_field).error());
                return true;
              }
-             const Any& mutated_field_data = details::ExpectedUnsafe::GetData(mutated_field);
+             const Any& mutated_field_data = detail::ExpectedUnsafe::GetData(mutated_field);
              // Unchanged first: it is the common case, and it is one type-index test where the
              // resolved form ran a full same_as against a value it had just been handed back.
              if (mutated_field_data.type_index() == TypeIndex::kTVMFFIUnchanged ||
@@ -550,7 +568,7 @@ Program Listing for File structural_mutate.h
              ret_code = reflection::CallFieldSetter(
                  field_info, field_addr, reinterpret_cast<const TVMFFIAny*>(&mutated_field_data));
              if (TVM_FFI_PREDICT_FALSE(ret_code != 0)) {
-               result = Unexpected(details::MoveFromSafeCallRaised());
+               result = Unexpected(detail::MoveFromSafeCallRaised());
                return true;
              }
              field_changed = true;
@@ -576,22 +594,20 @@ Program Listing for File structural_mutate.h
      return result;
    }
    
-   }  // namespace details
+   }  // namespace detail
    
    // ---------------------------------------------------------------------------
    // Structural Map API.
    // ---------------------------------------------------------------------------
    
-   namespace details {
-   // Return an error from the current raw or Expected mutation function.
-   // The rvalue-only helper lets the enclosing return type select the representation.
-   #define TVM_FFI_S_MUTATE_MAYBE_EARLY_RETURN(Result)                   \
-     do {                                                                \
-       auto&& tvm_ffi_res_ = (Result);                                   \
-       if (TVM_FFI_PREDICT_FALSE(tvm_ffi_res_.is_err())) {               \
-         return ::tvm::ffi::details::UnexpectedReturnHelper(             \
-             ::tvm::ffi::Unexpected(::std::move(tvm_ffi_res_).error())); \
-       }                                                                 \
+   namespace detail {
+   // Return an error from the current Expected-returning mutation function.
+   #define TVM_FFI_S_MUTATE_MAYBE_EARLY_RETURN(Result)                     \
+     do {                                                                  \
+       auto&& tvm_ffi_res_ = (Result);                                     \
+       if (TVM_FFI_PREDICT_FALSE(tvm_ffi_res_.is_err())) {                 \
+         return ::tvm::ffi::Unexpected(::std::move(tvm_ffi_res_).error()); \
+       }                                                                   \
      } while (0)
    
    
@@ -599,14 +615,14 @@ Program Listing for File structural_mutate.h
      auto Result = (ResultExpr); /* NOLINT(bugprone-macro-parentheses) */                        \
      TVM_FFI_S_MUTATE_MAYBE_EARLY_RETURN(Result);                                                \
      if constexpr (!::tvm::ffi::type_subsumes_v<::tvm::ffi::Expected<Type>, decltype(Result)>) { \
-       if (TVM_FFI_PREDICT_FALSE(!::tvm::ffi::details::AnyUnsafe::CheckAnyStrict<Type>(          \
-               ::tvm::ffi::details::ExpectedUnsafe::GetData(Result)))) {                         \
-         return ::tvm::ffi::details::SMutateDeclaredTypeError();                                 \
+       if (TVM_FFI_PREDICT_FALSE(!::tvm::ffi::detail::AnyUnsafe::CheckAnyStrict<Type>(           \
+               ::tvm::ffi::detail::ExpectedUnsafe::GetData(Result)))) {                          \
+         return ::tvm::ffi::detail::SMutateDeclaredTypeError();                                  \
        }                                                                                         \
      }                                                                                           \
      Type Name = /* NOLINT(bugprone-macro-parentheses) */                                        \
-         ::tvm::ffi::details::AnyUnsafe::MoveFromAnyAfterCheck<Type>(                            \
-             ::std::move(::tvm::ffi::details::ExpectedUnsafe::GetData(Result)))
+         ::tvm::ffi::detail::AnyUnsafe::MoveFromAnyAfterCheck<Type>(                             \
+             ::std::move(::tvm::ffi::detail::ExpectedUnsafe::GetData(Result)))
    
    #define TVM_FFI_S_MUTATE_ASSIGN_OR_RETURN(Type, Name, ResultExpr)                                  \
      TVM_FFI_S_MUTATE_ASSIGN_OR_RETURN_IMPL_(TVM_FFI_STR_CONCAT(tvm_ffi_mutate_result_, __COUNTER__), \
@@ -616,62 +632,52 @@ Program Listing for File structural_mutate.h
      auto Result = (ResultExpr); /* NOLINT(bugprone-macro-parentheses) */                 \
      TVM_FFI_S_MUTATE_MAYBE_EARLY_RETURN(Result);                                         \
      Type Name = /* NOLINT(bugprone-macro-parentheses) */                                 \
-         ::tvm::ffi::details::AnyUnsafe::MoveFromAnyAfterCheck<Type>(                     \
-             ::std::move(::tvm::ffi::details::ExpectedUnsafe::GetData(Result)))
+         ::tvm::ffi::detail::AnyUnsafe::MoveFromAnyAfterCheck<Type>(                      \
+             ::std::move(::tvm::ffi::detail::ExpectedUnsafe::GetData(Result)))
    
    #define TVM_FFI_UNSAFE_S_MUTATE_ASSIGN_OR_RETURN(Type, Name, ResultExpr) \
      TVM_FFI_UNSAFE_S_MUTATE_ASSIGN_OR_RETURN_IMPL_(                        \
          TVM_FFI_STR_CONCAT(tvm_ffi_mutate_result_, __COUNTER__), Type, Name, ResultExpr)
    
-   }  // namespace details
+   }  // namespace detail
    
-   class StructuralMapEngineBase : public StructuralMutatorObj {
+   namespace detail {
+   
+   template <typename Parent>
+   class StructuralMutatorEngineBase : public Parent {
     public:
-     using StateTupleType = std::tuple<>;
+     static_assert(std::is_base_of_v<StructuralMutatorObj, Parent>,
+                   "Structural map/mutate Parent must derive from StructuralMutatorObj");
    
-     explicit StructuralMapEngineBase(const StructuralMutatorVTable* vtable)
-         : StructuralMutatorObj(vtable) {}
+     explicit StructuralMutatorEngineBase(const StructuralMutatorVTable* vtable) : Parent(vtable) {}
    
-     ~StructuralMapEngineBase() {
+     ~StructuralMutatorEngineBase() {
        for (const auto& kv : var_remap_) {
-         details::ObjectUnsafe::DecRefObjectHandle(
+         detail::ObjectUnsafe::DecRefObjectHandle(
              reinterpret_cast<TVMFFIObjectHandle>(const_cast<Object*>(kv.first)));
        }
      }
    
     protected:
-     TVM_FFI_INLINE StateTupleType StateTuple() const noexcept { return {}; }
-   
      // Out of line so its strings stay out of the per-node dispatch function, which TryLink inlines
      // into. Shared by the typed and dynamic engines below.
      TVM_FFI_COLD_CODE static Expected<Any> SMutateDescentTypeError() noexcept {
        return Unexpected(Error("TypeError", "structural mutate: descent changed the node type", ""));
      }
    
-     TVM_FFI_COLD_CODE static details::UnexpectedReturnHelper VarRemapKeyTypeError() noexcept {
-       return details::UnexpectedReturnHelper(
-           Unexpected(Error("TypeError", "Variable-remap key must be an object-backed value", "")));
+     TVM_FFI_COLD_CODE static Unexpected<Error> VarRemapKeyTypeError() noexcept {
+       return Unexpected(Error("TypeError", "Variable-remap key must be an object-backed value", ""));
      }
    
      static TVMFFIAny DispatchVarRemapGet(StructuralMutatorObj* mutator, AnyView var) noexcept {
-       auto* self = static_cast<StructuralMapEngineBase*>(mutator);
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(self->VarRemapGetImpl(var));
+       auto* self = static_cast<StructuralMutatorEngineBase*>(mutator);
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(self->VarRemapGetImpl(var));
      }
    
      static TVMFFIAny DispatchVarRemapSet(StructuralMutatorObj* mutator, AnyView var,
                                           AnyView mapped_value) noexcept {
-       auto* self = static_cast<StructuralMapEngineBase*>(mutator);
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(self->VarRemapSetImpl(var, mapped_value));
-     }
-   
-     TVM_FFI_COLD_CODE static void UpdateVisitErrorContext(const Expected<Any>& result,
-                                                           AnyView node) noexcept {
-       // The Error is refcounted, so annotating the local handle annotates the object the result
-       // holds. A non-object node has no context to add.
-       if (node.type_index() >= TypeIndex::kTVMFFIStaticObjectBegin) {
-         Error err = result.error();
-         ::tvm::ffi::details::UpdateVisitErrorContext(err, node.cast<ObjectRef>());
-       }
+       auto* self = static_cast<StructuralMutatorEngineBase*>(mutator);
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(self->VarRemapSetImpl(var, mapped_value));
      }
    
      Expected<Any> VarRemapGetImpl(AnyView var) noexcept {
@@ -679,8 +685,7 @@ Program Listing for File structural_mutate.h
          return VarRemapKeyTypeError();
        }
        if (var_remap_.empty()) return Any(nullptr);
-       const Object* var_ptr =
-           details::AnyUnsafe::RawObjectPtrFromAnyViewAfterCheck<const Object>(var);
+       const Object* var_ptr = detail::AnyUnsafe::RawObjectPtrFromAnyViewAfterCheck<const Object>(var);
        auto it = var_remap_.find(var_ptr);
        return it == var_remap_.end() ? Any(nullptr) : it->second;
      }
@@ -689,12 +694,11 @@ Program Listing for File structural_mutate.h
        if (TVM_FFI_PREDICT_FALSE(var.type_index() < TypeIndex::kTVMFFIStaticObjectBegin)) {
          return VarRemapKeyTypeError();
        }
-       const Object* var_ptr =
-           details::AnyUnsafe::RawObjectPtrFromAnyViewAfterCheck<const Object>(var);
+       const Object* var_ptr = detail::AnyUnsafe::RawObjectPtrFromAnyViewAfterCheck<const Object>(var);
        Any owned_mapped_value(mapped_value);
        auto [it, inserted] = var_remap_.try_emplace(var_ptr, std::move(owned_mapped_value));
        if (inserted) {
-         details::ObjectUnsafe::IncRefObjectHandle(
+         detail::ObjectUnsafe::IncRefObjectHandle(
              reinterpret_cast<TVMFFIObjectHandle>(const_cast<Object*>(var_ptr)));
        } else {
          it->second = std::move(owned_mapped_value);
@@ -702,32 +706,34 @@ Program Listing for File structural_mutate.h
        return Expected<void>();
      }
    
-     template <typename Parent, WalkOrder order, typename... Callbacks>
-     friend class StructuralMapEngine;
-     template <typename Parent, WalkOrder order>
-     friend class StructuralMapDynEngine;
-     template <typename Parent, typename... Callbacks>
-     friend class StructuralMutateEngine;
-     template <typename Parent>
-     friend class details::StructuralMutateDynEngine;
-   
      // Raw-pointer key: IncRef once on first insert, DecRef all keys in the destructor.
      std::unordered_map<const Object*, Any> var_remap_;
    };
    
+   // Existing semantic layers may already inherit the original remap-owning base. Reuse that
+   // complete layer rather than adding a second map; new parents receive storage above their state.
+   template <typename Parent>
+   using StructuralMutatorEngineParent =
+       std::conditional_t<std::is_base_of_v<StructuralMutatorEngineBase<StructuralMutatorObj>, Parent>,
+                          Parent, StructuralMutatorEngineBase<Parent>>;
+   
+   }  // namespace detail
+   
+   using StructuralMapEngineBase = detail::StructuralMutatorEngineBase<StructuralMutatorObj>;
+   
    template <typename Parent, WalkOrder order, typename... Callbacks>
-   class StructuralMapEngine : public Parent {
+   class StructuralMapEngine : public detail::StructuralMutatorEngineParent<Parent> {
+     using EngineBase = detail::StructuralMutatorEngineParent<Parent>;
+   
     public:
-     static_assert(std::is_base_of_v<StructuralMapEngineBase, Parent>,
-                   "StructuralMap Parent must derive from StructuralMapEngineBase");
      using StateTupleType = typename Parent::StateTupleType;
    
      explicit StructuralMapEngine(Callbacks... callbacks)
-         : Parent(VTable()), callbacks_(std::move(callbacks)...) {}
+         : EngineBase(VTable()), callbacks_(std::move(callbacks)...) {}
    
     private:
-     using ExpectedUnsafe = details::ExpectedUnsafe;
-     using AnyUnsafe = details::AnyUnsafe;
+     using ExpectedUnsafe = detail::ExpectedUnsafe;
+     using AnyUnsafe = detail::AnyUnsafe;
    
      static const StructuralMutatorVTable* VTable() {
        static const StructuralMutatorVTable vtable{
@@ -753,7 +759,7 @@ Program Listing for File structural_mutate.h
      template <typename Callback, typename Value, size_t... Is>
      TVM_FFI_INLINE Expected<Any> InvokeTypedCallbackLink(Callback& callback, Value&& value,
                                                           std::index_sequence<Is...>) noexcept {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Callback>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<Callback>>;
        static_assert(std::is_convertible_v<typename FuncInfo::RetType, Expected<Any>>,
                      "StructuralMap callbacks must return a replacement value, Error, Unexpected, "
                      "unchanged marker, or Expected<Any>");
@@ -778,7 +784,7 @@ Program Listing for File structural_mutate.h
    
      template <InplaceMode kInplaceMode, typename Callback>
      TVM_FFI_INLINE bool TryLink(Callback& callback, AnyView value, Expected<Any>* out) noexcept {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Callback>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<Callback>>;
        static_assert(FuncInfo::num_args >= 1,
                      "StructuralMap callback must take at least a value argument");
        using FirstArg = std::tuple_element_t<0, typename FuncInfo::ArgType>;
@@ -804,7 +810,7 @@ Program Listing for File structural_mutate.h
            }
          }();
          if (TVM_FFI_PREDICT_FALSE(callback_result.is_err())) {
-           this->UpdateVisitErrorContext(callback_result, value);
+           this->UpdateVisitErrorContext(&callback_result, value);
            *out = std::move(callback_result);
            return true;
          }
@@ -844,7 +850,7 @@ Program Listing for File structural_mutate.h
            matched = mapped_view.template as<TSub>();
            if (!matched.has_value()) return false;
          }
-         *out = [&]() -> Expected<Any> {
+         Expected<Any> callback_result = [&]() -> Expected<Any> {
            if constexpr (std::is_same_v<TSub, AnyView>) {
              return InvokeTypedCallbackLink(callback, mapped_view, StateIndices{});
            } else if constexpr (std::is_same_v<TSub, Any>) {
@@ -853,9 +859,14 @@ Program Listing for File structural_mutate.h
              return InvokeTypedCallbackLink(callback, *std::move(matched), StateIndices{});
            }
          }();
-         if (TVM_FFI_PREDICT_FALSE(out->is_err())) {
-           this->UpdateVisitErrorContext(*out, mapped_view);
+         if (TVM_FFI_PREDICT_FALSE(callback_result.is_err())) {
+           this->UpdateVisitErrorContext(&callback_result, mapped_view);
+           *out = std::move(callback_result);
            return true;
+         }
+         // Unchanged refers to the descended node, whose owner stays live through the callback.
+         if (ExpectedUnsafe::GetData(callback_result).type_index() != TypeIndex::kTVMFFIUnchanged) {
+           *out = std::move(callback_result);
          }
          return true;
        }
@@ -907,19 +918,19 @@ Program Listing for File structural_mutate.h
    };
    
    template <typename Parent, WalkOrder order>
-   class StructuralMapDynEngine : public Parent {
+   class StructuralMapDynEngine : public detail::StructuralMutatorEngineParent<Parent> {
+     using EngineBase = detail::StructuralMutatorEngineParent<Parent>;
+   
     public:
-     static_assert(std::is_base_of_v<StructuralMapEngineBase, Parent>,
-                   "StructuralMap Parent must derive from StructuralMapEngineBase");
      StructuralMapDynEngine(Array<Tuple<int32_t, Function>> callbacks,
                             Array<Tuple<int32_t, Function>> callbacks_with_def_region_kind)
-         : Parent(VTable()),
+         : EngineBase(VTable()),
            callbacks_(std::move(callbacks)),
            callbacks_with_def_region_kind_(std::move(callbacks_with_def_region_kind)) {}
    
     private:
-     using ExpectedUnsafe = details::ExpectedUnsafe;
-     using AnyUnsafe = details::AnyUnsafe;
+     using ExpectedUnsafe = detail::ExpectedUnsafe;
+     using AnyUnsafe = detail::AnyUnsafe;
    
      static const StructuralMutatorVTable* VTable() {
        static const StructuralMutatorVTable vtable{
@@ -942,13 +953,13 @@ Program Listing for File structural_mutate.h
    
      Optional<Function> FindLink(int32_t type_index, bool* with_kind) const noexcept {
        for (const Tuple<int32_t, Function>& entry : callbacks_) {
-         if (details::RuntimeTypeIndexMatch(type_index, entry.get<0>())) {
+         if (detail::RuntimeTypeIndexMatch(type_index, entry.get<0>())) {
            *with_kind = false;
            return entry.get<1>();
          }
        }
        for (const Tuple<int32_t, Function>& entry : callbacks_with_def_region_kind_) {
-         if (details::RuntimeTypeIndexMatch(type_index, entry.get<0>())) {
+         if (detail::RuntimeTypeIndexMatch(type_index, entry.get<0>())) {
            *with_kind = true;
            return entry.get<1>();
          }
@@ -971,7 +982,7 @@ Program Listing for File structural_mutate.h
          Expected<Any> callback_result =
              InvokeLink(*matched, with_kind, value, this->def_region_kind());
          if (TVM_FFI_PREDICT_FALSE(callback_result.is_err())) {
-           this->UpdateVisitErrorContext(callback_result, value);
+           this->UpdateVisitErrorContext(&callback_result, value);
            *out = std::move(callback_result);
            return true;
          }
@@ -1009,10 +1020,16 @@ Program Listing for File structural_mutate.h
          if (!matched.has_value()) return false;
          // WithDefRegionKind restores its state through RAII, so this late read is equivalent to
          // the typed engine's invocation-time read even after recursive descent.
-         *out = InvokeLink(*matched, with_kind, mapped_view, this->def_region_kind());
-         if (TVM_FFI_PREDICT_FALSE(out->is_err())) {
-           this->UpdateVisitErrorContext(*out, mapped_view);
+         Expected<Any> callback_result =
+             InvokeLink(*matched, with_kind, mapped_view, this->def_region_kind());
+         if (TVM_FFI_PREDICT_FALSE(callback_result.is_err())) {
+           this->UpdateVisitErrorContext(&callback_result, mapped_view);
+           *out = std::move(callback_result);
            return true;
+         }
+         // Preserve descent and its lifetime just as in the typed engine.
+         if (ExpectedUnsafe::GetData(callback_result).type_index() != TypeIndex::kTVMFFIUnchanged) {
+           *out = std::move(callback_result);
          }
          return true;
        }
@@ -1059,13 +1076,12 @@ Program Listing for File structural_mutate.h
    };
    
    template <typename Parent, typename... Callbacks>
-   class StructuralMutateEngine : public Parent {
-    public:
-     static_assert(std::is_base_of_v<StructuralMapEngineBase, Parent>,
-                   "StructuralMutate Parent must derive from StructuralMapEngineBase");
+   class StructuralMutateEngine : public detail::StructuralMutatorEngineParent<Parent> {
+     using EngineBase = detail::StructuralMutatorEngineParent<Parent>;
    
+    public:
      explicit StructuralMutateEngine(Callbacks... callbacks)
-         : Parent(VTable()), callbacks_(std::move(callbacks)...) {}
+         : EngineBase(VTable()), callbacks_(std::move(callbacks)...) {}
    
     private:
      static const StructuralMutatorVTable* VTable() {
@@ -1103,11 +1119,11 @@ Program Listing for File structural_mutate.h
          if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
            // Keep callback-boundary context in addition to the default-descent
            // context: a callback may return a rebuilt value, so the two nodes can differ.
-           Parent::UpdateVisitErrorContext(result, value);
+           Parent::UpdateVisitErrorContext(&result, value);
          }
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
        }
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(
            Parent::DefaultMutateExpected(value, InplaceMode::kDisallow));
      }
    
@@ -1117,18 +1133,18 @@ Program Listing for File structural_mutate.h
          if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
            // Keep callback-boundary context in addition to the default-descent
            // context: a callback may return a rebuilt value, so the two nodes can differ.
-           Parent::UpdateVisitErrorContext(result, value);
+           Parent::UpdateVisitErrorContext(&result, value);
          }
-         return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
+         return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
        }
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(
            Parent::DefaultMutateExpected(value, InplaceMode::kAllow));
      }
    
      template <typename Callback, typename Matched>
      TVM_FFI_INLINE Expected<Any> InvokeCallback(Callback& callback, Matched&& matched,
                                                  InplaceMode inplace_mode) noexcept {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Callback>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<Callback>>;
        static_assert(FuncInfo::num_args == 2 || FuncInfo::num_args == 3,
                      "StructuralMutate callback must take (value, mutator) or "
                      "(value, mutator, inplace_mode)");
@@ -1155,9 +1171,9 @@ Program Listing for File structural_mutate.h
      }
    
      TVM_FFI_COLD_CODE TVMFFIAny AnnotateCallbackErrorRaw(TVMFFIAny raw, AnyView value) noexcept {
-       Expected<Any> result = details::ExpectedUnsafe::MoveFromTVMFFIAny<Any>(raw);
-       Parent::UpdateVisitErrorContext(result, value);
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
+       Expected<Any> result = detail::ExpectedUnsafe::MoveFromTVMFFIAny<Any>(raw);
+       Parent::UpdateVisitErrorContext(&result, value);
+       return detail::ExpectedUnsafe::MoveToTVMFFIAny(std::move(result));
      }
    
      // One callback forwards its result directly, without a callback-chain envelope.
@@ -1165,25 +1181,25 @@ Program Listing for File structural_mutate.h
      template <InplaceMode kInplaceMode>
      TVM_FFI_INLINE TVMFFIAny MutateSingleCallbackRaw(AnyView value) noexcept {
        auto& callback = std::get<0>(callbacks_);
-       using FuncInfo = details::FunctionInfo<std::decay_t<decltype(callback)>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<decltype(callback)>>;
        using FirstArg = std::tuple_element_t<0, typename FuncInfo::ArgType>;
        using TSub = std::remove_cv_t<std::remove_reference_t<FirstArg>>;
        TVMFFIAny result;
        if constexpr (std::is_same_v<TSub, AnyView>) {
          result =
-             details::ExpectedUnsafe::MoveToTVMFFIAny(InvokeCallback(callback, value, kInplaceMode));
+             detail::ExpectedUnsafe::MoveToTVMFFIAny(InvokeCallback(callback, value, kInplaceMode));
        } else if constexpr (std::is_same_v<TSub, Any>) {
-         result = details::ExpectedUnsafe::MoveToTVMFFIAny(
+         result = detail::ExpectedUnsafe::MoveToTVMFFIAny(
              InvokeCallback(callback, Any(value), kInplaceMode));
        } else if (auto matched = value.template as<TSub>()) {
-         result = details::ExpectedUnsafe::MoveToTVMFFIAny(
+         result = detail::ExpectedUnsafe::MoveToTVMFFIAny(
              InvokeCallback(callback, *std::move(matched), kInplaceMode));
        } else {
          if constexpr (kInplaceMode == InplaceMode::kAllow) {
-           return details::ExpectedUnsafe::MoveToTVMFFIAny(
+           return detail::ExpectedUnsafe::MoveToTVMFFIAny(
                Parent::DefaultMutateExpected(value, InplaceMode::kAllow));
          } else {
-           return details::ExpectedUnsafe::MoveToTVMFFIAny(
+           return detail::ExpectedUnsafe::MoveToTVMFFIAny(
                Parent::DefaultMutateExpected(value, InplaceMode::kDisallow));
          }
        }
@@ -1197,7 +1213,7 @@ Program Listing for File structural_mutate.h
      template <typename Callback>
      TVM_FFI_INLINE bool TryLink(Callback& callback, AnyView value, InplaceMode inplace_mode,
                                  Expected<Any>* out) noexcept {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Callback>>;
+       using FuncInfo = detail::FunctionInfo<std::decay_t<Callback>>;
        using FirstArg = std::tuple_element_t<0, typename FuncInfo::ArgType>;
        using TSub = std::remove_cv_t<std::remove_reference_t<FirstArg>>;
        if constexpr (std::is_same_v<TSub, AnyView>) {
@@ -1232,12 +1248,18 @@ Program Listing for File structural_mutate.h
    Expected<Any> StructuralMapExpected(
        Any root, Callbacks&&... callbacks) noexcept {  // NOLINT(performance-unnecessary-value-param)
      static_assert(sizeof...(Callbacks) != 0, "StructuralMap requires at least one callback");
-     using Mutator = StructuralMapEngine<StructuralMapEngineBase, order, std::decay_t<Callbacks>...>;
+     using Mutator = StructuralMapEngine<StructuralMutatorObj, order, std::decay_t<Callbacks>...>;
      StructuralMutator mutator(make_object<Mutator>(std::forward<Callbacks>(callbacks)...));
      auto result = mutator->MutateExpected(root, InplaceMode::kAllow);
-     if (TVM_FFI_PREDICT_FALSE(result.is_err())) return Unexpected(std::move(result).error());
-     UnchangedOr<Any> mapped = details::AnyUnsafe::MoveFromAnyAfterCheck<UnchangedOr<Any>>(
-         std::move(details::ExpectedUnsafe::GetData(result)));
+     if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
+       if (auto object_root = root.as<ObjectRef>()) {
+         return Unexpected(
+             VisitErrorContext::EnrichVisitError(std::move(result).error(), *object_root));
+       }
+       return Unexpected(std::move(result).error());
+     }
+     UnchangedOr<Any> mapped = detail::AnyUnsafe::MoveFromAnyAfterCheck<UnchangedOr<Any>>(
+         std::move(detail::ExpectedUnsafe::GetData(result)));
      return std::move(mapped).ValueOrUnchanged(std::move(root));
    }
    
@@ -1254,12 +1276,18 @@ Program Listing for File structural_mutate.h
    Expected<Any> StructuralMutateExpected(
        Any root, Callbacks&&... callbacks) noexcept {  // NOLINT(performance-unnecessary-value-param)
      static_assert(sizeof...(Callbacks) != 0, "StructuralMutate requires at least one callback");
-     using Mutator = StructuralMutateEngine<StructuralMapEngineBase, std::decay_t<Callbacks>...>;
+     using Mutator = StructuralMutateEngine<StructuralMutatorObj, std::decay_t<Callbacks>...>;
      StructuralMutator mutator(make_object<Mutator>(std::forward<Callbacks>(callbacks)...));
      auto result = mutator->MutateExpected(root, InplaceMode::kAllow);
-     if (TVM_FFI_PREDICT_FALSE(result.is_err())) return Unexpected(std::move(result).error());
-     UnchangedOr<Any> mapped = details::AnyUnsafe::MoveFromAnyAfterCheck<UnchangedOr<Any>>(
-         std::move(details::ExpectedUnsafe::GetData(result)));
+     if (TVM_FFI_PREDICT_FALSE(result.is_err())) {
+       if (auto object_root = root.as<ObjectRef>()) {
+         return Unexpected(
+             VisitErrorContext::EnrichVisitError(std::move(result).error(), *object_root));
+       }
+       return Unexpected(std::move(result).error());
+     }
+     UnchangedOr<Any> mapped = detail::AnyUnsafe::MoveFromAnyAfterCheck<UnchangedOr<Any>>(
+         std::move(detail::ExpectedUnsafe::GetData(result)));
      return std::move(mapped).ValueOrUnchanged(std::move(root));
    }
    
@@ -1280,7 +1308,7 @@ Program Listing for File structural_mutate.h
      }
    
      TVM_FFI_INLINE static void MoveToAny(UnchangedOr<T> src, TVMFFIAny* result) {
-       *result = details::UnchangedOrUnsafe::MoveToTVMFFIAny(std::move(src));
+       *result = detail::UnchangedOrUnsafe::MoveToTVMFFIAny(std::move(src));
      }
    
      TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
@@ -1302,13 +1330,13 @@ Program Listing for File structural_mutate.h
    
      TVM_FFI_INLINE static UnchangedOr<T> MoveFromAnyAfterCheck(TVMFFIAny* src) {
        return UnchangedOr<T>(typename UnchangedOr<T>::UnsafeInit{},
-                             details::AnyUnsafe::MoveTVMFFIAnyToAny(src));
+                             detail::AnyUnsafe::MoveTVMFFIAnyToAny(src));
      }
      TVM_FFI_INLINE static std::string TypeStr() {
-       return "UnchangedOr<" + details::Type2Str<T>::v() + ">";
+       return "UnchangedOr<" + detail::Type2Str<T>::v() + ">";
      }
      TVM_FFI_INLINE static std::string TypeSchema() {
-       return R"({"type":"UnchangedOr","args":[)" + details::TypeSchema<T>::v() + "]}";
+       return R"({"type":"UnchangedOr","args":[)" + detail::TypeSchema<T>::v() + "]}";
      }
    };
    

@@ -79,7 +79,7 @@ Program Listing for File expected.h
    template <typename T, typename U>
    inline constexpr bool type_subsumes_v<Expected<T>, Expected<U>> = type_subsumes_v<T, U>;
    
-   namespace details {
+   namespace detail {
    
    struct ExpectedUnsafe;
    
@@ -95,7 +95,7 @@ Program Listing for File expected.h
    template <typename E>
    inline constexpr bool is_unexpected_v<Unexpected<E>> = true;
    
-   }  // namespace details
+   }  // namespace detail
    
    template <typename T>
    class Expected {
@@ -123,8 +123,8 @@ Program Listing for File expected.h
      // std::expected admits constructible sources and uses C++20 explicit(bool) to separate its
      // implicit subset. Under C++17, convertibility keeps exactly that implicit subset and drops only
      // explicit-only conversions; is_constructible plus explicit(bool) can extend it after an upgrade.
-     template <typename U, typename = std::enable_if_t<!details::is_expected_v<std::decay_t<U>> &&
-                                                       !details::is_unexpected_v<std::decay_t<U>> &&
+     template <typename U, typename = std::enable_if_t<!detail::is_expected_v<std::decay_t<U>> &&
+                                                       !detail::is_unexpected_v<std::decay_t<U>> &&
                                                        !std::is_base_of_v<Error, std::decay_t<U>> &&
                                                        std::is_convertible_v<U, T>>>
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
@@ -145,8 +145,8 @@ Program Listing for File expected.h
                // data_ holds a T or an Error. Subsumption proves the source representation already
                // satisfies that invariant, so adopt the raw storage without inspecting its state.
                // Do not make this unconditional: value() checks the success/error state, not the type.
-               return details::AnyUnsafe::MoveTVMFFIAnyRawToAny(
-                   details::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(other.data_)));
+               return detail::AnyUnsafe::MoveTVMFFIAnyRawToAny(
+                   detail::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(other.data_)));
              } else {
                return other.is_err() ? Any(std::move(other).error())
                                      : Any(T(std::move(other).value()));
@@ -174,16 +174,16 @@ Program Listing for File expected.h
    
      TVM_FFI_INLINE T value() const& {
        if (TVM_FFI_PREDICT_TRUE(is_ok())) {
-         return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(data_);
+         return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(data_);
        }
-       throw details::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
+       throw detail::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
      }
    
      TVM_FFI_INLINE T value() && {
        if (TVM_FFI_PREDICT_TRUE(is_ok())) {
-         return details::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
+         return detail::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
        }
-       throw details::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
+       throw detail::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
      }
    
      template <typename U, typename = std::enable_if_t<
@@ -191,14 +191,14 @@ Program Listing for File expected.h
                                (TypeTraits<U>::storage_enabled || std::is_same_v<U, Any>)>>
      TVM_FFI_INLINE Expected<U> as_or_error() const& {
        if (TVM_FFI_PREDICT_FALSE(data_.type_index() != TypeIndex::kTVMFFIError &&
-                                 !details::AnyUnsafe::CheckAnyStrict<U>(data_))) {
+                                 !detail::AnyUnsafe::CheckAnyStrict<U>(data_))) {
          // Conversion-failure diagnostics may try fallback conversions, so use the stored type key.
          return Error("TypeError",
                       "Cannot treat type `" + data_.GetTypeKey() + "` as type `" +
-                          details::Type2Str<U>::v() + "`",
+                          detail::Type2Str<U>::v() + "`",
                       "");
        }
-       return Expected<U>(UnsafeInit{}, details::AnyUnsafe::MoveAnyToTVMFFIAny(Any(data_)));
+       return Expected<U>(UnsafeInit{}, detail::AnyUnsafe::MoveAnyToTVMFFIAny(Any(data_)));
      }
    
      template <typename U, typename = std::enable_if_t<
@@ -206,14 +206,14 @@ Program Listing for File expected.h
                                (TypeTraits<U>::storage_enabled || std::is_same_v<U, Any>)>>
      TVM_FFI_INLINE Expected<U> as_or_error() && {
        if (TVM_FFI_PREDICT_FALSE(data_.type_index() != TypeIndex::kTVMFFIError &&
-                                 !details::AnyUnsafe::CheckAnyStrict<U>(data_))) {
+                                 !detail::AnyUnsafe::CheckAnyStrict<U>(data_))) {
          // Conversion-failure diagnostics may try fallback conversions, so use the stored type key.
          return Error("TypeError",
                       "Cannot treat type `" + data_.GetTypeKey() + "` as type `" +
-                          details::Type2Str<U>::v() + "`",
+                          detail::Type2Str<U>::v() + "`",
                       "");
        }
-       return Expected<U>(UnsafeInit{}, details::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(data_)));
+       return Expected<U>(UnsafeInit{}, detail::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(data_)));
      }
    
      TVM_FFI_INLINE Error error() const& {
@@ -222,7 +222,7 @@ Program Listing for File expected.h
        if (is_ok()) {
          TVM_FFI_THROW(RuntimeError) << "Bad expected access: contains value, not error";
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
+       return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
      }
    
      TVM_FFI_INLINE Error error() && {
@@ -231,13 +231,13 @@ Program Listing for File expected.h
        if (is_ok()) {
          TVM_FFI_THROW(RuntimeError) << "Bad expected access: contains value, not error";
        }
-       return details::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
+       return detail::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
      }
    
      template <typename U = std::remove_cv_t<T>>
      TVM_FFI_INLINE T value_or(U&& default_value) const& {
        if (TVM_FFI_PREDICT_TRUE(is_ok())) {
-         return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(data_);
+         return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(data_);
        }
        return T(std::forward<U>(default_value));
      }
@@ -245,7 +245,7 @@ Program Listing for File expected.h
      template <typename U = std::remove_cv_t<T>>
      TVM_FFI_INLINE T value_or(U&& default_value) && {
        if (TVM_FFI_PREDICT_TRUE(is_ok())) {
-         return details::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
+         return detail::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
        }
        return T(std::forward<U>(default_value));
      }
@@ -255,9 +255,9 @@ Program Listing for File expected.h
      friend class Expected;
      Expected() = default;
      TVM_FFI_INLINE Expected(UnsafeInit, TVMFFIAny raw) noexcept
-         : data_(details::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw)) {}
+         : data_(detail::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw)) {}
    
-     friend struct details::ExpectedUnsafe;
+     friend struct detail::ExpectedUnsafe;
    
      Any data_;  // Invariant: holds a T (type_index != kTVMFFIError) or an Error.
    };
@@ -295,13 +295,13 @@ Program Listing for File expected.h
    
      TVM_FFI_INLINE void value() const& {
        if (TVM_FFI_PREDICT_FALSE(is_err())) {
-         throw details::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
+         throw detail::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
        }
      }
    
      TVM_FFI_INLINE void value() && {
        if (TVM_FFI_PREDICT_FALSE(is_err())) {
-         throw details::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
+         throw detail::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
        }
      }
    
@@ -309,26 +309,26 @@ Program Listing for File expected.h
        if (is_ok()) {
          TVM_FFI_THROW(RuntimeError) << "Bad expected access: contains value, not error";
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
+       return detail::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
      }
    
      TVM_FFI_INLINE Error error() && {
        if (is_ok()) {
          TVM_FFI_THROW(RuntimeError) << "Bad expected access: contains value, not error";
        }
-       return details::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
+       return detail::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
      }
    
     private:
      TVM_FFI_INLINE Expected(UnsafeInit, TVMFFIAny raw) noexcept
-         : data_(details::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw)) {}
+         : data_(detail::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw)) {}
    
-     friend struct details::ExpectedUnsafe;
+     friend struct detail::ExpectedUnsafe;
    
      Any data_;  // Invariant: holds FFI None on success or an Error.
    };
    
-   namespace details {
+   namespace detail {
    
    struct ExpectedUnsafe {
      template <typename T>
@@ -366,45 +366,7 @@ Program Listing for File expected.h
      }
    };
    
-   class UnexpectedReturnHelper {
-    public:
-     TVM_FFI_INLINE explicit UnexpectedReturnHelper(Unexpected<Error>&& value) noexcept
-         : value_(std::move(value)) {}
-   
-     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     TVM_FFI_INLINE operator TVMFFIAny() && noexcept {
-       return ExpectedUnsafe::MoveToTVMFFIAny(Expected<Any>(std::move(value_)));
-     }
-   
-     template <typename T>
-     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     TVM_FFI_INLINE operator Expected<T>() && noexcept {
-       return std::move(value_);
-     }
-   
-    private:
-     Unexpected<Error> value_;
-   };
-   
-   template <typename T>
-   class ExpectedReturnHelper {
-    public:
-     TVM_FFI_INLINE explicit ExpectedReturnHelper(Expected<T>&& value) noexcept
-         : value_(std::move(value)) {}
-   
-     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     TVM_FFI_INLINE operator TVMFFIAny() && noexcept {
-       return ExpectedUnsafe::MoveToTVMFFIAny(std::move(value_));
-     }
-   
-     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     TVM_FFI_INLINE operator Expected<T>() && noexcept { return std::move(value_); }
-   
-    private:
-     Expected<T> value_;
-   };
-   
-   }  // namespace details
+   }  // namespace detail
    
    // TypeTraits specialization for Expected<T>
    template <typename T>
@@ -461,7 +423,7 @@ Program Listing for File expected.h
      }
    
      TVM_FFI_INLINE static std::string TypeSchema() {
-       return R"({"type":"Expected","args":[)" + details::TypeSchema<T>::v() +
+       return R"({"type":"Expected","args":[)" + detail::TypeSchema<T>::v() +
               R"(,{"type":"ffi.Error"}]})";
      }
    };
@@ -525,7 +487,7 @@ Program Listing for File expected.h
    // RET_ means the macro contains return; UNEXPECTED is a value and the caller writes return.
    // While guards preserve an enclosing if/else. Errors record file/line/function only, without
    // a stack walk.
-   namespace details {
+   namespace detail {
    
    class UnexpectedBuilder {
     public:
@@ -565,10 +527,10 @@ Program Listing for File expected.h
      std::ostringstream stream_;
    };
    
-   }  // namespace details
+   }  // namespace detail
    
    #define TVM_FFI_UNEXPECTED(ErrorKind) \
-     ::tvm::ffi::details::UnexpectedBuilder(#ErrorKind, __FILE__, __LINE__, TVM_FFI_FUNC_SIG)
+     ::tvm::ffi::detail::UnexpectedBuilder(#ErrorKind, __FILE__, __LINE__, TVM_FFI_FUNC_SIG)
    
    #define TVM_FFI_RET_CHECK(cond, ErrorKind) \
      while (TVM_FFI_PREDICT_FALSE(!(cond)))   \
@@ -576,7 +538,7 @@ Program Listing for File expected.h
    
    #define TVM_FFI_RET_CHECK_BINARY_OP(name, op, x, y, ErrorKind)               \
      while (auto __tvm_ffi_log_err = /* NOLINT(bugprone-reserved-identifier) */ \
-            ::tvm::ffi::details::LogCheck##name(x, y))                          \
+            ::tvm::ffi::detail::LogCheck##name(x, y))                           \
      return TVM_FFI_UNEXPECTED(ErrorKind)                                       \
             << "Check failed: " << #x " " #op " " #y << (*__tvm_ffi_log_err) << ": "
    

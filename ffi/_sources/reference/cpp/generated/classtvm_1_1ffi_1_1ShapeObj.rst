@@ -19,7 +19,7 @@ Base Types
 Derived Type
 ************
 
-- ``public tvm::ffi::details::ShapeObjStdImpl``
+- ``public tvm::ffi::detail::ShapeObjStdImpl``
 
 
 Class Documentation

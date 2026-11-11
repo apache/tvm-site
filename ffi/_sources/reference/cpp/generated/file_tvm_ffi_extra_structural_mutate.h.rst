@@ -65,7 +65,7 @@ Includes
 
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
 
-- ``tvm/ffi/function_details.h``
+- ``tvm/ffi/function_detail.h``
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 
@@ -90,6 +90,8 @@ Namespaces
 
 - :ref:`namespace_tvm__ffi`
 
+- :ref:`namespace_tvm__ffi__type_attr`
+
 
 Classes
 -------
@@ -104,8 +106,6 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMapDynEngine`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMapEngine`
-
-- :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMapEngineBase`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralMutateEngine`
 
@@ -149,9 +149,22 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_structural__mutate_8h_1a060cef1ff53c97235144336dac227d74`
+- :ref:`exhale_typedef_structural__mutate_8h_1ac5d2c819e51b2d823b5fbfe5957fdb8b`
 
-- :ref:`exhale_typedef_structural__mutate_8h_1ae69b95653133acacec6825c62bc41191`
+- :ref:`exhale_typedef_structural__mutate_8h_1a343fd6305cf5a680a080adf9a21e8a9c`
 
-- :ref:`exhale_typedef_structural__mutate_8h_1a074bf7a4d1b8b09e4ff3f3a189e77c2b`
+- :ref:`exhale_typedef_structural__mutate_8h_1a08b87bc240aeab4955918a14f1b5ae3d`
+
+- :ref:`exhale_typedef_structural__mutate_8h_1ad24739881ff22cf8381242a7f675a877`
+
+- :ref:`exhale_typedef_structural__mutate_8h_1a4117d77cda6312f7853841542d9cffe0`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1type__attr_1ae305cecd7dad0f3d76f4d00dd8d75b1a`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1type__attr_1ab994b63b615cf72566d25cca90423cb2`
 
