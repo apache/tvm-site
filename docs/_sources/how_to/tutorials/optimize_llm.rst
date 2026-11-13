@@ -490,14 +490,15 @@ For demonstration, we only show the part of the model architecture. and paramete
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 374-378
+.. GENERATED FROM PYTHON SOURCE LINES 374-379
 
 Define Optimization Pipeline
 ----------------------------
 We define a series of optimization passes to optimize the model. The optimization pipeline
-is designed specifically for the LLMs.
+is designed specifically for the LLMs. Pass the compilation target explicitly to legalization
+and GPU scheduling.
 
-.. GENERATED FROM PYTHON SOURCE LINES 378-437
+.. GENERATED FROM PYTHON SOURCE LINES 379-439
 
 .. code-block:: Python
 
@@ -505,6 +506,7 @@ is designed specifically for the LLMs.
 
     @register_pipeline("opt_llm")
     def _pipeline(  # pylint: disable=too-many-arguments
+        target: tvm_tirx.target.Target,
         ext_mods: list[nn.ExternModule] | None = None,
     ):
         ext_mods = ext_mods or []
@@ -519,7 +521,7 @@ is designed specifically for the LLMs.
                     # We can enable cublas for further optimization
                     relax.transform.FuseTransposeMatmul(),
                     # Phase 2. Lowering to TIR, inherited TVM Relax's official "zero" pipeline
-                    relax.transform.LegalizeOps(),
+                    relax.transform.LegalizeOps(target=target),
                     relax.transform.AnnotateTIROpPattern(),
                     relax.transform.FoldConstant(),
                     relax.transform.FuseOps(),
@@ -533,6 +535,7 @@ is designed specifically for the LLMs.
                         dlight.gpu.Reduction(),
                         dlight.gpu.GeneralReduction(),
                         dlight.gpu.Fallback(),
+                        target=target,
                     ),
                     # Phase 5. Lowering to VM bytecode
                     relax.transform.RewriteDataflowReshape(),
@@ -555,9 +558,8 @@ is designed specifically for the LLMs.
         return _pipeline
 
 
-    with target:
-        ex = tvm.compile(mod, target, relax_pipeline=relax.get_pipeline("opt_llm"))
-        vm = relax.VirtualMachine(ex, dev)
+    ex = tvm.compile(mod, target, relax_pipeline=relax.get_pipeline("opt_llm", target=target))
+    vm = relax.VirtualMachine(ex, dev)
 
 
 
@@ -567,7 +569,7 @@ is designed specifically for the LLMs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 438-449
+.. GENERATED FROM PYTHON SOURCE LINES 440-451
 
 Prepare the model weights
 -------------------------
@@ -581,7 +583,7 @@ and prepare the model parameters.
   are not available in the CI environment.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 449-501
+.. GENERATED FROM PYTHON SOURCE LINES 451-503
 
 .. code-block:: Python
 
@@ -644,7 +646,7 @@ and prepare the model parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 502-508
+.. GENERATED FROM PYTHON SOURCE LINES 504-510
 
 Deploy the compiled model
 -------------------------
@@ -653,7 +655,7 @@ The language models inference includes two steps: prefill and decode. The prefil
 used to process the input tokens and store the KVCache. The decode step is used to generate
 the token until the end token is generated.
 
-.. GENERATED FROM PYTHON SOURCE LINES 511-518
+.. GENERATED FROM PYTHON SOURCE LINES 513-520
 
 Tokenization
 ~~~~~~~~~~~~
@@ -663,7 +665,7 @@ to tokenize the input prompt and embed the tokens into the hidden states.
 Note that different models require different tokenization and prompt format, please refer to
 the model documentation for the correct tokenization and prompt format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 518-533
+.. GENERATED FROM PYTHON SOURCE LINES 520-535
 
 .. code-block:: Python
 
@@ -689,7 +691,7 @@ the model documentation for the correct tokenization and prompt format.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 534-539
+.. GENERATED FROM PYTHON SOURCE LINES 536-541
 
 Create the KVCache
 ~~~~~~~~~~~~~~~~~~
@@ -697,7 +699,7 @@ Before starting the inference, we need to create the KVCache. The KVCache is use
 key and value tensors for the attention layer. Apache TVM provides a PagedKVCache to store the
 key and value tensors. We create the PagedKVCache with the specified parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 539-549
+.. GENERATED FROM PYTHON SOURCE LINES 541-551
 
 .. code-block:: Python
 
@@ -718,14 +720,14 @@ key and value tensors. We create the PagedKVCache with the specified parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 550-554
+.. GENERATED FROM PYTHON SOURCE LINES 552-556
 
 Embedding
 ~~~~~~~~~
 The next step is to embed the tokens into the hidden states. We use the `embed` function
 compiled in the Relax IRModule to embed the tokens into the hidden states.
 
-.. GENERATED FROM PYTHON SOURCE LINES 554-565
+.. GENERATED FROM PYTHON SOURCE LINES 556-567
 
 .. code-block:: Python
 
@@ -747,13 +749,13 @@ compiled in the Relax IRModule to embed the tokens into the hidden states.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 566-569
+.. GENERATED FROM PYTHON SOURCE LINES 568-571
 
 Prefill
 ~~~~~~~
 Before running the forward pass, we first get some help functions for preparation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 569-574
+.. GENERATED FROM PYTHON SOURCE LINES 571-576
 
 .. code-block:: Python
 
@@ -769,13 +771,13 @@ Before running the forward pass, we first get some help functions for preparatio
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 575-578
+.. GENERATED FROM PYTHON SOURCE LINES 577-580
 
 As we are creating a new sequence, we need to call `add_sequence_func` to initialize
 the request. Additionally, we need to call `begin_forward_func` to start the forward pass,
 and `end_forward_func` to end the forward pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 578-587
+.. GENERATED FROM PYTHON SOURCE LINES 580-589
 
 .. code-block:: Python
 
@@ -795,7 +797,7 @@ and `end_forward_func` to end the forward pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 588-594
+.. GENERATED FROM PYTHON SOURCE LINES 590-596
 
 Now we have the output logits from the prefill step. The logits are used to generate the token
 via sampling. Let's sample the token from the logits.
@@ -804,7 +806,7 @@ In this tutorial, we simplify the sampling process and pick the token with the h
 probability. In practice, we should sample the token based on the probability distribution.
 Also, to make the tutorial concise, we execute the sample process on CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 594-606
+.. GENERATED FROM PYTHON SOURCE LINES 596-608
 
 .. code-block:: Python
 
@@ -827,7 +829,7 @@ Also, to make the tutorial concise, we execute the sample process on CPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 607-612
+.. GENERATED FROM PYTHON SOURCE LINES 609-614
 
 Decode
 ~~~~~~
@@ -835,7 +837,7 @@ After the prefill step, we can start the decode step. The decode step is used to
 token until the end token is generated. We use the `decode` function compiled in the Relax
 IRModule to generate the token.
 
-.. GENERATED FROM PYTHON SOURCE LINES 612-627
+.. GENERATED FROM PYTHON SOURCE LINES 614-629
 
 .. code-block:: Python
 
@@ -864,7 +866,7 @@ IRModule to generate the token.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 43.559 seconds)
+   **Total running time of the script:** (5 minutes 41.989 seconds)
 
 
 .. _sphx_glr_download_how_to_tutorials_optimize_llm.py:

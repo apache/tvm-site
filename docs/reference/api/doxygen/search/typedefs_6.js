@@ -1,7 +1,7 @@
 var searchData=
 [
   ['fapply_0',['fapply',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Mutator.html#a34a171e5c95dea7b692709a7d66a13b6',1,'tvm::s_tir::meta_schedule::Mutator::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyMeasureCallbackObj.html#ad534bb751b29add150ba14000497e2c5',1,'tvm::s_tir::meta_schedule::PyMeasureCallbackObj::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyScheduleRuleObj.html#acac5ab8b549660c81e8ffc353596d7c0',1,'tvm::s_tir::meta_schedule::PyScheduleRuleObj::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1ScheduleRule.html#a74f509fd31d0d05e7470d2c889b1418b',1,'tvm::s_tir::meta_schedule::ScheduleRule::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1Postproc.html#a5c87953c084e5b1d7a1d73000c838d5e',1,'tvm::s_tir::meta_schedule::Postproc::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyMutatorObj.html#ac966cdd010eaaa9e43c8a2b52fdea1b1',1,'tvm::s_tir::meta_schedule::PyMutatorObj::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyPostprocObj.html#a0c972922c78b24d0602d955881e6051e',1,'tvm::s_tir::meta_schedule::PyPostprocObj::FApply']]],
-  ['faxisfuser_1',['FAxisFuser',['../namespacetvm_1_1tirx.html#ab50033b4d707764af007605a2a998e7f',1,'tvm::tirx']]],
+  ['faxisfuser_1',['FAxisFuser',['../namespacetvm_1_1tirx.html#adc6de3deee098fd6bbd90c6e75cb51b6',1,'tvm::tirx']]],
   ['fbatchcompute_2',['FBatchCompute',['../namespacetvm_1_1te.html#a7846ca7151331e3d0b5f95e92aee5d26',1,'tvm::te']]],
   ['fbuild_3',['FBuild',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderObj.html#acb0be639925461de183df6d12718dc17',1,'tvm::s_tir::meta_schedule::BuilderObj']]],
   ['fcallpacked_4',['FCallPacked',['../namespacetvm_1_1relax.html#ad1795aa8569b24ef309f22661ba98ff4',1,'tvm::relax']]],
@@ -29,11 +29,11 @@ var searchData=
   ['finstructionattrsasjson_26',['FInstructionAttrsAsJSON',['../namespacetvm_1_1s__tir.html#a7ff9de7ec3e941e286eb0d77030bb49d',1,'tvm::s_tir']]],
   ['finstructionattrsfromjson_27',['FInstructionAttrsFromJSON',['../namespacetvm_1_1s__tir.html#ac7e8859d9bab9d19c293f7f1ca65aee3',1,'tvm::s_tir']]],
   ['fjoinrunningtask_28',['FJoinRunningTask',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyTaskSchedulerObj.html#a0d65c57167eb7803a22de783fbd7f2b3',1,'tvm::s_tir::meta_schedule::PyTaskSchedulerObj']]],
-  ['flegalize_29',['flegalize',['../namespacetvm_1_1tirx.html#aba5840d0f677916170939a3b7a30223c',1,'tvm::tirx::FLegalize'],['../namespacetvm_1_1relax.html#a710f4601a4fa39aa11a94456dcec6bd8',1,'tvm::relax::FLegalize']]],
+  ['flegalize_29',['flegalize',['../namespacetvm_1_1tirx.html#a6de4c288b1c9d5dfe63d72b71e3bed19',1,'tvm::tirx::FLegalize'],['../namespacetvm_1_1relax.html#a710f4601a4fa39aa11a94456dcec6bd8',1,'tvm::relax::FLegalize']]],
   ['fload_30',['FLoad',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyCostModelObj.html#a11608ade348cbad7e848fa1e7512556b',1,'tvm::s_tir::meta_schedule::PyCostModelObj']]],
   ['floatimmobj_31',['FloatImmObj',['../namespacetvm_1_1prim.html#a5d4fc895222d0bd34905915e1c4257e7',1,'tvm::prim']]],
   ['flowerbuiltin_32',['FLowerBuiltin',['../namespacetvm_1_1relax.html#a2c4a91a8bfd2ad40ef4172d8a964926c',1,'tvm::relax']]],
-  ['flowerintrinsic_33',['FLowerIntrinsic',['../namespacetvm_1_1tirx.html#a0c1f44abdaf5b9ea2bef638dcc66865a',1,'tvm::tirx']]],
+  ['flowerintrinsic_33',['FLowerIntrinsic',['../namespacetvm_1_1tirx.html#aa34b6b387657d2c637384fc91073c256',1,'tvm::tirx']]],
   ['fmakeforloop_34',['FMakeForLoop',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ForFrameObj.html#a8a728d688e51e5432a80c5e9d5024115',1,'tvm::script::ir_builder::ir::ForFrameObj']]],
   ['fnexttaskid_35',['FNextTaskId',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyTaskSchedulerObj.html#a293a13b04a4e407b5a12a3459797063d',1,'tvm::s_tir::meta_schedule::PyTaskSchedulerObj']]],
   ['fnormalize_36',['FNormalize',['../namespacetvm_1_1relax.html#a49f534adc0a9cfb3ef871002f3d7224c',1,'tvm::relax']]],

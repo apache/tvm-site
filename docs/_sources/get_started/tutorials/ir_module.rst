@@ -763,8 +763,8 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[ 0.28518364 -0.10057769 -0.24497938 -0.20932767  0.03634433 -0.03266403
-       0.07393149  0.13594142  0.10106595  0.14614853]]
+    [[-0.11893801  0.08103434  0.09812547  0.1788705  -0.05230097  0.13762334
+       0.0012332  -0.12890697 -0.02631068 -0.15835674]]
 
 
 
@@ -781,18 +781,16 @@ We use ``DLight`` to generate the GPU programs. In this tutorial, we won't go in
 the details of ``DLight``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 256-265
+.. GENERATED FROM PYTHON SOURCE LINES 256-263
 
 .. code-block:: Python
 
 
     from tvm.s_tir import dlight as dl
 
-    with tvm_tirx.target.Target("cuda"):
-        gpu_mod = dl.ApplyDefaultSchedule(
-            dl.gpu.Matmul(),
-            dl.gpu.Fallback(),
-        )(mod)
+    gpu_mod = dl.ApplyDefaultSchedule(
+        dl.gpu.Matmul(), dl.gpu.Fallback(), target=tvm_tirx.target.Target("cuda")
+    )(mod)
 
 
 
@@ -801,11 +799,11 @@ the details of ``DLight``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-267
+.. GENERATED FROM PYTHON SOURCE LINES 264-265
 
 Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 267-280
+.. GENERATED FROM PYTHON SOURCE LINES 265-278
 
 .. code-block:: Python
 
@@ -830,13 +828,13 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[ 0.28518358 -0.10057765 -0.24497932 -0.20932767  0.03634436 -0.03266406
-       0.07393146  0.13594142  0.10106599  0.14614856]]
+    [[-0.11893798  0.08103433  0.09812549  0.17887047 -0.05230099  0.13762331
+       0.00123318 -0.12890694 -0.02631069 -0.15835676]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-287
+.. GENERATED FROM PYTHON SOURCE LINES 279-285
 
 Deploy on Other Backends
 ~~~~~~~~~~~~~~~~~~~~~~~~

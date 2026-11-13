@@ -276,7 +276,7 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    9.51e-08 secs/op
+    1.1e-07 secs/op
 
 
 
@@ -563,7 +563,7 @@ This workflow is applicable to various deployment scenarios:
    for ONNX models. Simply replace ``from_exported_program()`` with
    ``from_onnx(model, keep_params_in_input=True)`` and follow the same steps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 470-751
+.. GENERATED FROM PYTHON SOURCE LINES 470-749
 
 .. code-block:: Python
 
@@ -662,8 +662,7 @@ This workflow is applicable to various deployment scenarios:
 
         # Apply optimization pipeline
         pipeline = relax.get_pipeline()
-        with target:
-            built_mod = pipeline(mod)
+        built_mod = pipeline(mod)
 
         # Compile to executable
         executable = tvm.compile(built_mod, target=target)
@@ -815,8 +814,7 @@ This workflow is applicable to various deployment scenarios:
         #    .. code-block:: python
         #
         #       from tvm.s_tir import dlight as dl
-        #       with target:
-        #           mod = dl.ApplyDefaultSchedule()(mod)
+        #       mod = dl.ApplyDefaultSchedule(target=target)(mod)
         #
         # 3. **Architecture-specific optimizations**:
         #
@@ -861,8 +859,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmp41lw5mjp/model_deployed.so
-    Saved parameters to: /tmp/tmp41lw5mjp/model_params.npz
+    Exported library to: /tmp/tmpyt8nyb12/model_deployed.so
+    Saved parameters to: /tmp/tmpyt8nyb12/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
@@ -892,7 +890,7 @@ This workflow is applicable to various deployment scenarios:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 752-784
+.. GENERATED FROM PYTHON SOURCE LINES 750-782
 
 Summary
 -------

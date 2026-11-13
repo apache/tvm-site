@@ -54,7 +54,7 @@ PyTorch.
  .. code-block:: none
 
     Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /workspace/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
-      0%|          | 0.00/44.7M [00:00<?, ?B/s]     68%|██████▊   | 30.5M/44.7M [00:00<00:00, 319MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 353MB/s]
+      0%|          | 0.00/44.7M [00:00<?, ?B/s]     44%|████▍     | 19.8M/44.7M [00:00<00:00, 207MB/s]     92%|█████████▏| 40.9M/44.7M [00:00<00:00, 215MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 216MB/s]
 
 
 
@@ -185,14 +185,13 @@ Build and Deploy
 Finally, we build the optimized model and deploy it to the target device.
 We skip this step in the CI environment.
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-155
+.. GENERATED FROM PYTHON SOURCE LINES 142-154
 
 .. code-block:: Python
 
 
     if not IS_IN_CI:
-        with target:
-            mod = tvm.s_tir.transform.DefaultGPUSchedule()(mod)
+        mod = tvm.s_tir.transform.DefaultGPUSchedule(target=target)(mod)
         ex = tvm.compile(mod, target=target)
         dev = tvm_tirx.cuda(0)
         vm = relax.VirtualMachine(ex, dev)

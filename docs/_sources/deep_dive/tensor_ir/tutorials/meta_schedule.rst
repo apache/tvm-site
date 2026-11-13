@@ -140,21 +140,20 @@ Here is a typical tune-and-apply pipeline:
 
    To save CI time and avoid flakiness, we skip the tuning process in CI.
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-145
+.. GENERATED FROM PYTHON SOURCE LINES 129-144
 
 .. code-block:: Python
 
 
     if os.getenv("CI", "") != "true":
-        with target, tempfile.TemporaryDirectory() as tmp_dir:
+        with tempfile.TemporaryDirectory() as tmp_dir:
             tuned_mod = tvm_tirx.ir.transform.Sequential(
                 [
-                    relax.get_pipeline("zero"),
+                    relax.get_pipeline("zero", target=target),
                     relax.transform.MetaScheduleTuneTIR(
-                        work_dir=tmp_dir,
-                        max_trials_global=300,
+                        work_dir=tmp_dir, max_trials_global=300, target=target
                     ),
-                    relax.transform.MetaScheduleApplyDatabase(work_dir=tmp_dir),
+                    relax.transform.MetaScheduleApplyDatabase(work_dir=tmp_dir, target=target),
                 ]
             )(mod)
 
@@ -167,21 +166,20 @@ Here is a typical tune-and-apply pipeline:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-149
+.. GENERATED FROM PYTHON SOURCE LINES 145-148
 
 Inspecting Tunable Tasks
 ------------------------
 Before tuning, use ``extract_tasks`` to see what MetaSchedule will tune:
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-159
+.. GENERATED FROM PYTHON SOURCE LINES 148-157
 
 .. code-block:: Python
 
 
     from tvm.s_tir.meta_schedule.relax_integration import extract_tasks
 
-    with target:
-        legalized_mod = relax.get_pipeline("zero")(mod)
+    legalized_mod = relax.get_pipeline("zero", target=target)(mod)
 
     tasks = extract_tasks(legalized_mod, target)
     for i, task in enumerate(tasks):
@@ -203,7 +201,7 @@ Before tuning, use ``extract_tasks`` to see what MetaSchedule will tune:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-166
+.. GENERATED FROM PYTHON SOURCE LINES 158-164
 
 Each ``ExtractedTask`` has:
 
@@ -212,7 +210,7 @@ Each ``ExtractedTask`` has:
   scheduler uses weights to allocate more budget to frequently-called operators.
 - ``dispatched``: List of candidate TIR modules for this workload.
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-193
+.. GENERATED FROM PYTHON SOURCE LINES 166-191
 
 Selective Operator Tuning
 -------------------------
@@ -221,16 +219,16 @@ operators whose task name contains any of the given strings:
 
 .. code-block:: python
 
-    with target:
-        mod = tvm.ir.transform.Sequential([
-            relax.transform.MetaScheduleTuneIRMod(
-                params={},
-                work_dir="./tuning_logs",
-                max_trials_global=300,
-                op_names=["matmul"],  # Only tune matmul-related operators
-            ),
-            relax.transform.MetaScheduleApplyDatabase(work_dir="./tuning_logs"),
-        ])(mod)
+    mod = tvm.ir.transform.Sequential([
+        relax.transform.MetaScheduleTuneIRMod(
+            params={},
+            target=target,
+            work_dir="./tuning_logs",
+            max_trials_global=300,
+            op_names=["matmul"],  # Only tune matmul-related operators
+        ),
+        relax.transform.MetaScheduleApplyDatabase(work_dir="./tuning_logs", target=target),
+    ])(mod)
 
 Operators without tuning records are left unscheduled -- you can apply DLight or
 other rule-based schedules to cover them afterward.
@@ -240,7 +238,7 @@ other rule-based schedules to cover them afterward.
    ``MetaScheduleTuneTIR`` does not support ``op_names`` filtering. Use
    ``MetaScheduleTuneIRMod`` when you need selective tuning.
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-237
+.. GENERATED FROM PYTHON SOURCE LINES 193-234
 
 Database
 --------
@@ -267,10 +265,9 @@ Once tuning is done, subsequent compilations only need
 
 .. code-block:: python
 
-    with target:
-        mod = relax.transform.MetaScheduleApplyDatabase(
-            work_dir="./tuning_logs"
-        )(mod)
+    mod = relax.transform.MetaScheduleApplyDatabase(
+        work_dir="./tuning_logs", target=target
+    )(mod)
 
 Database Implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -285,7 +282,7 @@ MetaSchedule ships several database backends:
   first one that has a match.
 - **ScheduleFnDatabase**: Wraps a user-provided scheduling function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 239-265
+.. GENERATED FROM PYTHON SOURCE LINES 236-262
 
 Cross-Model Database Reuse
 --------------------------
@@ -311,10 +308,10 @@ database first, then fall back to a shared team database:
     shared_db = JSONDatabase(work_dir="/shared/tuning_db")
     combined_db = OrderedUnionDatabase(local_db, shared_db)
 
-    with target, combined_db:
-        mod = relax.transform.MetaScheduleApplyDatabase()(mod)
+    with combined_db:
+        mod = relax.transform.MetaScheduleApplyDatabase(target=target)(mod)
 
-.. GENERATED FROM PYTHON SOURCE LINES 267-296
+.. GENERATED FROM PYTHON SOURCE LINES 264-293
 
 Key Parameters Reference
 ------------------------
@@ -346,7 +343,7 @@ Key Parameters Reference
      - ``"structural"`` (default) or ``"anchor-block"`` for more permissive
        cross-model matching. Only available via ``tune_relax``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 298-308
+.. GENERATED FROM PYTHON SOURCE LINES 295-305
 
 Summary
 -------

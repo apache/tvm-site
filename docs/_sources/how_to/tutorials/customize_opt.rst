@@ -257,7 +257,7 @@ running the passes, we need to lowering relax operator into TensorIR functions v
   To save CI time and avoid flakiness, we skip the tuning process in CI environment.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-183
+.. GENERATED FROM PYTHON SOURCE LINES 167-185
 
 .. code-block:: Python
 
@@ -266,12 +266,14 @@ running the passes, we need to lowering relax operator into TensorIR functions v
     target = tvm_tirx.target.Target.from_device(device)
     if os.getenv("CI", "") != "true":
         trials = 2000
-        with target, tempfile.TemporaryDirectory() as tmp_dir:
+        with tempfile.TemporaryDirectory() as tmp_dir:
             mod = tvm_tirx.ir.transform.Sequential(
                 [
-                    relax.get_pipeline("zero"),
-                    relax.transform.MetaScheduleTuneTIR(work_dir=tmp_dir, max_trials_global=trials),
-                    relax.transform.MetaScheduleApplyDatabase(work_dir=tmp_dir),
+                    relax.get_pipeline("zero", target=target),
+                    relax.transform.MetaScheduleTuneTIR(
+                        work_dir=tmp_dir, max_trials_global=trials, target=target
+                    ),
+                    relax.transform.MetaScheduleApplyDatabase(work_dir=tmp_dir, target=target),
                 ]
             )(mod)
 
@@ -284,7 +286,7 @@ running the passes, we need to lowering relax operator into TensorIR functions v
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 184-190
+.. GENERATED FROM PYTHON SOURCE LINES 186-192
 
 DLight Rules
 ~~~~~~~~~~~~
@@ -293,7 +295,7 @@ DLight rules are designed for fast compilation and **fair** performance. In some
 e.g. language model, DLight provides excellent performance, while for generic models,
 it achieves a balance between performance and compilation time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-210
+.. GENERATED FROM PYTHON SOURCE LINES 192-212
 
 .. code-block:: Python
 
@@ -301,19 +303,19 @@ it achieves a balance between performance and compilation time.
     from tvm.s_tir import dlight as dl
 
     # Apply DLight rules
-    with target:
-        mod = tvm_tirx.ir.transform.Sequential(
-            [
-                relax.get_pipeline("zero"),
-                dl.ApplyDefaultSchedule(  # pylint: disable=not-callable
-                    dl.gpu.Matmul(),
-                    dl.gpu.GEMV(),
-                    dl.gpu.Reduction(),
-                    dl.gpu.GeneralReduction(),
-                    dl.gpu.Fallback(),
-                ),
-            ]
-        )(mod)
+    mod = tvm_tirx.ir.transform.Sequential(
+        [
+            relax.get_pipeline("zero", target=target),
+            dl.ApplyDefaultSchedule(  # pylint: disable=not-callable
+                dl.gpu.Matmul(),
+                dl.gpu.GEMV(),
+                dl.gpu.Reduction(),
+                dl.gpu.GeneralReduction(),
+                dl.gpu.Fallback(),
+                target=target,
+            ),
+        ]
+    )(mod)
 
     mod.show()
 
@@ -402,20 +404,20 @@ it achieves a balance between performance and compilation time.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-215
+.. GENERATED FROM PYTHON SOURCE LINES 213-217
 
 .. note::
 
   This tutorial focuses on the demonstration of the optimization pipeline, instead of
   pushing the performance to the limit. The current optimization may not be the best.
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-221
+.. GENERATED FROM PYTHON SOURCE LINES 220-223
 
 Deploy the Optimized Model
 --------------------------
 We can build and deploy the optimized model to the TVM runtime.
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-234
+.. GENERATED FROM PYTHON SOURCE LINES 223-236
 
 .. code-block:: Python
 
@@ -446,7 +448,7 @@ We can build and deploy the optimized model to the TVM runtime.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-242
+.. GENERATED FROM PYTHON SOURCE LINES 237-244
 
 Summary
 -------
