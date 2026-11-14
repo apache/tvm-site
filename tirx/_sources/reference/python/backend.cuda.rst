@@ -38,6 +38,7 @@ Namespaces
 * :doc:`tvm_tirx.backend.cuda.iket <backend.cuda.iket>`
 * :doc:`tvm_tirx.backend.cuda.launch <backend.cuda.launch>`
 * :doc:`tvm_tirx.backend.cuda.ptx <backend.cuda.ptx>`
+* :doc:`tvm_tirx.backend.cuda.runtime.locality_domain <backend.cuda.runtime.locality_domain>`
 * :doc:`tvm_tirx.backend.cuda.thread_scope <backend.cuda.thread_scope>`
 * :doc:`tvm_tirx.backend.cuda.tile <backend.cuda.tile>`
 
@@ -53,6 +54,7 @@ Namespaces
    backend.cuda.iket
    backend.cuda.launch
    backend.cuda.ptx
+   backend.cuda.runtime.locality_domain
    backend.cuda.thread_scope
    backend.cuda.tile
 
