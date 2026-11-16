@@ -1,4 +1,353 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2026-11-11T21:17:05+00:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot; =&gt; nil}</name></author><entry><title type="html">Rethinking Abstractions in the Agentic Era: Towards a DSL and Compiler Foundation for Agentic Kernel Development</title><link href="/2026/11/03/rethinking-abstractions-in-the-agentic-era" rel="alternate" type="text/html" title="Rethinking Abstractions in the Agentic Era: Towards a DSL and Compiler Foundation for Agentic Kernel Development" /><published>2026-11-03T00:00:00+00:00</published><updated>2026-11-03T00:00:00+00:00</updated><id>/2026/11/03/rethinking-abstractions-in-the-agentic-era</id><content type="html" xml:base="/2026/11/03/rethinking-abstractions-in-the-agentic-era"><![CDATA[<section class="post-summary" aria-labelledby="tldr">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2026-11-16T19:36:44+00:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot; =&gt; nil}</name></author><entry><title type="html">Building a Rust-Native, Cross-Language Foundation for Agentic ML Compilers</title><link href="/2026/11/16/rust-native-cross-language-ml-compiler-foundation" rel="alternate" type="text/html" title="Building a Rust-Native, Cross-Language Foundation for Agentic ML Compilers" /><published>2026-11-16T00:00:00+00:00</published><updated>2026-11-16T00:00:00+00:00</updated><id>/2026/11/16/rust-native-cross-language-ml-compiler-foundation</id><content type="html" xml:base="/2026/11/16/rust-native-cross-language-ml-compiler-foundation"><![CDATA[<p>Recent work on agent-driven kernel generation and systems optimization has shown that coding agents can take on substantial systems development. With agents writing a growing share of systems code, validating its correctness has become an increasingly important problem. As we discussed in <a href="https://tvm.apache.org/2026/11/03/rethinking-abstractions-in-the-agentic-era">our recent post “Rethinking Abstractions in the Agentic Era”</a>, <strong>ML compiler foundation will continue to play a central role in the agentic era,</strong> to inspect, verify, and transform the programs that agents generate.</p>
+
+<p>One natural consequence is that agents should now be able to get access to the intermediate program representations (IR), such as loops and calls and write customized compiler routines. In this scenario, the compiler foundation no longer only serves the human developers and increasingly becomes agent facing. One natural question arises: <strong>which programming language should agents pick to write ML compiler routines in?</strong></p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/language-choice.png" alt="An agent choosing between Rust (safety and performance), Python (rapid prototyping), and C++ (existing ecosystem) as the main language for compiler routines and the compiler foundation" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>Many language options are available and each comes with its own tradeoffs:</p>
+
+<p><strong>Rust</strong> is a very natural choice, as its safety guarantees enable us to catch memory bugs early while maintaining high performance in programming. Its ownership and borrowing rules, static type system, and concurrency guarantees prevent many memory-safety errors and data races at compile time. Not surprisingly, we start to see a big movement of rewriting systems entirely onto Rust with the help of AI agents. The safety and efficiency seems to make Rust the language of choice.</p>
+
+<p><strong>Python</strong> remains a strong choice, and is still the language in machine learning land, thanks to its rich ecosystem, and dynamic nature to enable quick prototyping. The ability to quickly prototype helps to cut down agent iteration time greatly.</p>
+
+<p><strong>C++</strong> continues to have a strong base and admittedly the best infrastructure support for low-level compiler tool chains. As a matter of fact, the vast majority of production compiler frameworks are still written in C++, thanks to established frameworks like LLVM infrastructure.</p>
+
+<p>Traditionally, most compilers are built around a single main language. The IR and other core data structures are defined in that language, typically C++, and languages such as Python reach them through bindings or wrappers. As we can see in the above discussion, there is not a really clear winner in terms of languages. In our experience agents would favor Python for prototyping, and Rust/C++ for robust stable implementations.</p>
+
+<p>The above observations make us ask one question: <strong>why not natively support multiple languages?</strong> Our main insight is that most of the compiler routines operate on trees of nodes that represent the program, which we call IR, if we can <strong>enable in-memory, zero-cost access to these IR node objects across languages</strong>, <strong>and build first-class ergonomic APIs around them</strong>, we will be able to enable a first class cross language foundation that works across Rust, C++ and Python.</p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/native-shared-objects.png" alt="Traditionally, one language owns the IR and other languages go through bindings; with native shared objects, Python, Rust, C++, and new modules all use the same in-memory IR directly" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>To understand how it works, it is helpful to distinguish our approach from traditional ones. Most traditional ML compilers would build solutions in one primary language, while exposing bindings to others. Those bindings typically bring additional indirections and may not present an idiomatic API for all the features needed. Instead, we want to provide <strong>fine-grained native access to the IR objects</strong>. Concretely, a Rust module should work on the same objects as a C++ pass, whether IR nodes or other compiler data structures, and read their fields directly. This calls for an agreement that sits below any single language. We build our solution on top of <a href="https://tvm.apache.org/ffi/">TVM-FFI</a>, an open ABI for ML systems. Through its C ABI, <strong>every language shares the same reference-counted objects, and a registry records each type’s fields and where they sit in memory</strong>. Any library can add types to this registry when the library loads. A Rust library can therefore read C++ objects in place and contribute new types of its own.</p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/same-ir-object.png" alt="Rust, C++, and Python access the body field of the same For IR object, and the Rust and C++ field accesses compile to the same assembly" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>We call our effort <strong>TIRx Rust, a Rust-Native, Cross-Language Foundation for Agentic ML Compilers</strong>. TIRx Rust builds on top of TIRx, a minimal and stable ML compiler foundation, while providing cross-language native IR access, ergonomic Rust APIs, and dynamic extension.</p>
+
+<p>We envision a fundamentally new way to explore ML compiler development with the help of agents: <strong>instead of completely rewriting everything into one language like Rust, we allow agents to pick the best language</strong> for different modules at different stages of development while being able to mix and match at fine grained levels. Our preliminary experiences show that this approach empowers agents to develop faster with python prototyping, building robust code with Rust, while connecting to stable compiler toolchains in C++ organically.</p>
+
+<h2 id="building-ergonomic-rust-apis">Building Ergonomic Rust APIs</h2>
+
+<p>While the TVM-FFI ABI provides a basic way to access the data structures, we still need to provide idiomatic and safe Rust APIs to inspect, traverse and transform the program structures. Each of the IR objects in Rust is stored as a reference counted object that follows Rust’s ownership rules. Different IR nodes can be represented by different node types.</p>
+
+<p>One typical need in compiler analysis is to take a node dispatch based on its type, whether it is a For node, a constant or expression. The <code class="language-plaintext highlighter-rouge">match_any!</code> macro matches the IR node type:</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="nf">describe</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">PrimExpr</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">text</span> <span class="o">=</span> <span class="nd">match_any!</span> <span class="p">{</span>
+        <span class="n">expr</span> <span class="p">{</span>
+            <span class="nf">Add</span><span class="p">(</span><span class="k">ref</span> <span class="n">add</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nd">format!</span><span class="p">(</span><span class="s">"({} + {})"</span><span class="p">,</span> <span class="nf">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="py">.a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span> <span class="nf">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="py">.b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
+            <span class="nf">Mul</span><span class="p">(</span><span class="k">ref</span> <span class="n">mul</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nd">format!</span><span class="p">(</span><span class="s">"({} * {})"</span><span class="p">,</span> <span class="nf">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="py">.a</span><span class="p">)</span><span class="o">?</span><span class="p">,</span> <span class="nf">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mul</span><span class="py">.b</span><span class="p">)</span><span class="o">?</span><span class="p">),</span>
+            <span class="nf">Var</span><span class="p">(</span><span class="k">ref</span> <span class="n">var</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">var</span><span class="py">.name</span><span class="nf">.as_str</span><span class="p">()</span><span class="nf">.to_owned</span><span class="p">(),</span>
+            <span class="nf">IntImm</span><span class="p">(</span><span class="k">ref</span> <span class="n">imm</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">imm</span><span class="py">.value</span><span class="nf">.to_string</span><span class="p">(),</span>
+            <span class="n">_</span> <span class="k">=&gt;</span> <span class="s">"&lt;other&gt;"</span><span class="nf">.to_owned</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">match_any!</code> behaves, much like a <code class="language-plaintext highlighter-rouge">match</code> on an enum, one difference is that in our case, we do not require to enumerate enum ahead of time, instead, different downstream extensions can build their own variant of IR objects in different dynamic libraries and <code class="language-plaintext highlighter-rouge">match_any!</code> will work out of the box for them. This dynamic extension ability is extremely important as agents organically grow the program representations without having to rebuild the full program.</p>
+
+<p>Besides <code class="language-plaintext highlighter-rouge">match_any!</code>, we also provide <code class="language-plaintext highlighter-rouge">#[dispatch]</code> macro that enables us to build type based dispatch easily in Rust. Such a pattern is very commonly used in visitors in most compiler analysis.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[dispatch(print,</span> <span class="nd">(AnyView&lt;'_&gt;,</span> <span class="nd">bool),</span> <span class="nd">String)]</span>
+<span class="k">impl</span> <span class="n">Printer</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">print_add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">add</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">Add</span><span class="p">,</span> <span class="n">nested</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">text</span> <span class="o">=</span> <span class="nd">format!</span><span class="p">(</span><span class="s">"{} + {}"</span><span class="p">,</span> <span class="k">self</span><span class="nf">.show</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="py">.a</span><span class="p">,</span> <span class="kc">true</span><span class="p">),</span> <span class="k">self</span><span class="nf">.show</span><span class="p">(</span><span class="o">&amp;</span><span class="n">add</span><span class="py">.b</span><span class="p">,</span> <span class="kc">true</span><span class="p">));</span>
+        <span class="k">if</span> <span class="n">nested</span> <span class="p">{</span> <span class="nd">format!</span><span class="p">(</span><span class="s">"({text})"</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">text</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">print_var</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Var</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+        <span class="n">var</span><span class="py">.name</span><span class="nf">.as_str</span><span class="p">()</span><span class="nf">.to_owned</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">print_imm</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">imm</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">IntImm</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+        <span class="n">imm</span><span class="py">.value</span><span class="nf">.to_string</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">show</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">PrimExpr</span><span class="p">,</span> <span class="n">nested</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">text</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.dispatch</span><span class="p">(</span><span class="nn">AnyView</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="n">expr</span><span class="p">),</span> <span class="n">nested</span><span class="p">);</span>
+        <span class="n">text</span><span class="nf">.unwrap_or_else</span><span class="p">(||</span> <span class="s">"&lt;other&gt;"</span><span class="nf">.to_owned</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">match_any!</code> and <code class="language-plaintext highlighter-rouge">#[dispatch]</code> provide us with the basic API to access and dispatch handling at each step. In practice, we also need to recursively traverse the IR nodes and perform inspection and rewriting. We provide <strong>structural traversal APIs</strong> through four <a href="https://tvm.apache.org/ffi/guides/rust_lang_guide.html#structural-walk-and-visit"><code class="language-plaintext highlighter-rouge">structural_*</code></a>:</p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/structural-traversal.png" alt="IR traversal APIs: structural_walk and structural_visit read the IR, structural_map and structural_mutate rewrite it; walk and map recurse automatically, visit and mutate let the pass control child traversal" style="width: 70%; margin: auto; display: block;" /></p>
+
+<p><code class="language-plaintext highlighter-rouge">structural_walk</code> and <code class="language-plaintext highlighter-rouge">structural_visit</code> read the IR, and <code class="language-plaintext highlighter-rouge">structural_map</code> and <code class="language-plaintext highlighter-rouge">structural_mutate</code> rewrite it. Of these, <code class="language-plaintext highlighter-rouge">structural_walk</code> and <code class="language-plaintext highlighter-rouge">structural_map</code> traverse the child nodes automatically, and the other two give users full control over the traversal order. Here is an <a href="https://tvm.apache.org/tirx/ir_guides/working_with_ir_in_rust.html#structural-walk">example</a> to show the <code class="language-plaintext highlighter-rouge">structural_walk</code>:</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Default)]</span>
+<span class="k">struct</span> <span class="n">Counter</span> <span class="p">{</span>
+    <span class="n">vars</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">adds</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[dispatch(walk,</span> <span class="nd">(AnyView&lt;'_&gt;,</span> <span class="nd">DefRegionKind),</span> <span class="nd">Result&lt;WalkResult&gt;)]</span>
+<span class="k">impl</span> <span class="n">Counter</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">walk_var</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">_var</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Var</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.vars</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="o">...</span>
+        <span class="nf">Ok</span><span class="p">(</span><span class="nn">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">walk_add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">_add</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">Add</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.adds</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="nf">Ok</span><span class="p">(</span><span class="nn">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">fn</span> <span class="nf">count</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nn">tvm_ffi</span><span class="p">::</span><span class="nb">String</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="nn">tvm_ffi</span><span class="p">::</span><span class="nf">structural_walk</span><span class="p">(</span><span class="o">&amp;</span><span class="n">expr</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">counter</span><span class="p">,</span> <span class="nn">WalkOrder</span><span class="p">::</span><span class="n">PreOrder</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Combined with <code class="language-plaintext highlighter-rouge">#[dispatch]</code> or typed function closures, these traversals can form the core of a pass.</p>
+
+<p>Beyond the ergonomic APIs, two questions remain. How do Rust and C++ keep object layouts in sync, and how do the traversals reach nodes whose types they have never seen?</p>
+
+<h3 id="technical-details">Technical Details</h3>
+
+<details class="technical-details">
+  <summary>The same analysis in Python, C++, and Rust</summary>
+
+  <p>We will use the <a href="https://tvm.apache.org/tirx/ir_guides/overview.html"><code class="language-plaintext highlighter-rouge">add_one</code></a> example to show the APIs in several languages.</p>
+
+  <p><code class="language-plaintext highlighter-rouge">add_one</code> uses a loop to compute <code class="language-plaintext highlighter-rouge">B[i] = A[i] + 1</code>. In each language, the same analysis collects the tensors <code class="language-plaintext highlighter-rouge">add_one</code> writes and finds <code class="language-plaintext highlighter-rouge">B</code>:</p>
+
+  <p><a href="https://tvm.apache.org/tirx/ir_guides/structural_utilities.html#structural-walk"><strong>Python</strong></a></p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">writes</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<span class="k">def</span> <span class="nf">on_store</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
+    <span class="n">writes</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">store</span><span class="p">.</span><span class="n">dest</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="n">tvm_ffi</span><span class="p">.</span><span class="nf">structural_walk</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="p">.</span><span class="n">TensorStore</span><span class="p">,</span> <span class="n">on_store</span><span class="p">))</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">writes</span><span class="p">)</span>
+</code></pre></div>  </div>
+
+  <p><a href="https://tvm.apache.org/tirx/ir_guides/working_with_ir_in_cpp.html#structural-walk"><strong>C++</strong></a></p>
+
+  <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">TensorsWritten</span><span class="p">(</span><span class="k">const</span> <span class="n">tirx</span><span class="o">::</span><span class="n">Function</span><span class="o">&amp;</span> <span class="n">func</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">writes</span><span class="p">;</span>
+  <span class="n">ffi</span><span class="o">::</span><span class="n">StructuralWalk</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">WalkOrder</span><span class="o">::</span><span class="n">kPostOrder</span><span class="o">&gt;</span><span class="p">(</span>
+      <span class="n">func</span><span class="p">,</span> <span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span> <span class="n">TensorStore</span><span class="o">&amp;</span> <span class="n">store</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ffi</span><span class="o">::</span><span class="n">Expected</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">WalkResult</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="n">writes</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">store</span><span class="o">-&gt;</span><span class="n">dest</span><span class="p">.</span><span class="n">as</span><span class="o">&lt;</span><span class="n">VarObj</span><span class="o">&gt;</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">ffi</span><span class="o">::</span><span class="n">WalkResult</span><span class="o">::</span><span class="n">Advance</span><span class="p">();</span>
+      <span class="p">});</span>
+  <span class="k">return</span> <span class="n">writes</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>  </div>
+
+  <p><a href="https://tvm.apache.org/tirx/ir_guides/working_with_ir_in_rust.html#structural-walk"><strong>Rust</strong></a></p>
+
+  <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="nf">written_tensors</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Function</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">Strings</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">writes</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">on_store</span> <span class="o">=</span> <span class="p">|</span><span class="n">store</span><span class="p">:</span> <span class="n">TensorStore</span><span class="p">|</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">WalkResult</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">dest</span> <span class="o">=</span> <span class="nn">Var</span><span class="p">::</span><span class="nf">try_from</span><span class="p">(</span><span class="o">&amp;</span><span class="n">store</span><span class="py">.dest</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+        <span class="n">writes</span><span class="nf">.push</span><span class="p">(</span><span class="n">dest</span><span class="py">.name</span><span class="nf">.clone</span><span class="p">());</span>
+        <span class="nf">Ok</span><span class="p">(</span><span class="nn">WalkResult</span><span class="p">::</span><span class="n">Advance</span><span class="p">)</span>
+    <span class="p">};</span>
+    <span class="nn">tvm_ffi</span><span class="p">::</span><span class="nf">structural_walk</span><span class="p">(</span><span class="o">&amp;</span><span class="n">func</span><span class="p">,</span> <span class="n">on_store</span><span class="p">,</span> <span class="nn">WalkOrder</span><span class="p">::</span><span class="n">PostOrder</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">writes</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.collect</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></div>  </div>
+
+  <p>In Rust, <code class="language-plaintext highlighter-rouge">store.dest</code> <strong>is a plain field read</strong> with no wrapper call, even though <code class="language-plaintext highlighter-rouge">TensorStore</code> and <code class="language-plaintext highlighter-rouge">Var</code> are defined in C++. This is the fine-grained access that bindings make expensive.</p>
+
+  <p>All three versions call <code class="language-plaintext highlighter-rouge">structural_walk</code>, one of the four traversal entry points introduced earlier. It walks the whole IR and calls the callback only on nodes of the selected type.</p>
+
+</details>
+
+<h3 id="verified-layout-equivalence-native-access-without-manual-synchronization">Verified Layout Equivalence: Native Access Without Manual Synchronization</h3>
+
+<p>Reading a C++ object’s field directly from Rust works only if the <strong>Rust mirror of the class has exactly the same layout as the C++ definition</strong>: the same size and alignment, and every field at the same offset. However, the C++ compiler determines this layout from details Rust never sees, such as inheritance, templates, and padding.</p>
+
+<p>If we maintain this mirror by hand, it can silently fail: once a C++ field moves, Rust code keeps reading from the old offset, which is undefined behavior. To stay in sync, the mirror should ideally be derived from the actual memory layout of C++ objects and updated automatically when the C++ definition changes.</p>
+
+<p>TIRx <strong>generates this mirror automatically</strong>. TVM-FFI records each reflected type’s layout, as the C++ compiler computed it, in the compiled library. When running <code class="language-plaintext highlighter-rouge">tvm-ffi-stubgen --target rust</code>, its stubgen tool reads this layout and generates matching type definitions for other languages, including Rust structs.</p>
+
+<p>Every struct that stubgen generates matches the C++ layout exactly. To guarantee this, stubgen first checks that the type has a complete layout: apart from padding, its reflected fields fill every byte from the end of its parent to the end of the type. For example, <code class="language-plaintext highlighter-rouge">prim.Add</code> has a complete layout, since its parent <code class="language-plaintext highlighter-rouge">ir.Expr</code> ends at byte 40 and <code class="language-plaintext highlighter-rouge">a</code> and <code class="language-plaintext highlighter-rouge">b</code> fill <code class="language-plaintext highlighter-rouge">[40, 56)</code>. Stubgen will also automatically add assertions to check that the struct for <code class="language-plaintext highlighter-rouge">prim.Add</code> has the same size and alignment as in C++.</p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/stubgen-layout.png" alt="stubgen reads the reflected fields a and b of the C++ BinaryOpObj from the compiled library and generates a repr(C) Rust AddObj whose size is asserted to be 56 bytes; when C++ changes a field, the CI check reports the file as stale" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p><strong>Rust thus works with shared IR objects natively.</strong> Both languages hold pointers to the same allocation, and each Rust field read is one memory load at the offset C++ uses. Rust can allocate these objects too: stubgen generates a constructor that sets each field directly. However, if a type needs the logic in its C++ constructor, we write its Rust constructor by hand.</p>
+
+<p>A type with an incomplete layout gets no struct and stays opaque behind C accessors, but most node types the pass works with <strong>have complete layouts</strong>. The generated structs also cannot silently go stale, because CI rechecks them from the library it has just built and fails on any difference. That settles field access.</p>
+
+<h2 id="dynamic-extension-extending-the-compiler-without-rebuilding-its-core">Dynamic Extension: Extending the Compiler Without Rebuilding Its Core</h2>
+
+<p>Agents often need new IR abstractions, such as a new data type or an operator for a new hardware feature. In a traditional compiler written in C++, adding one changes the core. The core must then be rebuilt and every component that depends on it updated, so a review has to cover all of that code. When agents write many modules that extend the compiler independently, these costs recur with every module. We would rather <strong>keep each extension in its own module,</strong> so that a reviewer <strong>only needs to focus on that module alone.</strong></p>
+
+<p>To address this, TIRx lets a module register new IR types, operators, and passes when it loads, the same way TIRx registers its own built-in types. Each module, whether written in Python, C++, or Rust, is built and loaded on its own. Once it loads, the existing infrastructure finds its additions through TVM-FFI. As a result, developers need to rebuild only the module they change, while the core and every other module stay untouched.</p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/dynamic-extensions.png" alt="In a traditional compiler, a new capability changes the core and every affected component must be rebuilt and reviewed; with TIRx modular extensions, a new Rust module loads into an unchanged compiler core and is built and reviewed on its own" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>Dynamic extension also poses a new challenge for traversing and rewriting the IR, which nearly every compiler pass relies on. A traditional visitor does this by listing every node type it knows, which breaks once modules add types dynamically. If a module adds a new statement type, a visitor either fails on the new node or skips it. A validator written the same way would approve a kernel it never fully checked. And the module cannot fix this itself, because it cannot add its new type to visitors written before it.</p>
+
+<p>To support dynamic extension in structural traversals, <strong>TVM-FFI moves the knowledge of how to traverse a node out of passes and into node types.</strong> Each node type records data in the TVM-FFI registry, like which of its fields are children. Most TIRx node types record this with a compiled hook, and types without one will fall back to their reflected fields. The traversal engine looks up this description by each node’s type index, so it can walk a node without knowing its concrete type:</p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/traversal-hooks.png" alt="A classic visitor needs a new visit method for every new node type, while TVM-FFI traversal looks up a hook registered with each type, so the traversal stays unchanged when NewNode is added" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p>The figure above compares the two approaches. A traditional visitor lists every node type it handles, so each new type needs a new visit function in every visitor. In TVM-FFI, each type has a traversal description, and existing traversals pick it up automatically. Structural utilities <strong>keep working with new node types</strong>; only passes that interpret a new type need new code.</p>
+
+<h3 id="technical-details-1">Technical Details</h3>
+
+<details class="technical-details">
+  <summary>Walkthrough: adding complex numbers with a Rust extension</summary>
+
+  <p>Next, we will use an example to show how to utilize dynamic extension in TIRx with Rust.</p>
+
+  <p>The <a href="https://github.com/apache/tvm-tirx/tree/main/examples/extension_guides/rust">extension example</a> is such a module: a Python package adding complex numbers based on TIRx in <strong>about 260 lines of safe Rust</strong>. With it, a kernel multiplies complex numbers stored as real and imaginary float32 arrays:</p>
+
+  <p><img src="/images/rust-native-ml-compiler-foundation/complex-extension.png" alt="The my_ext Rust extension defines ComplexType, the complex, cmul, real, and imag operators, and the LowerComplex pass; Python imports and uses them in a kernel, and LowerComplex lowers the complex operations to float32 scalar operations before the existing TIRx lowering and LLVM codegen" style="width: 90%; margin: auto; display: block;" /></p>
+
+  <p><strong>The IR type.</strong></p>
+
+  <p>It starts with <code class="language-plaintext highlighter-rouge">ComplexType</code>, defined in Rust:</p>
+
+  <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// A complex number whose real and imaginary parts share a scalar type.</span>
+<span class="nd">#[rs_object(type_key</span> <span class="nd">=</span> <span class="s">"my_ext.ComplexType"</span><span class="nd">,</span> <span class="nd">final,</span> <span class="nd">immutable)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">ComplexTypeObj</span> <span class="p">{</span>
+    <span class="n">base_</span><span class="p">:</span> <span class="n">TypeObj</span><span class="p">,</span>
+    <span class="k">pub</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">PrimType</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="nd">#[derive(Clone,</span> <span class="nd">tvm_ffi::derive::ObjectRef)]</span>
+<span class="nd">#[object_ref(parent</span> <span class="nd">=</span> <span class="nd">Type)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">ComplexType</span> <span class="p">{</span>
+    <span class="n">data_</span><span class="p">:</span> <span class="nn">tvm_ffi</span><span class="p">::</span><span class="n">ObjectArc</span><span class="o">&lt;</span><span class="n">ComplexTypeObj</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nn">tvm_ffi</span><span class="p">::</span><span class="nd">static_init_block!</span> <span class="p">{</span>
+    <span class="nn">register_type</span><span class="p">::</span><span class="o">&lt;</span><span class="n">ComplexType</span><span class="o">&gt;</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>  </div>
+
+  <p>The <code class="language-plaintext highlighter-rouge">#[rs_object]</code> macro gives it a <code class="language-plaintext highlighter-rouge">#[repr(C)]</code> layout and registers it on load with parent <code class="language-plaintext highlighter-rouge">ir.Type</code> and reflected field <code class="language-plaintext highlighter-rouge">dtype</code>. Then, <code class="language-plaintext highlighter-rouge">register_type</code> exposes it to Python as <code class="language-plaintext highlighter-rouge">my_ext.Complex</code>, and other languages reach it through the shared object system.</p>
+
+  <p><strong>The operators.</strong></p>
+
+  <p><code class="language-plaintext highlighter-rouge">complex</code> constructs a value, <code class="language-plaintext highlighter-rouge">cmul</code> multiplies two, and <code class="language-plaintext highlighter-rouge">real</code> and <code class="language-plaintext highlighter-rouge">imag</code> take parts. Each is an <code class="language-plaintext highlighter-rouge">OpDef</code> chain:</p>
+
+  <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">tvm_ffi</span><span class="p">::</span><span class="nd">static_init_block!</span> <span class="p">{</span>
+    <span class="nn">OpDef</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="s">"my_ext.complex"</span><span class="p">,</span> <span class="s">"Construct the complex number re + im * i."</span><span class="p">)</span>
+        <span class="nf">.signature</span><span class="p">((</span>
+            <span class="nn">sig</span><span class="p">::</span><span class="nn">arg</span><span class="p">::</span><span class="o">&lt;</span><span class="nn">sig</span><span class="p">::</span><span class="n">PrimExpr</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"re"</span><span class="p">,</span> <span class="s">"The real part."</span><span class="p">),</span>
+            <span class="nn">sig</span><span class="p">::</span><span class="nn">arg</span><span class="p">::</span><span class="o">&lt;</span><span class="nn">sig</span><span class="p">::</span><span class="n">PrimExpr</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"im"</span><span class="p">,</span> <span class="s">"The imaginary part."</span><span class="p">),</span>
+        <span class="p">))</span>
+        <span class="nf">.set_infer_type</span><span class="p">(</span><span class="n">infer_complex</span><span class="p">)</span>
+        <span class="nf">.set_validator</span><span class="p">(</span><span class="n">validate_call</span><span class="p">)</span>
+        <span class="nf">.set_attr</span><span class="p">(</span><span class="n">CALL_EFFECT_KIND</span><span class="p">,</span> <span class="nn">CallEffectKind</span><span class="p">::</span><span class="n">Pure</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>  </div>
+
+  <p>The chain registers the operator together with two Rust functions. <code class="language-plaintext highlighter-rouge">infer_complex</code> infers a call’s result type and raises a <code class="language-plaintext highlighter-rouge">TypeError</code> on a bad argument when the call is constructed, and <code class="language-plaintext highlighter-rouge">validate_call</code> rechecks a call on request, as <code class="language-plaintext highlighter-rouge">map_call</code> does below. TIRx also generates the operator’s Python builder from this entry.</p>
+
+  <p><strong>Structural traversal.</strong></p>
+
+  <p><code class="language-plaintext highlighter-rouge">ComplexType</code> registers no structural hooks, so the structural utilities traverse it through its reflected field <code class="language-plaintext highlighter-rouge">dtype</code> automatically. Existing traversal code reaches complex values without being recompiled.</p>
+
+  <p><strong>The lowering pass.</strong></p>
+
+  <p>The original codegen component knows nothing about complex values, and cannot generate code for them. So the extension also needs to provide a pass, <code class="language-plaintext highlighter-rouge">LowerComplex</code>. Here, <code class="language-plaintext highlighter-rouge">Lowering</code> is a <code class="language-plaintext highlighter-rouge">#[dispatch]</code> struct, and runs through <code class="language-plaintext highlighter-rouge">structural_map</code> in post-order, so operands are lowered before their uses.</p>
+
+  <p>It turns each complex value into two float32 values, leaving only scalar operations: <code class="language-plaintext highlighter-rouge">bindings</code> maps complex variables to scalar pairs, <code class="language-plaintext highlighter-rouge">parts</code> returns an operand’s parts, and <code class="language-plaintext highlighter-rouge">map_call</code> rewrites <code class="language-plaintext highlighter-rouge">cmul</code> into the scalar formula and <code class="language-plaintext highlighter-rouge">real</code> or <code class="language-plaintext highlighter-rouge">imag</code> into the matching part:</p>
+
+  <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[dispatch(map,</span> <span class="nd">(AnyView&lt;'_&gt;,),</span> <span class="nd">Result&lt;UnchangedOr&lt;Any&gt;&gt;)]</span>
+<span class="k">impl</span> <span class="n">Lowering</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">map_call</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span> <span class="n">Call</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">UnchangedOr</span><span class="o">&lt;</span><span class="n">Any</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nf">is_complex_op</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="py">.op</span><span class="p">)</span><span class="o">?</span> <span class="p">{</span>
+            <span class="nf">validate_call</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">call</span><span class="py">.op</span><span class="nf">.same_as</span><span class="p">(</span><span class="o">&amp;</span><span class="nn">Op</span><span class="p">::</span><span class="nf">get</span><span class="p">(</span><span class="s">"my_ext.cmul"</span><span class="p">)</span><span class="o">?</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.parts</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="py">.args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">?</span><span class="p">;</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.parts</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="py">.args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">?</span><span class="p">;</span>
+            <span class="c1">// (a + bi)(c + di) = (ac - bd) + (ad + bc)i</span>
+            <span class="k">let</span> <span class="n">re</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">a</span> <span class="o">*</span> <span class="o">&amp;</span><span class="n">c</span> <span class="o">-</span> <span class="o">&amp;</span><span class="n">b</span> <span class="o">*</span> <span class="o">&amp;</span><span class="n">d</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">im</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">a</span> <span class="o">*</span> <span class="o">&amp;</span><span class="n">d</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">b</span> <span class="o">*</span> <span class="o">&amp;</span><span class="n">c</span><span class="p">;</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="nn">Call</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span>
+                <span class="nb">None</span><span class="p">,</span>
+                <span class="nn">Op</span><span class="p">::</span><span class="nf">get</span><span class="p">(</span><span class="s">"my_ext.complex"</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">re</span><span class="p">,</span> <span class="n">im</span><span class="p">],</span>
+                <span class="nb">None</span><span class="p">,</span>
+                <span class="nn">Vec</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">(),</span>
+                <span class="n">call</span><span class="py">.loc</span><span class="nf">.clone</span><span class="p">(),</span>
+            <span class="p">)</span><span class="o">?</span>
+            <span class="nf">.into</span><span class="p">());</span>
+        <span class="p">}</span>
+        <span class="k">let</span> <span class="n">real</span> <span class="o">=</span> <span class="n">call</span><span class="py">.op</span><span class="nf">.same_as</span><span class="p">(</span><span class="o">&amp;</span><span class="nn">Op</span><span class="p">::</span><span class="nf">get</span><span class="p">(</span><span class="s">"my_ext.real"</span><span class="p">)</span><span class="o">?</span><span class="p">);</span>
+        <span class="k">if</span> <span class="n">real</span> <span class="p">||</span> <span class="n">call</span><span class="py">.op</span><span class="nf">.same_as</span><span class="p">(</span><span class="o">&amp;</span><span class="nn">Op</span><span class="p">::</span><span class="nf">get</span><span class="p">(</span><span class="s">"my_ext.imag"</span><span class="p">)</span><span class="o">?</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">re</span><span class="p">,</span> <span class="n">im</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.parts</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="py">.args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">?</span><span class="p">;</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="k">if</span> <span class="n">real</span> <span class="p">{</span> <span class="n">re</span><span class="nf">.into</span><span class="p">()</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">im</span><span class="nf">.into</span><span class="p">()</span> <span class="p">});</span>
+        <span class="p">}</span>
+        <span class="nf">Ok</span><span class="p">(</span><span class="n">call</span><span class="nf">.into</span><span class="p">())</span>
+    <span class="p">}</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</code></pre></div>  </div>
+
+  <p><code class="language-plaintext highlighter-rouge">map_bind</code>, omitted above, splits <code class="language-plaintext highlighter-rouge">z = complex(a, b)</code> into <code class="language-plaintext highlighter-rouge">z_re = a</code> and <code class="language-plaintext highlighter-rouge">z_im = b</code>. Then a second <code class="language-plaintext highlighter-rouge">structural_map</code> rejects any leftover complex type or operator, such as a complex parameter, with a <code class="language-plaintext highlighter-rouge">ValueError</code>.</p>
+
+  <p><strong>The compilation pipeline.</strong></p>
+
+  <p>Finally, the pass must reach the compiler. Rust wraps <code class="language-plaintext highlighter-rouge">lower_function</code> as a pass and exports it:</p>
+
+  <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="nf">lower_complex</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">Pass</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">pass</span> <span class="o">=</span> <span class="nn">FunctionPass</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">lower_function</span><span class="p">,</span> <span class="nn">PassInfo</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">"my_ext.LowerComplex"</span><span class="p">));</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="nn">Pass</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pass</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="nn">tvm_ffi</span><span class="p">::</span><span class="nd">tvm_ffi_dll_export_typed_func!</span><span class="p">(</span><span class="n">lower_complex</span><span class="p">,</span> <span class="n">lower_complex</span><span class="p">);</span>
+</code></pre></div>  </div>
+
+  <p>On the Python side, <code class="language-plaintext highlighter-rouge">my_ext</code> sets up its builders with two internal <code class="language-plaintext highlighter-rouge">_init_exposed_*</code> calls and then loads the library, which runs its registrations.</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">_init_exposed_op_api</span><span class="p">(</span><span class="sh">"</span><span class="s">my_ext</span><span class="sh">"</span><span class="p">,</span> <span class="n">__name__</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">auto_emit_void_call</span><span class="p">)</span>
+<span class="nf">_init_exposed_type_api</span><span class="p">(</span><span class="sh">"</span><span class="s">my_ext</span><span class="sh">"</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
+<span class="n">_LIB</span> <span class="o">=</span> <span class="nf">load_lib_module</span><span class="p">(</span><span class="sh">"</span><span class="s">my-ext</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">my_ext</span><span class="sh">"</span><span class="p">,</span> <span class="n">extra_lib_paths</span><span class="o">=</span><span class="p">[</span><span class="nc">Path</span><span class="p">(</span><span class="n">__file__</span><span class="p">).</span><span class="n">parent</span><span class="p">])</span>
+</code></pre></div>  </div>
+
+  <p>The package then composes <code class="language-plaintext highlighter-rouge">LowerComplex</code> with the existing TIRx pipeline, ahead of the default lowering:</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">_pipeline</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">lower</span><span class="p">,</span> <span class="n">finalize_host</span><span class="p">,</span> <span class="n">finalize_device</span> <span class="o">=</span> <span class="n">tirx</span><span class="p">.</span><span class="nf">get_tir_pipeline</span><span class="p">(</span><span class="sh">"</span><span class="s">default</span><span class="sh">"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="p">.</span><span class="n">transform</span><span class="p">.</span><span class="nc">Sequential</span><span class="p">([</span><span class="nf">lower_complex</span><span class="p">(),</span> <span class="n">lower</span><span class="p">]),</span> <span class="n">finalize_host</span><span class="p">,</span> <span class="n">finalize_device</span>
+
+
+<span class="n">tirx</span><span class="p">.</span><span class="nf">register_tir_pipeline</span><span class="p">(</span><span class="sh">"</span><span class="s">my_ext</span><span class="sh">"</span><span class="p">,</span> <span class="n">_pipeline</span><span class="p">)</span>
+</code></pre></div>  </div>
+
+  <p>A single call compiles the kernel with the existing LLVM backend, and its outputs match NumPy:</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">compiled</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="n">complex_product</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="sh">"</span><span class="s">llvm</span><span class="sh">"</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">=</span><span class="sh">"</span><span class="s">my_ext</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div>  </div>
+
+  <p>The extension lives in its own package. <strong>Importing <code class="language-plaintext highlighter-rouge">my_ext</code> adds a type, four operators, and a pass, while TIRx’s core stays unchanged.</strong></p>
+
+</details>
+
+<h2 id="discussion-and-looking-ahead">Discussion and Looking Ahead</h2>
+
+<p>We expect agents’ compiler work to shift from general optimization passes toward analysis tools. For decades, compilers have improved programs through passes written once and applied everywhere. Agents now optimize individual kernels directly, so the harder question becomes whether the code they produce is correct. Answering it takes analyses and validators.</p>
+
+<p><a href="https://github.com/mlc-ai/TIRx-harness">TIRx Harness</a>, an open compiler harness for agentic GPU programming, already builds such tools on TIRx Rust. Its CPU simulator, NumSim, reads a kernel through a Rust frontend written with the APIs in this post and transpiles it into native Rust. Synccheck and Racecheck share this simulation to find synchronization errors and memory races before the kernel runs on a GPU. The <a href="https://tirxharness.mlc.ai/docs/components/tools.html">compiler analysis documentation</a> describes these tools in detail.</p>
+
+<p><img src="/images/rust-native-ml-compiler-foundation/independent-tools.png" alt="The focus shifts from compiler passes to independent analysis, validation, diagnostics, and new modules, each written in any language on top of the TIRx and TVM-FFI cross-language foundation" style="width: 90%; margin: auto; display: block;" /></p>
+
+<p><strong>This is why we see cross-language development as the direction for ML compilers.</strong> Analysis tools tend to be numerous, small, and written for a single task, so agents may reach for whichever language fits. Instead of asking every tool to adopt the compiler’s language, TIRx gives each language direct access to the same IR, and lets new modules join without touching the core.</p>
+
+<p><strong>TIRx lets Rust grow alongside the existing code instead of replacing it.</strong> New components can be written in Rust today, and the core infrastructure keeps working beneath them. Agents and the languages they prefer will keep changing. But a cross-language foundation lets them collaborate well with each other.</p>
+
+<h2 id="links">Links</h2>
+
+<ul>
+  <li>GitHub: <a href="https://github.com/apache/tvm-tirx">apache/tvm-tirx</a></li>
+  <li>Working with IR in Rust: <a href="https://tvm.apache.org/tirx/ir_guides/working_with_ir_in_rust.html">TIRx documentation</a></li>
+  <li>TIRx Harness: <a href="https://github.com/mlc-ai/TIRx-harness">mlc-ai/TIRx-harness</a></li>
+</ul>]]></content><author><name>Apache TVM Community</name></author><summary type="html"><![CDATA[Recent work on agent-driven kernel generation and systems optimization has shown that coding agents can take on substantial systems development. With agents writing a growing share of systems code, validating its correctness has become an increasingly important problem. As we discussed in our recent post “Rethinking Abstractions in the Agentic Era”, ML compiler foundation will continue to play a central role in the agentic era, to inspect, verify, and transform the programs that agents generate.]]></summary></entry><entry><title type="html">Rethinking Abstractions in the Agentic Era: Towards a DSL and Compiler Foundation for Agentic Kernel Development</title><link href="/2026/11/03/rethinking-abstractions-in-the-agentic-era" rel="alternate" type="text/html" title="Rethinking Abstractions in the Agentic Era: Towards a DSL and Compiler Foundation for Agentic Kernel Development" /><published>2026-11-03T00:00:00+00:00</published><updated>2026-11-03T00:00:00+00:00</updated><id>/2026/11/03/rethinking-abstractions-in-the-agentic-era</id><content type="html" xml:base="/2026/11/03/rethinking-abstractions-in-the-agentic-era"><![CDATA[<section class="post-summary" aria-labelledby="tldr">
 
   <h2 id="tldr">TL;DR</h2>
 
@@ -2472,82 +2821,4 @@ Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel</p>
   <li><a href="https://homes.cs.washington.edu/~moreau/">Thierry Moreau</a>, for mentoring me during my time at OctoML.</li>
   <li><a href="https://homes.cs.washington.edu/~vegaluis/">Luis Vega</a>, for teaching me the fundamentals of interacting with microcontrollers.</li>
   <li><a href="https://www.linkedin.com/in/themadrasi/?originalSubdomain=uk">Ramana Radhakrishnan</a>, for supplying the Arm hardware used in our experiments and for providing guidance on its usage.</li>
-</ul>]]></content><author><name>Logan Weber and Andrew Reusch, OctoML</name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Compiling Machine Learning to WASM and WebGPU with Apache TVM</title><link href="/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu" rel="alternate" type="text/html" title="Compiling Machine Learning to WASM and WebGPU with Apache TVM" /><published>2020-05-14T00:00:00+00:00</published><updated>2020-05-14T00:00:00+00:00</updated><id>/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu</id><content type="html" xml:base="/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu"><![CDATA[<p><strong>TLDR</strong></p>
-
-<p>We introduced support for WASM and WebGPU to the Apache TVM deep learning compiler. Our experiments shows that  TVM’s WebGPU backend can get <strong>close to native</strong> <strong>GPU performance</strong> when deploying models to the web.</p>
-
-<p style="text-align: center"><img src="/images/webgpu/webgpu-mobilenet-perf.png" alt="image" width="55%" /><br /></p>
-
-<h2 id="introduction">Introduction</h2>
-
-<p>Computing is one of the pillars of modern machine learning applications. The introduction of the GPU to accelerate deep learning workloads has increased the rate of progress dramatically. Given the growing requirement to deploy machine learning everywhere, the browser becomes a natural place to deploy intelligent applications.</p>
-
-<p>While TensorFlow.js and ONNX.js are existing efforts to bring machine learning to the browser, there still exist non-trivial gaps in performance between the web versions and native ones. One of the many reasons is the lack of standard and performant access to the GPU on the web. WebGL lacks important features such as compute shaders and generic storage buffers that are necessary for high performance deep learning.</p>
-
-<p>WebGPU is the upcoming standard for next generation web graphics which has the possibility to dramatically change this situation. Like the latest generation graphics APIs such as Vulkan and Metal, WebGPU offers first-class compute shader support.</p>
-
-<p>To explore the potential of using WebGPU for machine learning deployment in the browser, we enhanced the deep learning compiler Apache(incubating) TVM to target WASM (for host code that computes the launching parameters and calls into the device launch) and WebGPU (for device execution). Our preliminary results are quite positive — for the first time, we can deploy machine learning applications on the web while still getting near native performance on the GPU.</p>
-
-<h2 id="machine-learning-compiler">Machine Learning Compiler</h2>
-
-<p style="text-align: center"><img src="/images/webgpu/ml-compiler-flow.png" alt="image" width="65%" /><br /></p>
-
-<p>One natural reaction when trying out WebGPU is to write shaders for primitive operators in deep neural networks (matrix multiplication and convolution) and then directly optimize their performance. This is the traditional workflow used  by existing frameworks such as TensorFlow.js.</p>
-
-<p>Instead, we apply a compilation based approach. TVM automatically ingests models from high-level frameworks such as TensorFlow, Keras, PyTorch, MXNet and ONNX and uses a machine learning driven approach to automatically generate low level code, in this case compute shaders in SPIR-V format. The generated code can then be packaged as a deployable module.</p>
-
-<p>One important advantage of the compilation based approach is the reuse of infrastructure. We are able to effortlessly (relative to <a href="https://arxiv.org/abs/1901.05350">other approaches</a>) target the web by reusing the infrastructure for optimizing GPU kernels for native platforms such as CUDA, Metal and OpenCL. If the mapping of the WebGPU API to native APIs is efficient we can expect similar performance with very little work. More importantly, the <a href="https://tvm.apache.org/2018/10/03/auto-opt-all">AutoTVM</a> infrastructure allows us to specialize the compute shaders for specific models, enabling the generation of the best compute shaders for our specific model of interest.</p>
-
-<h2 id="building-a-wasm-and-webgpu-compiler">Building a WASM and WebGPU Compiler</h2>
-
-<p>In order to build a compiler that can target WASM and WebGPU, we need the following elements:</p>
-
-<ul>
-  <li>A SPIR-V generator for compute shaders.</li>
-  <li>A WASM generator for the host program.</li>
-  <li>A runtime to load and execute the generated program.</li>
-</ul>
-
-<p>Luckily, TVM already has a SPIR-V target for Vulkan, and uses LLVM for host code generation. So we can just repurpose the two to generate the device and host programs.</p>
-
-<p>The main challenge is the runtime. We need a runtime to load the shader code, and to enable  the host code talk to communicate with the shader correctly. TVM has a minimum C++ based runtime. We build a minimum web runtime library and link it with the generated shader and host driving code, producing a single WASM file. However, this WASM module still contains two unknown dependencies:</p>
-
-<ul>
-  <li>The runtime needs to call into system library calls (malloc, stderr).</li>
-  <li>The wasm runtime needs to interact with the WebGPU driver (in javascript where the WebGPU API is the first-class citizen).</li>
-</ul>
-
-<p>WASI is a standard solution to solve the first problem. While there is not yet a mature WASI on the web, we can use emscripten to generate a WASI-like library (see discussion <a href="https://github.com/emscripten-core/emscripten/issues/11075">here</a>) to provide these system libraries.</p>
-
-<p>We solve the second problem by building a WebGPU runtime inside TVM’s JS runtime, and calling back to these functions from the WASM module when invoking GPU code. Using the <a href="https://tvm.apache.org/docs/dev/runtime.html#packedfunc">PackedFunc</a> mechanism in TVM’s runtime system, we can directly expose high-level runtime primitives by passing JavaScript closures to the WASM interface. This approach keeps most of the runtime code in JavaScript, we could bring more JS code into the WASM runtime as WASI and WASM support matures.</p>
-
-<p style="text-align: center"><img src="/images/webgpu/tvm-wasm-stack.png" alt="image" width="65%" /></p>
-
-<h2 id="performance">Performance</h2>
-
-<p style="text-align: center"><img src="/images/webgpu/webgpu-mobilenet-perf.png" alt="image" width="65%" /></p>
-
-<p>We ran a quick experiment comparing the execution of a full computational graph via TVM’s WebGPU backend and native targets that use native GPU runtimes (Metal and OpenCL). On the MobileNet model, we can find that the WebGPU can get close to matching the performance of Metal. Assuming Chrome WebGPU’s runtime targets Metal instead of OpenCL on the MacOS, we can safely assume there is little to no performance loss when targeting the GPU.</p>
-
-<p>This benchmark excludes the CPU to GPU data copy cost and only benchmarks the GPU execution. Currently the data copy from CPU to GPU can still take 25% of the execution time; however, these costs can further be amortized via approaches like double buffering in a continuous execution setting.</p>
-
-<p>Our reported end-to-end running time of mobilenet is by no means optimal, since we simply reused a tuned programs from GTX 1080 Ti, which is very different from the Intel graphics GPU. We expect further performance boost by using <a href="https://tvm.apache.org/2018/10/03/auto-opt-all">AutoTVM</a> on the target platform of interest.</p>
-
-<h2 id="looking-to-the-future">Looking to the Future</h2>
-
-<p>Our results suggest many interesting opportunities for machine learning on the web. Notably, WebGPU is an API that is still evolving and its implications could go beyond web applications. For example one could target native APIs of WebGPU as it matures and becomes standardized through WASI, enabling standalone WASM applications that make use of WebGPU.</p>
-
-<p>The TVM community is also actively working on a <a href="https://github.com/apache/incubator-tvm/tree/master/rust">Rust based runtime</a> that would enable much more robust WASM support and enable easier interaction with projects like <a href="https://github.com/gfx-rs/wgpu-rs">wgpu</a>, and the <a href="https://rustwasm.github.io/docs/book/">Rust WASM</a> ecosystem. As an open source project, we are looking for contributors who can bring in new ideas and help push the project in these exciting directions.</p>
-
-<p>The proposed approach provides effective machine learning support for most WASM’s application scenarios. The close to native performance could unlock better <a href="https://en.wikipedia.org/wiki/Federated_learning">federated learning</a> capabilities on the browser. The same compiled package should also be able to run on native WASM executors to provide sandbox for the applications.</p>
-
-<h2 id="show-me-the-code">Show me the Code</h2>
-
-<ul>
-  <li><a href="https://github.com/tqchen/tvm-webgpu-example">Example project for image classification</a></li>
-  <li><a href="https://github.com/apache/incubator-tvm/tree/master/web">Apache TVM on github</a></li>
-</ul>
-
-<h2 id="acknowledgement">Acknowledgement</h2>
-
-<p>We would like to thank the emscripten project for providing the WASM compilation infrastructures as well as the JS library support on the web. We would also like to thank the WebGPU community for various helpful discussions. Thanks to Fletcher Haynes for valuable feedbacks to the post.</p>]]></content><author><name>Tianqi Chen and Jared Roesch, OctoML</name></author><summary type="html"><![CDATA[TLDR]]></summary></entry></feed>
+</ul>]]></content><author><name>Logan Weber and Andrew Reusch, OctoML</name></author><summary type="html"><![CDATA[]]></summary></entry></feed>
