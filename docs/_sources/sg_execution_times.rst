@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**05:49.954** total execution time for 16 files **from all galleries**:
+**05:58.219** total execution time for 16 files **from all galleries**:
 
 .. container::
 
@@ -33,31 +33,31 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_how_to_tutorials_optimize_llm.py` (``../how_to/tutorials/optimize_llm.py``)
-     - 05:38.021
+     - 05:46.253
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_ir_module.py` (``../get_started/tutorials/ir_module.py``)
-     - 00:05.209
+     - 00:05.234
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_import_model.py` (``../how_to/tutorials/import_model.py``)
-     - 00:03.718
+     - 00:03.706
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_e2e_opt_model.py` (``../how_to/tutorials/e2e_opt_model.py``)
-     - 00:00.661
+     - 00:00.680
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_cross_compilation_and_rpc.py` (``../how_to/tutorials/cross_compilation_and_rpc.py``)
-     - 00:00.575
+     - 00:00.573
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_customize_opt.py` (``../how_to/tutorials/customize_opt.py``)
-     - 00:00.434
+     - 00:00.439
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_transformation.py` (``../deep_dive/tensor_ir/tutorials/tir_transformation.py``)
-     - 00:00.297
+     - 00:00.296
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_dlight_gpu_scheduling.py` (``../deep_dive/tensor_ir/tutorials/dlight_gpu_scheduling.py``)
-     - 00:00.259
+     - 00:00.258
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_quick_start.py` (``../get_started/tutorials/quick_start.py``)
-     - 00:00.215
+     - 00:00.214
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_creation.py` (``../deep_dive/tensor_ir/tutorials/tir_creation.py``)
      - 00:00.176

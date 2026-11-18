@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**05:43.557** total execution time for 8 files **from how_to/tutorials**:
+**05:51.798** total execution time for 8 files **from how_to/tutorials**:
 
 .. container::
 
@@ -33,19 +33,19 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_how_to_tutorials_optimize_llm.py` (``optimize_llm.py``)
-     - 05:38.021
+     - 05:46.253
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_import_model.py` (``import_model.py``)
-     - 00:03.718
+     - 00:03.706
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_e2e_opt_model.py` (``e2e_opt_model.py``)
-     - 00:00.661
+     - 00:00.680
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_cross_compilation_and_rpc.py` (``cross_compilation_and_rpc.py``)
-     - 00:00.575
+     - 00:00.573
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_customize_opt.py` (``customize_opt.py``)
-     - 00:00.434
+     - 00:00.439
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_bring_your_own_codegen.py` (``bring_your_own_codegen.py``)
      - 00:00.140
