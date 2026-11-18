@@ -33,8 +33,8 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_get_started_tutorials_ir_module.py` (``ir_module.py``)
-     - 00:05.234
+     - 00:05.233
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_quick_start.py` (``quick_start.py``)
-     - 00:00.214
+     - 00:00.215
      - 0.0
