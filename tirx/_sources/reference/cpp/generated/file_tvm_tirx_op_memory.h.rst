@@ -87,9 +87,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1affae70eaff64ae70890ac3afb8d6ae56`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1ae410e106536949a27f2004ec850e2b21`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a4d1ac26616b521da3c53720fbdce9577`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1ae410e106536949a27f2004ec850e2b21`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a6a8f1c16df5dd59186066a5abfdcc161`
 
