@@ -99,6 +99,12 @@ Program Listing for File const_fold.h
                                       value <= std::numeric_limits<float>::max());
    }
    
+   inline bool IsFloatAddIdentity(const FloatImmObj* zero, const FloatImmObj* x) {
+     if (zero == nullptr || zero->value != 0) return false;
+     if (std::signbit(zero->value)) return true;
+     return x != nullptr && !(x->value == 0 && std::signbit(x->value));
+   }
+   
    }  // namespace detail
    
    #define TVM_PRIM_CONST_PROPAGATION(BODY)       \
@@ -139,8 +145,8 @@ Program Listing for File const_fold.h
            return FloatImm(result_ty, fa->value + fb->value);
          }
        }
-       if (fa && fa->value == 0) return b;
-       if (fb && fb->value == 0) return a;
+       if (detail::IsFloatAddIdentity(fa, fb)) return b;
+       if (detail::IsFloatAddIdentity(fb, fa)) return a;
      });
      return std::nullopt;
    }
@@ -166,7 +172,11 @@ Program Listing for File const_fold.h
            return FloatImm(result_ty, fa->value - fb->value);
          }
        }
-       if (fb && fb->value == 0) return a;
+       // x - (+0.0) == x + (-0.0) == x for every x; x - (-0.0) == x + (+0.0).
+       if (fb && fb->value == 0 &&
+           (!std::signbit(fb->value) || (fa && !(fa->value == 0 && std::signbit(fa->value))))) {
+         return a;
+       }
      });
      return std::nullopt;
    }
