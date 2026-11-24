@@ -55,6 +55,7 @@ Passes
    StmtSimplify
    LowerThreadAllreduce
    ConvertSSA
+   MakeStmtUnique
    MakePackedAPI
    SplitHostDevice
    SkipAssert

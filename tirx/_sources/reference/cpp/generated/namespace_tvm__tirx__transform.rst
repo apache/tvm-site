@@ -78,6 +78,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1a628dc9189bd1e907d0b9c31fe7c0e5eb`
 
+- :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1a15a665cd2b545d02005e6fa222b089c4`
+
 - :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1aac17354937377610001585d2d7e1dd4c`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1_1transform_1a31ab61c2116f93cda74a17fc2c0a14e3`

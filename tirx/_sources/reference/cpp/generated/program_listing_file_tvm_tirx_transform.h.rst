@@ -88,6 +88,8 @@ Program Listing for File transform.h
    
    TVM_TIRX_DLL Pass ConvertSSA();
    
+   TVM_TIRX_DLL Pass MakeStmtUnique();
+   
    TVM_TIRX_DLL Pass LowerThreadAllreduce();
    
    TVM_TIRX_DLL Pass MakePackedAPI();
